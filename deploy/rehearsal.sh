@@ -12,6 +12,12 @@
 #
 # CPUS, MEMORY and DISK size the VM when it is created (4, 6GiB, 40GiB): CPUS=1 MEMORY=2GiB
 # DISK=20GiB rehearses the smallest server. An existing VM keeps its size; `down` first.
+#
+# If the API comes up with `password authentication failed`, the database was created with a
+# password the .env no longer holds — a run that stopped half way. The data there is disposable:
+#
+#   limactl shell norboten-rehearsal sudo sh -c \
+#     'cd /opt/norboten && docker compose down && docker volume rm norboten_postgres_data'
 set -eu
 root=$(cd "$(dirname "$0")/.." && pwd)
 limactl=${LIMACTL:-$(ls "${NORBOTEN_HOME:-$HOME/.norboten}"/lima/*/bin/limactl 2>/dev/null | tail -1)}
@@ -40,6 +46,14 @@ YAML
     port=$(awk '/^ *Port /{print $2; exit}' "$work/ssh.config")
     key=$(awk '/^ *IdentityFile /{gsub(/"/,"",$2); print $2; exit}' "$work/ssh.config")
 
+    # Passwords are generated once and then reused, the way install-server.py keeps them in
+    # /etc/norboten/install.json. PostgreSQL writes the role's password into its data directory
+    # the first time it starts, so handing a second run a fresh one only locks the API out of a
+    # database that is already there.
+    kept() { "$limactl" shell "$vm" sudo sed -n "s/^$1=//p" /opt/norboten/.env 2>/dev/null; }
+    postgres_password=$(kept POSTGRES_PASSWORD); : "${postgres_password:=$(openssl rand -hex 16)}"
+    grafana_password=$(kept GRAFANA_ADMIN_PASSWORD); : "${grafana_password:=$(openssl rand -hex 12)}"
+
     cat > "$work/inventory.yml" <<YAML
 all:
   hosts:
@@ -55,8 +69,8 @@ all:
     norboten_caddy_global: local_certs
     norboten_api_image: norboten-api
     norboten_api_tag: rehearsal
-    norboten_postgres_password: $(openssl rand -hex 16)
-    norboten_grafana_admin_password: $(openssl rand -hex 12)
+    norboten_postgres_password: $postgres_password
+    norboten_grafana_admin_password: $grafana_password
 YAML
 
     echo "== the API image, built here and loaded into the VM (a real server pulls it from GHCR)"
