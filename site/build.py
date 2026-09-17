@@ -45,9 +45,44 @@ SITE_URL = os.environ.get("NORBOTEN_SITE_URL", f"https://{DOMAIN}")  # where ins
 GA_ID = os.environ.get("NORBOTEN_SITE_GA_ID", "")
 # The About page's "More about me" button and the Community page's "Join the Discord" button: each
 # is hidden while its link is empty.
-PERSONAL_SITE = os.environ.get("NORBOTEN_SITE_PERSONAL_URL", "")  # a preview may point it anywhere
+# A preview may point these anywhere; a fork empties them and the buttons that use them disappear.
+PERSONAL_SITE = os.environ.get("NORBOTEN_SITE_PERSONAL_URL", "https://iharpetushkou.com")
 # The invite is public by nature; a self-hosted build points it at its own server, or empties it.
 DISCORD_INVITE = os.environ.get("NORBOTEN_SITE_DISCORD_INVITE", "https://discord.gg/2zF4UuZaJB")
+# The Community page draws the server it describes: the channels as they exist in Discord. Change
+# them here and in Discord together, or the page sends people to a channel that is not there.
+CHANNELS = (
+    (
+        "Start here",
+        (
+            ("announcements", "The bot posts every new lab, journal and bank, and every release."),
+            ("general", "Anything Norboten, and introducing yourself if you feel like it."),
+        ),
+    ),
+    (
+        "The labs",
+        (
+            ("stuck", "A lab that will not pass. Symptoms and commands, not finished solutions."),
+            ("linux", "The linux and rhcsa tracks: systemd, storage, SELinux, networking, boot."),
+            (
+                "scripting",
+                "The bash and python tracks, and tooling you write for your own machines.",
+            ),
+            ("devops", "Docker, Terraform and Ansible: the labs where the fault is in the config."),
+            ("ai", "The claude, mcp and automation tracks — agents, MCP servers, local models."),
+        ),
+    ),
+    (
+        "Beyond the labs",
+        (
+            ("theory", "The question banks and the journals: what an answer really means."),
+            ("writing-labs", "Writing your own lab or bank, and the plugin that drafts one."),
+            ("ratings", "The board, streaks, and what your number did this week."),
+            ("bugs-and-ideas", "A check that is wrong, a briefing that misleads, the next lab."),
+        ),
+    ),
+)
+
 # Moves whenever the privacy policy says something new (site/templates/privacy.html).
 PRIVACY_UPDATED = "17 September 2026"
 
@@ -1676,6 +1711,13 @@ def main() -> int:
         page_description="The Norboten Discord: new labs as they land, channels by topic, and the "
         "author.",
         discord_invite=DISCORD_INVITE,
+        channel_groups=[
+            {
+                "name": name,
+                "channels": [{"name": channel, "about": about} for channel, about in channels],
+            }
+            for name, channels in CHANNELS
+        ],
         **common,
     )
     build.render(
