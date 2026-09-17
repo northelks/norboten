@@ -1,0 +1,14 @@
+#!/bin/bash
+# backup-data — nightly archive of the data directory.
+# BACKUP_SRC, BACKUP_DEST and BACKUP_LOG override the defaults.
+SRC=${BACKUP_SRC:-/srv/data}
+DEST=${BACKUP_DEST:-/var/backups}
+LOG=${BACKUP_LOG:-/var/log/backup-data.log}
+STAMP=$(date +%Y%m%d-%H%M%S)
+ARCHIVE=$DEST/data-$STAMP.tar.gz
+
+cd $SRC
+FILES=$(find . -type f)
+tar -czf $ARCHIVE $FILES 2>/dev/null
+echo "$(date -Is) backup OK: $ARCHIVE" >> $LOG
+exit 0

@@ -1,0 +1,90 @@
+schema_version: 1
+topic: python-07-client-that-leaks-its-token
+topics: [python, users-permissions]
+title: "Theory: credentials in logs, files and services"
+description: Where a token leaks from a client, and what an account and a mode protect.
+questions:
+  - id: py7-001
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import urllib.error
+      e = urllib.error.HTTPError("https://api.example.com/orders?token=ptk_live_secret",
+                                 403, "Forbidden", {}, None)
+      print("secret" in str(e), "secret" in e.url)
+    code_lang: python
+    choices:
+      - {id: a, text: "True True"}
+      - {id: b, text: "False False"}
+      - {id: c, text: "True False"}
+      - {id: d, text: "False True"}
+    answer: [d]
+    explanation: >-
+      str(HTTPError) is "HTTP Error 403: Forbidden" — no URL — but the exception keeps the full URL in
+      .url (and .filename), so any log line that prints the URL, or code that formats the request,
+      publishes the token. Logging e.code rather than the exception or the URL keeps it out.
+    references: ["https://docs.python.org/3/library/urllib.error.html"]
+    tags: [logging, secrets]
+    verify:
+      runtime: python
+      code: |
+        import urllib.error
+        e = urllib.error.HTTPError("https://api.example.com/orders?token=ptk_live_secret",
+                                   403, "Forbidden", {}, None)
+        print("secret" in str(e), "secret" in e.url)
+  - id: py7-002
+    type: multiple
+    difficulty: 3
+    prompt: >-
+      A client authenticates with a bearer token. Which of these put the token somewhere other people
+      can read it? Select all that apply.
+    choices:
+      - {id: a, text: "passing the token to the program in an environment variable read by systemd from a 0600 file"}
+      - {id: b, text: "logging the request URL when the token is in the query string"}
+      - {id: c, text: "log.debug(\"headers=%s\", headers) with the Authorization header in them"}
+      - {id: d, text: "logging the HTTP status code of a refused request"}
+    answer: [b, c]
+    explanation: >-
+      A URL with the token is written to the client's log, to proxy logs and to the server's access
+      log; a debug line with the headers publishes it to whoever reads the journal. An environment
+      variable is visible to the same user's processes but not written anywhere by default, and a
+      status code carries nothing secret. (LoadCredential= is better still than an environment
+      variable.)
+    references: ["man 5 systemd.exec"]
+    tags: [logging, secrets]
+  - id: py7-003
+    type: single
+    difficulty: 2
+    prompt: >-
+      `/etc/app/token` is `-rw------- 1 appsvc appsvc` and `/etc/app` is `drwx------ 2 root root`. The
+      service runs as `appsvc`. What happens when it reads the token?
+    choices:
+      - {id: a, text: "It reads the token, because appsvc is a system account"}
+      - {id: b, text: "Permission denied: the file needs mode 0640"}
+      - {id: c, text: "Permission denied: it cannot traverse the directory"}
+      - {id: d, text: "It reads the token: the file's mode is what counts"}
+    answer: [c]
+    explanation: >-
+      Opening a file needs execute (search) permission on every directory in the path. /etc/app allows
+      only root, so appsvc cannot reach the file whatever the file's own mode says. The directory
+      wants 0755, or 0750 with a group the service is in.
+    references: ["man 7 path_resolution", "man 1 chmod"]
+    tags: [permissions]
+  - id: py7-004
+    type: single
+    difficulty: 2
+    prompt: >-
+      Which command tells you what account a running service uses, without reading its unit file?
+    choices:
+      - {id: a, text: "systemctl status unit | grep User"}
+      - {id: b, text: "journalctl -u unit | grep uid"}
+      - {id: c, text: "systemctl show unit -p User --value"}
+      - {id: d, text: "id $(systemctl cat unit)"}
+    answer: [c]
+    explanation: >-
+      systemctl show prints the unit's resolved properties, drop-ins included; an empty value for User
+      means the service runs as root. systemctl status shows the processes and their command lines but
+      not the configured user, and the journal says nothing about it.
+    references: ["man 1 systemctl"]
+    tags: [systemd]

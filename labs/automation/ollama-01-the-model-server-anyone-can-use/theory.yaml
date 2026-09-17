@@ -1,0 +1,70 @@
+schema_version: 1
+topic: ollama-01-the-model-server-anyone-can-use
+topics: [ollama, networking, users-permissions]
+title: "Theory: exposing a model server safely"
+description: OLLAMA_HOST, OLLAMA_ORIGINS, systemd drop-ins and basic authentication in nginx.
+questions:
+  - id: ol1-001
+    type: single
+    difficulty: 1
+    prompt: What does Ollama do to check who is calling its API?
+    choices:
+      - {id: a, text: "It asks for a token set in OLLAMA_TOKEN"}
+      - {id: b, text: "Nothing: it has no authentication, so whoever reaches the port can list, run, pull and delete models"}
+      - {id: c, text: "It requires the key in ~/.ollama/id_ed25519"}
+      - {id: d, text: "It accepts only clients on the same subnet"}
+    answer: [b]
+    explanation: >-
+      The key in ~/.ollama identifies the server to ollama.com; it does not authenticate clients. Access
+      control belongs to the network (bind to 127.0.0.1) and to a proxy in front, which can require a
+      password or token.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+  - id: ol1-002
+    type: single
+    difficulty: 2
+    prompt: >-
+      ollama.service sets OLLAMA_HOST=127.0.0.1:11434, yet ss shows Ollama on *:11434. Where is the other
+      value most likely set, and how do you see it?
+    choices:
+      - {id: a, text: "In a drop-in under /etc/systemd/system/ollama.service.d/; systemctl cat ollama shows the unit and every drop-in"}
+      - {id: b, text: "In /etc/environment, which systemd services always read"}
+      - {id: c, text: "In ~/.bashrc of the ollama user"}
+      - {id: d, text: "Ollama ignores the variable when started by systemd"}
+    answer: [a]
+    explanation: >-
+      Drop-ins are applied after the unit file, so a later Environment= for the same variable wins.
+      systemctl cat prints the unit followed by each drop-in with its path; systemctl show -p Environment
+      shows the result. Services do not read /etc/environment or shell startup files.
+    references: ["man 5 systemd.unit (drop-in directories)", "man 1 systemctl"]
+  - id: ol1-003
+    type: single
+    difficulty: 3
+    prompt: >-
+      A browser page at https://chat.internal.example calls Ollama through nginx and gets 403, while
+      curl without an Origin header gets 200. What is refusing it?
+    choices:
+      - {id: a, text: "Basic authentication, which returns 403 for browsers"}
+      - {id: b, text: "Ollama: nginx forwards the browser's Origin header, and Ollama accepts only its own local origins plus OLLAMA_ORIGINS"}
+      - {id: c, text: "nginx, which blocks cross-origin requests by default"}
+      - {id: d, text: "The browser, before the request is sent"}
+    answer: [b]
+    explanation: >-
+      Ollama checks the Origin header and answers 403 to origins it does not allow; curl sends none. nginx
+      passes client headers on unchanged. Add the page's origin to OLLAMA_ORIGINS (never *), or have the
+      proxy handle cross-origin requests itself. Missing credentials would be 401.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS"]
+  - id: ol1-004
+    type: single
+    difficulty: 2
+    prompt: After editing nginx's configuration and running `systemctl reload nginx`, an immediate curl still gets the old answer. Why?
+    choices:
+      - {id: a, text: "nginx needs nginx -s reopen after reload"}
+      - {id: b, text: "reload does not reread configuration; only restart does"}
+      - {id: c, text: "reload signals the master and returns; old workers keep serving until new ones replace them moments later"}
+      - {id: d, text: "curl caches the response"}
+    answer: [c]
+    explanation: >-
+      A reload is graceful: the master starts new workers with the new configuration and lets old ones
+      finish. A request sent in the same instant can still reach an old worker. Wait a moment, or restart
+      when a script must test the new configuration immediately.
+    references: ["https://nginx.org/en/docs/control.html"]

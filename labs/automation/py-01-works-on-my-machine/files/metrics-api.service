@@ -1,0 +1,9 @@
+[Unit]
+Description=Internal metrics API (stand-in)
+
+[Service]
+ExecStart=/usr/local/bin/metrics-api
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

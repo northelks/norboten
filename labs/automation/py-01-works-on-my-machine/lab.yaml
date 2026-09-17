@@ -1,0 +1,21 @@
+schema_version: 1
+id: py-01-works-on-my-machine
+version: 1.0.0
+title: The Job That Works on My Machine
+track: automation
+topics: [python, boot-systemd]
+difficulty: 1
+estimated_minutes: 25
+base_images: [ubuntu-26.04-automation]
+resources:
+  cpus: 2
+objectives:
+  - "Run a Python job from systemd with the project's own virtual environment"
+  - "Schedule a job with a systemd timer that survives reboots"
+  - "Run automation as a dedicated service account with least privilege"
+checks:
+  - {id: 01_timer_enabled, objective: 2}
+  - {id: 02_job_succeeds_unattended, objective: 1, weight: 2}
+  - {id: 03_runs_as_etl, objective: 3}
+  - {id: 04_token_protected, objective: 3}
+reboot_required: true

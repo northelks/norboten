@@ -1,0 +1,92 @@
+schema_version: 1
+topic: python-04-worker-that-goes-silent
+topics: [python, logging-journald]
+title: "Theory: output buffering and stopping cleanly"
+description: How Python buffers stdout, what SIGTERM does to it, and the order of writes in a worker.
+questions:
+  - id: py4-001
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import subprocess, sys
+      code = "import sys; print('to a pipe'); print(sys.stdout.line_buffering, sys.stdout.isatty())"
+      out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True).stdout
+      print(" ".join(out.split()))
+    code_lang: python
+    choices:
+      - {id: a, text: "to a pipe True False"}
+      - {id: b, text: "to a pipe False False"}
+      - {id: c, text: "to a pipe True True"}
+      - {id: d, text: "to a pipe False True"}
+    answer: [b]
+    explanation: >-
+      capture_output gives the child a pipe, so stdout is not a terminal and Python block-buffers it:
+      isatty() is False and line_buffering is False. The text still arrives here because the child
+      exits and flushes; a long-running service would hold it until the buffer filled. The three
+      values are printed on the two captured lines, joined by a space here.
+    references: ["https://docs.python.org/3/library/sys.html#sys.stdout"]
+    tags: [buffering]
+    verify:
+      runtime: python
+      code: |
+        import subprocess, sys
+        code = "import sys; print('to a pipe'); print(sys.stdout.line_buffering, sys.stdout.isatty())"
+        out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True).stdout
+        print(" ".join(out.split()))
+  - id: py4-002
+    type: single
+    difficulty: 3
+    prompt: >-
+      A Python program with no signal handlers is running `time.sleep(30)` inside a `try: … finally:
+      cleanup()` when it receives SIGTERM. What happens?
+    choices:
+      - {id: a, text: "The sleep is interrupted and cleanup() runs"}
+      - {id: b, text: "The process ends at once and cleanup() does not run"}
+      - {id: c, text: "KeyboardInterrupt is raised and cleanup() runs"}
+      - {id: d, text: "The signal is ignored until the sleep ends"}
+    answer: [b]
+    explanation: >-
+      SIGTERM's default action terminates the process, so no finally block, atexit handler or buffer
+      flush happens. SIGINT is the one Python turns into an exception (KeyboardInterrupt). To stop
+      cleanly, install a SIGTERM handler that sets a flag and check it where stopping is safe.
+    references: ["https://docs.python.org/3/library/signal.html"]
+    tags: [signals]
+  - id: py4-003
+    type: single
+    difficulty: 3
+    prompt: >-
+      A worker appends a ledger row for each item, then records the item in a state file it rewrites
+      with `json.dump(done, open(state, "w"))`. It is stopped between the two. What does the next start
+      do?
+    choices:
+      - {id: a, text: "It skips that item"}
+      - {id: b, text: "It fails to start until the state file is repaired"}
+      - {id: c, text: "It ingests that item a second time"}
+      - {id: d, text: "It re-ingests every item from the beginning"}
+    answer: [c]
+    explanation: >-
+      The row is on disk and the state does not name the item, so the restart ingests it again — a
+      duplicate, which is the safer of the two failures. (A stop during the json.dump itself is worse:
+      the file is already truncated, so the state is unreadable and everything is re-ingested. That is
+      why the state file is written to a temporary file and moved into place with os.replace.)
+    references: ["https://docs.python.org/3/library/os.html#os.replace"]
+    tags: [idempotence, atomic]
+  - id: py4-004
+    type: multiple
+    difficulty: 2
+    prompt: >-
+      Which of these make a long-running Python program's progress visible in `journalctl -fu` while it
+      runs? Select all that apply.
+    choices:
+      - {id: a, text: "print(…, flush=True) at each progress line"}
+      - {id: b, text: "sys.stdout.reconfigure(line_buffering=True) at the top of the program"}
+      - {id: c, text: "Environment=PYTHONUNBUFFERED=1 in the unit"}
+      - {id: d, text: "Type=simple instead of Type=oneshot in the unit"}
+    answer: [a, b, c]
+    explanation: >-
+      flush=True, line buffering and PYTHONUNBUFFERED all send each line on its way as it is produced —
+      two from inside the program, one from the unit. The service type says how systemd decides the unit has started; it has
+      nothing to do with buffering.
+    references: ["https://docs.python.org/3/using/cmdline.html#envvar-PYTHONUNBUFFERED"]
+    tags: [buffering, systemd]

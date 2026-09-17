@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Play</div>
+    <h1>Watch someone fix a Linux box</h1>
+    <p class="lede prose">
+      <kbd>P</kbd> on a lab in the TUI records the session's terminal and publishes it
+      here while it runs.<br>Read-only: you see what the learner sees, at the speed they typed it, and
+      every file they change is a diff.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="live" data-api="{{ api }}">
+  {% set wall = streams|selectattr("wall")|list %}
+  <div class="wrap">
+    <h2><span class="pulse"></span> Live now</h2>
+    <p class="muted" id="livestate" hidden></p>
+  </div>
+  {% if wall %}
+  <div class="wrap wide">
+    <div class="wall">
+      {% for s in wall %}
+      <figure class="wallterm" data-slot="{{ loop.index0 }}">
+        <figcaption>
+          <span class="dot {{ s.theme }}"></span>
+          <strong>{{ s.title }}</strong>
+          <span class="muted mono">{{ s.lab }} · {{ s.image }}</span>
+        </figcaption>
+        <div class="term" data-theme="{{ s.theme }}" data-autoplay="loop" data-controls="wall"
+             data-title="{{ s.title }}" data-meta="{{ s.lab }} · {{ s.image }} · {{ s.when }}"
+             data-cast="{{ root }}streams/{{ s.slug }}.json"></div>
+      </figure>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+{% if streams %}
+<section class="section">
+  <div class="wrap">
+    <h2>Recorded sessions</h2>
+    <p class="muted">Real sessions against real VMs, recorded with the same recorder. Until you
+      press play each screen lists the commands it is about to run; skipping to the next three
+      commands pauses. Click a command in the logs to jump to it. Long pauses are squeezed; nothing else is
+      edited.</p>
+    {% for stream in streams %}
+    <figure class="play" id="{{ stream.slug }}">
+      <figcaption>
+        <strong>{{ stream.title }}</strong>
+        <span class="tag">{{ stream.lab }}</span>
+        <span class="tag">{{ stream.image }}</span>
+        <span class="muted mono small">{{ stream.commands|length }} commands · {{ stream.duration }}{% if stream.files_changed %} · {{ stream.files_changed }} file{{ 's' if stream.files_changed != 1 }} changed{% endif %}</span>
+      </figcaption>
+      {% if stream.when %}<p class="muted mono blurb small">{{ stream.when }}</p>{% endif %}
+      <div class="term" data-theme="{{ stream.theme or 'green' }}"
+           data-cast="{{ root }}streams/{{ stream.slug }}.json"
+           data-title="{{ stream.title }}"
+           {% if stream.commands %}data-logs="#logs-{{ stream.slug }}"{% endif %}
+           data-commands="#cmds-{{ stream.slug }}"></div>
+      {% if stream.commands %}
+      <div class="commands-holder" id="logs-{{ stream.slug }}"
+           data-subtitle="{{ stream.commands|length }} commands, and how long each took" hidden>
+        <div class="tablewrap">
+        <table class="board cmdtable" id="cmds-{{ stream.slug }}">
+          <tr><th>At</th><th>Command</th><th class="num">Took</th></tr>
+          {% for c in stream.commands %}
+          <tr data-command="{{ loop.index0 }}">
+            <td class="muted mono num">{{ c.at }}</td>
+            <td class="mono cmd">{{ c.text }}</td>
+            <td class="muted mono num">{{ c.took }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+        </div>
+      </div>
+      {% endif %}
+    </figure>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>What is recorded, and what is not</h2>
+    <div class="grid three">
+      <div class="card plain">
+        <h3>Nothing, by default</h3>
+        <p class="muted"><kbd>o</kbd> opens a shell and records nothing.
+          <kbd>p</kbd> writes an asciicast and a command log to
+          <span class="mono">~/.norboten/plays</span>, on your machine.</p>
+      </div>
+      <div class="card plain">
+        <h3>Streaming asks first</h3>
+        <p class="muted">Only <kbd>P</kbd> publishes anything, after a confirmation,
+          and only while the session runs. Recordings expire after a week.</p>
+      </div>
+      <div class="card plain">
+        <h3>Theory is never recorded</h3>
+        <p class="muted">Answers and scores, nothing else. There is no terminal to record and no
+          reason to keep one.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ root }}player.js"></script>
+<script src="{{ root }}live.js"></script>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="section">
+  <div class="wrap center donate-hero">
+    <div class="kicker">Donate</div>
+    <h1>Keep the hosted side running</h1>
+    <p class="lede">
+      Norboten runs on your own machine, and that part is free for ever — the labs, the images,
+      the grading and the TUI need nothing from anyone. A donation keeps the part that lives on the
+      internet running: the consultant, the ratings, the live sessions and this site.
+    </p>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <form class="give" id="give" novalidate>
+      <div class="give-interval" role="group" aria-label="How often">
+        <button type="button" class="pill" data-interval="monthly" aria-pressed="true">Monthly</button>
+        <button type="button" class="pill" data-interval="once" aria-pressed="false">One-off</button>
+      </div>
+
+      <div class="give-amounts" role="group" aria-label="Amount in euros">
+        {% for tier in tiers %}
+        <button type="button" class="amount{% if tier == default_tier %} on{% endif %}"
+                data-amount="{{ tier }}" aria-pressed="{{ 'true' if tier == default_tier else 'false' }}">
+          €{{ tier }}
+        </button>
+        {% endfor %}
+        <label class="amount other">
+          <span aria-hidden="true">€</span>
+          <input id="give-other" type="number" min="2" max="5000" step="1" inputmode="numeric"
+                 placeholder="Other" aria-label="Another amount in euros">
+        </label>
+      </div>
+
+      <button type="submit" class="btn solid give-go" id="give-go">
+        Donate €{{ default_tier }} a month
+      </button>
+      <p class="muted give-note">
+        Paid through Stripe — card, Apple Pay or Google Pay. A monthly donation can be stopped at
+        any time from the receipt Stripe sends you. Norboten never sees your card.
+      </p>
+      <p class="give-problem" id="give-problem" hidden role="status"></p>
+    </form>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>Where it goes</h2>
+    <div class="grid three">
+      <div class="card plain">
+        <h3>The server</h3>
+        <p class="muted">One VPS: this site, the API, the ratings, the live sessions and the
+          local model the consultant runs on. No hosted model is billed to anyone.</p>
+      </div>
+      <div class="card plain">
+        <h3>The images</h3>
+        <p class="muted">Every golden image is built and re-gated on real VMs before it ships,
+          and the bandwidth that carries them to learners.</p>
+      </div>
+      <div class="card plain">
+        <h3>The labs</h3>
+        <p class="muted">A lab is only merged after the gate proves it can be solved, on every
+          image it claims. That gate runs on machines that cost money.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>Other ways to help</h2>
+    <div class="grid three">
+      <div class="card plain">
+        <h3>Write a lab</h3>
+        <p class="muted">A lab is a directory: faults, checks, hints, a reference solution. The
+          gate proves it is solvable before it can merge.</p>
+        <p><a class="btn" href="{{ root }}docs/writing-a-lab/index.html">How to write one</a></p>
+      </div>
+      <div class="card plain">
+        <h3>Break something and say so</h3>
+        <p class="muted">A lab that stopped working after an upstream update is the most useful
+          bug report this project can get.</p>
+        <p><a class="btn" href="{{ github }}/issues" rel="noopener">Open an issue</a></p>
+      </div>
+      <div class="card plain">
+        <h3>Tell someone</h3>
+        <p class="muted">Norboten has no advertising budget and never will. Someone learning
+          Linux the hard way is who it is for — send them the repository, or bring them to the
+          Discord.</p>
+        <p><a class="btn" href="{{ github }}" rel="noopener">GitHub</a>
+          <a class="btn" href="{{ root }}community/index.html">Discord</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>What donating does not buy</h2>
+    <div class="prose muted">
+      <p>
+        No amount unlocks labs, hints, ratings or anything else: every learner gets the same
+        Norboten, and a lab that only paying people can solve would defeat the point of the thing.
+        Nobody is listed on the site unless they ask to be, and nothing here is advertising space.
+      </p>
+      <p>
+        If the hosted side ever cannot pay for itself, it stops and the TUI keeps working — the
+        labs live in the repository and run offline, which is the whole reason it is built that
+        way round.
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ root }}donate.js"></script>{% endblock %}

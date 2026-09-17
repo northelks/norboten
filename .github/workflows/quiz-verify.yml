@@ -1,0 +1,20 @@
+name: quiz
+
+on:
+  push:
+    branches: [main]
+    paths: ["quizzes/**", "labs/**/theory.yaml", "cli/src/norboten/quiz/**", "cli/src/norboten/models.py"]
+  pull_request:
+    paths: ["quizzes/**", "labs/**/theory.yaml", "cli/src/norboten/quiz/**", "cli/src/norboten/models.py"]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --frozen
+      - name: Every question validates, and every snippet prints what its key says
+        run: uv run norboten dev verify-quiz

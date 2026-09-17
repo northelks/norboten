@@ -1,0 +1,10 @@
+[Unit]
+Description=The partner's API, simulated for this lab
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/partner-api
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,35 @@
+---
+- name: Configure the application host
+  hosts: app
+  become: true
+  vars:
+    app_port: 8080  # testing — remove before merging
+  tasks:
+    - name: Create the app account
+      ansible.builtin.command: useradd --system --home-dir /opt/app --shell /usr/sbin/nologin app
+      ignore_errors: true
+
+    - name: Enable forwarding for the application's containers
+      ansible.builtin.shell: echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.d/90-app.conf
+
+    - name: Install the application
+      ansible.builtin.shell: mkdir -p /opt/app && cp {{ playbook_dir }}/files/app.py /opt/app/app.py
+
+    - name: Write the configuration
+      ansible.builtin.shell: >-
+        mkdir -p /etc/app &&
+        printf 'port = %s\ngreeting = %s\n' '{{ app_port }}' '{{ app_greeting }}' > /etc/app/app.conf
+      notify: Restart app
+
+    - name: Install the unit
+      ansible.builtin.copy:
+        src: files/app.service
+        dest: /etc/systemd/system/app.service
+        mode: "0644"
+
+    - name: Start the application
+      ansible.builtin.shell: systemctl daemon-reload && systemctl enable --now app
+
+  handlers:
+    - name: Restart app
+      ansible.builtin.shell: systemctl restart app

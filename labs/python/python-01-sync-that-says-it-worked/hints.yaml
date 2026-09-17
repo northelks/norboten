@@ -1,0 +1,42 @@
+checks:
+  01_api_error_is_a_failure:
+    level_1: "When the API fails, the sync still reports success, and the records disappear."
+    level_2: "A program tells its caller it failed through its exit status. What happens to an
+              exception that is caught and only printed?"
+    level_3: "In sync.py, fetch() catches every exception and returns an empty list, and main() writes
+              whatever fetch() returned."
+    level_4: "The error is swallowed: an empty list is written over the good file, and the script ends
+              normally with status 0. Let the failure stop the run before anything is written, and
+              exit non-zero."
+    refs:
+      2: ["journal:monitoring#a-check-is-an-exit-status", "https://docs.python.org/3/library/sys.html#sys.exit"]
+      3: ["journal:python-01-sync-that-says-it-worked#the-broken-contract", "journal:python-01-sync-that-says-it-worked#exceptions-belong-where-something-can-be-done-about-them"]
+  02_stalled_api_times_out:
+    level_1: "Against an API that accepts the connection but never answers, the sync waits forever."
+    level_2: "How long does a network call in the standard library wait for an answer by default?"
+    level_3: "urllib.request.urlopen in sync.py is called without a timeout argument."
+    level_4: "urlopen with no timeout blocks indefinitely on a server that never responds. Give it a
+              timeout, and treat reaching it as a failure."
+    refs:
+      2: ["journal:monitoring#a-check-must-have-a-deadline", "https://docs.python.org/3/library/urllib.request.html#urllib.request.urlopen"]
+      3: ["journal:python-01-sync-that-says-it-worked#every-network-call-needs-a-deadline"]
+  03_good_run_replaces_the_file:
+    level_1: "While the sync writes, readers can see a truncated or empty records file."
+    level_2: "Opening a file for writing truncates it at once. Which filesystem operation swaps a
+              whole file in one step?"
+    level_3: "sync.py opens the output with open(OUTPUT, \"w\") and writes into it directly."
+    level_4: "The file is rewritten in place. Write a temporary file in the same directory, then rename
+              it over the output (os.replace), making sure it stays readable by other services."
+    refs:
+      2: ["https://docs.python.org/3/library/os.html#os.replace"]
+      3: ["journal:python-01-sync-that-says-it-worked#what-a-reader-sees-during-openpath-w", "journal:python-01-sync-that-says-it-worked#keeping-old-data-is-a-feature"]
+  04_timer_run_succeeds:
+    level_1: "The run started by the timer does not produce the API's records."
+    level_2: "A timer's service gets its settings from its unit and the files the unit loads. Read the
+              service's journal."
+    level_3: "systemctl cat sync.service shows where the job's environment comes from; compare the API
+              address there with the port records-api listens on."
+    level_4: "/etc/sync/sync.env points SYNC_API at port 8091, but the API listens on 8901."
+    refs:
+      2: ["journal:logging-journald#asking-precise-questions", "man 5 systemd.exec"]
+      3: ["journal:python-01-sync-that-says-it-worked#how-the-job-is-configured"]

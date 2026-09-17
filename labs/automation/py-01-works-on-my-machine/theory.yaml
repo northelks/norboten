@@ -1,0 +1,64 @@
+schema_version: 1
+topic: py-01-works-on-my-machine
+topics: [python, boot-systemd]
+title: "Theory: a Python job under systemd"
+description: Virtual environments without activation, working directories, service accounts and timers.
+questions:
+  - id: py0-001
+    type: single
+    difficulty: 2
+    prompt: How does a systemd unit run a script with a virtual environment's packages?
+    choices:
+      - {id: a, text: "ExecStart= names the venv's interpreter, e.g. /opt/etl/.venv/bin/python /opt/etl/report.py"}
+      - {id: b, text: "Environment=VIRTUAL_ENV=/opt/etl/.venv"}
+      - {id: c, text: "ExecStartPre=source /opt/etl/.venv/bin/activate"}
+      - {id: d, text: "It cannot; venvs work only in interactive shells"}
+    answer: [a]
+    explanation: >-
+      A venv is selected by which interpreter executable starts, through the pyvenv.cfg beside it.
+      activate only edits the shell's PATH and prompt, and an ExecStartPre runs in a separate process
+      anyway; setting VIRTUAL_ENV alone changes nothing about which python runs.
+    references: ["https://docs.python.org/3/library/venv.html"]
+  - id: py0-002
+    type: single
+    difficulty: 2
+    prompt: A script opens `config/settings.json` and fails only when systemd runs it. What is the likeliest cause?
+    choices:
+      - {id: a, text: "JSON files need ReadOnlyPaths="}
+      - {id: b, text: "systemd forbids relative paths"}
+      - {id: c, text: "The file needs to be executable"}
+      - {id: d, text: "A system unit starts in / unless WorkingDirectory= is set, so the relative path points elsewhere"}
+    answer: [d]
+    explanation: >-
+      Relative paths resolve against the current directory, which for a system service is / by default.
+      Set WorkingDirectory=, or better resolve paths relative to the script with Path(__file__).
+    references: ["man 5 systemd.exec (WorkingDirectory=)"]
+  - id: py0-003
+    type: single
+    difficulty: 2
+    prompt: Which unit do you enable so a scheduled job survives reboots?
+    choices:
+      - {id: a, text: "The .timer unit"}
+      - {id: b, text: "Neither; timers are always active"}
+      - {id: c, text: "The .service unit"}
+      - {id: d, text: "Both, so the job also runs at boot"}
+    answer: [a]
+    explanation: >-
+      The timer is WantedBy=timers.target and starts the service when due. A service run by a timer
+      usually has no [Install] section; forcing it into multi-user.target makes it run once at boot as well.
+    references: ["man 5 systemd.timer"]
+  - id: py0-004
+    type: single
+    difficulty: 3
+    prompt: A timer has only `OnUnitActiveSec=5min`. After a reboot it never fires. Why?
+    choices:
+      - {id: a, text: "It counts from the service's last activation, and after boot there has been none"}
+      - {id: b, text: "5min is not a valid time span"}
+      - {id: c, text: "Monotonic timers are disabled at boot"}
+      - {id: d, text: "The unit needs Persistent=true to count at all"}
+    answer: [a]
+    explanation: >-
+      OnUnitActiveSec is relative to when the unit it activates was last activated. With no activation
+      since boot there is nothing to count from. Pair it with OnBootSec= for the first run, or use
+      OnCalendar=. Persistent= applies to OnCalendar timers only.
+    references: ["man 5 systemd.timer"]

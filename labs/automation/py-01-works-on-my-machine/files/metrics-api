@@ -1,0 +1,26 @@
+#!/usr/bin/python3
+"""Stand-in metrics API on 127.0.0.1:8900. Requires the bearer token from /etc/etl/token."""
+import http.server
+import json
+
+TOKEN = open("/etc/etl/token").read().strip()
+BODY = json.dumps({"metrics": [{"name": n, "value": v} for n, v in
+                               [("orders", 412), ("refunds", 9), ("signups", 57)]]}).encode()
+
+
+class H(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.headers.get("Authorization") != f"Bearer {TOKEN}":
+            self.send_response(401)
+            self.end_headers()
+            return
+        self.send_response(200 if self.path == "/metrics.json" else 404)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(BODY)
+
+    def log_message(self, *a):
+        pass
+
+
+http.server.HTTPServer(("127.0.0.1", 8900), H).serve_forever()

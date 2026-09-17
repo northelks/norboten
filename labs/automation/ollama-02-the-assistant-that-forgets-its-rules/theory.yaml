@@ -1,0 +1,73 @@
+schema_version: 1
+topic: ollama-02-the-assistant-that-forgets-its-rules
+topics: [ollama, ai-services]
+title: "Theory: Modelfiles, context windows and sampling"
+description: How a custom model is built, what num_ctx truncates, request options and temperature.
+questions:
+  - id: ol2-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      A Modelfile's PARAMETER num_ctx is changed from 256 to 2048, and support-bot still shows num_ctx 256.
+      What was missed?
+    choices:
+      - {id: a, text: "Pulling the base model again"}
+      - {id: b, text: "Nothing: parameters only show after the next request"}
+      - {id: c, text: "Rebuilding the model with ollama create support-bot -f Modelfile; the server does not watch the file"}
+      - {id: d, text: "Restarting the Ollama service"}
+    answer: [c]
+    explanation: >-
+      ollama create reads the Modelfile once and stores the result as a model on the server. Editing the
+      file changes nothing until the model is created again; `ollama show support-bot --modelfile` prints
+      what the server actually holds.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/modelfile.mdx"]
+  - id: ol2-002
+    type: single
+    difficulty: 3
+    prompt: >-
+      A 1,388-token prompt is sent to a model whose num_ctx is 256. In Ollama 0.34 the response says
+      prompt_eval_count 130. What happened?
+    choices:
+      - {id: a, text: "The prompt did not fit, so Ollama truncated it — keeping a few tokens from the start and the end, most of the system prompt dropped"}
+      - {id: b, text: "Ollama compressed the prompt without losing information"}
+      - {id: c, text: "The request failed and 130 is an error code"}
+      - {id: d, text: "Only 130 tokens were needed; the rest were duplicates"}
+    answer: [a]
+    explanation: >-
+      The server logs "truncating input prompt limit=130 prompt=1388 keep=4 new=130": a prompt longer than
+      the window is cut to about half of it, keeping the first few tokens and the most recent text. The
+      model answers without most of its instructions, and nothing in the reply says so; prompt_eval_count
+      does.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx", "https://github.com/ollama/ollama/blob/main/docs/api.md"]
+  - id: ol2-003
+    type: single
+    difficulty: 2
+    prompt: >-
+      A model's Modelfile sets num_ctx 4096, and a client sends "options": {"num_ctx": 512} with its
+      request. Which window does that request use?
+    choices:
+      - {id: a, text: "4096: the Modelfile always wins"}
+      - {id: b, text: "512: options in a request override the model's parameters for that request"}
+      - {id: c, text: "The larger of the two"}
+      - {id: d, text: "4096 for the system prompt and 512 for the question"}
+    answer: [b]
+    explanation: >-
+      Request options take precedence over the parameters stored with the model, which take precedence
+      over the server's defaults. A client that "makes answers faster" with a small num_ctx silently undoes
+      the model's configuration.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+  - id: ol2-004
+    type: single
+    difficulty: 1
+    prompt: What does lowering a model's temperature change?
+    choices:
+      - {id: a, text: "How long the model stays in memory"}
+      - {id: b, text: "How random the choice of each next token is; lower gives more repeatable answers"}
+      - {id: c, text: "How fast the model generates"}
+      - {id: d, text: "How much of the prompt the model reads"}
+    answer: [b]
+    explanation: >-
+      Temperature scales the probabilities the model samples from. Near 0 it almost always picks the most
+      likely token, so the same prompt gives nearly the same answer; above 1 it picks unlikely tokens more
+      often. It does not change what the model reads, its speed, or keep-alive.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/modelfile.mdx"]

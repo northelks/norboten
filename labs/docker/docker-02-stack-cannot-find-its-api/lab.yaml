@@ -1,0 +1,20 @@
+schema_version: 1
+id: docker-02-stack-cannot-find-its-api
+version: 1.0.0
+title: The Stack That Cannot Find Its API
+track: docker
+topics: [containers, networking]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 2
+objectives:
+  - "Connect Compose services by name over a shared network"
+  - "Expose only the service that is meant to be public"
+  - "Bring a Compose stack back after a reboot"
+checks:
+  - {id: 01_api_through_the_front, objective: 1, weight: 2}
+  - {id: 02_api_not_published, objective: 2}
+  - {id: 03_stack_back_after_boot, objective: 3}
+reboot_required: true

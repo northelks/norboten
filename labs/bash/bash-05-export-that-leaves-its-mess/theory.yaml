@@ -1,0 +1,87 @@
+schema_version: 1
+topic: bash-05-export-that-leaves-its-mess
+topics: [bash, linux-basics]
+title: "Theory: publishing files and cleaning up"
+description: Atomic publication, mktemp, EXIT traps and signals, and how a script is stopped.
+questions:
+  - id: bs5-001
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      out=$(bash -c 'trap "echo cleaned" EXIT; kill -TERM $$; echo after')
+      echo "$out $?"
+    code_lang: bash
+    choices:
+      - {id: a, text: "cleaned 0"}
+      - {id: b, text: "after cleaned 0"}
+      - {id: c, text: " 143"}
+      - {id: d, text: "cleaned 143"}
+    answer: [d]
+    explanation: >-
+      Bash runs the EXIT trap when a fatal signal such as SIGTERM kills it, then dies of that signal,
+      so the trap prints cleaned, the echo after never runs, and the status is 128 + 15 = 143. dash
+      (/bin/sh on Ubuntu) does not run the EXIT trap on a signal, which is why a POSIX sh script traps
+      the signals as well.
+    references: ["man 1 bash (SIGNALS; trap)", "man 7 signal"]
+    tags: [trap, signals]
+    verify:
+      runtime: bash
+      code: |
+        out=$(bash -c 'trap "echo cleaned" EXIT; kill -TERM $$; echo after')
+        echo "$out $?"
+  - id: bs5-002
+    type: single
+    difficulty: 3
+    prompt: >-
+      A bash script runs `trap 'echo stopping' TERM` and then a command that takes a minute. Ten seconds
+      in, it receives SIGTERM. What happens?
+    choices:
+      - {id: a, text: "It exits at once without printing anything"}
+      - {id: b, text: "It prints stopping at once, and the command is killed"}
+      - {id: c, text: "It prints stopping when the command finishes, then carries on with the next line"}
+      - {id: d, text: "It prints stopping at once and exits with status 143"}
+    answer: [c]
+    explanation: >-
+      Bash runs a trap for a signal only after the foreground command it is waiting for returns, and a
+      trap that does not exit lets the script continue. Without a TERM trap, bash would have handled
+      the signal at once (running any EXIT trap). A long command started in the background and waited
+      for with wait is the way to make a trapped signal take effect immediately.
+    references: ["man 1 bash (SIGNALS)"]
+    tags: [trap, signals]
+  - id: bs5-003
+    type: single
+    difficulty: 2
+    prompt: >-
+      An importer takes any `orders-*.csv.gz` in `/srv/exports` as soon as it appears. Which way of
+      writing the export can never hand it a partial file?
+    choices:
+      - {id: a, text: "gzip into /tmp/orders.gz, then mv it to /srv/exports on another file system"}
+      - {id: b, text: "gzip into /srv/exports/.orders.XXXXXX from mktemp, then mv it to the final name"}
+      - {id: c, text: "gzip straight to the final name inside set -euo pipefail"}
+      - {id: d, text: "gzip straight to the final name, and delete the file if gzip fails"}
+    answer: [b]
+    explanation: >-
+      A rename within one directory is atomic, and the partial file's name does not match the
+      importer's pattern. Across file systems mv copies, which is visible while it happens. Writing to
+      the final name exposes the file from its first byte, however carefully a failure is handled
+      afterwards — and a signal can prevent that handling altogether.
+    references: ["man 2 rename", "man 1 mktemp"]
+    tags: [atomic]
+  - id: bs5-004
+    type: single
+    difficulty: 2
+    prompt: How does systemd stop a service with the default kill settings?
+    choices:
+      - {id: a, text: "SIGHUP to every process, then SIGTERM"}
+      - {id: b, text: "SIGTERM to the main process only, and nothing more"}
+      - {id: c, text: "SIGTERM to every process in the unit's cgroup, then SIGKILL after the stop timeout"}
+      - {id: d, text: "SIGKILL to the main process only"}
+    answer: [c]
+    explanation: >-
+      KillMode=control-group is the default: every remaining process in the unit's control group gets
+      KillSignal= (SIGTERM), and after TimeoutStopSec= (90 s by default) whatever is left gets SIGKILL.
+      A script's child commands therefore receive the signal too, which is what lets a trap in the
+      script run promptly.
+    references: ["man 5 systemd.kill"]
+    tags: [systemd, signals]

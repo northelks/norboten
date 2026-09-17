@@ -1,0 +1,21 @@
+schema_version: 1
+id: ai-03-the-agent-that-never-stops
+version: 1.0.0
+title: The Agent That Never Stops
+track: automation
+topics: [ai-agents, boot-systemd, users-permissions]
+difficulty: 3
+estimated_minutes: 40
+base_images: [ubuntu-26.04-automation]
+resources:
+  cpus: 2
+objectives:
+  - "Give an agent only the tools its task needs"
+  - "Cap how many model calls one task may make"
+  - "Run an agent job unprivileged and confined, on a schedule instead of a restart loop"
+checks:
+  - {id: 01_the_model_cannot_run_commands, objective: 1, weight: 2}
+  - {id: 02_a_looping_model_is_stopped, objective: 2, weight: 2}
+  - {id: 03_the_agent_is_unprivileged_and_confined, objective: 3}
+  - {id: 04_it_runs_on_a_timer_not_a_loop, objective: 3}
+reboot_required: true

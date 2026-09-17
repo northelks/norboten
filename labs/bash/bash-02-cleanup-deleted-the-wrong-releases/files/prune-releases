@@ -1,0 +1,8 @@
+#!/bin/sh
+# prune-releases — keep the five newest releases, delete the rest
+
+RELEASES_DIR=${RELEASES_DIR:-/srv/app/releases}
+KEEP=${KEEP:-5}
+
+cd $RELEASES_DIR
+ls -t | tail -n +$((KEEP + 1)) | xargs rm -rf

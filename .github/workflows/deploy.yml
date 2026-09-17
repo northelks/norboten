@@ -1,0 +1,138 @@
+name: deploy
+
+# Push to main: tests → the API image to GHCR → the site built → both rolled onto the server. The
+# same runs on the third of each month, so the offline country table is at most a month old.
+# Rolling back is this workflow run by hand with an older tag: Actions → deploy → Run workflow →
+# api_tag = the commit to go back to (its image is still in GHCR). deploy.sh also rolls back by
+# itself when a new image never turns ready.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 4 3 * *"  # monthly: the image picks up that month's DB-IP country table (geo.py)
+  workflow_dispatch:
+    inputs:
+      api_tag:
+        description: "Deploy this API image tag (a commit SHA) instead of building one — a rollback"
+        required: false
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false  # never interrupt a rollout halfway
+
+jobs:
+  test:
+    if: ${{ !inputs.api_tag }}
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env: {POSTGRES_USER: norboten, POSTGRES_PASSWORD: norboten, POSTGRES_DB: norboten_test}
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U norboten" --health-interval 5s --health-retries 20
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-retries 20
+    env:
+      NORBOTEN_TEST_DATABASE_URL: postgresql://norboten:norboten@localhost:5432/norboten_test
+      NORBOTEN_TEST_REDIS_URL: redis://localhost:6379/0
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v5
+        with: {enable-cache: true}
+      - run: uv sync --all-packages --frozen
+      - run: uv run ruff check . && uv run ruff format --check .
+      - run: uv run python -m pytest -m "not docker"
+      - run: node site/tests/term.test.mjs && node site/tests/ask.test.mjs
+
+  image:
+    needs: test
+    if: ${{ !inputs.api_tag }}
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: repo
+        run: echo "name=$(echo ghcr.io/${{ github.repository }}-api | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: api/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ steps.repo.outputs.name }}:${{ github.sha }}
+            ${{ steps.repo.outputs.name }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  site:
+    needs: test
+    if: ${{ !inputs.api_tag }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v5
+        with: {enable-cache: true}
+      - run: uv sync --all-packages --frozen
+      - run: uv run python seed/generate.py
+      - run: uv run python site/build.py
+        env:
+          NORBOTEN_SITE_API: https://api.${{ vars.NORBOTEN_DOMAIN || 'norboten.org' }}
+          NORBOTEN_SITE_URL: https://${{ vars.NORBOTEN_DOMAIN || 'norboten.org' }}
+          # set the repository variable to a G-… id to turn the analytics tag on; unset ships none
+          NORBOTEN_SITE_GA_ID: ${{ vars.NORBOTEN_SITE_GA_ID }}
+      - uses: actions/upload-artifact@v4
+        with: {name: site, path: site/dist, retention-days: 7}
+
+  rollout:
+    needs: [image, site]
+    # the build jobs are skipped on a rollback; run anyway then, but never after a failure
+    if: ${{ always() && vars.SERVER_HOST != '' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://${{ vars.NORBOTEN_DOMAIN || 'norboten.org' }}
+    env:
+      HOST: ${{ vars.SERVER_HOST }}
+      TAG: ${{ inputs.api_tag || github.sha }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.api_tag || github.sha }}
+      - name: SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ vars.SERVER_HOST_KEY }}" > ~/.ssh/known_hosts
+      - uses: actions/download-artifact@v5
+        if: ${{ !inputs.api_tag }}
+        with: {name: site, path: site/dist}
+      - name: The compose project and the site
+        run: |
+          rsync -az --exclude '.env*' --exclude 'compose.local.yaml' --exclude 'Caddyfile.local' \
+            deploy/ "deploy@$HOST:/opt/norboten/"
+          if [ -d site/dist ]; then
+            rsync -az --delete site/dist/ "deploy@$HOST:/opt/norboten/site/"
+          fi
+      - name: The API, with a readiness check and automatic rollback
+        run: ssh "deploy@$HOST" "sudo /opt/norboten/deploy.sh $TAG"
+      - name: Smoke test from outside
+        run: |
+          domain=${{ vars.NORBOTEN_DOMAIN || 'norboten.org' }}
+          curl -fsS "https://api.$domain/readyz"
+          curl -fsS -o /dev/null "https://$domain/"

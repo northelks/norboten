@@ -1,0 +1,80 @@
+schema_version: 1
+topic: linux-06-log-that-never-rotates
+topics: [logging-journald, users-permissions]
+title: "Theory: log rotation that works"
+description: logrotate's decisions, its safety refusals, create versus copytruncate, sparse files.
+questions:
+  - id: lx6-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      logrotate reports "skipping /var/log/shop/app.log because parent directory has insecure
+      permissions". The directory is drwxrwxr-x shop:shop and the service writes there. The right fix?
+    choices:
+      - {id: a, text: "chown root:root /var/log/shop"}
+      - {id: b, text: "Add su shop shop to the policy"}
+      - {id: c, text: "chmod 755 the policy file"}
+      - {id: d, text: "Run logrotate with -f"}
+    answer: [b]
+    explanation: >-
+      logrotate will not rename or create files as root in a directory another user can write,
+      because that user could swap in a symlink. With su it acts as shop, and the directory stays the
+      service's, which it must be.
+    references: ["man 8 logrotate (su)"]
+    tags: [logrotate, security]
+  - id: lx6-002
+    type: single
+    difficulty: 3
+    prompt: >-
+      A program keeps its log open and never reopens it. The policy uses create, with no postrotate.
+      After a rotation, where do its new lines go?
+    choices:
+      - {id: a, text: "Into both files"}
+      - {id: b, text: "Into the renamed file, app.log.1"}
+      - {id: c, text: "Into the new app.log"}
+      - {id: d, text: "Nowhere: writes to a renamed file fail"}
+    answer: [b]
+    explanation: >-
+      A descriptor refers to the file, not its name. After the rename the program still writes to
+      what is now app.log.1, which is later compressed and deleted. Signal it to reopen in postrotate,
+      or use copytruncate.
+    references: ["man 8 logrotate (create, copytruncate, postrotate)", "man 2 rename"]
+    tags: [logrotate, file-descriptors]
+  - id: lx6-003
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      truncate -s 300M app.log
+      echo "$(stat -c %s app.log) $(du -k app.log | cut -f1)"
+    code_lang: bash
+    choices:
+      - {id: a, text: "0 0"}
+      - {id: b, text: "314572800 0"}
+      - {id: c, text: "314572800 307200"}
+      - {id: d, text: "300 300"}
+    answer: [b]
+    explanation: >-
+      truncate extends the file with a hole: its apparent size is 300 MiB, but no blocks are
+      allocated, so du reports nothing. logrotate's size rule compares the apparent size.
+    references: ["man 1 truncate", "man 1 du", "man 2 stat"]
+    tags: [sparse-files]
+    verify:
+      runtime: bash
+      code: |
+        truncate -s 300M app.log; echo "$(stat -c %s app.log) $(du -k app.log | cut -f1)"
+  - id: lx6-004
+    type: single
+    difficulty: 2
+    prompt: What does `logrotate -d /etc/logrotate.conf` change on the system?
+    choices:
+      - {id: a, text: "It rotates logs that are due, verbosely"}
+      - {id: b, text: "It rotates, but does not compress"}
+      - {id: c, text: "Only the state file"}
+      - {id: d, text: "Nothing, not even the state file"}
+    answer: [d]
+    explanation: >-
+      -d is debug mode: it implies -v and makes no changes to logs or to the state file. It is the
+      free way to see why a log is ignored, skipped or not yet due.
+    references: ["man 8 logrotate (-d)"]
+    tags: [logrotate]

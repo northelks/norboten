@@ -1,0 +1,68 @@
+schema_version: 1
+topic: ansible-01-playbook-changes-everything
+topics: [ansible, boot-systemd]
+title: "Theory: playbooks that converge"
+description: State modules, handlers, variable precedence and check mode.
+questions:
+  - id: an1-001
+    type: single
+    difficulty: 2
+    prompt: 'A task is `ansible.builtin.shell: echo "x=1" >> /etc/app.conf`. What happens on the third run?'
+    choices:
+      - {id: a, text: "It fails, because the file already contains the line"}
+      - {id: b, text: "It is skipped, because shell tasks run once"}
+      - {id: c, text: "It reports ok, because the line is already there"}
+      - {id: d, text: "It appends a third line and reports changed"}
+    answer: [d]
+    explanation: >-
+      Ansible cannot know what a shell command does, so the command runs every time and the task
+      reports changed. An append adds a line on each run. copy with content (or template) describes
+      the file instead and converges.
+    references: ["https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html"]
+    tags: [idempotence]
+  - id: an1-002
+    type: single
+    difficulty: 3
+    prompt: A variable is set in inventory `group_vars/app.yml`, in the play's `vars:`, and with `-e` on the command line. Which value do tasks see, and which would they see without `-e`?
+    choices:
+      - {id: a, text: "The -e value; without it, the group_vars value"}
+      - {id: b, text: "The -e value; without it, the play vars value"}
+      - {id: c, text: "The group_vars value in both cases"}
+      - {id: d, text: "The play vars value in both cases"}
+    answer: [b]
+    explanation: >-
+      Extra vars always win. Below them, play vars outrank inventory group_vars and host_vars, so a
+      play-level vars block silently overrides per-group inventory settings.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html#understanding-variable-precedence"]
+    tags: [variables]
+  - id: an1-003
+    type: single
+    difficulty: 2
+    prompt: What does `skipped=4` in the recap of `ansible-playbook site.yml --check` usually mean when no task has a `when:` condition?
+    choices:
+      - {id: a, text: "Four hosts were unreachable"}
+      - {id: b, text: "Four handlers were not notified"}
+      - {id: c, text: "Four tasks, typically command or shell, cannot be simulated, so the preview did not cover them"}
+      - {id: d, text: "Four tasks are already in the desired state"}
+    answer: [c]
+    explanation: >-
+      Modules without check-mode support are skipped in check mode. Tasks already in the desired
+      state report ok, unreachable hosts are counted separately, and handlers that were not notified
+      do not appear at all.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html"]
+    tags: [check-mode]
+  - id: an1-004
+    type: single
+    difficulty: 2
+    prompt: A play writes `/etc/sysctl.d/90-app.conf` with `copy` and nothing else. When does the kernel start using the new value?
+    choices:
+      - {id: a, text: "When the copy task's handler list is empty"}
+      - {id: b, text: "At the next boot, unless something applies it now (sysctl -p or sysctl --system)"}
+      - {id: c, text: "Never, because sysctl.d files need to be enabled with systemctl"}
+      - {id: d, text: "Immediately, because systemd watches /etc/sysctl.d"}
+    answer: [b]
+    explanation: >-
+      systemd-sysctl reads /etc/sysctl.d at boot. A running kernel changes only when the value is
+      written, which is why the file task should notify a handler that applies it.
+    references: ["man 5 sysctl.d", "man 8 sysctl"]
+    tags: [sysctl, handlers]

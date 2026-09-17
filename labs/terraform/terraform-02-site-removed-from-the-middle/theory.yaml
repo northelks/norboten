@@ -1,0 +1,69 @@
+schema_version: 1
+topic: terraform-02-site-removed-from-the-middle
+topics: [terraform, networking]
+title: "Theory: count, for_each and moves"
+description: Index versus key addressing, and refactoring between them without replacement.
+questions:
+  - id: tf2-001
+    type: single
+    difficulty: 2
+    prompt: "A resource uses `count = length(var.names)` with `names = [\"a\", \"b\", \"c\"]`. `\"a\"` is removed. Which instances does the next plan change or destroy?"
+    choices:
+      - {id: a, text: "Nothing: Terraform matches instances by their values"}
+      - {id: b, text: "All three are destroyed and two are created"}
+      - {id: c, text: "[0] and [1] change to describe b and c, and [2] is destroyed"}
+      - {id: d, text: "Only [0] is destroyed"}
+    answer: [c]
+    explanation: >-
+      count instances are identified by index. Removing the first element shifts every later
+      element down by one, so each remaining index describes a different item, and the last index
+      is out of range.
+    references: ["https://developer.hashicorp.com/terraform/language/meta-arguments/count#when-to-use-for_each-instead-of-count"]
+    tags: [count, for_each]
+  - id: tf2-002
+    type: single
+    difficulty: 2
+    prompt: What are the addresses of the instances of `resource "local_file" "vhost" { for_each = { shop = 8100, docs = 8102 } … }`?
+    choices:
+      - {id: a, text: "local_file.shop and local_file.docs"}
+      - {id: b, text: "local_file.vhost[8100] and local_file.vhost[8102]"}
+      - {id: c, text: "local_file.vhost[0] and local_file.vhost[1]"}
+      - {id: d, text: "local_file.vhost[\"docs\"] and local_file.vhost[\"shop\"]"}
+    answer: [d]
+    explanation: >-
+      for_each over a map addresses instances by key, written in quotes inside brackets. The values
+      are available as each.value but play no part in the address.
+    references: ["https://developer.hashicorp.com/terraform/language/meta-arguments/for_each"]
+    tags: [for_each]
+  - id: tf2-003
+    type: single
+    difficulty: 3
+    prompt: A resource changes from `count` to `for_each` and the plan says `x.y[1] will be destroyed (because resource does not use count)`. What does that mean?
+    choices:
+      - {id: a, text: "The resource block has a syntax error"}
+      - {id: b, text: "for_each cannot be used on this resource type"}
+      - {id: c, text: "An index-addressed instance is still in state and no moved block maps it to a key"}
+      - {id: d, text: "Terraform will create x.y[1] again after destroying it"}
+    answer: [c]
+    explanation: >-
+      After the switch every instance address is key-based. Old index addresses are kept only if a
+      moved block claims them; any that remain unclaimed are planned for destruction, which is the
+      intended outcome only for the instance you are retiring.
+    references: ["https://developer.hashicorp.com/terraform/language/modules/develop/refactoring#enabling-count-or-for_each-for-a-resource"]
+    tags: [refactoring, moved]
+  - id: tf2-004
+    type: single
+    difficulty: 2
+    prompt: When is `count` the better choice than `for_each`?
+    choices:
+      - {id: a, text: "For identical, interchangeable instances, or to create a resource conditionally with 0 or 1"}
+      - {id: b, text: "When the keys are only known after apply, such as generated IDs"}
+      - {id: c, text: "Whenever the instances have names"}
+      - {id: d, text: "Never; count is deprecated"}
+    answer: [a]
+    explanation: >-
+      count suits a number of equivalent instances, where it does not matter which one is removed,
+      and the common count = var.enabled ? 1 : 0 pattern. Named, distinct instances belong in
+      for_each. for_each keys must be known at plan time, and count is not deprecated.
+    references: ["https://developer.hashicorp.com/terraform/language/meta-arguments/count"]
+    tags: [count, for_each]

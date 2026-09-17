@@ -1,0 +1,11 @@
+#!/bin/sh
+# Morning digest of the support queue, read through the tickets MCP server.
+set -a
+. "$HOME/.config/support-digest/env"
+set +a
+cd "$HOME/support-digest" || exit 1
+claude -p "Summarise the open support tickets for the morning stand-up." \
+    --permission-mode dontAsk \
+    --allowedTools "mcp__ticket__list_tickets" \
+    --max-turns 5 \
+    --output-format json > "$HOME/digest.json" 2>&1

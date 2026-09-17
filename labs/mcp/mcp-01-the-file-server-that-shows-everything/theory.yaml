@@ -1,0 +1,105 @@
+schema_version: 1
+topic: mcp-01-the-file-server-that-shows-everything
+topics: [mcp, claude-code]
+title: "Theory: what an MCP file server exposes"
+description: Who a stdio server runs as, roots, symbolic links, hidden files, and tool lists.
+questions:
+  - id: mc1-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      Claude Code starts a stdio MCP file server from a project's .mcp.json. Which files can that
+      server open?
+    choices:
+      - {id: a, text: "Only files the model has been given permission to read in settings.json"}
+      - {id: b, text: "Any file the user running Claude Code can open, unless the server limits itself"}
+      - {id: c, text: "None: stdio servers run in a sandbox without file access"}
+      - {id: d, text: "Only files inside the project directory"}
+    answer: [b]
+    explanation: >-
+      A stdio server is a child process of Claude Code and runs as the same user, so Unix
+      permissions allow it whatever they allow that user. Claude Code's Read rules govern Claude
+      Code's own tools, not what an MCP server does inside a tool call; the server has to enforce
+      its own boundary, such as a list of roots.
+    references:
+      - "https://modelcontextprotocol.io/specification/2026-07-28/basic/security_best_practices"
+      - "https://code.claude.com/docs/en/mcp"
+  - id: mc1-002
+    type: single
+    difficulty: 3
+    prompt: >-
+      A file server allows paths inside a root. Inside the root, keys is a symbolic link to a folder
+      outside it. What does this print — the path check as written, then the check on where the
+      path leads?
+    code: |
+      import os, tempfile
+      base = tempfile.mkdtemp()
+      root, secret = os.path.join(base, "notes"), os.path.join(base, "secret")
+      os.makedirs(root)
+      os.makedirs(secret)
+      open(os.path.join(secret, "key"), "w").close()
+      os.symlink(secret, os.path.join(root, "keys"))
+      path = os.path.join(root, "keys", "key")
+      written = os.path.abspath(path).startswith(root + "/")
+      real = os.path.realpath(path).startswith(os.path.realpath(root) + "/")
+      print(written, real)
+    code_lang: python
+    choices:
+      - {id: a, text: "True False"}
+      - {id: b, text: "False True"}
+      - {id: c, text: "True True"}
+      - {id: d, text: "False False"}
+    answer: [a]
+    explanation: >-
+      abspath only normalises the text of the path, so a link inside the root still looks inside it;
+      realpath follows the link and shows the file lives under secret/. A server that means to keep
+      paths inside a root has to check the resolved path against the resolved root.
+    references: ["man 3 realpath", "man 7 symlink"]
+    verify:
+      runtime: python
+      code: |
+        import os, tempfile
+        base = tempfile.mkdtemp()
+        root, secret = os.path.join(base, "notes"), os.path.join(base, "secret")
+        os.makedirs(root)
+        os.makedirs(secret)
+        open(os.path.join(secret, "key"), "w").close()
+        os.symlink(secret, os.path.join(root, "keys"))
+        path = os.path.join(root, "keys", "key")
+        written = os.path.abspath(path).startswith(root + "/")
+        real = os.path.realpath(path).startswith(os.path.realpath(root) + "/")
+        print(written, real)
+  - id: mc1-003
+    type: single
+    difficulty: 2
+    prompt: >-
+      A read-only notes server has a write_file tool that checks a read_only flag and refuses. What
+      is the better design, and why?
+    choices:
+      - {id: a, text: "Denying write_file in the system prompt"}
+      - {id: b, text: "Keeping the tool but describing it as disabled"}
+      - {id: c, text: "Not offering write_file at all when read-only, so it never appears in tools/list"}
+      - {id: d, text: "Letting the model write and restoring files from git afterwards"}
+    answer: [c]
+    explanation: >-
+      A tool that is listed invites calls and plans built around it, and its refusal depends on one
+      check staying right. A tool that is not offered cannot be called by any client or model; the
+      client's permission rules can then narrow further, but the server's tool list is the first
+      boundary.
+    references: ["https://modelcontextprotocol.io/specification/2026-07-28/server/tools"]
+  - id: mc1-004
+    type: single
+    difficulty: 3
+    prompt: >-
+      A job runs claude -p with --allowedTools "mcp__files__read_file". What does that rule decide?
+    choices:
+      - {id: a, text: "That read_file may only read files inside the project directory"}
+      - {id: b, text: "That the files server may not start other tools"}
+      - {id: c, text: "That the read_file tool of the files server may be called, with any arguments"}
+      - {id: d, text: "That only files in .mcp.json's roots may be read"}
+    answer: [c]
+    explanation: >-
+      Permission rules for MCP tools name the tool (mcp__server__tool, or mcp__server for all of
+      them); they do not constrain arguments. Which paths a file tool accepts is decided inside the
+      server.
+    references: ["https://code.claude.com/docs/en/permissions"]

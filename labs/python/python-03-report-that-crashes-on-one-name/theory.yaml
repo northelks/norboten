@@ -1,0 +1,93 @@
+schema_version: 1
+topic: python-03-report-that-crashes-on-one-name
+topics: [python, linux-basics]
+title: "Theory: text, bytes and encodings in Python"
+description: Where open() gets its encoding, what errors= really does, and how text breaks.
+questions:
+  - id: py3-001
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      data = 'Peña'.encode('cp1252')
+      print(data.decode('utf-8', errors='ignore'))
+    code_lang: python
+    choices:
+      - {id: a, text: "Peña"}
+      - {id: b, text: "Pe\ufffda"}
+      - {id: c, text: "Pea"}
+      - {id: d, text: "Pe?a"}
+    answer: [c]
+    explanation: >-
+      In cp1252 ñ is the single byte 0xf1, which is not valid UTF-8. errors='ignore' drops the byte
+      instead of raising, so the name loses a letter and nothing says so. errors='replace' would give
+      Pe�a, and the only correct answer is to decode with the encoding the file was written in.
+    references: ["https://docs.python.org/3/library/codecs.html#error-handlers"]
+    tags: [encodings]
+    verify:
+      runtime: python
+      code: |
+        data = 'Peña'.encode('cp1252')
+        print(data.decode('utf-8', errors='ignore'))
+  - id: py3-002
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      data = 'München'.encode('utf-8')
+      print(data.decode('latin-1'))
+    code_lang: python
+    choices:
+      - {id: a, text: "München"}
+      - {id: b, text: "Mnchen"}
+      - {id: c, text: "MÃ¼nchen"}
+      - {id: d, text: "UnicodeDecodeError"}
+    answer: [c]
+    explanation: >-
+      latin-1 maps every one of the 256 byte values to a character, so it never raises — it just
+      gives the wrong characters when the bytes were not latin-1. The two UTF-8 bytes of ü become
+      Ã and ¼. "Decode as latin-1 so it never fails" turns an error into silent mojibake.
+    references: ["https://docs.python.org/3/library/codecs.html#standard-encodings"]
+    tags: [encodings]
+    verify:
+      runtime: python
+      code: |
+        data = 'München'.encode('utf-8')
+        print(data.decode('latin-1'))
+  - id: py3-003
+    type: single
+    difficulty: 2
+    prompt: >-
+      A Python program calls `open("/srv/export.csv")` with no `encoding=`. Which encoding is used to
+      decode the file?
+    choices:
+      - {id: a, text: "always UTF-8, since Python 3"}
+      - {id: b, text: "the process's locale encoding when it started"}
+      - {id: c, text: "the encoding of the .py source file"}
+      - {id: d, text: "the encoding declared in the file's first bytes"}
+    answer: [b]
+    explanation: >-
+      Text mode uses locale.getpreferredencoding(False) unless UTF-8 mode is on, so the result
+      depends on the machine and on how the program was started, not on the file. sys.getdefaultencoding()
+      is about str/bytes conversions inside Python and is always utf-8; a CSV file declares nothing.
+    references: ["https://docs.python.org/3/library/functions.html#open"]
+    tags: [encodings, locale]
+  - id: py3-004
+    type: multiple
+    difficulty: 3
+    prompt: >-
+      A nightly job must read exports written in different encodings and write one UTF-8 summary that
+      is not destroyed when a run fails. Which of these are needed? Select all that apply.
+    choices:
+      - {id: a, text: "pass errors=\"replace\" so that no input can stop the job"}
+      - {id: b, text: "pass encoding=\"utf-8\" when opening the summary for writing"}
+      - {id: c, text: "give open() the right encoding for each input file"}
+      - {id: d, text: "write to a temporary file and os.replace() it over the summary"}
+    answer: [b, c, d]
+    explanation: >-
+      The inputs need their own encodings, the output needs one stated explicitly so it does not
+      follow the machine's locale, and the atomic replace keeps the last good summary when a run
+      fails. errors="replace" would let the job finish with U+FFFD in place of real characters, which
+      is data loss, not robustness.
+    references: ["https://docs.python.org/3/library/os.html#os.replace"]
+    tags: [encodings, atomic]

@@ -1,0 +1,9 @@
+[Unit]
+Description=Run the ETL metrics report
+
+[Timer]
+OnBootSec=5s
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target

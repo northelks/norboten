@@ -1,0 +1,65 @@
+---
+norboten_image_id: ubuntu-26.04-devops
+norboten_distro: Ubuntu 26.04 LTS + Docker, Terraform, Ansible
+norboten_devops: true
+norboten_init: systemd
+norboten_pkg: apt
+norboten_mac: apparmor
+lab_baseline_packages:
+  - acl
+  - apparmor
+  - apparmor-utils
+  - bash-completion
+  - cron
+  - curl
+  - git
+  - less
+  - logrotate
+  - lsof
+  - lvm2
+  - man-db
+  - nano
+  - procps
+  - psmisc
+  - rsync
+  - sudo
+  - vim-tiny
+lab_baseline_services_enabled:
+  - apparmor
+# Timers and services that make a lab slow to boot or change it behind the learner's back.
+lab_baseline_services_disabled:
+  - apt-daily.timer
+  - apt-daily-upgrade.timer
+  - systemd-networkd-wait-online.service
+  - motd-news.timer
+  - ua-timer.timer
+  - ubuntu-advantage.service
+  - multipathd.service
+  - multipathd.socket
+  - e2scrub_reap.service
+# Ubuntu's cloud image ships these; a lab VM has no use for them, and snapd alone costs seconds a boot.
+# The second group is build-time weight only: kernel headers and the perf/BPF tools, which drag in
+# LLVM and clang, plus botocore for a cloud API no lab calls and fwupd for firmware a VM does not
+# have. Naming the orphans instead of running autoremove keeps jq, bc, hwdata and the block-device
+# libraries, which a learner does use — measured 2026-09-16: 616 MiB off the root filesystem.
+lab_baseline_packages_absent:
+  - snapd
+  - unattended-upgrades
+  - ubuntu-pro-client
+  - multipath-tools
+  - lxd-installer
+  - landscape-common
+  - linux-headers-*
+  - linux-tools-*
+  - linux-perf
+  - bpftrace
+  - bpfcc-tools
+  - libbpfcc
+  - libllvm*
+  - libclang*
+  - python3-boto3
+  - python3-botocore
+  - python3-s3transfer
+  - fwupd
+  - fwupd-signed
+  - libfwupd*

@@ -1,0 +1,83 @@
+schema_version: 1
+topic: claude-06-the-settings-that-disagree
+topics: [claude-code, linux-basics]
+title: "Theory: settings levels, managed policy and CLAUDE.md"
+description: Which level wins, where managed settings live, and how CLAUDE.md imports load.
+questions:
+  - id: cc6-001
+    type: single
+    difficulty: 3
+    prompt: >-
+      ~/.claude/settings.json says `"model": "sonnet"`, the project's .claude/settings.json says
+      `"model": "haiku"`, and .claude/settings.local.json says `"model": "opus"`. A session is started
+      in the project with no --model. Which model does it request?
+    choices:
+      - {id: a, text: "Haiku: the shared project file is what the team committed, so it wins"}
+      - {id: b, text: "Opus: local project settings outrank shared project settings, which outrank user settings"}
+      - {id: c, text: "Sonnet: user settings are applied last"}
+      - {id: d, text: "The default model, because conflicting settings cancel out"}
+    answer: [b]
+    explanation: >-
+      For a scalar key the highest level that sets it wins: managed, then the command line, then
+      .claude/settings.local.json, then .claude/settings.json, then ~/.claude/settings.json. Verified
+      with Claude Code 2.1.270: opus is requested; without the local file, haiku; with --model haiku on
+      the command line, haiku. Lists such as permissions.deny merge instead.
+    references:
+      - "https://code.claude.com/docs/en/settings"
+  - id: cc6-002
+    type: single
+    difficulty: 3
+    prompt: >-
+      A policy denying WebFetch is saved as /etc/claude-code/managed-settings.json, owned by root with
+      mode 0600. A user runs claude -p with --allowedTools WebFetch. What happens?
+    choices:
+      - {id: a, text: "WebFetch is denied: managed settings are read by a root helper regardless of mode"}
+      - {id: b, text: "The session refuses to start until the policy can be read"}
+      - {id: c, text: "WebFetch is allowed: the file cannot be read, Claude Code says the policy is not in effect, and the session runs"}
+      - {id: d, text: "WebFetch is denied, because --allowedTools never applies to managed tools"}
+    answer: [c]
+    explanation: >-
+      Claude Code runs as the user, and reads managed settings as that user. With mode 0600 it prints
+      "Managed settings failed to load; policies from the failed source are NOT in effect" and continues
+      without them. A managed settings file holds policy, not secrets: it must be readable by everyone
+      it governs (0644) and writable only by root.
+    references:
+      - "https://code.claude.com/docs/en/settings"
+  - id: cc6-003
+    type: single
+    difficulty: 2
+    prompt: >-
+      A project's CLAUDE.md contains the line `@docs/conventions.md`, and the file in the repository is
+      docs/CONVENTIONS.md, on Linux. What does the model receive?
+    choices:
+      - {id: a, text: "The literal line @docs/conventions.md in place of the file, with a warning"}
+      - {id: b, text: "CLAUDE.md with the conventions, because imports ignore case"}
+      - {id: c, text: "CLAUDE.md without the conventions; the import is silently dropped"}
+      - {id: d, text: "An error, and the session does not start"}
+    answer: [c]
+    explanation: >-
+      Imports resolve relative to the importing file, and Linux paths are case-sensitive; an import of a
+      file that does not exist adds nothing and produces no warning (verified with 2.1.270). The same
+      happens to an import written inside backticks, which is not treated as an import at all.
+    references:
+      - "https://code.claude.com/docs/en/memory"
+  - id: cc6-004
+    type: single
+    difficulty: 2
+    prompt: >-
+      A managed policy has `"deny": ["WebFetch"]`. A session is started with
+      `--allowedTools "WebFetch"`. What does the model see when it calls WebFetch?
+    choices:
+      - {id: a, text: "No such tool: a bare tool name in a deny rule removes the tool, and no allow can bring it back"}
+      - {id: b, text: "The page, because the command line outranks managed settings"}
+      - {id: c, text: "The page, because allow rules are checked before deny rules"}
+      - {id: d, text: "A permission prompt"}
+    answer: [a]
+    explanation: >-
+      Deny rules are evaluated first, at every level, and managed settings sit above the command line. A
+      deny rule naming a tool without a specifier takes the tool out of the session: the model's call
+      fails with "No such tool available: WebFetch". A deny with a specifier, such as Read(~/.ssh/**),
+      leaves the tool and refuses matching calls.
+    references:
+      - "https://code.claude.com/docs/en/permissions"
+      - "https://code.claude.com/docs/en/settings"

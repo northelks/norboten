@@ -1,0 +1,25 @@
+name: shop
+
+services:
+  web:
+    image: nginx:1.29-alpine
+    ports:
+      - "8088:80"
+    volumes:
+      - ./web/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - front
+
+  api:
+    image: nginx:1.29-alpine
+    ports:
+      - "8089:80"  # debugging
+    volumes:
+      - ./api/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./api/status.json:/srv/api/status.json:ro
+    networks:
+      - back
+
+networks:
+  front: {}
+  back: {}

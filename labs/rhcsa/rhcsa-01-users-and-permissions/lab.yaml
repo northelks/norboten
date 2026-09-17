@@ -1,0 +1,24 @@
+schema_version: 1
+id: rhcsa-01-users-and-permissions
+version: 1.0.0
+title: The Contractor Who Cannot Write
+track: rhcsa
+topics: [users-permissions]
+difficulty: 1
+estimated_minutes: 25
+base_images: [rocky-10]
+resources:
+  cpus: 1
+  memory: 1536MiB
+objectives:                         # EX200 (RHEL 10) objectives, verbatim
+  - "Create, delete, and modify local groups and memberships"
+  - "Diagnose and correct file permission problems"
+  - "Manage default file permissions"
+  - "Configure privileged access"
+checks:
+  - {id: 01_contractor_in_devops, objective: 1}
+  - {id: 02_project_dir_shared, objective: 2}
+  - {id: 03_new_files_get_team_group, objective: 2}
+  - {id: 04_umask_allows_team_edits, objective: 3}
+  - {id: 05_sudo_restart_nginx, objective: 4}
+reboot_required: true

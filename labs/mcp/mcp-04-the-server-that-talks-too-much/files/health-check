@@ -1,0 +1,8 @@
+#!/bin/sh
+# Ask Claude Code how this machine is doing, through the metrics MCP server. Answer: ~/health.json.
+cd "$HOME/ops" || exit 1
+claude -p "How loaded is this machine, and is the disk filling up?" \
+    --permission-mode dontAsk \
+    --allowedTools "mcp__metrics" \
+    --max-turns 4 \
+    --output-format json > "$HOME/health.json" 2>&1

@@ -1,0 +1,83 @@
+schema_version: 1
+topic: claude-05-the-triage-job-that-spends
+topics: [claude-code, ai-agents]
+title: "Theory: a CI agent job on a budget"
+description: Triggers, turn caps, model and tool choice, structured output, and a safe workflow.
+questions:
+  - id: cc5-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      A script runs `claude -p "Label this issue" --output-format json` with no --max-turns, and the
+      model keeps asking to read another file. When does the run stop?
+    choices:
+      - {id: a, text: "After the first turn, because -p answers once"}
+      - {id: b, text: "When the default --max-budget-usd of 1 dollar is reached"}
+      - {id: c, text: "Only when the model stops asking, or something outside kills it: -p has no turn limit by default"}
+      - {id: d, text: "After 10 turns, the default for print mode"}
+    answer: [c]
+    explanation: >-
+      --max-turns and --max-budget-usd are opt-in; without them a headless run continues for as long
+      as the model keeps calling tools. In the lab image an endless scripted model drove 1,186 turns
+      in 25 seconds. In CI the only other bound is the job's timeout-minutes, which defaults to 360.
+      With --max-turns the run ends with subtype error_max_turns and a non-zero exit.
+    references:
+      - "https://code.claude.com/docs/en/cli-reference"
+      - "https://code.claude.com/docs/en/headless"
+  - id: cc5-002
+    type: single
+    difficulty: 3
+    prompt: >-
+      A triage script calls `claude -p ... --tools "" --json-schema "$schema" --output-format json`.
+      Where is the label, and which tool is the model offered?
+    choices:
+      - {id: a, text: "--tools \"\" and --json-schema cannot be combined"}
+      - {id: b, text: "In structured_output; the model is offered only StructuredOutput"}
+      - {id: c, text: "In structured_output; the model is offered Read so it can check the schema"}
+      - {id: d, text: "In result, as plain text; the model is offered no tools at all"}
+    answer: [b]
+    explanation: >-
+      With --json-schema, Claude Code gives the model a StructuredOutput tool whose input is validated
+      against the schema, and puts the validated object in the result's structured_output. --tools ""
+      removes the built-in tools but not that one. The result field then holds the JSON as a string,
+      so a script that reads .result gets '{"label":"bug"}', not bug. Verified with 2.1.270.
+    references:
+      - "https://code.claude.com/docs/en/headless"
+  - id: cc5-003
+    type: single
+    difficulty: 3
+    prompt: >-
+      A workflow step runs `echo "Triaging: ${{ github.event.issue.title }}"`. Why is this a
+      vulnerability?
+    choices:
+      - {id: a, text: "Only because echo does not quote its arguments"}
+      - {id: b, text: "It is not: GitHub escapes every expression for the shell"}
+      - {id: c, text: "The expression is substituted into the script before bash runs, so a title like $(curl …) becomes code"}
+      - {id: d, text: "Titles can be longer than a shell line"}
+    answer: [c]
+    explanation: >-
+      Actions evaluates ${{ }} expressions first and writes the result into the script file; bash then
+      runs whatever text is there. An issue title is written by anyone who can open an issue. Pass it
+      through env: (`TITLE: ${{ github.event.issue.title }}`) and use "$TITLE" in the script, where it
+      is data. Quoting inside the script does not help, because the substitution happens before
+      quoting means anything.
+    references:
+      - "https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions"
+  - id: cc5-004
+    type: single
+    difficulty: 2
+    prompt: >-
+      A Claude job should label issues when they are opened. Which trigger is right?
+    choices:
+      - {id: a, text: "on: [issues, issue_comment]"}
+      - {id: b, text: "on: pull_request_target"}
+      - {id: c, text: "on: issues"}
+      - {id: d, text: "on: issues: types: [opened]"}
+    answer: [d]
+    explanation: >-
+      `on: issues` with no types runs for every issue activity — edited, labeled, assigned, closed and
+      more — and each is a paid run. issue_comment
+      runs for every comment. pull_request_target runs for pull requests from forks with the base
+      repository's secrets, which is the wrong event for issues and a risky one in general.
+    references:
+      - "https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows"

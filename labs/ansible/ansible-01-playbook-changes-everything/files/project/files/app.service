@@ -1,0 +1,11 @@
+[Unit]
+Description=The inventory application
+After=network.target
+
+[Service]
+User=app
+ExecStart=/usr/bin/python3 /opt/app/app.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "norboten": {
+      "type": "http",
+      "url": "https://api.norboten.org/mcp"
+    }
+  }
+}

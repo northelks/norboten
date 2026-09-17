@@ -1,0 +1,47 @@
+checks:
+  01_the_machine_policy_holds_everywhere:
+    level_1: "The security team's rules are not applied to any session."
+    level_2: "Claude Code reads managed settings from one fixed place per operating system, and
+              it reads them as the user who runs it. Check both."
+    level_3: "Run claude -p as learner and read stderr. Compare the policy's directory with the
+              documented managed settings location on Linux, and its mode with who needs to read
+              it."
+    level_4: "The policy is in /etc/claude/ instead of /etc/claude-code/, and it is mode 600 owned
+              by root, so learner's sessions cannot read it. Move it and make it world-readable
+              (it holds no secret)."
+    refs:
+      2: ["https://code.claude.com/docs/en/settings"]
+      3: ["journal:claude-06-the-settings-that-disagree#the-levels", "journal:claude-06-the-settings-that-disagree#managed-settings-are-read-by-the-user"]
+  02_the_team_model_is_used:
+    level_1: "A setting the team agreed on is overridden before a session starts."
+    level_2: "The same key can be set at several levels. Find every file that sets it and the
+              order in which they win."
+    level_3: "Managed, command line, local project (.claude/settings.local.json), shared project
+              (.claude/settings.json), user (~/.claude/settings.json): the highest level that sets
+              a scalar key wins."
+    level_4: "A committed .claude/settings.local.json sets model to opus, and local project
+              settings beat the shared project file's haiku."
+    refs:
+      2: ["journal:claude-code#what-a-session-loads"]
+      3: ["journal:claude-06-the-settings-that-disagree#the-levels", "journal:claude-06-the-settings-that-disagree#a-deny-that-names-a-tool-removes-it"]
+  03_personal_settings_stay_out_of_git:
+    level_1: "Something personal has been committed for everyone."
+    level_2: "Look at what the repository tracks, and at what it would track if someone created
+              those files again tomorrow."
+    level_3: "git ls-files and git check-ignore. Claude Code ignores its local settings file
+              globally only when it creates the file itself."
+    level_4: "The repository tracks .claude/settings.local.json and ignores neither it nor
+              CLAUDE.local.md. Untrack it and add both to .gitignore."
+    refs:
+      2: ["https://git-scm.com/docs/gitignore"]
+      3: ["journal:claude-06-the-settings-that-disagree#personal-files-and-git"]
+  04_the_conventions_reach_the_model:
+    level_1: "CLAUDE.md reaches the model; what it refers to does not."
+    level_2: "An import that names a file which does not exist is dropped without a word. Compare
+              the name exactly."
+    level_3: "ls docs/ and read the @ line in CLAUDE.md. Paths are case-sensitive on Linux, and an
+              import inside backticks is not an import."
+    level_4: "CLAUDE.md imports @docs/conventions.md; the file is docs/CONVENTIONS.md."
+    refs:
+      2: ["https://code.claude.com/docs/en/memory"]
+      3: ["journal:claude-06-the-settings-that-disagree#claudemd-and-imports"]

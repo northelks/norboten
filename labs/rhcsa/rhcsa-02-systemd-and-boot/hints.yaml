@@ -1,0 +1,51 @@
+checks:
+  01_api_running_after_boot:
+    level_1: "Nothing starts the API at boot, and starting its unit by hand fails."
+    level_2: "The init system records every failed start and why. Read the unit's status and its
+              journal before changing anything."
+    level_3: "systemctl status inventory-api and sudo journalctl -u inventory-api -b, then look at the
+              unit with systemctl cat."
+    level_4: "The unit is not enabled, and it cannot start: its program path and its config
+              dependency are both wrong."
+    refs:
+      2: ["journal:logging-journald#asking-precise-questions", "man 1 systemctl"]
+      3: ["journal:rhcsa-02-systemd-and-boot#asking-why-a-start-failed", "journal:rhcsa-02-systemd-and-boot#four-states-and-only-one-of-them-means-running"]
+  02_default_target_multi_user:
+    level_1: "The system does not boot to the target the runbook asks for."
+    level_2: "systemd has one default target it boots into. Ask it which one."
+    level_3: "systemctl get-default shows it; systemctl set-default changes it."
+    level_4: "The default target is graphical.target; it should be multi-user.target."
+    refs:
+      2: ["man 7 systemd.special"]
+      3: ["journal:rhcsa-02-systemd-and-boot#targets-what-the-machine-boots-into"]
+  03_no_masked_units:
+    level_1: "One of the units this service relies on cannot be started at all."
+    level_2: "A unit can be made impossible to start, and that state survives reboots. Ask
+              systemd which units are in it."
+    level_3: "systemctl list-unit-files --state=masked, or systemctl is-enabled on each unit."
+    level_4: "config-sync.service is masked."
+    refs:
+      2: ["man 1 systemctl"]
+      3: ["journal:rhcsa-02-systemd-and-boot#four-states-and-only-one-of-them-means-running"]
+  04_config_sync_pulled_in:
+    level_1: "The API needs its config before it starts, but nothing makes the config appear at
+              boot."
+    level_2: "Ordering says what runs first if both run; a requirement says what must run. Look
+              at which kind of dependency the API declares."
+    level_3: "systemctl show -p After,Wants,Requires inventory-api. A drop-in can add the missing
+              dependency."
+    level_4: "inventory-api has After=config-sync.service but no Wants= or Requires=, so
+              config-sync never starts."
+    refs:
+      2: ["man 5 systemd.unit"]
+      3: ["journal:rhcsa-02-systemd-and-boot#ordering-is-not-causation", "journal:rhcsa-02-systemd-and-boot#typeoneshot-and-why-run-is-empty-at-boot"]
+  05_execstart_is_valid:
+    level_1: "systemd tries to start a program that is not there."
+    level_2: "A unit's effective definition is the vendor file plus any drop-ins. Look at all of
+              it, not just the file you expect."
+    level_3: "systemctl cat inventory-api shows the unit and every drop-in, with their paths."
+    level_4: "A drop-in override replaces ExecStart with /usr/local/bin/inventory-api.py, which
+              does not exist."
+    refs:
+      2: ["man 5 systemd.unit"]
+      3: ["journal:rhcsa-02-systemd-and-boot#where-units-come-from-and-who-wins", "journal:rhcsa-02-systemd-and-boot#drop-ins-and-the-empty-assignment"]

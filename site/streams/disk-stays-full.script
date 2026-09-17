@@ -1,0 +1,38 @@
+// lab: linux-01
+// image: ubuntu-26.04
+// title: The disk that stays full
+// blurb: df says full, du says empty. Finding the deleted file a process is still holding open.
+// cols: 100
+// rows: 28
+df -h /var/log/app
+du -sh /var/log/app
+#wait 1.5
+ls -l /var/log/app
+sudo du -xh --max-depth=1 /var/log/app
+#wait 1
+sudo lsof +L1 /var/log/app
+#wait 2
+sudo lsof -nP /var/log/app | head -5
+systemctl status ledger --no-pager | head -8
+#wait 1.5
+sudo ls -l /proc/$(systemctl show -p MainPID --value ledger)/fd | grep deleted
+#wait 2
+sudo systemctl restart ledger
+df -h /var/log/app
+#wait 1
+ls /etc/logrotate.d/
+sudo tee /etc/logrotate.d/ledger >/dev/null <<'CONF'
+/var/log/app/*.log {
+    size 20M
+    rotate 4
+    compress
+    missingok
+    notifempty
+    copytruncate
+}
+CONF
+sudo logrotate --debug /etc/logrotate.d/ledger | head -12
+#wait 1.5
+df -h /var/log/app
+systemctl is-enabled ledger
+#wait 1

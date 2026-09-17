@@ -1,0 +1,60 @@
+checks:
+  01_only_new_issues_start_the_job:
+    level_1: "The job runs far more often than there are new issues."
+    level_2: "Every event a workflow lists, and every activity type of it, is a run that costs
+              money. Count what starts this one."
+    level_3: "Read the on: block. An issues event without types runs for every activity (edited,
+              labeled, closed…); issue_comment runs for every comment; pull_request_target runs
+              for pull requests, with secrets."
+    level_4: "The workflow starts on edited and reopened issues, on every comment and on pull
+              requests. Only issues of type opened should start it."
+    refs:
+      2: ["https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows"]
+      3: ["journal:claude-05-the-triage-job-that-spends#how-often-triggers-and-activity-types"]
+  02_a_looping_model_is_stopped:
+    level_1: "A model that never decides it is done keeps the run going for hours."
+    level_2: "A headless run has no turn limit and no budget unless it is given one. The workflow
+              has no timeout either."
+    level_3: "claude -p takes --max-turns and --max-budget-usd. Run the script with the sample
+              event and count how long it goes on."
+    level_4: "The script calls claude without --max-turns. A label needs one answer: cap it at a
+              few turns."
+    refs:
+      2: ["journal:claude-code#what-a-run-costs", "https://code.claude.com/docs/en/cli-reference"]
+      3: ["journal:claude-05-the-triage-job-that-spends#how-long-turns-budget-and-timeout"]
+  03_haiku_with_no_tools:
+    level_1: "The run uses the most expensive model and can do anything."
+    level_2: "A one-word classification needs neither a large model nor tools. And a label the
+              script has to fish out of prose is fragile."
+    level_3: "--model, --tools and --json-schema. With --json-schema the answer arrives in the
+              result's structured_output, not in result."
+    level_4: "The script uses --model opus and --dangerously-skip-permissions, which offers every
+              tool. Use haiku, --tools with an empty list, and a JSON schema whose label the script
+              reads from structured_output."
+    refs:
+      2: ["https://code.claude.com/docs/en/headless"]
+      3: ["journal:claude-05-the-triage-job-that-spends#how-much-per-turn-model-tools-and-output", "journal:claude-05-the-triage-job-that-spends#what-the-estimate-is"]
+  04_least_privilege_and_a_timeout:
+    level_1: "The workflow's token can change anything in the repository, and the job may run for
+              hours."
+    level_2: "A workflow declares what its GITHUB_TOKEN may do, and a job how long it may run.
+              Find both, or find that they are missing."
+    level_3: "permissions: write-all grants every scope. A job without timeout-minutes gets
+              GitHub's default of 360 minutes."
+    level_4: "Grant issues write and contents read only, and give the job timeout-minutes of 15
+              or less."
+    refs:
+      2: ["https://docs.github.com/en/actions/reference/security/secure-use"]
+      3: ["journal:claude-05-the-triage-job-that-spends#how-much-damage-the-workflow"]
+  05_nothing_secret_or_untrusted_in_run_scripts:
+    level_1: "A secret and text that strangers write are pasted straight into shell scripts."
+    level_2: "Expressions in a run: script are substituted before the shell starts, so their
+              value becomes part of the script's source."
+    level_3: "Look for ${{ secrets.… }} and ${{ github.event.… }} inside run: blocks. An issue
+              title can contain $(…) or a quote that ends the string."
+    level_4: "One step echoes the token, and the triage step pastes the issue title and number
+              into the script. Drop the echo, and pass values through env:, using them as
+              quoted shell variables."
+    refs:
+      2: ["https://docs.github.com/en/actions/reference/security/secure-use"]
+      3: ["journal:claude-05-the-triage-job-that-spends#how-much-damage-the-workflow"]

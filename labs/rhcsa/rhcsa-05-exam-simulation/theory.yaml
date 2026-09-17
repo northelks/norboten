@@ -1,0 +1,66 @@
+schema_version: 1
+topic: rhcsa-05-exam-simulation
+topics: [users-permissions, boot-systemd, storage-lvm, networking, linux-basics]
+title: "Theory: recovery and the exam's traps"
+description: Getting root back, relabelling, repositories and timers.
+questions:
+  - id: rh5-001
+    type: single
+    difficulty: 4
+    prompt: After resetting the root password from rd.break, why touch /.autorelabel before rebooting?
+    choices:
+      - {id: a, text: "To remount the root filesystem read-write"}
+      - {id: b, text: "To disable SELinux for one boot"}
+      - {id: c, text: "The new /etc/shadow was written without an SELinux label, and logins would be denied"}
+      - {id: d, text: "To make the password change take effect"}
+    answer: [c]
+    explanation: >-
+      In the initramfs no policy is loaded, so passwd creates /etc/shadow unlabelled. The marker
+      makes the next boot relabel the filesystem (restorecon on the file does the same once
+      SELinux is loaded).
+    references: ["man 8 restorecon", "man 8 fixfiles"]
+  - id: rh5-002
+    type: single
+    difficulty: 2
+    prompt: Which repo file line points dnf at a local directory mirror?
+    choices:
+      - {id: a, text: "mirrorlist=/opt/repos/local"}
+      - {id: b, text: "path=/opt/repos/local"}
+      - {id: c, text: "baseurl=/opt/repos/local"}
+      - {id: d, text: "baseurl=file:///opt/repos/local"}
+    answer: [d]
+    explanation: >-
+      baseurl takes a URL, and a local path is written as a file:// URL. mirrorlist expects a URL
+      to a list of mirrors; there is no path= option.
+    references: ["man 5 dnf.conf"]
+  - id: rh5-003
+    type: single
+    difficulty: 2
+    prompt: A timer unit contains `OnCalender=*:0/15`. What happens?
+    choices:
+      - {id: a, text: "systemd ignores the unknown setting with a warning, so the timer has no schedule"}
+      - {id: b, text: "The timer runs once at boot"}
+      - {id: c, text: "The unit fails to load"}
+      - {id: d, text: "The timer runs every 15 minutes"}
+    answer: [c]
+    explanation: >-
+      The unknown key is logged and skipped, which leaves the timer with no schedule at all, and
+      systemd refuses a timer like that: "Timer unit lacks value setting. Refusing." The unit is
+      bad-setting and cannot be started. systemd-analyze verify prints both lines before anything
+      is enabled.
+    references: ["man 5 systemd.timer", "man 1 systemd-analyze"]
+  - id: rh5-004
+    type: single
+    difficulty: 2
+    prompt: Which command makes maria change her password at least every 90 days?
+    choices:
+      - {id: a, text: "chage -m 90 maria"}
+      - {id: b, text: "passwd -x 90 maria"}
+      - {id: c, text: "chage -M 90 maria"}
+      - {id: d, text: "usermod -e 90 maria"}
+    answer: [c]
+    explanation: >-
+      -M is the maximum age; -m is the minimum days between changes; usermod -e sets an account
+      expiry date. (passwd -x also sets the maximum on some systems, but chage is the standard
+      tool.)
+    references: ["man 1 chage"]

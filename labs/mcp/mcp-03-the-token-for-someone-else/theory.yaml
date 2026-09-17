@@ -1,0 +1,72 @@
+schema_version: 1
+topic: mcp-03-the-token-for-someone-else
+topics: [mcp, networking]
+title: "Theory: tokens and their audience"
+description: What an MCP server must check in a bearer token, and how a client gets one for the right server.
+questions:
+  - id: mc3-001
+    type: single
+    difficulty: 3
+    prompt: >-
+      An MCP server verifies that bearer tokens are signed by the company's identity provider and
+      not expired, and nothing else. What can an attacker who stole the billing API's token do?
+    choices:
+      - {id: a, text: "Call the MCP server with it, because the server never checks which service the token was issued for"}
+      - {id: b, text: "Mint new tokens with the provider's key"}
+      - {id: c, text: "Only call the billing API"}
+      - {id: d, text: "Nothing: a signed, unexpired token from the right issuer is safe everywhere"}
+    answer: [a]
+    explanation: >-
+      Every service trusting the issuer accepts its signature; only the audience (aud) says which
+      service a token is for. The MCP authorization specification requires servers to accept only
+      tokens issued for themselves, so that one leaked token does not open every service.
+    references: ["https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization", "https://www.rfc-editor.org/rfc/rfc8707"]
+  - id: mc3-002
+    type: single
+    difficulty: 2
+    prompt: What does this print — the audience of a JWT, read without its signing key?
+    code: |
+      import base64, json
+      claims = {"iss": "https://idp.lab", "aud": "https://billing.example/api", "sub": "sync"}
+      part = base64.urlsafe_b64encode(json.dumps(claims).encode()).rstrip(b"=").decode()
+      token = "eyJhbGciOiJIUzI1NiJ9." + part + ".c2ln"
+      payload = token.split(".")[1]
+      print(json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))["aud"])
+    code_lang: python
+    choices:
+      - {id: a, text: "https://billing.example/api"}
+      - {id: b, text: "sync"}
+      - {id: c, text: "https://idp.lab"}
+      - {id: d, text: "an error: the claims are encrypted"}
+    answer: [a]
+    explanation: >-
+      A JWT's claims are base64url-encoded JSON, signed but not encrypted: anyone holding the token
+      can read them. That is how a client or an operator checks which service a token was issued
+      for — and why a token's claims must never hold secrets.
+    references: ["https://www.rfc-editor.org/rfc/rfc9068"]
+    verify:
+      runtime: python
+      code: |
+        import base64, json
+        claims = {"iss": "https://idp.lab", "aud": "https://billing.example/api", "sub": "sync"}
+        part = base64.urlsafe_b64encode(json.dumps(claims).encode()).rstrip(b"=").decode()
+        token = "eyJhbGciOiJIUzI1NiJ9." + part + ".c2ln"
+        payload = token.split(".")[1]
+        print(json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))["aud"])
+  - id: mc3-003
+    type: single
+    difficulty: 3
+    prompt: >-
+      A Claude Code job's remote MCP server starts answering 401 to its token. What does the job's
+      model see?
+    choices:
+      - {id: a, text: "An automatic retry with a new token"}
+      - {id: b, text: "A tool result saying the audience is wrong"}
+      - {id: c, text: "The server's tools, each failing with 401 when called"}
+      - {id: d, text: "None of the server's tools: the server is not connected, so calling one reports no such tool"}
+    answer: [d]
+    explanation: >-
+      A 401 at connection time makes Claude Code treat the server as needing authentication; it
+      does not connect and offers the model none of its tools. The reason is in the server's
+      WWW-Authenticate header and its log, not in anything the model receives.
+    references: ["https://code.claude.com/docs/en/mcp"]

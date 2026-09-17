@@ -1,0 +1,55 @@
+schema_version: 1
+topic: linux-04-write-the-report
+topics: [bash, linux-basics]
+title: "Theory: text pipelines"
+description: sort, uniq and friends — counting and ranking from the shell.
+questions:
+  - id: lx4-001
+    type: single
+    difficulty: 2
+    prompt: Why does `uniq -c` need its input sorted?
+    choices:
+      - {id: a, text: "It only merges adjacent identical lines"}
+      - {id: b, text: "It needs sorted input to run faster"}
+      - {id: c, text: "It sorts numerically by itself"}
+      - {id: d, text: "It ignores unsorted input"}
+    answer: [a]
+    explanation: >-
+      uniq compares each line with the previous one only. Unsorted input gives several counts
+      for the same value.
+    references: ["man 1 uniq"]
+  - id: lx4-002
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      printf '10.0.0.9\n10.0.0.10\n' | LC_ALL=C sort | head -1
+    code_lang: bash
+    choices:
+      - {id: a, text: "10.0.0.1"}
+      - {id: b, text: "10.0.0.9"}
+      - {id: c, text: "10.0.0.10"}
+      - {id: d, text: "an empty line"}
+    answer: [c]
+    explanation: >-
+      A plain text sort compares byte by byte: at the first difference "1" sorts before "9". For
+      numeric order use sort -n, or sort -V for versions and addresses.
+    references: ["man 1 sort"]
+    verify:
+      runtime: bash
+      code: |
+        printf '10.0.0.9\n10.0.0.10\n' | LC_ALL=C sort | head -1
+  - id: lx4-003
+    type: single
+    difficulty: 3
+    prompt: Which sort orders "count address" lines by count descending, then address ascending?
+    choices:
+      - {id: a, text: "sort -nr"}
+      - {id: b, text: "sort -k2 -nr"}
+      - {id: c, text: "sort -r -k1"}
+      - {id: d, text: "sort -k1,1nr -k2,2"}
+    answer: [d]
+    explanation: >-
+      Each -k limits a key to one field and carries its own flags: numeric and reversed for the
+      count, plain for the address. -nr alone leaves ties in an unspecified order.
+    references: ["man 1 sort"]

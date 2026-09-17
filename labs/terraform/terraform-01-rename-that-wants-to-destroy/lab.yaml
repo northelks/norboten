@@ -1,0 +1,20 @@
+schema_version: 1
+id: terraform-01-rename-that-wants-to-destroy
+version: 1.0.0
+title: The Rename That Wants to Destroy
+track: terraform
+topics: [terraform, users-permissions]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Refactor Terraform configuration without replacing what already exists"
+  - "Bring drifted infrastructure back to its configuration"
+  - "Protect a state file that holds secrets"
+checks:
+  - {id: 01_plan_is_clean, objective: 2, weight: 2}
+  - {id: 02_session_key_kept, objective: 1, weight: 2}
+  - {id: 03_state_protected, objective: 3}
+reboot_required: true

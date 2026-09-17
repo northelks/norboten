@@ -1,0 +1,40 @@
+checks:
+  01_every_file_is_copied:
+    level_1: "Files with ordinary names are backed up; some others never arrive, and nothing says so."
+    level_2: "What happens to a file name between the moment find prints it and the moment cp receives
+              it — how many separate transformations does the shell apply on the way?"
+    level_3: "Look at how the loop reads names from find, and at every unquoted expansion of a path
+              inside it."
+    level_4: "find prints names separated by newlines and read splits, trims and unescapes them;
+              unquoted expansions split them again. A name can contain every byte except NUL and /."
+    refs:
+      2: ["man 1 find", "man 1 bash"]
+      3: ["journal:bash-03-backup-that-skips-files#what-read-does-to-a-line", "journal:bash-03-backup-that-skips-files#what-an-unquoted-expansion-does", "journal:bash-03-backup-that-skips-files#what-a-file-name-can-be"]
+  02_the_count_is_true:
+    level_1: "The script copies files and then reports that it copied none."
+    level_2: "Where does a variable assigned inside a loop live when that loop is part of a pipeline?"
+    level_3: "Follow count from its assignment before the loop to the echo after it, and note what
+              the loop is attached to."
+    level_4: "Each part of a pipeline runs in a subshell, so the loop increments its own copy of count
+              and the parent still has 0 when it prints."
+    refs:
+      2: ["man 1 bash"]
+      3: ["journal:bash-03-backup-that-skips-files#why-the-count-is-always-zero"]
+  03_a_failed_copy_is_reported:
+    level_1: "A file the job cannot read is simply missing from the backup, and the run still exits 0."
+    level_2: "A script's exit status is the status of its last command, unless it says otherwise."
+    level_3: "What does the script do with cp's exit status, and what is the last command it runs?"
+    level_4: "cp's failure is ignored inside the loop and echo succeeds at the end, so a partial backup
+              looks exactly like a complete one."
+    refs:
+      2: ["man 1 bash", "journal:monitoring#a-check-is-an-exit-status"]
+      3: ["journal:bash-03-backup-that-skips-files#failures-that-nobody-hears-about"]
+  04_the_nightly_run_succeeds:
+    level_1: "systemd reports the timer's run as successful, and today's backup is still incomplete."
+    level_2: "A oneshot service succeeds whenever its main process exits 0 — that is all systemd knows."
+    level_3: "Compare today's backup directory with /srv/docs, then read the run's journal."
+    level_4: "The run is the same script as by hand: once it copies every name and fails when a copy
+              fails, a fresh run (or the run after a reboot) makes today's backup complete."
+    refs:
+      2: ["man 5 systemd.service", "man 5 systemd.timer"]
+      3: ["journal:bash-03-backup-that-skips-files#failures-that-nobody-hears-about"]

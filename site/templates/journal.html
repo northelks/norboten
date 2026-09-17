@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": {{ j.title|tojson }},
+  "description": {{ page_description|tojson }},
+  "url": {{ canonical|tojson }},
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": {{ j.words }},
+  "timeRequired": "PT{{ j.minutes }}M",
+  "about": {{ j.topic_titles|tojson }},
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "{{ site_url }}/"}
+}
+</script>
+{% endblock %}
+{% block body %}
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">{% if j.kind == "note" %}Note{% else %}Journal{% endif %}{% if j.lab %} · {{ j.lab_title }}{% endif %}</div>
+    <h1>{{ j.title }}</h1>
+    <p class="muted">
+      {{ j.minutes }} minutes' reading · {{ j.words }} words{% if j.topic_titles %} ·{% endif %}
+      {% for t in j.topic_titles %}<span class="tag">{{ t }}</span>{% endfor %}
+    </p>
+    <div class="map-wrap">{{ j.map|safe }}</div>
+    <div class="cta">
+      {% if j.lab %}
+      <a class="btn solid" href="{{ root }}labs/{{ j.lab }}/index.html">Do the lab</a>
+      {% endif %}
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+      {% if j.kind != "note" %}<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>{% endif %}
+      <a class="btn" href="{{ root }}journals/index.html">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          {% for s in j.sections %}
+          <li><a href="#{{ s.id }}">{{ s.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </nav>
+      <article class="prose journal">{{ j.html|safe }}</article>
+    </div>
+  </div>
+</section>
+{% endblock %}

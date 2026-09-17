@@ -1,0 +1,40 @@
+checks:
+  01_a_quiet_night_is_a_report:
+    level_1: "On a night without a single server error the script exits non-zero and the report is empty."
+    level_2: "grep has three exit statuses, not two. Which one does it use when nothing matched?"
+    level_3: "Read what set -e and pipefail do with the status of the first command in the pipeline,
+              and with the grep inside the command substitution on the last line."
+    level_4: "grep exits 1 when nothing matches; pipefail makes that the pipeline's status, and set -e
+              ends the script — after the redirection has already emptied the report."
+    refs:
+      2: ["man 1 grep"]
+      3: ["journal:bash-06-report-that-dies-on-a-quiet-night#three-exit-statuses-not-two", "journal:bash-06-report-that-dies-on-a-quiet-night#what-set--e-and-pipefail-make-of-that"]
+  02_counts_are_per_endpoint:
+    level_1: "On a bad night one endpoint appears on several lines with different counts."
+    level_2: "uniq compares each line only with the line before it."
+    level_3: "Look at the order of the commands between the path extraction and the final sort."
+    level_4: "uniq -c runs on paths in log order, so every run of the same path is counted separately;
+              the paths need sorting first, and the final sort needs the path as a second key."
+    refs:
+      2: ["man 1 uniq", "man 1 sort"]
+      3: ["journal:bash-06-report-that-dies-on-a-quiet-night#counting-with-uniq"]
+  03_a_missing_log_is_an_error:
+    level_1: "Keep a missing log an error while you make the quiet night work."
+    level_2: "A fix that ignores every failure of the pipeline also ignores a log that is not there."
+    level_3: "grep's exit status 2 means trouble; 1 means no match. A script can tell them apart, or
+              check the file before it reads it."
+    level_4: "Test that the log is readable, and fail with a message on stderr, before the pipeline
+              runs — without appending || true to everything."
+    refs:
+      2: ["man 1 grep", "man 1 bash"]
+      3: ["journal:bash-06-report-that-dies-on-a-quiet-night#not-a-failure-and-not-silence-either"]
+  04_the_nightly_run_succeeds:
+    level_1: "The timer's run fails every night the shop had no errors."
+    level_2: "A oneshot service fails when its main process exits non-zero, and stays failed until the
+              next run."
+    level_3: "Read `systemctl status errors-report.service` and its journal, then run it again."
+    level_4: "The service runs the same script on the quiet log in /var/log/shop: once a quiet night is
+              a report, a fresh run — or the one after a reboot — succeeds."
+    refs:
+      2: ["man 5 systemd.service", "man 1 journalctl"]
+      3: ["journal:bash-06-report-that-dies-on-a-quiet-night#what-set--e-and-pipefail-make-of-that"]

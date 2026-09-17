@@ -1,0 +1,24 @@
+schema_version: 1
+id: linux-02-service-wont-stay-up
+version: 1.0.0
+title: The Service That Won't Stay Up
+track: linux
+topics: [boot-systemd, firewall-selinux, networking]
+difficulty: 2
+estimated_minutes: 30
+base_images: [ubuntu-26.04]
+resources:
+  cpus: 1
+objectives:
+  - "Keep a systemd service running across crashes and reboots"
+  - "Diagnose a failing service from its logs: permissions and port conflicts"
+  - "Fix an AppArmor denial without weakening AppArmor"
+checks:
+  - {id: 01_notes_active_and_enabled, objective: 1}
+  - {id: 02_notes_restarts_on_failure, objective: 1}
+  - {id: 03_notes_serves_its_notes, objective: 2}
+  - {id: 04_data_access_confined, objective: 3}
+  # 05 passes on the broken system by design: it is the guard that fails anyone who "fixes"
+  # the denial by disabling the profile or putting it in complain mode.
+  - {id: 05_profile_still_enforced, objective: 3, baseline_pass: true}
+reboot_required: true

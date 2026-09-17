@@ -1,0 +1,6 @@
+# The rated half of the catalogue: the labs and question banks whose faults, criteria,
+# solutions and answers are not public. Private — a clone without access simply leaves
+# rated/ empty, and nothing here depends on having it. See docs/rated-labs.md.
+[submodule "rated"]
+	path = rated
+	url = git@github.com:northelks/norboten-rated.git

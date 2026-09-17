@@ -1,0 +1,8 @@
+#!/bin/sh
+# proxy-restart — test nginx's configuration and (re)start it. There is no init system here.
+nginx -t || exit 1
+if [ -f /run/nginx.pid ] && kill -0 "$(cat /run/nginx.pid)" 2>/dev/null; then
+    nginx -s reload
+else
+    nginx </dev/null >/dev/null 2>&1   # it daemonises; nothing may keep the caller's pipes open
+fi

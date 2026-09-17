@@ -1,0 +1,10 @@
+[Unit]
+Description=Inventory API
+After=network.target config-sync.service
+
+[Service]
+ExecStart=/usr/local/bin/inventory-api
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

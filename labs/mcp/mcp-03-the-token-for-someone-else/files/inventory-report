@@ -1,0 +1,11 @@
+#!/bin/sh
+# The weekly fleet report, from the inventory MCP server. The answer is ~/inventory-report.json.
+set -a
+. "$HOME/.config/inventory/env"
+set +a
+cd "$HOME/inventory-report" || exit 1
+claude -p "List the fleet's hosts and flag any still on an old operating system." \
+    --permission-mode dontAsk \
+    --allowedTools "mcp__inventory" \
+    --max-turns 5 \
+    --output-format json > "$HOME/inventory-report.json" 2>&1

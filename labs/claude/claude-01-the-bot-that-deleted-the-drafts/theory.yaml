@@ -1,0 +1,89 @@
+schema_version: 1
+topic: claude-01-the-bot-that-deleted-the-drafts
+topics: [claude-code, ai-agents]
+title: "Theory: permissions for a headless Claude Code job"
+description: Permission modes, deny-first rules, the tool list, trust, and what reaches the model.
+questions:
+  - id: cc1-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      A nightly job runs `claude -p "Fix typos in docs/" --permission-mode dontAsk` with no allow
+      rules anywhere. The model asks to Edit docs/guide.md. What happens?
+    choices:
+      - {id: a, text: "The edit is refused and recorded in permission_denials; the run carries on"}
+      - {id: b, text: "The run exits non-zero at once"}
+      - {id: c, text: "The edit is applied, because edits inside the working directory are always allowed"}
+      - {id: d, text: "The run stops and waits for someone to approve the edit"}
+    answer: [a]
+    explanation: >-
+      dontAsk turns every call that would prompt into a denial, so a headless run never waits for a
+      person. The denial is reported to the model as a tool error and listed in the JSON result's
+      permission_denials; the run goes on. Reads in the working directory need no permission, but
+      edits do. It does not wait (there is nobody to ask in -p) and it does not abort.
+    references:
+      - "https://code.claude.com/docs/en/permission-modes"
+      - "https://code.claude.com/docs/en/headless"
+  - id: cc1-002
+    type: single
+    difficulty: 3
+    prompt: >-
+      In Claude Code 2.1.270, a job runs `claude -p` in a repository whose committed
+      .claude/settings.json has `"allow": ["Edit(./docs/**)"]`, and nobody has ever run Claude Code
+      interactively there. Edits under docs/ are still denied in dontAsk mode. Why?
+    choices:
+      - {id: a, text: "dontAsk ignores every allow rule, wherever it is written"}
+      - {id: b, text: "In an untrusted workspace, -p ignores allow rules from the project's .claude/settings.json and says so on stderr"}
+      - {id: c, text: "Edit rules only match absolute paths, so ./docs/** matches nothing"}
+      - {id: d, text: "Project settings are read only when the file is listed in .gitignore"}
+    answer: [b]
+    explanation: >-
+      A repository can ship a settings file, and allowing tools is exactly what a hostile repository
+      would do, so allow entries from the shared project file are ignored until the workspace is
+      trusted: "Ignoring 1 permissions.allow entry from .claude/settings.json: this workspace has not
+      been trusted." Deny rules from the same file still apply. The same allow rule on the command
+      line (--allowedTools), in --settings, in the user settings or in .claude/settings.local.json is
+      honoured, so dontAsk does respect allow rules. Relative rules like ./docs/** are fine. Verified
+      in the lab image (docs/research/claude-code.md).
+    references:
+      - "https://code.claude.com/docs/en/permissions"
+      - "https://code.claude.com/docs/en/settings"
+  - id: cc1-003
+    type: single
+    difficulty: 3
+    prompt: >-
+      A job keeps Bash available and adds `"deny": ["Read(./.env)"]`. The model runs four Bash
+      commands. Which one still shows it the token in .env, in dontAsk mode?
+    choices:
+      - {id: a, text: "cat ./.env"}
+      - {id: b, text: "head -1 .env"}
+      - {id: c, text: "cat .env"}
+      - {id: d, text: "grep -r TOKEN ."}
+    answer: [d]
+    explanation: >-
+      Read-only commands such as grep and cat run without asking, and a Read deny rule stops one
+      only when the command names the denied path. `cat .env`, `head -1 .env` and `cat ./.env` name
+      it and are refused; `grep -r TOKEN .` names only the directory and prints the token. That is
+      why a job that does not need a shell should not be offered one (`--tools`), rather than
+      counting on rules to anticipate every command.
+    references:
+      - "https://code.claude.com/docs/en/permissions"
+  - id: cc1-004
+    type: single
+    difficulty: 2
+    prompt: >-
+      A job is started with `--tools "Read,Edit"` and the model calls Bash with `rm -rf drafts`. What
+      does Claude Code send back to the model?
+    choices:
+      - {id: a, text: "The output of rm, because --tools only limits what is listed, not what runs"}
+      - {id: b, text: "A prompt asking whether to allow Bash for this session"}
+      - {id: c, text: "A permission denial, listed in permission_denials"}
+      - {id: d, text: "An error that no such tool is available: Bash is not in the session at all"}
+    answer: [d]
+    explanation: >-
+      --tools restricts the built-in tools the session has; a tool outside it is not offered to the
+      model and a call to it fails as "No such tool available". A permission rule, by contrast,
+      leaves the tool in place and refuses particular calls, which is what permission_denials
+      records. Nothing prompts in -p.
+    references:
+      - "https://code.claude.com/docs/en/cli-reference"

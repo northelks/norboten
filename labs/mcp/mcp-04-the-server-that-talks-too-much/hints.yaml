@@ -1,0 +1,31 @@
+checks:
+  01_the_server_connects:
+    level_1: "Claude Code never connects to the metrics server, though it runs fine by hand."
+    level_2: "Over stdio the client reads the server's stdout as the protocol. Look at exactly what
+              the server's command writes there, with stderr set aside."
+    level_3: "Pipe an initialize request into /usr/local/bin/metrics-mcp with 2>/dev/null and read
+              the first line of the answer."
+    level_4: "The wrapper prints a banner with no newline, so it shares a line with the answer to
+              initialize. Send it to stderr."
+    refs:
+      2: ["https://modelcontextprotocol.io/specification/2026-07-28/basic/transports", "journal:mcp#transports"]
+      3: ["journal:mcp-04-the-server-that-talks-too-much#two-polluters-two-effects", "journal:mcp-04-the-server-that-talks-too-much#wrappers-are-part-of-the-server"]
+  02_stdout_carries_only_the_protocol:
+    level_1: "Lines that are not protocol messages still reach the client."
+    level_2: "Everything on a stdio server's stdout must be one JSON-RPC message per line. Find every
+              source of other lines: the wrapper, and the server's own logging."
+    level_3: "Run the command with stderr thrown away and look for lines that are not JSON; the
+              server's settings are in /etc/metrics-mcp/config.json."
+    level_4: "log_to is stdout, so every debug line goes to the client. Log to stderr or a file."
+    refs:
+      2: ["https://modelcontextprotocol.io/specification/2026-07-28/basic/transports", "journal:mcp#transports"]
+      3: ["journal:mcp-04-the-server-that-talks-too-much#framing-one-message-per-line"]
+  03_the_log_is_still_written:
+    level_1: "The debug log of each call has to survive the fix."
+    level_2: "Moving output off stdout is not the same as switching it off. Check where the server's
+              log goes now."
+    level_3: "Run the server by hand and look at its stderr and /var/log/metrics-mcp.log."
+    level_4: "Keep log_level at debug and send log_to to stderr or file."
+    refs:
+      2: ["man 3 stdout", "journal:mcp#transports"]
+      3: ["journal:mcp-04-the-server-that-talks-too-much#where-diagnostics-should-go"]

@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="section install-hero">
+  <div class="wrap">
+    <div class="kicker">Install</div>
+    <h1>One line</h1>
+    <p class="lede">macOS or Linux, x86-64 or arm64. Paste it into a terminal.</p>
+    <div class="install install-big">
+      <span class="prompt">$</span>
+      <span id="installcmd">curl -fsSL {{ site_url }}/install.sh | sh</span>
+      <button type="button" data-copy="#installcmd">copy</button>
+    </div>
+    <p class="muted install-note">
+      It installs <a href="https://docs.astral.sh/uv/" rel="noopener">uv</a> if you do not have it,
+      installs norboten {{ version }}, and opens it on a setup screen that installs QEMU and starts
+      your first lab.
+      <span class="install-read"><a href="{{ root }}install.sh">Read the script first</a> — it is under
+      200 lines and says what it does at the top.</span>
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>What the script does</h2>
+    <ol class="steps">
+      <li><strong>Checks the platform.</strong> <span class="muted">macOS or Linux, on x86-64 or
+        arm64. On Windows it stops and points at WSL2.</span></li>
+      <li><strong>Says what it will do</strong> <span class="muted">and asks once. It never uses
+        <span class="mono">sudo</span>.</span></li>
+      <li><strong>Installs uv</strong> <span class="muted">into <span class="mono">~/.local/bin</span>,
+        with Astral's own installer — only if <span class="mono">uv</span> is not already there.</span></li>
+      <li><strong>Installs norboten</strong> <span class="muted">from PyPI as a uv tool, in its own
+        environment with its own Python 3.12, so nothing on your system Python changes.</span></li>
+      <li><strong>Opens norboten on its setup screen.</strong> <span class="muted">Doctor checks
+        hardware virtualization, QEMU, SSH, memory and disk. A missing QEMU comes with the exact
+        package-manager command for your system — <kbd>i</kbd> runs it after asking; <kbd>p</kbd>
+        downloads Lima and the first image; <kbd>Enter</kbd> starts the first lab.</span></li>
+    </ol>
+    <p class="muted prose">
+      Settings go on <span class="mono">sh</span>, after the pipe:
+      <span class="mono">NORBOTEN_VERSION={{ version }}</span> pins a version,
+      <span class="mono">NORBOTEN_EXTRAS=pdf</span> adds PDF export of journals,
+      <span class="mono">NORBOTEN_YES=1</span> does not ask, and
+      <span class="mono">NORBOTEN_NO_LAUNCH=1</span> does not open norboten.
+    </p>
+    <p class="note note-alpha">
+      <strong>Pre-1.0, and it changes machine state.</strong> Norboten downloads golden images and
+      runs QEMU virtual machines on your computer; a lab then deliberately breaks the machine it
+      created, so run it on a computer whose time you can afford to lose and never on a production
+      host. The API, the database and the lab format still change without migrations, and
+      <strong>none of it has had a security review (!)</strong>. Issues and labs are welcome.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="grid two" style="gap:2.5rem; align-items:start">
+      <div>
+        <h2>What it needs</h2>
+        <table>
+          <tr><th>Item</th><th>Why</th></tr>
+          <tr><td class="mono">macOS or Linux</td><td class="muted">Lima's Windows driver has neither the disk snapshots nor the serial console the labs rely on; use WSL2 with nested virtualization</td></tr>
+          <tr><td class="mono">hardware virtualization</td><td class="muted">HVF or KVM; without it a VM boots in minutes instead of seconds</td></tr>
+          <tr><td class="mono">QEMU ≥ 8.2</td><td class="muted">runs the lab VMs</td></tr>
+          <tr><td class="mono">about 4 GB free memory</td><td class="muted">one lab VM at a time is typical</td></tr>
+          <tr><td class="mono">up to 1.2 GiB disk per image</td><td class="muted">Alpine 110 MiB, Ubuntu 26.04 663 MiB (932 with the devops tools, 1141 with the automation ones), Rocky 10 814 MiB — plus a lab's own disk while it runs</td></tr>
+          <tr><td class="mono">Docker or Podman</td><td class="muted">only for the container labs; everything else runs without one</td></tr>
+        </table>
+        <p class="muted">Lima is not a prerequisite: norboten downloads and pins its own copy,
+          checks its checksum, and keeps it in <span class="mono">~/.norboten</span>. No directory of
+          yours is ever mounted into a lab VM.</p>
+      </div>
+      <div>
+        <h2>What doctor checks</h2>
+        <div class="terminal">
+          <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span class="title">norboten · doctor</span></div>
+<pre><code><span class="t-green">✓</span> platform        macos on aarch64
+<span class="t-green">✓</span> virtualization  hardware acceleration (hvf)
+<span class="t-green">✓</span> qemu            QEMU 11.1.1 (/opt/homebrew/bin/qemu-system-aarch64)
+<span class="t-green">✓</span> lima            Lima 2.2.0 (pinned, private copy)
+<span class="t-green">✓</span> ssh             OpenSSH client
+<span class="t-green">✓</span> memory          24.0 GiB RAM
+<span class="t-green">✓</span> disk            50.3 GiB free
+<span class="t-green">✓</span> containers      docker (for the container labs)
+
+<span class="t-green">READY</span></code></pre>
+        </div>
+        <p class="muted">It runs as norboten opens; <kbd>8</kbd> (System) shows how to fix each item
+          on your platform and <kbd>d</kbd> runs it again.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap prose">
+    <h2>Your first lab</h2>
+    <p class="muted">
+      <span class="mono">norboten</span> opens one full-screen interface. The sections run along the
+      top — <kbd>1</kbd> Home, <kbd>2</kbd> Labs, <kbd>3</kbd> Theory, <kbd>4</kbd> Journals,
+      <kbd>5</kbd> Play, <kbd>6</kbd> Ratings, <kbd>7</kbd> You, <kbd>8</kbd> System — and the
+      arrows walk between them. On the right, doctor's verdict and your lab sessions stay in view;
+      the footer lists the keys that work where the cursor is, and <kbd>?</kbd> lists all of them.
+    </p>
+    <h3>Choose a lab</h3>
+    <p class="muted">
+      <kbd>2</kbd> opens the catalogue: every lab with its track, level, time, your status and
+      whether it is rated, and the briefing of the one under the cursor beside it. <kbd>f</kbd>
+      narrows it to one track. Start with <span class="mono">hello</span>, a five-minute lab on
+      Alpine, and press <kbd>Enter</kbd>. From a release without a checkout beside it, a lab you do
+      not have yet comes down with <kbd>u</kbd> (pull), by its id.
+    </p>
+    <h3>Start it</h3>
+    <p class="muted">
+      <kbd>s</kbd> downloads the base image if it is not cached, boots a VM, takes a clean snapshot
+      and then applies the faults. The first lab on a clean machine takes about <strong>27 s</strong>,
+      Lima's own download and the 110 MiB Alpine image included; an Ubuntu lab whose image is cached
+      starts in <strong>21.8 s</strong>. Both are measured. The status panel shows the VM, the image,
+      the clock and the hints you have used.
+    </p>
+    <h3>Work</h3>
+    <p class="muted">
+      The briefing tells you the symptoms and what will be graded, never the cause. <kbd>o</kbd>
+      hands the terminal to a shell on the VM — the interface steps aside, and <span class="mono">exit</span>
+      brings it back. <kbd>w</kbd> shows the checks turning green live as you work; <kbd>h</kbd> gives
+      the next hint for a check, each one more specific, with the journal section or manual page it
+      points at (<kbd>l</kbd> opens it); <kbd>t</kbd> asks the tutor, which never sees the solution.
+      A machine that no longer boots is reached with <kbd>k</kbd>, the serial console.
+    </p>
+    <h3>Grade it</h3>
+    <p class="muted">
+      <kbd>c</kbd> grades the machine, reboots it and grades it again; a check passes only if it
+      passed both times. The Checks tab shows each check before and after the reboot, with a message
+      written for someone who has just failed it. A fix that did not survive the boot shows up as
+      exactly that.
+    </p>
+    <h3>Start again, and read about it</h3>
+    <p class="muted">
+      <kbd>r</kbd> puts the machine back to its clean snapshot with the faults re-applied, in about
+      ten seconds, as often as you like. After a pass (or <kbd>S</kbd>, surrender), <kbd>m</kbd>
+      reviews how you got there, <kbd>v</kbd> shows the reference solution, <kbd>j</kbd> opens the
+      lab's journal — the mechanism, one failure walked through, the wrong turns people take — and
+      <kbd>y</kbd> the lab's theory questions. <kbd>Esc</kbd> goes back to the catalogue; the VM
+      keeps running until <kbd>z</kbd> stops it.
+    </p>
+    <p class="muted">The whole walk-through is in <a href="{{ root }}docs/getting-started/index.html">Getting started</a>,
+      every key in the <a href="{{ root }}docs/tui-reference/index.html">TUI reference</a>.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="grid two" style="gap:2.5rem; align-items:start">
+      <div>
+        <h2>Update</h2>
+        <pre><code>norboten update</code></pre>
+        <p class="muted">Or <kbd>u</kbd> on System (<kbd>8</kbd>) when it says a newer release is
+          out. Lab VMs, images and sessions stay.</p>
+      </div>
+      <div>
+        <h2>Uninstall</h2>
+        <pre><code>norboten uninstall</code></pre>
+        <p class="muted">Deletes the lab VMs, <span class="mono">~/.norboten</span> — images,
+          sessions, recordings, sign-in — and the program, after asking.
+          <span class="mono">--keep-data</span> keeps the directory; <kbd>X</kbd> on System does the
+          same from the TUI.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap prose">
+    <h2>Troubleshooting</h2>
+    <p class="muted">
+      Start with doctor: it runs as norboten opens and again on <kbd>d</kbd>, and <kbd>8</kbd>
+      (System) lists every line with the fix for your platform. A <span class="t-green">✓</span> is
+      fine, a <span class="t-amber">!</span> is a warning that only some labs care about, and a
+      <span class="t-red">✗</span> stops labs from running until it is fixed — the verdict under the
+      list says <span class="mono">READY</span> or <span class="mono">NOT READY</span>. The problems
+      below are the ones that come up, each with what you see, how to confirm it and the fix.
+    </p>
+
+    <h3><span class="mono">norboten: command not found</span> after the script</h3>
+    <p class="muted"><strong>Confirm:</strong> <span class="mono">ls ~/.local/bin/norboten</span>.
+      <strong>Fix:</strong> the script adds uv's tool directory to your shell's startup file, which
+      only a new terminal reads; open one, or run
+      <span class="mono">export PATH="$HOME/.local/bin:$PATH"</span>.</p>
+
+    <h3><span class="mono">✗ qemu  QEMU is not installed</span> (or <span class="mono">is too old (need ≥ 8.2)</span>)</h3>
+    <p class="muted"><strong>Confirm:</strong> <span class="mono">qemu-system-aarch64 --version</span>
+      (<span class="mono">qemu-system-x86_64</span> on Intel and AMD).
+      <strong>Fix:</strong> doctor prints the command for your package manager —
+      <span class="mono">brew install qemu</span>, <span class="mono">apt-get</span>,
+      <span class="mono">dnf</span>, <span class="mono">pacman</span>, <span class="mono">zypper</span>
+      or <span class="mono">apk</span> — and <kbd>i</kbd> on the setup screen runs it after asking.
+      On Rocky, RHEL or Alma QEMU is installed as <span class="mono">/usr/libexec/qemu-kvm</span>;
+      tell norboten with <span class="mono">export QEMU_SYSTEM_X86_64=/usr/libexec/qemu-kvm</span>.</p>
+
+    <h3><span class="mono">✗ virtualization  no hardware acceleration</span></h3>
+    <p class="muted"><strong>Confirm:</strong> on Linux, <span class="mono">ls -l /dev/kvm</span> and
+      <span class="mono">id -nG</span>. <strong>Fix:</strong> <span class="mono">/dev/kvm</span> has to
+      exist and your account has to be in the <span class="mono">kvm</span> group
+      (<span class="mono">sudo usermod -aG kvm $USER</span>, then log in again — <kbd>i</kbd> offers
+      it). Inside a cloud VM the provider must enable nested virtualization. Without acceleration a VM
+      boots in minutes instead of seconds, so doctor treats it as a failure.</p>
+
+    <h3>Lima does not download</h3>
+    <p class="muted"><strong>Confirm:</strong> the lima line on System, and
+      <span class="mono">ls ~/.norboten/lima</span>. <strong>Fix:</strong> Lima is not a
+      prerequisite — norboten downloads its pinned copy (about 35 MB) and checks its checksum. Behind a
+      proxy, set <span class="mono">HTTPS_PROXY</span> before starting norboten; <kbd>p</kbd> on the
+      setup screen tries again with a progress bar.</p>
+
+    <h3><span class="mono">✗ paths  … is too long for UNIX socket paths</span></h3>
+    <p class="muted"><strong>Confirm:</strong> <span class="mono">echo $HOME</span> — a long home
+      directory, or <span class="mono">NORBOTEN_HOME</span> pointed somewhere deep.
+      <strong>Fix:</strong> a UNIX socket path is capped at 104 bytes and Lima keeps its sockets under
+      norboten's home, so give it a short one: <span class="mono">export NORBOTEN_HOME=/tmp/norboten</span>
+      (or any short path), in your shell's startup file.</p>
+
+    <h3><span class="mono">! containers  no Docker or Podman running</span>, or norboten hangs on a container lab</h3>
+    <p class="muted"><strong>Confirm:</strong> <span class="mono">docker info</span> — when Docker
+      Desktop is installed but stopped it does not fail, it hangs. norboten gives it ten seconds and
+      then says no runtime is running. <strong>Fix:</strong> start Docker Desktop (or
+      <span class="mono">podman machine start</span>) and press <kbd>d</kbd>. Only the container labs
+      need it; every VM lab runs without one.</p>
+
+    <h3><span class="mono">! memory</span> or <span class="mono">! disk</span></h3>
+    <p class="muted"><strong>Confirm:</strong> the numbers on the doctor line:
+      <span class="mono">RAM</span> under 8 GiB, or under 10 GiB free. <strong>Fix:</strong> an RHCSA
+      lab needs about 2 GiB of free memory and a Rocky image about 5 GiB of disk; with less, prefer the
+      Linux track (Alpine and Ubuntu). <kbd>x</kbd> on System removes a cached image you no longer
+      need.</p>
+
+    <h3>An image download was interrupted, or fails its digest</h3>
+    <p class="muted"><strong>What you see:</strong> the lab's log says the download failed, or
+      <span class="mono">downloaded image has digest …, expected …</span>.
+      <strong>Fix:</strong> nothing half-downloaded is ever used — the file is checked against the
+      digest in the image registry before it is installed, and a mismatch is deleted. Press
+      <kbd>s</kbd> again (or <kbd>p</kbd> on the image on System) and it downloads from the start.</p>
+
+    <h3>A lab behaves as if its image were older than the lab, after an update</h3>
+    <p class="muted"><strong>Confirm:</strong> System lists the cached images with their versions.
+      <strong>Fix:</strong> a cached image is reused as long as it is there. Select it on System,
+      <kbd>x</kbd> removes it and <kbd>p</kbd> pulls the current one; <kbd>D</kbd> on the lab destroys
+      the VM built from the old one.</p>
+
+    <h3>A lab VM does not come back after a reboot</h3>
+    <p class="muted"><strong>What you see:</strong> every check fails with <span class="mono">The machine
+      is not reachable over the network — it may be stuck during boot</span>, and the serial console's
+      last lines as evidence. <strong>Fix:</strong> that is often the lab working as intended — or your
+      fix breaking the boot. <kbd>k</kbd> attaches to the serial console to see where it stopped, and
+      <kbd>b</kbd> presses reset and lands you in the bootloader.</p>
+
+    <h3>Ratings, Live or sign-in say the API is not reachable</h3>
+    <p class="muted"><strong>What you see:</strong> <span class="mono">https://api.norboten.org is not
+      reachable (ConnectError)</span> on Ratings or You, or <span class="mono">the API answered HTTP
+      …</span>. <strong>Confirm:</strong> <span class="mono">curl -s https://api.norboten.org/readyz</span>.
+      <strong>Fix:</strong> labs, theory and journals never need the server, so everything else keeps
+      working offline. For a server of your own, <span class="mono">NORBOTEN_API</span> points
+      norboten at it.</p>
+
+    <h3>Signing in does not work</h3>
+    <p class="muted"><strong>What you see:</strong> the sign-in dialog (<kbd>a</kbd>) reports an error
+      from the server. <strong>Fix:</strong> an account is only needed for rated labs, the boards and
+      streaming; everything else works signed out. If the server says sign-in is not configured, it is
+      a self-hosted server without its sign-in keys (see
+      <a href="{{ root }}docs/self-hosting/index.html">Self-hosting</a>). A token that has expired
+      simply asks you to sign in again.</p>
+
+    <h3>Everything is broken and I want to start over</h3>
+    <p class="muted"><kbd>r</kbd> on the lab puts the machine back to the clean snapshot with the
+      faults re-applied, in about ten seconds. <kbd>D</kbd> destroys the VM entirely; the next
+      <kbd>s</kbd> builds a new one. <span class="mono">norboten uninstall --keep-data</span> removes
+      only the program.</p>
+  </div>
+</section>
+{% endblock %}

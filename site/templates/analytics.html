@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% macro fact(key) %}<span class="fact" data-fact="{{ key }}">{{ facts_lookup(key) }}</span>{% endmacro %}
+{% macro chart(name, alt) %}<figure class="chart"><img src="{{ name }}.svg" alt="{{ alt }}" loading="lazy"></figure>{% endmacro %}
+{% block body %}
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Analytics</div>
+    <h1>What the attempts say</h1>
+    <p class="lede prose">
+      Pass rates, time to solve, ratings, theory, cohorts and how the material hangs together —
+      computed from the attempts table with pandas, scikit-learn and networkx, drawn by matplotlib
+      in this site's colours. No model, no sampling: every number here can be recomputed with the
+      SQL it implies.
+    </p>
+    <p class="note" id="source-note">
+      {% if facts.summary.source == 'sample' %}
+      <strong>Sample data.</strong> These charts are drawn from the {{ fact('summary.learners') }} generated
+      learners and {{ fact('summary.attempts') }} attempts behind the ratings pages, replayed through the real
+      rating code. On the server a nightly job redraws them from the database.
+      {% else %}
+      Drawn from the production database: {{ fact('summary.learners') }} learners, {{ fact('summary.attempts') }} attempts.
+      {% endif %}
+    </p>
+    <div class="stat-row">
+      <div class="stat"><span class="stat-n">{{ fact('summary.attempts') }}</span><span class="muted">attempts, {{ fact('summary.first') }} – {{ fact('summary.last') }}</span></div>
+      <div class="stat"><span class="stat-n">{{ fact('summary.pass_rate') }}</span><span class="muted">of lab attempts pass</span></div>
+      <div class="stat"><span class="stat-n">{{ fact('summary.theory_runs') }}</span><span class="muted">theory runs</span></div>
+      <div class="stat"><span class="stat-n">{{ fact('rating_distribution.median') }}</span><span class="muted">median rating</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Labs</div>
+    <h2>How long a fix takes</h2>
+    <div class="chart-row">
+      {{ chart("time_to_solve", "Time to solve by difficulty") }}
+      <div class="prose">
+        <p>Passed attempts take a median of {{ fact('time_to_solve.median_1') }} at difficulty one and
+          {{ fact('time_to_solve.median_5') }} at five. The dashed line is the clock a rated attempt runs
+          against; boxes are the middle half, whiskers the rest without outliers.</p>
+      </div>
+    </div>
+    <div class="grid two">
+      {{ chart("pass_by_difficulty", "Pass rate by difficulty, practice and rated") }}
+      {{ chart("over_the_clock", "Rated attempts over the clock") }}
+    </div>
+    <p class="muted prose">Rated attempts finish over their clock {{ fact('over_the_clock.late') }} of the
+      time — the fix may be right, and it still counts as a loss.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Ratings</div>
+    <h2>Where learners stand</h2>
+    <div class="grid two">
+      {{ chart("rating_distribution", "Distribution of overall ratings") }}
+      {{ chart("rating_drift", "Median rating over time") }}
+    </div>
+    <div class="chart-row">
+      {{ chart("clusters", "Groups of learners by topic ratings") }}
+      <div class="prose">
+        <p>The median overall rating is {{ fact('rating_distribution.median') }}, with a spread of
+          {{ fact('rating_distribution.spread') }}. Clustering each learner's nineteen topic ratings
+          (k-means, standardised) finds {{ fact('clusters.groups') }} groups: not better and worse, but
+          what each group is better and worse <em>at</em>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Theory</div>
+    <h2>The questions</h2>
+    <div class="chart-row">
+      {{ chart("theory_by_topic", "Theory accuracy by topic") }}
+      <div class="prose">
+        <p>Accuracy is lowest in {{ fact('theory_by_topic.weakest') }} and highest in
+          {{ fact('theory_by_topic.strongest') }}. Taking longer over a run barely changes the score —
+          the correlation between minutes and score is {{ fact('quiz_time_vs_score.correlation') }}.</p>
+      </div>
+    </div>
+    {{ chart("quiz_time_vs_score", "Theory time against score") }}
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Learners</div>
+    <h2>Who keeps coming back</h2>
+    <div class="chart-row">
+      {{ chart("retention", "Monthly cohort retention") }}
+      <div class="prose">
+        <p>Each row is the learners whose first attempt fell in that month (with how many there
+          were); each cell, the share still attempting that many months later. On average
+          {{ fact('retention.third_month') }} are still at it in their third month. Months that have not
+          happened yet are blank, and cohorts smaller than five are left out.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Relations</div>
+    <h2>How the material hangs together</h2>
+    <div class="relations-wrap" id="relations">
+      {{ relations|safe }}
+      <p class="muted mono small relations-read" id="relationsread">
+        Point at a node: its own connections light up.</p>
+      <p class="muted small relations-key">
+        {% for kind in relation_kinds %}<span class="key-dot" data-kind="{{ kind }}"></span>{{ kind }}{% if not loop.last %} · {% endif %}{% endfor %}
+        · grey edges are declared topics, green ones textual similarity
+      </p>
+    </div>
+    <div class="chart-row">
+      <div class="prose">
+        <p>{{ fact('relations.nodes') }} nodes: the nineteen topics, every lab, every question bank and
+          the topic journals. Grey edges are the topics each one declares; green edges are the
+          {{ fact('relations.text_edges') }} strongest textual similarities (TF-IDF, cosine ≥ 0.12, three
+          neighbours each). {{ fact('relations.hub') }} is the most connected topic.</p>
+        <p class="muted">No embeddings and no vector database: an edge exists because two documents
+          share the terms that matter, which is also why it can be explained.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>Not measured yet</h2>
+    <p class="prose muted">These need opt-in telemetry the TUI does not send yet, so there is no chart
+      rather than a made-up one:</p>
+    <ul class="prose muted">
+      <li>hint use against passing — which level of hint people reach before they fix a lab;</li>
+      <li>which checks fail most, and which fail only after the reboot;</li>
+      <li>per-question difficulty — theory runs are stored as a score, not answer by answer.</li>
+    </ul>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ root }}relations.js"></script>
+<script>
+/* The nightly job rewrites facts.json with the charts; the words follow it. */
+fetch("facts.json").then(function (r) { return r.ok ? r.json() : null; }).then(function (facts) {
+  if (!facts) return;
+  document.querySelectorAll("[data-fact]").forEach(function (el) {
+    var value = el.dataset.fact.split(".").reduce(function (o, k) { return o && o[k]; }, facts);
+    if (value !== undefined && value !== null) el.textContent = value;
+  });
+}).catch(function () {});
+</script>
+{% endblock %}

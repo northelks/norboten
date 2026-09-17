@@ -1,0 +1,69 @@
+schema_version: 1
+topic: ansible-02-deploy-waits-for-a-password
+topics: [ansible, users-permissions]
+title: "Theory: Vault without a keyboard"
+description: Vault passwords for unattended runs, plaintext copies and secrets in logs.
+questions:
+  - id: an2-001
+    type: single
+    difficulty: 2
+    prompt: A playbook run from a systemd service fails with `EOFError (ctrl-d) on prompt`. Which `ansible.cfg` setting is the likely cause?
+    choices:
+      - {id: a, text: "retry_files_enabled = false"}
+      - {id: b, text: "interpreter_python = /usr/bin/python3"}
+      - {id: c, text: "ask_vault_pass = true"}
+      - {id: d, text: "vault_password_file = /var/lib/deploy/.vault-password"}
+    answer: [c]
+    explanation: >-
+      ask_vault_pass makes every run prompt for the vault password. A service has no terminal, so
+      the prompt reads end-of-file. vault_password_file is the unattended alternative.
+    references: ["https://docs.ansible.com/ansible/latest/vault_guide/vault_using_encrypted_content.html"]
+    tags: [vault, automation]
+  - id: an2-002
+    type: single
+    difficulty: 3
+    prompt: A file named by `vault_password_file` has mode 0755. What does Ansible do with it?
+    choices:
+      - {id: a, text: "Reads its first line as the password, ignoring the mode"}
+      - {id: b, text: "Encrypts it"}
+      - {id: c, text: "Refuses to use it because it is world-readable"}
+      - {id: d, text: "Runs it as a program and uses its output as the vault password"}
+    answer: [d]
+    explanation: >-
+      An executable password file is treated as a script — the hook for password managers and secret
+      stores. A plain password file should be mode 0400 or 0600, owned by the account that runs
+      Ansible.
+    references: ["https://docs.ansible.com/ansible/latest/vault_guide/vault_managing_passwords.html"]
+    tags: [vault, permissions]
+  - id: an2-003
+    type: single
+    difficulty: 2
+    prompt: Which files in `group_vars/app/` does Ansible load as variables?
+    choices:
+      - {id: a, text: "Every file in the directory"}
+      - {id: b, text: "Only encrypted files"}
+      - {id: c, text: "Only files named vars.yml and vault.yml"}
+      - {id: d, text: "Files ending in .yml, .yaml or .json, or with no extension"}
+    answer: [d]
+    explanation: >-
+      Files with other extensions, such as vault.yml.plain or vault.yml.bak, are ignored by Ansible
+      — and are still ordinary files that anyone with read permission can open, which is why a
+      decrypted copy left there is a leak even though no playbook uses it.
+    references: ["https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html#organizing-host-and-group-variables", "https://docs.ansible.com/ansible/latest/reference_appendices/config.html#yaml-filename-extensions"]
+    tags: [variables, secrets]
+  - id: an2-004
+    type: single
+    difficulty: 2
+    prompt: 'What does `no_log: true` on a task hide?'
+    choices:
+      - {id: a, text: "The values of every variable for the rest of the play"}
+      - {id: b, text: "Only the task's name"}
+      - {id: c, text: "Nothing on the managed host; only the controller's terminal output"}
+      - {id: d, text: "The task's arguments, results and diff, in the output and in the logs Ansible writes"}
+    answer: [d]
+    explanation: >-
+      no_log censors that task's parameters and return values everywhere Ansible reports them,
+      including module invocations logged on the managed host. It also hides failure details, so it
+      belongs on tasks that handle secrets rather than on whole plays.
+    references: ["https://docs.ansible.com/ansible/latest/reference_appendices/logging.html#protecting-sensitive-data-with-no-log"]
+    tags: [secrets, logging]

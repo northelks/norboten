@@ -1,0 +1,10 @@
+[Unit]
+Description=ledger transaction logger
+RequiresMountsFor=/var/log/app
+
+[Service]
+ExecStart=/usr/local/bin/ledger
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

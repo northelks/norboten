@@ -1,0 +1,22 @@
+schema_version: 1
+id: python-01-sync-that-says-it-worked
+version: 1.0.0
+title: The Sync That Says It Worked
+track: python
+topics: [python, boot-systemd]
+difficulty: 2
+estimated_minutes: 30
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Turn errors into a non-zero exit status instead of a false success"
+  - "Put a timeout on every network call"
+  - "Replace a data file atomically, and never overwrite good data with nothing"
+  - "Run a job from a systemd timer with the right configuration"
+checks:
+  - {id: 01_api_error_is_a_failure, objective: 1, weight: 2}
+  - {id: 02_stalled_api_times_out, objective: 2}
+  - {id: 03_good_run_replaces_the_file, objective: 3}
+  - {id: 04_timer_run_succeeds, objective: 4}
+reboot_required: true

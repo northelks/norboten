@@ -1,0 +1,58 @@
+[project]
+name = "norboten-workspace"
+version = "0.0.0"
+description = "Norboten monorepo root (not published)"
+requires-python = ">=3.12"
+dependencies = ["norboten", "norboten-runner", "norboten-api[analytics]"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.8",
+    "pre-commit>=4.0",
+    "jinja2>=3.1.6",
+    "markdown-it-py>=4.2.0",
+    "mdit-py-plugins>=0.6.1",
+    "pygments>=2.21.0",
+    "weasyprint>=62",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["cli", "runner", "api"]
+
+[tool.uv.sources]
+norboten = { workspace = true }
+norboten-runner = { workspace = true }
+norboten-api = { workspace = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["labs/**/solution"]
+
+[tool.ruff.format]
+# journals and docs show code exactly as it was typed on the machine; do not reformat it
+exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]  # typographic dashes and arrows in prose are intentional
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "cli/tests", "runner/tests", "api/tests"]
+addopts = "-q"
+markers = ["docker: needs a local Docker daemon"]
+asyncio_mode = "auto"
+
+[tool.ruff.lint.per-file-ignores]
+"cli/src/norboten/tui/*" = ["RUF012"]  # Textual declares BINDINGS as class lists
+"api/src/norboten_api/routers/*" = ["B008"]  # Depends() in defaults is FastAPI's own idiom
+"api/src/norboten_api/auth.py" = ["B008"]    # same: Depends() and Header() belong in the signature
+"site/build.py" = ["E501"]  # the page copy lives here as data; wrapping it mid-sentence hurts
+
+[tool.ruff.lint.isort]
+known-first-party = ["norboten", "norboten_runner", "norboten_api"]

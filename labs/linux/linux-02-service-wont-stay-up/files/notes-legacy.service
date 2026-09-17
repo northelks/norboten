@@ -1,0 +1,9 @@
+[Unit]
+Description=notes (legacy static page)
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 -m http.server 8080 --directory /var/www/legacy-notes
+
+[Install]
+WantedBy=multi-user.target

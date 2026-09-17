@@ -1,0 +1,67 @@
+schema_version: 1
+topic: ai-02-chatbot-leaks-key
+topics: [ai-services, users-permissions, logging-journald]
+title: "Theory: keeping an AI gateway's secrets secret"
+description: Where a systemd service's secret leaks, credentials, authentication and rate limiting.
+questions:
+  - id: ai2-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      An API key is in a unit's Environment= line. Which command lets any unprivileged user on the
+      machine read it?
+    choices:
+      - {id: a, text: "systemctl show -p Environment <unit>"}
+      - {id: b, text: "journalctl -u <unit>"}
+      - {id: c, text: "cat /proc/1/environ"}
+      - {id: d, text: "None: unit files are readable only by root"}
+    answer: [a]
+    explanation: >-
+      systemctl show and systemctl cat work without privilege, and unit files are normally 0644. The
+      journal shows the key only if the service logs it; /proc/1/environ is root-only. A drop-in that blanks
+      the variable does not help, because systemctl cat still prints the original file.
+    references: ["man 1 systemctl", "man 5 systemd.exec (Environment=)"]
+  - id: ai2-002
+    type: single
+    difficulty: 3
+    prompt: What does LoadCredential= give a service that EnvironmentFile= does not?
+    choices:
+      - {id: a, text: "Encryption of the secret on disk"}
+      - {id: b, text: "A private copy of the secret for that unit, read by systemd as root, with nothing in the process environment"}
+      - {id: c, text: "Automatic rotation of the secret"}
+      - {id: d, text: "Nothing; they are two spellings of the same thing"}
+    answer: [b]
+    explanation: >-
+      systemd reads the source file (which can stay 0600 root:root) and exposes it in
+      $CREDENTIALS_DIRECTORY for this unit only. EnvironmentFile puts the value into the environment,
+      inherited by every child process. Encryption at rest is a separate feature (systemd-creds encrypt);
+      nothing rotates secrets for you.
+    references: ["man 5 systemd.exec (Credentials)"]
+  - id: ai2-003
+    type: single
+    difficulty: 2
+    prompt: nginx rate limiting is set with `limit_req zone=chat burst=5 nodelay`. What status do rejected requests get unless `limit_req_status` says otherwise?
+    choices:
+      - {id: a, text: "429"}
+      - {id: b, text: "503"}
+      - {id: c, text: "403"}
+      - {id: d, text: "444"}
+    answer: [b]
+    explanation: >-
+      The default limit_req_status is 503, which clients read as an outage. Setting `limit_req_status
+      429` tells well-behaved clients to slow down and retry later.
+    references: ["https://nginx.org/en/docs/http/ngx_http_limit_req_module.html#limit_req_status"]
+  - id: ai2-004
+    type: single
+    difficulty: 2
+    prompt: The gateway logged client tokens for a month; logging is now off and the journal was vacuumed. What remains to do?
+    choices:
+      - {id: a, text: "Reissue the client tokens and rotate the upstream key: anything that was readable must be treated as leaked"}
+      - {id: b, text: "Nothing: the tokens are gone from the machine"}
+      - {id: c, text: "Restart the gateway so it forgets the tokens"}
+      - {id: d, text: "Encrypt the journal"}
+    answer: [a]
+    explanation: >-
+      Copies may exist in forwarded logs, backups or someone's terminal scrollback, and there is no way to
+      prove they do not. Closing a leak does not un-leak anything; replacing the secrets does.
+    references: ["https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html"]

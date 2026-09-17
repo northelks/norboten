@@ -1,0 +1,52 @@
+checks:
+  01_top_five_by_default:
+    level_1: "The report is missing, or does not match the specification."
+    level_2: "This is a pipeline: pick out one field, count identical values, order the counts,
+              keep the first few."
+    level_3: "awk or cut for the first field; sort then uniq -c to count; sort again; head."
+    level_4: "uniq -c pads the count with spaces; the output format wants exactly one space."
+    refs:
+      2: ["man 1 sort", "man 1 uniq"]
+      3: ["journal:linux-04-write-the-report#counting-sort--uniq--c"]
+  02_count_option_and_ties:
+    level_1: "With -n, or with equal counts, the order is not the specified one."
+    level_2: "Sorting on two keys at once — one numeric and descending, one as plain text — needs
+              explicit key options, and plain text means the C locale."
+    level_3: "sort -k1,1nr -k2,2 with LC_ALL=C gives count descending, then address."
+    level_4: "Parse -n with getopts or a case statement; order with two sort keys under LC_ALL=C."
+    refs:
+      2: ["man 1 sort", "man 7 locale"]
+      3: ["journal:linux-04-write-the-report#ordering-sort-keys-and-why-one--r-is-wrong", "journal:linux-04-write-the-report#lc_allc-and-what-plain-text-means"]
+  03_skips_comments_and_blanks:
+    level_1: "Lines that are not requests are being counted."
+    level_2: "Filter the input before counting."
+    level_3: "grep -v can drop blank lines and lines that start with #."
+    level_4: "Drop lines matching ^# and ^$ (or ^[[:space:]]*$) before extracting the address."
+    refs:
+      2: ["man 1 grep"]
+      3: ["journal:linux-04-write-the-report#filtering-out-comments-and-blanks"]
+  04_rejects_bad_counts:
+    level_1: "An invalid -n value is accepted, or rejected the wrong way."
+    level_2: "Validate the value before using it: a positive whole number, nothing else."
+    level_3: "A case pattern or a regular expression test ([[ $n =~ ^[1-9][0-9]*$ ]]) does it."
+    level_4: "Print 'top-talkers: invalid count' to stderr (>&2) and exit 2."
+    refs:
+      2: ["man 1 bash"]
+      3: ["journal:linux-04-write-the-report#options-getopts", "journal:linux-04-write-the-report#validating-and-the-three-exit-statuses"]
+  05_missing_file_and_empty_input:
+    level_1: "A missing file or an empty log is not handled the specified way."
+    level_2: "Check the file before reading it, and make sure an empty result is not an error."
+    level_3: "[ -r \"$file\" ] tests readability; watch out for pipelines that fail on no input."
+    level_4: "Missing: message to stderr, exit 1. Empty: no output at all, exit 0."
+    refs:
+      2: ["man 1 test"]
+      3: ["journal:linux-04-write-the-report#validating-and-the-three-exit-statuses", "journal:linux-04-write-the-report#the-two-traps-with-set--e-and-pipefail"]
+  06_pure_bash:
+    level_1: "The script is not what the task allows."
+    level_2: "The first line decides the interpreter, and the task limits which tools it may
+              call."
+    level_3: "Start with #!/bin/bash and use only shell built-ins and the coreutils family."
+    level_4: "Use a Bash shebang and remove any call to another scripting language."
+    refs:
+      2: ["man 1 bash"]
+      3: ["journal:linux-04-write-the-report#counting-sort--uniq--c"]

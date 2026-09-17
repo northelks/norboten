@@ -1,0 +1,38 @@
+[project]
+name = "norboten-api"
+version = "0.1.0"
+description = "Norboten API — catalogue, accounts, ratings, the consultant, progress and telemetry."
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "httpx>=0.28",
+    "asyncpg>=0.30",
+    "norboten",
+    "prometheus-client>=0.21",
+    "pydantic-settings>=2.6",
+    "redis>=5.2",
+    "sqlalchemy[asyncio]>=2.0",
+    "uvicorn[standard]>=0.32",
+    "mcp>=2.2",
+]
+
+[project.optional-dependencies]
+# the Analytics page: pass rates, distributions, cohorts, clusters and the relation graph
+analytics = [
+    "matplotlib>=3.9",
+    "networkx>=3.3",
+    "numpy>=2.0",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+]
+
+[tool.uv.sources]
+norboten = { workspace = true }
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/norboten_api"]

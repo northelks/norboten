@@ -1,0 +1,49 @@
+# TLS is automatic: Caddy obtains and renews certificates for every name below. On a laptop,
+# compose.local.yaml sets NORBOTEN_DOMAIN=localhost and Caddy serves plain HTTP on :8080 instead.
+{
+	email {$ACME_EMAIL}
+	# empty on a real server; the rehearsal VM sets CADDY_GLOBAL=local_certs (no public DNS there)
+	{$CADDY_GLOBAL}
+	servers {
+		protocols h1 h2 h3
+	}
+}
+
+(common) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+}
+
+# the site: static files the CI rsyncs into ./site
+{$NORBOTEN_DOMAIN}, www.{$NORBOTEN_DOMAIN} {
+	import common
+	root * /srv/site
+	@www host www.{$NORBOTEN_DOMAIN}
+	redir @www https://{$NORBOTEN_DOMAIN}{uri} permanent
+	header /static/* Cache-Control "public, max-age=3600"
+	file_server
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+}
+
+# the API; /metrics stays on the compose network, for Prometheus only
+api.{$NORBOTEN_DOMAIN} {
+	import common
+	respond /metrics 404
+	reverse_proxy api:8000 {
+		# server-sent events and MCP: flush every write, never buffer a live terminal or a stream
+		flush_interval -1
+	}
+}
+
+status.{$NORBOTEN_DOMAIN} {
+	import common
+	reverse_proxy grafana:3000
+}

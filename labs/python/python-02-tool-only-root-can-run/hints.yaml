@@ -1,0 +1,36 @@
+checks:
+  01_every_user_can_run_it:
+    level_1: "For anyone but root, netprobe is not found, and the venv's own program is not
+              allowed to run."
+    level_2: "Two separate things decide whether a user can run a program: whether a directory on
+              their PATH contains it, and whether every directory on the way to it lets them in."
+    level_3: "Look at the modes of /opt/netprobe/venv and the directories under it, and at what is in
+              /usr/local/bin."
+    level_4: "The venv is mode 0750 and owned by root, and nothing on the default PATH points at
+              /opt/netprobe/venv/bin/netprobe."
+    refs:
+      2: ["https://docs.python.org/3/library/venv.html"]
+      3: ["journal:python-02-tool-only-root-can-run#what-a-virtual-environment-is", "journal:python-02-tool-only-root-can-run#making-it-usable-by-everyone"]
+  02_checks_targets_as_a_user:
+    level_1: "Even with access to the venv, an ordinary user's netprobe fails to import its own
+              code."
+    level_2: "What does pip install into site-packages when a project is installed in development
+              (editable) mode?"
+    level_3: "Read the .pth and __editable__ files in the venv's site-packages: they point at a
+              directory. Can an unprivileged user read it?"
+    level_4: "netprobe was installed with --editable from /root/src/netprobe, and /root is mode
+              0700, so for anyone else the package does not exist."
+    refs:
+      2: ["https://pip.pypa.io/en/stable/topics/local-project-installs/"]
+      3: ["journal:python-02-tool-only-root-can-run#three-kinds-of-install", "journal:python-02-tool-only-root-can-run#why-the-error-changes-as-you-fix-things"]
+  03_installed_copy_stands_alone:
+    level_1: "The installed tool depends on a developer's working copy."
+    level_2: "An editable install links to the source; a normal install copies the package into the
+              environment. Which one is this?"
+    level_3: "pip show -f netprobe, run with the venv's pip, and the editable hooks in site-packages
+              show where the code really lives."
+    level_4: "It is an editable install of /root/src/netprobe. Put the source somewhere readable
+              and install it normally into the venv, offline, from the wheels in /opt/wheels."
+    refs:
+      2: ["https://pip.pypa.io/en/stable/topics/local-project-installs/"]
+      3: ["journal:python-02-tool-only-root-can-run#three-kinds-of-install", "journal:python-02-tool-only-root-can-run#a-normal-install-offline"]

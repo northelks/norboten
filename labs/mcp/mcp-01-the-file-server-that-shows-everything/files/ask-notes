@@ -1,0 +1,8 @@
+#!/bin/sh
+# Answer a question from the team's notes, through the files MCP server. The answer is ~/answer.json.
+cd "$HOME/notes-bot" || exit 1
+claude -p "${1:-Where is the on-call runbook, and what does it say about paging?}" \
+    --permission-mode dontAsk \
+    --allowedTools "mcp__files" \
+    --max-turns 6 \
+    --output-format json > "$HOME/answer.json" 2>&1

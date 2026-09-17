@@ -1,0 +1,135 @@
+schema_version: 1
+topic: python-06-job-that-runs-twice
+topics: [python, boot-systemd]
+title: "Theory: locks and atomic replacement"
+description: flock without waiting, what a lock file is not, and replacing a file readers are using.
+questions:
+  - id: py6-001
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      import fcntl, os, subprocess, sys, tempfile
+      lock = os.path.join(tempfile.mkdtemp(), "job.lock")
+      fd = os.open(lock, os.O_CREAT | os.O_RDWR, 0o644)
+      fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+      code = ("import fcntl, os, sys\n"
+              f"fd = os.open({lock!r}, os.O_CREAT | os.O_RDWR, 0o644)\n"
+              "try:\n"
+              "    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)\n"
+              "    print('acquired')\n"
+              "except OSError as e:\n"
+              "    print('refused', e.errno == 11)\n")
+      print(subprocess.run([sys.executable, "-c", code], capture_output=True, text=True).stdout.strip())
+    code_lang: python
+    choices:
+      - {id: a, text: "an empty line"}
+      - {id: b, text: "acquired"}
+      - {id: c, text: "refused True"}
+      - {id: d, text: "refused False"}
+    answer: [c]
+    explanation: >-
+      The parent holds an exclusive flock on the file and keeps the descriptor open, so the child's
+      non-blocking request fails at once with EWOULDBLOCK (errno 11 on Linux). Without LOCK_NB the
+      child would have waited instead; if the parent had closed its descriptor, the lock would have
+      been released and the child would have acquired it.
+    references: ["https://docs.python.org/3/library/fcntl.html#fcntl.flock", "man 2 flock"]
+    tags: [locking]
+    verify:
+      runtime: python
+      code: |
+        import fcntl, os, subprocess, sys, tempfile
+        lock = os.path.join(tempfile.mkdtemp(), "job.lock")
+        fd = os.open(lock, os.O_CREAT | os.O_RDWR, 0o644)
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        code = ("import fcntl, os, sys\n"
+                f"fd = os.open({lock!r}, os.O_CREAT | os.O_RDWR, 0o644)\n"
+                "try:\n"
+                "    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)\n"
+                "    print('acquired')\n"
+                "except OSError as e:\n"
+                "    print('refused', e.errno == 11)\n")
+        print(subprocess.run([sys.executable, "-c", code], capture_output=True, text=True).stdout.strip())
+  - id: py6-002
+    type: single
+    difficulty: 2
+    prompt: >-
+      A job takes its lock like this: `with open(LOCK, "w") as f: fcntl.flock(f, fcntl.LOCK_EX |
+      fcntl.LOCK_NB)`, and then does its work. What is wrong?
+    choices:
+      - {id: a, text: "flock cannot be used on a file opened for writing"}
+      - {id: b, text: "The with block closes the file, which releases the lock before the work starts"}
+      - {id: c, text: "LOCK_NB makes the lock advisory rather than exclusive"}
+      - {id: d, text: "Nothing: the lock is held until the process ends"}
+    answer: [b]
+    explanation: >-
+      An flock lock belongs to the open file description and is released when the last descriptor for
+      it is closed — which the with block does immediately. The descriptor has to stay open for as
+      long as the lock is needed, usually for the life of the process. LOCK_NB only means "do not
+      wait"; all flock locks are advisory.
+    references: ["man 2 flock"]
+    tags: [locking]
+  - id: py6-003
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      import json, os, tempfile
+      d = tempfile.mkdtemp()
+      out = os.path.join(d, "prices.json")
+      with open(out, "w") as f:
+          json.dump({"A": 1}, f)
+      fd, tmp = tempfile.mkstemp(dir=d)
+      with os.fdopen(fd, "w") as f:
+          json.dump({"A": 1, "B": 2}, f)
+      before = open(out).read()
+      os.replace(tmp, out)
+      print(before, open(out).read())
+    code_lang: python
+    choices:
+      - {id: a, text: '{"A": 1} {"A": 1, "B": 2}'}
+      - {id: b, text: "FileNotFoundError"}
+      - {id: c, text: '{"A": 1} {"A": 1}'}
+      - {id: d, text: '{"A": 1, "B": 2} {"A": 1, "B": 2}'}
+    answer: [a]
+    explanation: >-
+      The new content is built in a separate file in the same directory, so the target keeps its old
+      content until os.replace swaps the directory entry in one step. A reader therefore sees the old
+      file or the new one and never a partial write — which is what writing into the live file would
+      have given.
+    references: ["https://docs.python.org/3/library/os.html#os.replace"]
+    tags: [atomic]
+    verify:
+      runtime: python
+      code: |
+        import json, os, tempfile
+        d = tempfile.mkdtemp()
+        out = os.path.join(d, "prices.json")
+        with open(out, "w") as f:
+            json.dump({"A": 1}, f)
+        fd, tmp = tempfile.mkstemp(dir=d)
+        with os.fdopen(fd, "w") as f:
+            json.dump({"A": 1, "B": 2}, f)
+        before = open(out).read()
+        os.replace(tmp, out)
+        print(before, open(out).read())
+  - id: py6-004
+    type: multiple
+    difficulty: 3
+    prompt: >-
+      Which statements about a systemd timer that fires while its own oneshot service is still running
+      are true? Select all that apply.
+    choices:
+      - {id: a, text: "systemd does not start a second copy of that unit"}
+      - {id: b, text: "A run of the same script started by hand is not affected by that"}
+      - {id: c, text: "The unit's ExecStart= is run again in parallel"}
+      - {id: d, text: "OnUnitActiveSec= measures from the end of the previous activation"}
+    answer: [a, b]
+    explanation: >-
+      A unit that is already activating is not started twice; the timer's start waits behind the
+      running one. OnUnitActiveSec= counts from when the previous run started, not from its end, so a
+      run longer than the interval is followed at once by the next — measured with systemd 259, a
+      25-second job on a 10-second timer ran back to back. None of that constrains a run someone
+      starts by hand or from another tool, which is why the script needs its own lock.
+    references: ["man 5 systemd.timer", "man 5 systemd.unit"]
+    tags: [systemd, locking]

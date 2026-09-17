@@ -1,0 +1,43 @@
+checks:
+  01_the_whole_team_is_in_the_group:
+    level_1: "One person on the team is not treated as part of it."
+    level_2: "The team is a group. Compare who the roster names with who the group actually
+              contains."
+    level_3: "id -nG shows a user's groups; getent group reports shows the group's members."
+    level_4: "carol is not in reports. Add her to it without removing her other groups."
+    refs:
+      2: ["man 1 id", "man 1 getent"]
+      3: ["journal:linux-05-shared-folder-locks-people-out#groups-membership-is-read-at-login"]
+  02_the_team_can_edit_every_file:
+    level_1: "Files that are already there still belong to whoever wrote them."
+    level_2: "Access is decided by the owner, the group and the permission bits of each file and
+              of every directory on the way to it. Look at all three, recursively."
+    level_3: "ls -lR /srv/reports, then look at it again as bob with su - bob. Which group owns
+              each file, and does that group have write?"
+    level_4: "Give the folder and everything in it to the group reports, and give the group read
+              and write (and enter, for directories)."
+    refs:
+      2: ["journal:hello#how-the-kernel-picks-a-triad", "man 1 chmod"]
+      3: ["journal:linux-05-shared-folder-locks-people-out#one-class-chosen-once", "journal:linux-05-shared-folder-locks-people-out#directories-read-lists-write-changes-execute-enters"]
+  03_new_files_stay_shared:
+    level_1: "Whatever someone creates tomorrow will be private again."
+    level_2: "Two things decide a new file's access: which group it gets, and which bits the
+              author's umask removes. Fixing today's files changes neither."
+    level_3: "Create a file as alice and look at its group and mode. Then find where logins set
+              the umask, and read about the setgid bit on directories and default ACLs."
+    level_4: "Set the setgid bit on the directories so new files get the group reports, and either
+              give the group a default ACL (which the 077 umask cannot strip) or a team umask
+              that keeps group write."
+    refs:
+      2: ["man 5 login.defs", "man 5 acl"]
+      3: ["journal:linux-05-shared-folder-locks-people-out#what-decides-a-new-files-mode", "journal:linux-05-shared-folder-locks-people-out#default-acls-group-access-the-umask-cannot-remove"]
+  04_outsiders_cannot_read:
+    level_1: "Someone who is not on the team can see everything."
+    level_2: "Access for everyone else is the third set of permission bits — on the folder as well
+              as on the files."
+    level_3: "Try su - dave -c 'ls /srv/reports'. Which bits let him in?"
+    level_4: "Remove all access for others from the folder and its contents. Without enter on the
+              directory, nothing inside is reachable."
+    refs:
+      2: ["journal:hello#how-the-kernel-picks-a-triad"]
+      3: ["journal:linux-05-shared-folder-locks-people-out#directories-read-lists-write-changes-execute-enters"]

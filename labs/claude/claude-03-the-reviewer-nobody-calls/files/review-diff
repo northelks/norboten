@@ -1,0 +1,7 @@
+#!/bin/sh
+# Pre-merge security review: the branch's diff against main goes to the security-reviewer subagent.
+cd "$HOME/payments" || exit 1
+git diff main...HEAD | claude -p "Use the security-reviewer subagent to review the diff on stdin and report its findings." \
+    --permission-mode dontAsk \
+    --max-turns 10 \
+    --output-format json > "$HOME/review.json" 2>&1

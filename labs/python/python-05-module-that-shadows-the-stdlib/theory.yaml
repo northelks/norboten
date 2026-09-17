@@ -1,0 +1,92 @@
+schema_version: 1
+topic: python-05-module-that-shadows-the-stdlib
+topics: [python, linux-basics]
+title: "Theory: the module search path"
+description: What sys.path holds, which entry comes first, and which modules can be shadowed.
+questions:
+  - id: py5-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      `/opt/digest/digest.py` starts with `import calendar`, and `/opt/digest/calendar.py` exists.
+      The program is started with `cd /tmp && python3 /opt/digest/digest.py`. Which file is imported?
+    choices:
+      - {id: a, text: "it depends on PYTHONPATH only"}
+      - {id: b, text: "/opt/digest/calendar.py"}
+      - {id: c, text: "the standard library's calendar.py"}
+      - {id: d, text: "/tmp/calendar.py, or an ImportError if it does not exist"}
+    answer: [b]
+    explanation: >-
+      For a script, sys.path[0] is the directory of the script — /opt/digest — not the working
+      directory, so the file beside the script wins over the standard library wherever the program is
+      started from. That is also why WorkingDirectory= in a unit changes nothing.
+    references: ["https://docs.python.org/3/tutorial/modules.html#the-module-search-path"]
+    tags: [imports, sys-path]
+  - id: py5-002
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      import pathlib, subprocess, sys, tempfile
+      d = pathlib.Path(tempfile.mkdtemp())
+      (d / "calendar.py").write_text("VALUE = 1\n")
+      (d / "app.py").write_text("import calendar; print(hasattr(calendar, 'monthrange'))\n")
+      print(subprocess.run([sys.executable, str(d / "app.py")],
+                           cwd="/", capture_output=True, text=True).stdout.strip())
+    code_lang: python
+    choices:
+      - {id: a, text: "an empty line"}
+      - {id: b, text: "True"}
+      - {id: c, text: "ModuleNotFoundError"}
+      - {id: d, text: "False"}
+    answer: [d]
+    explanation: >-
+      The child runs with / as its working directory, but sys.path[0] is the script's own directory,
+      where calendar.py is — so the import finds that file, which has no monthrange, and hasattr is
+      False. Renaming the helper, or running with -P / PYTHONSAFEPATH=1, gives True.
+    references: ["https://docs.python.org/3/library/sys.html#sys.path"]
+    tags: [imports, sys-path]
+    verify:
+      runtime: python
+      code: |
+        import pathlib, subprocess, sys, tempfile
+        d = pathlib.Path(tempfile.mkdtemp())
+        (d / "calendar.py").write_text("VALUE = 1\n")
+        (d / "app.py").write_text("import calendar; print(hasattr(calendar, 'monthrange'))\n")
+        print(subprocess.run([sys.executable, str(d / "app.py")],
+                             cwd="/", capture_output=True, text=True).stdout.strip())
+  - id: py5-003
+    type: single
+    difficulty: 2
+    prompt: Which of these modules cannot be shadowed by a file of the same name beside your script?
+    choices:
+      - {id: a, text: "logging"}
+      - {id: b, text: "json"}
+      - {id: c, text: "calendar"}
+      - {id: d, text: "sys"}
+    answer: [d]
+    explanation: >-
+      sys is compiled into the interpreter (sys.builtin_module_names), so importing it never touches
+      sys.path. json, logging and calendar are ordinary Python files in the standard library and are
+      found on the path, after the script's own directory.
+    references: ["https://docs.python.org/3/library/sys.html#sys.builtin_module_names"]
+    tags: [imports]
+  - id: py5-004
+    type: multiple
+    difficulty: 3
+    prompt: >-
+      A helper beside a program is called `queue.py` and breaks an installed library that imports
+      `queue`. Which changes actually fix it? Select all that apply.
+    choices:
+      - {id: a, text: "move the helpers into a package and import package.queue"}
+      - {id: b, text: "rename it to something outside sys.stdlib_module_names"}
+      - {id: c, text: "add WorkingDirectory= to the unit that runs the program"}
+      - {id: d, text: "delete __pycache__ and keep the file name"}
+    answer: [a, b]
+    explanation: >-
+      Only the name matters: a different name, or a qualified one inside a package, removes the
+      collision for every importer in the process. The working directory is not what puts the script's
+      directory on the path, and the bytecode cache follows its source file, so neither changes the
+      import.
+    references: ["https://docs.python.org/3/library/sys.html#sys.stdlib_module_names"]
+    tags: [imports, packaging]

@@ -1,0 +1,20 @@
+schema_version: 1
+id: ollama-01-the-model-server-anyone-can-use
+version: 1.0.0
+title: The Model Server Anyone Can Use
+track: automation
+topics: [ollama, networking, users-permissions]
+difficulty: 2
+estimated_minutes: 30
+base_images: [ubuntu-26.04-automation]
+resources:
+  cpus: 2
+objectives:
+  - "Keep an unauthenticated model server off the network"
+  - "Put a password in front of it for the people who should use it"
+  - "Allow exactly the web page that needs it to call it from a browser"
+checks:
+  - {id: 01_ollama_listens_only_on_loopback, objective: 1, weight: 2}
+  - {id: 02_the_proxy_asks_for_the_team_password, objective: 2, weight: 2}
+  - {id: 03_only_the_chat_page_may_call_from_a_browser, objective: 3}
+reboot_required: true

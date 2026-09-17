@@ -1,0 +1,51 @@
+checks:
+  01_the_config_is_not_ignored:
+    level_1: "logrotate does not even read the shop policy."
+    level_2: "logrotate refuses configuration files that others could have changed. Look at who
+              may write the file."
+    level_3: "Run logrotate -d /etc/logrotate.conf and read what it says about shop."
+    level_4: "/etc/logrotate.d/shop is writable by everyone, so logrotate ignores it. Make it
+              writable only by root."
+    refs:
+      2: ["man 8 logrotate"]
+      3: ["journal:linux-06-log-that-never-rotates#why-logrotate-refuses-two-safety-checks"]
+  02_rotation_is_allowed_there:
+    level_1: "Once the policy is read, the rotation is still skipped."
+    level_2: "logrotate will not rename files in a directory another user can write to, unless it
+              is told which user to act as."
+    level_3: "logrotate -d names the directive it wants, in its own error message."
+    level_4: "The log directory belongs to shop and is group-writable. Add su shop shop to the
+              policy, so logrotate rotates as the directory's owner. Do not take the directory
+              away from shop."
+    refs:
+      2: ["man 8 logrotate"]
+      3: ["journal:linux-06-log-that-never-rotates#why-logrotate-refuses-two-safety-checks"]
+  03_the_app_writes_after_rotation:
+    level_1: "After a rotation the service can no longer log."
+    level_2: "When logrotate moves the old log away, something decides who owns the new one — and
+              which user logrotate is acting as when it creates it."
+    level_3: "Rotate a copy by hand and ls -l the result. Who owns app.log afterwards, with which
+              mode? Compare with the user the service runs as."
+    level_4: "create 0600 root root hands the new log to root whenever logrotate runs as root, as
+              it does once the directory is root's. Keep the directory shop's and rotate as shop,
+              or create the log for shop (create 0640 shop shop), or use copytruncate."
+    refs:
+      2: ["journal:linux-01-disk-full#copytruncate-versus-postrotate"]
+      3: ["journal:linux-06-log-that-never-rotates#what-rotation-does", "journal:linux-06-log-that-never-rotates#the-open-file-problem-create-or-copytruncate"]
+  04_a_week_of_compressed_history:
+    level_1: "The policy throws the history away."
+    level_2: "Two directives decide how many old logs stay and whether they are compressed."
+    level_3: "Read man logrotate for rotate and compress; count what nine forced rotations leave."
+    level_4: "rotate 0 keeps nothing. Use rotate 7 and compress."
+    refs:
+      2: ["man 8 logrotate"]
+      3: ["journal:linux-06-log-that-never-rotates#what-rotation-does"]
+  05_the_big_log_is_rotated:
+    level_1: "The fixed policy has not been applied to the 300 MB log yet."
+    level_2: "The nightly job runs logrotate with its main configuration; nothing runs it here."
+    level_3: "Once logrotate -d shows the rotation it would do, run it for real."
+    level_4: "Run logrotate /etc/logrotate.conf (the size rule triggers on its own), or logrotate -f
+              /etc/logrotate.d/shop."
+    refs:
+      2: ["journal:logging-journald#where-the-journal-lives-and-how-big-it-gets"]
+      3: ["journal:linux-06-log-that-never-rotates#who-runs-logrotate-and-what-it-remembers", "journal:linux-06-log-that-never-rotates#when-a-log-is-due"]

@@ -1,0 +1,963 @@
+schema_version: 1
+topic: bash
+topics: [bash]
+title: Bash
+description: Expansion, quoting, exit status and the traps that make scripts lie.
+questions:
+  - id: bash-001
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      x=5
+      x+=1
+      echo "$x"
+    code_lang: bash
+    choices:
+      - {id: a, text: "5+1"}
+      - {id: b, text: "6"}
+      - {id: c, text: "51"}
+      - {id: d, text: "an error"}
+    answer: [c]
+    explanation: >-
+      On an ordinary variable, += appends a string: "5" followed by "1". Arithmetic needs an
+      arithmetic context — ((x+=1)) or x=$((x+1)) — or a variable declared with declare -i.
+    references: ["man 1 bash (Parameters)"]
+    tags: [variables]
+    verify:
+      runtime: bash
+      code: |
+        x=5
+        x+=1
+        echo "$x"
+  - id: bash-002
+    type: single
+    difficulty: 1
+    prompt: What does this print?
+    code: |
+      a=(one two three)
+      echo "${#a[@]}"
+    code_lang: bash
+    choices:
+      - {id: a, text: "3 3 5"}
+      - {id: b, text: "13"}
+      - {id: c, text: "3"}
+      - {id: d, text: "1"}
+    answer: [c]
+    explanation: >-
+      ${#array[@]} is the number of elements. ${#a} alone is the length of the first element
+      (3 here as well, but for a different reason), and ${#a[@]} is never a list of lengths.
+    references: ["man 1 bash (Arrays)"]
+    tags: [arrays]
+    verify:
+      runtime: bash
+      code: |
+        a=(one two three)
+        echo "${#a[@]}"
+  - id: bash-003
+    type: single
+    difficulty: 1
+    prompt: "What does `echo $(( 7 / 2 ))` print?"
+    choices:
+      - {id: a, text: "4"}
+      - {id: b, text: "3.5"}
+      - {id: c, text: "3"}
+      - {id: d, text: "7 / 2"}
+    answer: [c]
+    explanation: >-
+      Shell arithmetic is integer arithmetic and truncates toward zero. For decimals use bc or
+      awk.
+    references: ["man 1 bash (ARITHMETIC EVALUATION)"]
+    tags: [arithmetic]
+    verify:
+      runtime: bash
+      code: echo $(( 7 / 2 ))
+  - id: bash-004
+    type: single
+    difficulty: 2
+    prompt: What does `set -o pipefail` change?
+    choices:
+      - {id: a, text: "Every command is printed before it runs"}
+      - {id: b, text: "The script exits as soon as any command fails"}
+      - {id: c, text: "A pipeline's status becomes that of the last command in it that failed, instead of the last command's"}
+      - {id: d, text: "Using an unset variable becomes an error"}
+    answer: [c]
+    explanation: >-
+      Without pipefail, `false | true` succeeds because only the last command counts. With it,
+      the pipeline returns the rightmost non-zero status. Exiting on failure is set -e, unset
+      variables are set -u, and tracing is set -x.
+    references: ["man 1 bash (SHELL BUILTIN COMMANDS, set)"]
+    tags: [exit-status]
+  - id: bash-005
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      f="a b"
+      for w in $f; do printf '%s|' "$w"; done
+    code_lang: bash
+    choices:
+      - {id: a, text: "|a b|"}
+      - {id: b, text: "a|b|"}
+      - {id: c, text: "a|"}
+      - {id: d, text: "a b|"}
+    answer: [b]
+    explanation: >-
+      Unquoted $f undergoes word splitting on IFS, so the loop sees two words. Quoted "$f" would
+      loop once over "a b" — which is why file names with spaces break unquoted scripts.
+    references: ["man 1 bash (Word Splitting)"]
+    tags: [quoting]
+    verify:
+      runtime: bash
+      code: |
+        f="a b"
+        for w in $f; do printf '%s|' "$w"; done
+        echo
+  - id: bash-006
+    type: single
+    difficulty: 1
+    prompt: What does this print?
+    code: '[ -z "" ] && echo empty || echo set'
+    code_lang: bash
+    choices:
+      - {id: a, text: "empty set"}
+      - {id: b, text: "nothing"}
+      - {id: c, text: empty}
+      - {id: d, text: set}
+    answer: [c]
+    explanation: >-
+      -z is true for an empty string, so the && branch runs and echo succeeds, which skips the ||
+      branch. (If the && command itself failed, the || branch would run too — a && b || c is not
+      a true if/else.)
+    references: ["man 1 test"]
+    tags: [conditions]
+    verify:
+      runtime: bash
+      code: '[ -z "" ] && echo empty || echo set'
+  - id: bash-007
+    type: single
+    difficulty: 2
+    prompt: Which loop handles file names containing spaces correctly?
+    choices:
+      - {id: a, text: 'for f in "$(ls)"; do echo "$f"; done'}
+      - {id: b, text: 'for f in $(ls); do echo "$f"; done'}
+      - {id: c, text: 'for f in $(find . -type f); do echo "$f"; done'}
+      - {id: d, text: 'for f in *; do echo "$f"; done'}
+    answer: [d]
+    explanation: >-
+      A glob expands to one word per file name, spaces included, and "$f" keeps it whole. Command
+      substitution output is word-split when it is unquoted, or collapsed into one single word when
+      it is quoted.
+    references: ["man 1 bash (Pathname Expansion)"]
+    tags: [quoting, files]
+  - id: bash-008
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      p=/usr/local/bin/tool.sh
+      echo "${p##*/}"
+    code_lang: bash
+    choices:
+      - {id: a, text: tool}
+      - {id: b, text: /usr/local/bin}
+      - {id: c, text: tool.sh}
+      - {id: d, text: usr/local/bin/tool.sh}
+    answer: [c]
+    explanation: >-
+      ${var##pattern} removes the longest prefix matching the pattern; */ matches everything up to
+      the last slash, leaving the base name. ${p%/*} would give the directory, ${p%.sh} the name
+      without its extension.
+    references: ["man 1 bash (Parameter Expansion)"]
+    tags: [expansion]
+    verify:
+      runtime: bash
+      code: |
+        p=/usr/local/bin/tool.sh
+        echo "${p##*/}"
+  - id: bash-009
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      p=/opt/app/run.sh
+      echo "${p%/*}"
+    code_lang: bash
+    choices:
+      - {id: a, text: run.sh}
+      - {id: b, text: /opt/app}
+      - {id: c, text: /opt/app/run}
+      - {id: d, text: /opt}
+    answer: [b]
+    explanation: >-
+      ${var%pattern} removes the shortest suffix matching the pattern: the last "/" and what
+      follows it. %% would remove the longest match — from the first slash, leaving an empty
+      string here.
+    references: ["man 1 bash (Parameter Expansion)"]
+    tags: [expansion]
+    verify:
+      runtime: bash
+      code: |
+        p=/opt/app/run.sh
+        echo "${p%/*}"
+  - id: bash-010
+    type: multiple
+    difficulty: 2
+    prompt: Which commands send both stdout and stderr of cmd to file.log?
+    choices:
+      - {id: a, text: "cmd 2>&1 > file.log"}
+      - {id: b, text: "cmd 2> file.log"}
+      - {id: c, text: "cmd > file.log 2>&1"}
+      - {id: d, text: "cmd &> file.log"}
+    answer: [c, d]
+    explanation: >-
+      Redirections apply left to right. In `> file.log 2>&1` stdout goes to the file, then stderr is
+      pointed at where stdout now goes. In `2>&1 > file.log` stderr is pointed at the terminal first,
+      then only stdout moves. &> is Bash shorthand for the first; `2> file.log` redirects stderr only.
+    references: ["man 1 bash (REDIRECTION)"]
+    tags: [redirection]
+  - id: bash-011
+    type: single
+    difficulty: 1
+    prompt: "What does `printf '%03d\\n' 7` print?"
+    choices:
+      - {id: a, text: "%03d"}
+      - {id: b, text: "7"}
+      - {id: c, text: "007"}
+      - {id: d, text: "700"}
+    answer: [c]
+    explanation: >-
+      %03d formats an integer at least three characters wide, padded with zeros. Without the 0
+      flag, %3d pads with spaces.
+    references: ["man 1 printf"]
+    tags: [output]
+    verify:
+      runtime: bash
+      code: printf '%03d\n' 7
+  - id: bash-012
+    type: single
+    difficulty: 2
+    prompt: What is the exit status of `grep -q pattern file` when the file exists but has no match?
+    choices:
+      - {id: a, text: "127"}
+      - {id: b, text: "1"}
+      - {id: c, text: "2"}
+      - {id: d, text: "0"}
+    answer: [b]
+    explanation: >-
+      grep exits 0 when a line matched, 1 when none did, and 2 on an error such as an unreadable
+      file. 127 is the shell's "command not found".
+    references: ["man 1 grep (EXIT STATUS)"]
+    tags: [exit-status]
+    verify:
+      runtime: bash
+      code: |
+        f=$(mktemp); echo hello > "$f"; grep -q pattern "$f"; echo $?
+  - id: bash-013
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      s="a b  c"
+      set -- $s
+      echo "$#"
+    code_lang: bash
+    choices:
+      - {id: a, text: "1"}
+      - {id: b, text: "6"}
+      - {id: c, text: "3"}
+      - {id: d, text: "4"}
+    answer: [c]
+    explanation: >-
+      An unquoted $s is split on IFS (space, tab, newline), and runs of whitespace count as one
+      separator, so set receives three words. Quoted, "$s" would have been one argument.
+    references: ["man 1 bash (Word Splitting)"]
+    tags: [quoting, expansion]
+    verify:
+      runtime: bash
+      code: |
+        s="a b  c"
+        set -- $s
+        echo "$#"
+  - id: bash-014
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      count=0
+      printf 'x\ny\nz\n' | while read -r line; do count=$((count+1)); done
+      echo "$count"
+    code_lang: bash
+    choices:
+      - {id: a, text: "1"}
+      - {id: b, text: "0"}
+      - {id: c, text: "3"}
+      - {id: d, text: "2"}
+    answer: [b]
+    explanation: >-
+      Each part of a pipeline runs in a subshell, so the while loop increments its own copy of
+      count and the parent still has 0. Feeding the loop with a redirection or process
+      substitution — done < <(printf …) — keeps it in the current shell; so does shopt -s lastpipe
+      in a non-interactive script.
+    references: ["man 1 bash (Pipelines)"]
+    tags: [pipelines, pitfalls]
+    verify:
+      runtime: bash
+      code: |
+        count=0
+        printf 'x\ny\nz\n' | while read -r line; do count=$((count+1)); done
+        echo "$count"
+  - id: bash-015
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      f=/var/log/nginx/access.log.1
+      echo "${f##*/}"
+    code_lang: bash
+    choices:
+      - {id: a, text: "1"}
+      - {id: b, text: "access.log.1"}
+      - {id: c, text: "/var/log/nginx"}
+      - {id: d, text: "access"}
+    answer: [b]
+    explanation: >-
+      ${var##pattern} removes the longest prefix matching the pattern; */ matches everything up to
+      the last slash, which leaves the base name. ${f%/*} would give the directory, and ${f##*.}
+      the last extension.
+    references: ["man 1 bash (Parameter Expansion)"]
+    tags: [expansion]
+    verify:
+      runtime: bash
+      code: |
+        f=/var/log/nginx/access.log.1
+        echo "${f##*/}"
+  - id: bash-016
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      f=backup.tar.gz
+      echo "${f%.*}"
+    code_lang: bash
+    choices:
+      - {id: a, text: "gz"}
+      - {id: b, text: "backup.tar"}
+      - {id: c, text: "tar.gz"}
+      - {id: d, text: "backup"}
+    answer: [b]
+    explanation: >-
+      A single % removes the shortest suffix matching .*, which is .gz. The doubled form ${f%%.*}
+      removes the longest match, .tar.gz, and leaves backup.
+    references: ["man 1 bash (Parameter Expansion)"]
+    tags: [expansion]
+    verify:
+      runtime: bash
+      code: |
+        f=backup.tar.gz
+        echo "${f%.*}"
+  - id: bash-017
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      unset name
+      echo "${name:-guest} ${name}"
+    code_lang: bash
+    choices:
+      - {id: a, text: "an error: name: unbound variable"}
+      - {id: b, text: "name"}
+      - {id: c, text: "guest guest"}
+      - {id: d, text: "guest"}
+    answer: [d]
+    explanation: >-
+      ${name:-guest} substitutes guest without assigning it, so the second expansion is still
+      empty and echo prints "guest " — the trailing space is invisible. ${name:=guest} would have
+      assigned it. The error only happens under set -u.
+    references: ["man 1 bash (Parameter Expansion)"]
+    tags: [expansion, variables]
+    verify:
+      runtime: bash
+      code: |
+        unset name
+        echo "${name:-guest} ${name}"
+  - id: bash-018
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      set -e
+      f() { false; echo "still running"; }
+      f || echo "failed"
+    code_lang: bash
+    choices:
+      - {id: a, text: "failed"}
+      - {id: b, text: "still running"}
+      - {id: c, text: "still running failed"}
+      - {id: d, text: "nothing; the script exits"}
+    answer: [b]
+    explanation: >-
+      set -e is ignored inside anything run as the left side of || or &&, including every command
+      in a function called there. So false does not stop f, echo succeeds, f returns 0 and the ||
+      branch never runs. It is the best-known reason not to rely on set -e alone.
+    references: ["man 1 bash (The Set Builtin, -e)"]
+    tags: [exit-status, pitfalls]
+    verify:
+      runtime: bash
+      code: |
+        set -e
+        f() { false; echo "still running"; }
+        f || echo "failed"
+  - id: bash-019
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      false | true
+      echo "${PIPESTATUS[0]} ${PIPESTATUS[1]}"
+    code_lang: bash
+    choices:
+      - {id: a, text: "0 0"}
+      - {id: b, text: "0 1"}
+      - {id: c, text: "1 0"}
+      - {id: d, text: "1 1"}
+    answer: [c]
+    explanation: >-
+      PIPESTATUS holds the exit status of every command in the last foreground pipeline, in order:
+      false returned 1 and true returned 0. $? alone would be 0, the last command's status.
+    references: ["man 1 bash (Shell Variables, PIPESTATUS)"]
+    tags: [exit-status, pipelines]
+    verify:
+      runtime: bash
+      code: |
+        false | true
+        echo "${PIPESTATUS[0]} ${PIPESTATUS[1]}"
+  - id: bash-020
+    type: single
+    difficulty: 1
+    prompt: What does this print?
+    code: |
+      echo {1..3}{a,b}
+    code_lang: bash
+    choices:
+      - {id: a, text: "{1..3}{a,b}"}
+      - {id: b, text: "1a 2a 3a 1b 2b 3b"}
+      - {id: c, text: "123ab"}
+      - {id: d, text: "1a 1b 2a 2b 3a 3b"}
+    answer: [d]
+    explanation: >-
+      Brace expansion is a Cartesian product, expanded left to right: for each of 1, 2, 3 in turn,
+      every suffix a and b. It happens before any other expansion and needs no matching files.
+    references: ["man 1 bash (Brace Expansion)"]
+    tags: [expansion]
+    verify:
+      runtime: bash
+      code: |
+        echo {1..3}{a,b}
+  - id: bash-021
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      declare -A port=([http]=80 [https]=443)
+      echo "${port[https]}"
+    code_lang: bash
+    choices:
+      - {id: a, text: "80"}
+      - {id: b, text: "443"}
+      - {id: c, text: "an empty line"}
+      - {id: d, text: "https"}
+    answer: [b]
+    explanation: >-
+      declare -A makes an associative array keyed by strings. Without -A, bash would treat the
+      subscripts as arithmetic — http and https are unset variables worth 0 — and both
+      assignments would land on index 0.
+    references: ["man 1 bash (Arrays)"]
+    tags: [arrays]
+    verify:
+      runtime: bash
+      code: |
+        declare -A port=([http]=80 [https]=443)
+        echo "${port[https]}"
+  - id: bash-022
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      a=(one "two three")
+      for w in ${a[@]}; do echo -n "[$w]"; done; echo
+    code_lang: bash
+    choices:
+      - {id: a, text: "[one]"}
+      - {id: b, text: "[one][two][three]"}
+      - {id: c, text: "[one two three]"}
+      - {id: d, text: "[one][two three]"}
+    answer: [b]
+    explanation: >-
+      Unquoted, ${a[@]} is word-split after expansion, so "two three" breaks in two. Only the
+      quoted form "${a[@]}" expands to exactly one word per element, which is almost always what a
+      loop over an array means.
+    references: ["man 1 bash (Arrays)"]
+    tags: [arrays, quoting]
+    verify:
+      runtime: bash
+      code: |
+        a=(one "two three")
+        for w in ${a[@]}; do echo -n "[$w]"; done; echo
+  - id: bash-023
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      x=10
+      f() { local x=20; }
+      f
+      echo "$x"
+    code_lang: bash
+    choices:
+      - {id: a, text: "an empty line"}
+      - {id: b, text: "20"}
+      - {id: c, text: "an error: local outside a function"}
+      - {id: d, text: "10"}
+    answer: [d]
+    explanation: >-
+      local gives the function its own x for the duration of the call; the global is untouched.
+      Without local, the assignment would have changed the global x to 20, because bash functions
+      share the caller's variables by default.
+    references: ["man 1 bash (SHELL BUILTIN COMMANDS, local)"]
+    tags: [functions, variables]
+    verify:
+      runtime: bash
+      code: |
+        x=10
+        f() { local x=20; }
+        f
+        echo "$x"
+  - id: bash-024
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      [[ "file.txt" == *.txt ]] && echo match || echo no
+    code_lang: bash
+    choices:
+      - {id: a, text: "no"}
+      - {id: b, text: "match"}
+      - {id: c, text: "an error: too many arguments"}
+      - {id: d, text: "match no"}
+    answer: [b]
+    explanation: >-
+      Inside [[ ]], an unquoted right-hand side of == is a glob pattern, so *.txt matches.
+      Quoting it ("*.txt") would compare literally and print no. The single-bracket [ ] has no
+      pattern matching at all.
+    references: ["man 1 bash (Compound Commands, [[ expression ]])"]
+    tags: [conditions]
+    verify:
+      runtime: bash
+      code: |
+        [[ "file.txt" == *.txt ]] && echo match || echo no
+  - id: bash-025
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      [[ 10 < 9 ]] && echo yes || echo no
+    code_lang: bash
+    choices:
+      - {id: a, text: "it creates a file named 9"}
+      - {id: b, text: "no"}
+      - {id: c, text: "an error"}
+      - {id: d, text: "yes"}
+    answer: [d]
+    explanation: >-
+      In [[ ]], < compares strings lexicographically, and "1" sorts before "9". Numbers need -lt
+      or an arithmetic test: (( 10 < 9 )) prints no. In a single-bracket [ 10 < 9 ], the < would
+      be a redirection from a file named 9.
+    references: ["man 1 bash (CONDITIONAL EXPRESSIONS)"]
+    tags: [conditions, pitfalls]
+    verify:
+      runtime: bash
+      code: |
+        [[ 10 < 9 ]] && echo yes || echo no
+  - id: bash-026
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      cat <<'EOF'
+      home is $HOME
+      EOF
+    code_lang: bash
+    choices:
+      - {id: a, text: "home is"}
+      - {id: b, text: "an error: unterminated here-document"}
+      - {id: c, text: "home is /root"}
+      - {id: d, text: "home is $HOME"}
+    answer: [d]
+    explanation: >-
+      Quoting any part of the here-document delimiter ('EOF') turns off expansion in the body, so
+      $HOME is printed literally. With an unquoted EOF the shell would expand variables, command
+      substitutions and arithmetic inside it.
+    references: ["man 1 bash (Here Documents)"]
+    tags: [quoting, redirection]
+    verify:
+      runtime: bash
+      code: |
+        cat <<'EOF'
+        home is $HOME
+        EOF
+  - id: bash-027
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      x=$(printf 'a\n\n\n')
+      echo "${#x}"
+    code_lang: bash
+    choices:
+      - {id: a, text: "3"}
+      - {id: b, text: "4"}
+      - {id: c, text: "0"}
+      - {id: d, text: "1"}
+    answer: [d]
+    explanation: >-
+      Command substitution strips every trailing newline from the output, so x is just "a".
+      Scripts that need the newlines append a sentinel character and remove it afterwards.
+    references: ["man 1 bash (Command Substitution)"]
+    tags: [expansion]
+    verify:
+      runtime: bash
+      code: |
+        x=$(printf 'a\n\n\n')
+        echo "${#x}"
+  - id: bash-028
+    type: single
+    difficulty: 1
+    prompt: What does this print?
+    code: |
+      echo $(( 2 ** 10 ))
+    code_lang: bash
+    choices:
+      - {id: a, text: "1024"}
+      - {id: b, text: "20"}
+      - {id: c, text: "8"}
+      - {id: d, text: "an error: syntax error in expression"}
+    answer: [a]
+    explanation: >-
+      ** is exponentiation in bash arithmetic. ^ is bitwise XOR (2 ^ 10 is 8), and all bash
+      arithmetic is integer arithmetic.
+    references: ["man 1 bash (ARITHMETIC EVALUATION)"]
+    tags: [arithmetic]
+    verify:
+      runtime: bash
+      code: |
+        echo $(( 2 ** 10 ))
+  - id: bash-029
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      echo $(( 010 + 1 ))
+    code_lang: bash
+    choices:
+      - {id: a, text: "an error: value too great for base"}
+      - {id: b, text: "11"}
+      - {id: c, text: "9"}
+      - {id: d, text: "3"}
+    answer: [c]
+    explanation: >-
+      A leading zero makes a number octal in bash arithmetic: 010 is 8. It bites scripts that do
+      arithmetic on zero-padded dates — $(( 08 )) is an error. Force base ten with 10#08.
+    references: ["man 1 bash (ARITHMETIC EVALUATION)"]
+    tags: [arithmetic, pitfalls]
+    verify:
+      runtime: bash
+      code: |
+        echo $(( 010 + 1 ))
+  - id: bash-030
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      trap 'echo cleanup' EXIT
+      echo work
+      exit 3
+    code_lang: bash
+    choices:
+      - {id: a, text: "cleanup"}
+      - {id: b, text: "cleanup work"}
+      - {id: c, text: "work cleanup"}
+      - {id: d, text: "work"}
+    answer: [c]
+    explanation: >-
+      An EXIT trap runs whenever the shell exits, including through exit with a non-zero status,
+      so both lines print — here on separate lines, joined by a space in the answer. It is the
+      usual place to remove temporary files. (A trap does not run on SIGKILL.)
+    references: ["man 1 bash (SHELL BUILTIN COMMANDS, trap)"]
+    tags: [signals, scripts]
+    verify:
+      runtime: bash
+      code: |
+        out=$(bash -c 'trap "echo cleanup" EXIT; echo work; exit 3')
+        echo $out
+  - id: bash-031
+    type: single
+    difficulty: 2
+    prompt: Which is the safe way to create a temporary file in a script?
+    choices:
+      - {id: a, text: "tmp=/tmp/myscript.tmp"}
+      - {id: b, text: "tmp=/tmp/$RANDOM"}
+      - {id: c, text: "tmp=$(mktemp)"}
+      - {id: d, text: "tmp=/tmp/myscript.$$"}
+    answer: [c]
+    explanation: >-
+      mktemp creates the file atomically with an unpredictable name and mode 0600. Names built
+      from the PID, $RANDOM or a fixed string can be guessed, so another user can create a symlink
+      there first and have the script overwrite a file of theirs choosing.
+    references: ["man 1 mktemp"]
+    tags: [files, security]
+  - id: bash-032
+    type: multiple
+    difficulty: 3
+    prompt: Which of these read a file line by line without mangling backslashes or leading whitespace?
+    choices:
+      - {id: a, text: "for line in $(cat file); do …; done"}
+      - {id: b, text: "while read line; do …; done < file"}
+      - {id: c, text: "while IFS= read -r line; do …; done < file"}
+      - {id: d, text: "mapfile -t lines < file"}
+    answer: [c, d]
+    explanation: >-
+      IFS= keeps leading and trailing whitespace and -r keeps backslashes, so while IFS= read -r reads each line
+      exactly; mapfile -t loads every line into an array without its newline. Plain read strips
+      whitespace and eats backslashes, and for … in $(cat) splits on every space, not on lines.
+    references: ["man 1 bash (SHELL BUILTIN COMMANDS, read and mapfile)"]
+    tags: [files, quoting]
+  - id: bash-033
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      printf '%s-' a b c; echo
+    code_lang: bash
+    choices:
+      - {id: a, text: "a-b-c"}
+      - {id: b, text: "a b c-"}
+      - {id: c, text: "a-"}
+      - {id: d, text: "a-b-c-"}
+    answer: [d]
+    explanation: >-
+      printf reuses its format for as long as arguments remain, so %s- is applied to a, b and c
+      in turn, trailing dash included. It is a compact way to print every element of an array.
+    references: ["man 1 bash (SHELL BUILTIN COMMANDS, printf)"]
+    tags: [output]
+    verify:
+      runtime: bash
+      code: |
+        printf '%s-' a b c; echo
+  - id: bash-034
+    type: single
+    difficulty: 2
+    prompt: What does `cmd 2>&1 > out.log` do with cmd's standard error?
+    choices:
+      - {id: a, text: "It goes to out.log"}
+      - {id: b, text: "It goes to a file named 1"}
+      - {id: c, text: "It is discarded"}
+      - {id: d, text: "It still goes to the terminal"}
+    answer: [d]
+    explanation: >-
+      Redirections apply left to right. 2>&1 points stderr at what stdout is at that moment — the
+      terminal — and only then is stdout moved to out.log. To capture both, write > out.log 2>&1.
+    references: ["man 1 bash (REDIRECTION)"]
+    tags: [redirection]
+  - id: bash-035
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      v="  padded  "
+      echo "[${v// /}]"
+    code_lang: bash
+    choices:
+      - {id: a, text: "[padded  ]"}
+      - {id: b, text: "[padded]"}
+      - {id: c, text: "[  padded  ]"}
+      - {id: d, text: "[ padded ]"}
+    answer: [b]
+    explanation: >-
+      ${var//pattern/replacement} replaces every match; with an empty replacement it deletes them,
+      so all four spaces go. A single slash, ${v/ /}, would remove only the first one.
+    references: ["man 1 bash (Parameter Expansion)"]
+    tags: [expansion, strings]
+    verify:
+      runtime: bash
+      code: |
+        v="  padded  "
+        echo "[${v// /}]"
+  - id: bash-036
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      shopt -s nullglob
+      cd "$(mktemp -d)"
+      files=(*.log)
+      echo "${#files[@]}"
+    code_lang: bash
+    choices:
+      - {id: a, text: "an error: no match"}
+      - {id: b, text: "1"}
+      - {id: c, text: "0"}
+      - {id: d, text: "*.log"}
+    answer: [c]
+    explanation: >-
+      A glob that matches nothing normally stays as the literal text *.log, giving a one-element
+      array and a loop that runs once on a file that does not exist. nullglob makes it expand to
+      nothing instead; failglob would make it an error.
+    references: ["man 1 bash (Pathname Expansion; The Shopt Builtin)"]
+    tags: [expansion, files]
+    verify:
+      runtime: bash
+      code: |
+        shopt -s nullglob
+        cd "$(mktemp -d)"
+        files=(*.log)
+        echo "${#files[@]}"
+  - id: bash-037
+    type: single
+    difficulty: 1
+    prompt: What does `$?` hold immediately after a command runs?
+    choices:
+      - {id: a, text: "The PID of that command"}
+      - {id: b, text: "The PID of the last background job"}
+      - {id: c, text: "The exit status of that command"}
+      - {id: d, text: "The number of arguments it was given"}
+    answer: [c]
+    explanation: >-
+      $? is the exit status of the most recent foreground command or pipeline, 0 for success. The
+      shell's own PID is $$, the last background job's PID is $!, and $# counts positional
+      parameters. Any later command, even echo, overwrites $?.
+    references: ["man 1 bash (Special Parameters)"]
+    tags: [exit-status]
+  - id: bash-038
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      set -- "a b" c
+      for x in "$*"; do echo "[$x]"; done
+    code_lang: bash
+    choices:
+      - {id: a, text: "[a b c]"}
+      - {id: b, text: "[a b]"}
+      - {id: c, text: "[a] [b] [c]"}
+      - {id: d, text: "[a b] [c]"}
+    answer: [a]
+    explanation: >-
+      Quoted, "$*" joins all positional parameters into one word, separated by the first character
+      of IFS. "$@" is the form that keeps each parameter as its own word — "a b" and c here.
+    references: ["man 1 bash (Special Parameters)"]
+    tags: [quoting, expansion]
+    verify:
+      runtime: bash
+      code: |
+        set -- "a b" c
+        for x in "$*"; do echo "[$x]"; done
+  - id: bash-039
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      n=0
+      until (( n >= 3 )); do (( n++ )); done
+      echo "$n"
+    code_lang: bash
+    choices:
+      - {id: a, text: "4"}
+      - {id: b, text: "0"}
+      - {id: c, text: "3"}
+      - {id: d, text: "2"}
+    answer: [c]
+    explanation: >-
+      until runs its body while the condition is false and stops as soon as it is true, so n goes
+      0, 1, 2, 3 and the loop ends at 3. Note that (( n++ )) returns status 1 when n was 0, which
+      would stop a script running under set -e.
+    references: ["man 1 bash (Compound Commands, until)"]
+    tags: [loops, arithmetic]
+    verify:
+      runtime: bash
+      code: |
+        n=0
+        until (( n >= 3 )); do (( n++ )); done
+        echo "$n"
+  - id: bash-040
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      case "report.CSV" in
+        *.csv) echo lower ;;
+        *.[Cc][Ss][Vv]) echo any ;;
+        *) echo other ;;
+      esac
+    code_lang: bash
+    choices:
+      - {id: a, text: "lower"}
+      - {id: b, text: "other"}
+      - {id: c, text: "lower any"}
+      - {id: d, text: "any"}
+    answer: [d]
+    explanation: >-
+      case patterns are case-sensitive globs tried in order, and only the first match runs (;;
+      ends the clause). *.csv does not match .CSV; the bracket expression accepts either case.
+    references: ["man 1 bash (Compound Commands, case)"]
+    tags: [conditions]
+    verify:
+      runtime: bash
+      code: |
+        case "report.CSV" in
+          *.csv) echo lower ;;
+          *.[Cc][Ss][Vv]) echo any ;;
+          *) echo other ;;
+        esac
+  - id: bash-041
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      diff <(printf 'a\nb\n') <(printf 'a\nc\n') > /dev/null
+      echo $?
+    code_lang: bash
+    choices:
+      - {id: a, text: "an error: no such file"}
+      - {id: b, text: "2"}
+      - {id: c, text: "0"}
+      - {id: d, text: "1"}
+    answer: [d]
+    explanation: >-
+      <(…) is process substitution: each command's output appears as a file name (/dev/fd/N) that
+      diff can open. The inputs differ, and diff exits 1 for "different", 0 for identical and 2
+      for trouble.
+    references: ["man 1 bash (Process Substitution)", "man 1 diff"]
+    tags: [redirection, exit-status]
+    verify:
+      runtime: bash
+      code: |
+        diff <(printf 'a\nb\n') <(printf 'a\nc\n') > /dev/null
+        echo $?
+  - id: bash-042
+    type: single
+    difficulty: 2
+    prompt: A cron job runs `backup.sh`, which works from your shell but fails under cron with "command not found". What is the usual cause?
+    choices:
+      - {id: a, text: "cron runs every job with sh, which cannot run bash scripts"}
+      - {id: b, text: "the script is not executable by root"}
+      - {id: c, text: "cron runs jobs with a minimal PATH and no login profile"}
+      - {id: d, text: "cron jobs have no access to /usr/bin"}
+    answer: [c]
+    explanation: >-
+      cron starts jobs with a short PATH (typically /usr/bin:/bin) and without reading
+      ~/.bash_profile or ~/.bashrc, so tools in /usr/local/bin or ~/bin are not found. Set PATH at
+      the top of the crontab or the script, or use absolute paths. A #! line decides the
+      interpreter regardless of cron's shell.
+    references: ["man 5 crontab"]
+    tags: [scripts, scheduling]

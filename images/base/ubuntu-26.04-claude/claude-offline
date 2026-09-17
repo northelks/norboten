@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+"""`claude` on a lab machine: the real Claude Code 2.1.270, talking to a scripted model.
+
+Unless ANTHROPIC_BASE_URL is already set, this points Claude Code at the lab's model on
+127.0.0.1:18555, starting it first if nothing answers there. The model follows the script in
+/etc/norboten/model.json, which each lab writes, from its first step on every run; without one it
+only answers "ok".
+Everything Claude Code does with the answers — tool calls, permission checks, hooks — is real.
+"""
+
+import json
+import os
+import socket
+import subprocess
+import sys
+import time
+import urllib.request
+
+REAL = "/opt/claude/claude"
+PORT = 18555
+SCRIPT = "/etc/norboten/model.json"
+LOG = "/tmp/norboten-model.log"
+
+
+def listening() -> bool:
+    try:
+        with socket.create_connection(("127.0.0.1", PORT), timeout=0.2):
+            return True
+    except OSError:
+        return False
+
+
+def replay() -> None:
+    """Every run starts the lab's script from its first step, not where the last run stopped."""
+    try:
+        with open(SCRIPT) as f:
+            steps = json.load(f)
+    except (OSError, ValueError):
+        return
+    request = urllib.request.Request(
+        f"http://127.0.0.1:{PORT}/_script",
+        data=json.dumps(steps).encode(),
+        headers={"content-type": "application/json"},
+    )
+    try:
+        urllib.request.urlopen(request, timeout=5).close()
+    except OSError:
+        pass
+
+
+def main() -> None:
+    if not os.environ.get("ANTHROPIC_BASE_URL"):
+        os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{PORT}"
+        os.environ.setdefault("ANTHROPIC_API_KEY", "sk-norboten-offline")
+        if not listening():
+            cmd = [sys.executable, "/usr/local/lib/norboten/fake_anthropic.py", "--port", str(PORT)]
+            if os.path.exists(SCRIPT):
+                cmd += ["--script", SCRIPT]
+            with open(os.devnull, "rb") as nothing, open(LOG, "ab") as log:
+                subprocess.Popen(cmd, stdin=nothing, stdout=log, stderr=log, start_new_session=True)
+            for _ in range(50):
+                if listening():
+                    break
+                time.sleep(0.1)
+        replay()
+    for key, value in (
+        ("DISABLE_AUTOUPDATER", "1"),
+        ("DISABLE_TELEMETRY", "1"),
+        ("CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC", "1"),
+    ):
+        os.environ.setdefault(key, value)
+    os.execv(REAL, [REAL, *sys.argv[1:]])
+
+
+if __name__ == "__main__":
+    main()

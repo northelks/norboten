@@ -1,0 +1,20 @@
+schema_version: 1
+id: mcp-06-the-answers-from-last-year
+version: 1.0.0
+title: The Answers From Last Year
+track: mcp
+topics: [mcp, claude-code]
+difficulty: 2
+estimated_minutes: 30
+base_images: [ubuntu-26.04-claude]
+runtime: container
+resources:
+  cpus: 1
+objectives:
+  - "Find which of Claude Code's MCP scopes a server's definition comes from"
+  - "Keep an MCP server's secret out of the repository that configures it"
+checks:
+  - {id: 01_answers_come_from_the_current_edition, objective: 1, weight: 2}
+  - {id: 02_one_docs_server_defined, objective: 1}
+  - {id: 03_the_key_is_not_in_the_repository, objective: 2}
+reboot_required: false

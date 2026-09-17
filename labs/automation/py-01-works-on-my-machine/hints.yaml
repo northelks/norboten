@@ -1,0 +1,39 @@
+checks:
+  01_timer_enabled:
+    level_1: "Nothing will run the job after the next boot."
+    level_2: "A timer unit only fires if it is started, and only survives a reboot if it is
+              installed into a target."
+    level_3: "systemctl is-enabled etl-report.timer — and note that a timer nobody ever started does
+              not appear in systemctl list-timers at all."
+    level_4: "etl-report.timer is not enabled."
+    refs:
+      2: ["man 5 systemd.timer"]
+      3: ["journal:py-01-works-on-my-machine#timers-monotonic-or-calendar-and-which-unit-to-enable"]
+  02_job_succeeds_unattended:
+    level_1: "When systemd runs the job, it fails before writing anything."
+    level_2: "An interactive shell gives a script things systemd does not: an activated
+              environment and a current directory. Read the job's journal."
+    level_3: "sudo journalctl -u etl-report.service shows the traceback; compare ExecStart and the
+              working directory with how the author runs it."
+    level_4: "It runs with /usr/bin/python3 (no httpx) from / (no config/settings.json), and the
+              report directory is not writable by the job's user."
+    refs:
+      2: ["https://docs.python.org/3/library/venv.html", "man 5 systemd.exec"]
+      3: ["journal:py-01-works-on-my-machine#what-a-virtualenv-is-and-what-activate-does", "journal:py-01-works-on-my-machine#the-current-directory-is-an-input", "journal:py-01-works-on-my-machine#reproduce-systemds-environment-instead-of-waiting-for-it"]
+  03_runs_as_etl:
+    level_1: "The job runs with far more privilege than it needs."
+    level_2: "A service unit decides which account its process runs as."
+    level_3: "User= in the unit, set with a drop-in (systemctl edit etl-report.service)."
+    level_4: "Add User=etl to the service — then make sure etl can read what it needs and
+              write the report."
+    refs:
+      2: ["man 5 systemd.exec"]
+      3: ["journal:py-01-works-on-my-machine#running-as-the-right-account"]
+  04_token_protected:
+    level_1: "Any account on the machine can read the API token."
+    level_2: "A secret file should be readable only by the account that uses it."
+    level_3: "Look at the owner and mode of /etc/etl/token."
+    level_4: "Make etl the owner and set mode 0600."
+    refs:
+      2: ["journal:hello#how-the-kernel-picks-a-triad"]
+      3: ["journal:py-01-works-on-my-machine#the-token"]

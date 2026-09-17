@@ -1,0 +1,6 @@
+[Unit]
+Description=Rebuild the shop's price list
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/pricing/rebuild.py

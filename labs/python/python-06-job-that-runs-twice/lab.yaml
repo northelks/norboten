@@ -1,0 +1,23 @@
+schema_version: 1
+id: python-06-job-that-runs-twice
+version: 1.0.0
+title: The Job That Runs Twice
+track: python
+topics: [python, boot-systemd]
+difficulty: 4
+estimated_minutes: 40
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Keep two copies of the same job from running at once"
+  - "Leave the previous output in place when a run is refused or fails"
+  - "Let a timer start a job as often as it likes without overlapping runs"
+checks:
+  # 01 and 04 pass on the broken system by design: they are the guards that a fix for the overlap
+  # does not stop the rebuild working, or stop the timer running it
+  - {id: 01_a_single_run_still_works, objective: 2, baseline_pass: true}
+  - {id: 02_a_second_run_is_refused, objective: 1, weight: 2}
+  - {id: 03_the_output_is_never_half_written, objective: 2, weight: 2}
+  - {id: 04_the_timer_runs_it_often, objective: 3, baseline_pass: true}
+reboot_required: true

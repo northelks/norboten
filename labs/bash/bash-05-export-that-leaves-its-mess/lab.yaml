@@ -1,0 +1,22 @@
+schema_version: 1
+id: bash-05-export-that-leaves-its-mess
+version: 1.0.0
+title: The Export That Leaves Its Mess Behind
+track: bash
+topics: [bash, linux-basics]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Publish a file only when it is complete, in one step"
+  - "Clean up after a script however it ends: success, failure or a signal"
+  - "Keep two runs of the same script from sharing a temporary file"
+checks:
+  # 01 passes on the broken script by design: it is the guard that a fix still exports everything
+  - {id: 01_a_good_export_is_complete, objective: 1, baseline_pass: true}
+  - {id: 02_a_failed_export_leaves_nothing, objective: 1, weight: 2}
+  - {id: 03_an_interrupted_export_leaves_nothing, objective: 2, weight: 2}
+  - {id: 04_two_exports_at_once, objective: 3}
+reboot_required: true

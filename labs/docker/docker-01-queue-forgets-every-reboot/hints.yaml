@@ -1,0 +1,22 @@
+checks:
+  01_jobs_survive:
+    level_1: "Restarting the container empties the queue."
+    level_2: "Where does a container write its files when no volume is mounted, and what happens to
+              them when the container is removed? And does this Redis write to disk at all?"
+    level_3: "Read the docker run line in the unit: --rm, no -v for /data (so /data is an anonymous
+              volume that --rm deletes with the container), and the arguments given to redis-server."
+    level_4: "Redis runs with --save \"\" and --appendonly no in a --rm container with no volume.
+              Before replacing it, make Redis write its data out and copy it to a host directory,
+              then mount that directory at /data with persistence left on."
+    refs:
+      2: ["journal:containers#where-the-data-lives", "https://docs.docker.com/engine/storage/volumes/"]
+      3: ["journal:docker-01-queue-forgets-every-reboot#where-a-containers-files-live", "journal:docker-01-queue-forgets-every-reboot#named-volumes-and-bind-mounts", "journal:docker-01-queue-forgets-every-reboot#migrating-before-replacing"]
+  02_not_reachable_from_outside:
+    level_1: "Redis accepts connections from other machines."
+    level_2: "A published container port listens on every address of the host unless you say
+              otherwise."
+    level_3: "Look at the -p option in the unit's docker run command, and at ss -ltn."
+    level_4: "-p 6379:6379 binds 0.0.0.0. Publish it as 127.0.0.1:6379:6379."
+    refs:
+      2: ["journal:networking#listening-on-loopback-or-on-everything"]
+      3: ["journal:docker-01-queue-forgets-every-reboot#publishing-a-port"]

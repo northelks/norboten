@@ -1,0 +1,95 @@
+// lab: rhcsa-01
+// image: rocky-10
+// title: The contractor who cannot write
+// blurb: The wrong group, a shared directory with no setgid bit, a umask of 077 and a sudo rule
+// blurb: written for another team — found one symptom at a time.
+// cols: 96
+// rows: 28
+export SYSTEMD_PAGER= PAGER=cat
+cat /etc/redhat-release
+id kmorris
+id apatel
+id rsingh
+getent group devops developers ops
+groups kmorris
+getent passwd kmorris apatel rsingh
+chage -l kmorris 2>/dev/null || sudo chage -l kmorris
+ls -ld /srv/project
+ls -l /srv/project
+stat -c '%A %U:%G %n' /srv/project /srv/project/*
+namei -l /srv/project/README
+getfacl /srv/project 2>/dev/null || sudo getfacl /srv/project
+ls -Zd /srv/project
+sudo -u kmorris touch /srv/project/kmorris-test
+sudo -u apatel touch /srv/project/apatel-test
+sudo -u kmorris ls /srv/project
+sudo -u apatel ls -l /srv/project
+find / -xdev -group developers 2>/dev/null | head
+sudo find / -xdev -group developers 2>/dev/null | head
+sudo ls -la /home/kmorris
+sudo cat /home/kmorris/.bash_profile
+sudo -iu kmorris umask
+grep -i '^umask' /etc/login.defs
+grep -rn umask /etc/profile /etc/bashrc /etc/profile.d/ 2>/dev/null | head -5
+sudo -iu apatel umask
+sudo -iu kmorris bash -lc 'touch /tmp/kmorris-umask && ls -l /tmp/kmorris-umask'
+sudo ls -l /etc/sudoers.d/
+sudo cat /etc/sudoers.d/devops
+sudo -l -U kmorris
+sudo -l -U apatel
+sudo -l -U rsingh
+sudo grep -rn nginx /etc/sudoers /etc/sudoers.d/
+sudo grep -n includedir /etc/sudoers
+sudo -u apatel sudo -n systemctl restart nginx; echo "exit $?"
+grep -E '^(devops|developers|ops):' /etc/group
+sudo usermod -G devops kmorris
+id kmorris
+grep -E '^(devops|developers|ops):' /etc/group
+sudo -u kmorris id
+sudo chmod 2770 /srv/project
+sudo find /srv/project -maxdepth 1 -printf '%m %u:%g %p\n'
+ls -ld /srv/project
+stat -c '%a %A %U:%G' /srv/project
+sudo -u kmorris touch /srv/project/kmorris-test
+sudo -u apatel touch /srv/project/apatel-test
+ls -l /srv/project
+sudo -u rsingh ls /srv/project; echo "rsingh exit $?"
+sudo -u kmorris mkdir /srv/project/releases
+ls -ld /srv/project/releases
+sudo cp /home/kmorris/.bash_profile /root/kmorris.bash_profile.bak
+sudo grep -n umask /home/kmorris/.bash_profile
+sudo sed -i 's/^umask 077$/umask 002/' /home/kmorris/.bash_profile
+sudo grep -n umask /home/kmorris/.bash_profile
+sudo -iu kmorris umask
+sudo -iu kmorris bash -lc 'echo draft > /srv/project/plan.txt; ls -l /srv/project/plan.txt'
+sudo -u apatel sh -c 'echo reviewed >> /srv/project/plan.txt'
+cat /srv/project/plan.txt
+sudo -u kmorris sh -c 'echo edit-by-kmorris >> /srv/project/plan.txt'
+stat -c '%A %U:%G %n' /srv/project/plan.txt
+ls -l /srv/project/plan.txt
+sudo cp /etc/sudoers.d/devops /root/sudoers.devops.bak
+sudo sed -i 's/^%ops /%devops /' /etc/sudoers.d/devops
+sudo cat /etc/sudoers.d/devops
+sudo visudo -cf /etc/sudoers.d/devops
+sudo visudo -c
+sudo grep -c . /etc/sudoers.d/devops
+ls -l /etc/sudoers.d/devops
+sudo -l -U kmorris
+sudo -l -U rsingh
+systemctl is-active nginx || sudo systemctl start nginx
+sudo -u kmorris sudo -n systemctl restart nginx; echo "kmorris exit $?"
+sudo -u apatel sudo -n systemctl restart nginx; echo "apatel exit $?"
+sudo -u rsingh sudo -n systemctl restart nginx; echo "rsingh exit $?"
+sudo -u kmorris sudo -n systemctl stop nginx; echo "stop is not allowed: exit $?"
+systemctl is-active nginx
+systemctl status nginx --no-pager | head -5
+sudo journalctl -n 6 --no-pager _COMM=sudo
+sudo rm -f /srv/project/kmorris-test /srv/project/apatel-test /tmp/kmorris-umask
+sudo -u kmorris rmdir /srv/project/releases
+ls -la /srv/project
+id kmorris
+ls -ld /srv/project
+sudo -iu kmorris umask
+sudo cat /etc/sudoers.d/devops
+getent group devops
+echo "kmorris: devops only, setgid workspace, umask 002, nginx restart rule for %devops"

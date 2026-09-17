@@ -1,0 +1,10 @@
+---
+# Public, documented password — see docs/lab-spec.md section 3. Labs may change it.
+lab_baseline_root_password_hash: "$6$norbotenlab$vdAUiijLS8tzkhQjplbpJz2BC2UUq1c5VHPnRPqbikkKqinjMZfyKnJGwxjnuFJ50Zo8sr5vzEqvk9E4OQxlL."
+lab_baseline_grub_timeout: 1
+lab_baseline_packages: []
+lab_baseline_packages_absent: []
+lab_baseline_services_enabled: []
+lab_baseline_services_disabled: []
+lab_baseline_serial_console: "{{ 'ttyAMA0' if ansible_architecture == 'aarch64' else 'ttyS0' }}"
+lab_baseline_local_repo_packages: []

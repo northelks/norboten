@@ -1,0 +1,52 @@
+---
+- name: Install lab packages (dnf)
+  ansible.builtin.dnf:
+    name: "{{ lab_baseline_packages }}"
+    state: present
+  when: norboten_pkg == 'dnf'
+
+- name: Install lab packages (apt)
+  ansible.builtin.apt:
+    name: "{{ lab_baseline_packages }}"
+    state: present
+    update_cache: true
+    install_recommends: false
+  when: norboten_pkg == 'apt'
+
+# Only what depends on them goes too: no autoremove, so nothing a lab uses is taken with them.
+- name: Remove what the cloud image ships and a lab VM has no use for (apt)
+  ansible.builtin.apt:
+    name: "{{ lab_baseline_packages_absent }}"
+    state: absent
+    purge: true
+  when: norboten_pkg == 'apt' and lab_baseline_packages_absent | length > 0
+
+- name: Install lab packages (apk)
+  community.general.apk:
+    name: "{{ lab_baseline_packages }}"
+    state: present
+    update_cache: true
+  when: norboten_pkg == 'apk'
+
+# A local package mirror, so RHCSA labs can practise repository configuration offline.
+- name: Local package mirror
+  when: lab_baseline_local_repo_packages | length > 0
+  block:
+    - name: Install createrepo_c
+      ansible.builtin.dnf:
+        name: createrepo_c
+        state: present
+    - name: Create the mirror directory
+      ansible.builtin.file:
+        path: /opt/repos/local
+        state: directory
+        mode: "0755"
+    - name: Download the mirrored packages
+      ansible.builtin.command: >-
+        dnf download --destdir /opt/repos/local {{ lab_baseline_local_repo_packages | join(' ') }}
+      args:
+        creates: /opt/repos/local/repodata
+    - name: Build the repository metadata
+      ansible.builtin.command: createrepo_c /opt/repos/local
+      args:
+        creates: /opt/repos/local/repodata

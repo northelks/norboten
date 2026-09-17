@@ -1,0 +1,21 @@
+schema_version: 1
+id: bash-07-config-that-breaks-on-a-password
+version: 1.0.0
+title: The Config That Breaks on a Password
+track: bash
+topics: [bash, users-permissions]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Substitute any value into a template literally, whatever characters it contains"
+  - "Write a file that holds a secret so that nobody else can ever read it"
+  - "Refuse to render a configuration with a value missing"
+checks:
+  - {id: 01_any_password_survives, objective: 1, weight: 2}
+  - {id: 02_the_config_stays_private, objective: 2}
+  - {id: 03_a_missing_value_fails, objective: 3}
+  - {id: 04_the_service_logs_in, objective: 1}
+reboot_required: true

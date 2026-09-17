@@ -1,0 +1,9 @@
+[Unit]
+Description=Application spooler
+RequiresMountsFor=/var/lib/app
+
+[Service]
+ExecStart=/usr/local/bin/app-spooler
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,20 @@
+schema_version: 1
+id: mcp-04-the-server-that-talks-too-much
+version: 1.0.0
+title: The Server That Talks Too Much
+track: mcp
+topics: [mcp, logging-journald]
+difficulty: 2
+estimated_minutes: 25
+base_images: [ubuntu-26.04-claude]
+runtime: container
+resources:
+  cpus: 1
+objectives:
+  - "Keep a stdio MCP server's stdout for the protocol alone"
+  - "Keep a server's diagnostics when moving them off stdout"
+checks:
+  - {id: 01_the_server_connects, objective: 1}
+  - {id: 02_stdout_carries_only_the_protocol, objective: 1, weight: 2}
+  - {id: 03_the_log_is_still_written, objective: 2}
+reboot_required: false

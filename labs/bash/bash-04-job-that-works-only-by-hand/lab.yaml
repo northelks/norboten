@@ -1,0 +1,21 @@
+schema_version: 1
+id: bash-04-job-that-works-only-by-hand
+version: 1.0.0
+title: The Job That Works Only by Hand
+track: bash
+topics: [bash, boot-systemd]
+difficulty: 2
+estimated_minutes: 30
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Write a script that does not depend on the caller's environment or working directory"
+  - "Fail a script, and keep the previous output, when its input is missing"
+  - "Run a script from a systemd timer and prove the run succeeded"
+checks:
+  - {id: 01_runs_with_an_empty_environment, objective: 1, weight: 2}
+  - {id: 02_runs_from_any_directory, objective: 1}
+  - {id: 03_missing_config_fails_cleanly, objective: 2}
+  - {id: 04_the_nightly_run_succeeds, objective: 3}
+reboot_required: true

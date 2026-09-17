@@ -1,0 +1,21 @@
+schema_version: 1
+id: python-03-report-that-crashes-on-one-name
+version: 1.0.0
+title: The Report That Crashes on One Name
+track: python
+topics: [python, linux-basics]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Read and write text files with the encoding stated, not the machine's"
+  - "Keep every character of the data, instead of dropping what does not decode"
+  - "Run a job from a systemd timer and prove its output is complete"
+checks:
+  - {id: 01_the_old_export_is_read, objective: 1, weight: 2}
+  - {id: 02_every_name_survives, objective: 2, weight: 2}
+  - {id: 03_the_output_is_utf8, objective: 1}
+  - {id: 04_the_nightly_run_succeeds, objective: 3}
+reboot_required: true

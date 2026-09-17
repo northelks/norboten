@@ -1,0 +1,17 @@
+---
+# Pinned so a rebuilt image gives every lab the same tools. Bump deliberately, rebuild, re-run the gate.
+devops_stack_terraform_version: 1.15.6
+# Providers mirrored into the image; labs pin these ranges and terraform init never touches the network.
+devops_stack_terraform_providers:
+  - {name: local, source: hashicorp/local, version: "~> 2.5"}
+  - {name: random, source: hashicorp/random, version: "~> 3.7"}
+  - {name: "null", source: hashicorp/null, version: "~> 3.2"}  # quoted: bare null is YAML's null
+# Pulled into the image's Docker store; docker labs run them with no registry.
+devops_stack_docker_images:
+  - redis:7.4-alpine
+  - nginx:1.29-alpine
+# Wheels a lab can install into a venv offline (pip install --no-index --find-links /opt/wheels).
+devops_stack_wheels:
+  - setuptools
+  - wheel
+  - pyyaml

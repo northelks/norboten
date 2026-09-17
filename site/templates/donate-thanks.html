@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="section">
+  <div class="wrap center donate-hero">
+    <div class="kicker">Donate</div>
+    <h1>Thank you</h1>
+    <p class="lede">
+      Stripe has your receipt, and it carries the link that stops a monthly donation whenever you
+      want to. Nothing else changes: the same Norboten, the same labs, no tier and no badge.
+    </p>
+    <p>
+      <a class="btn solid" href="{{ root }}install/index.html">Install Norboten</a>
+      <a class="btn" href="{{ root }}labs/index.html">Look at the labs</a>
+    </p>
+    <p class="muted">
+      If the payment did not go through, nothing was charged — the
+      <a href="{{ root }}donate/index.html">donate page</a> is still there.
+    </p>
+  </div>
+</section>
+{% endblock %}

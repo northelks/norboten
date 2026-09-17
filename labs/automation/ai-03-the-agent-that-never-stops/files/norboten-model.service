@@ -1,0 +1,9 @@
+[Unit]
+Description=Scripted model endpoint for the lab (stands in for Ollama's /v1 API)
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/norboten-model/fake_openai.py --port 11500 --script /etc/norboten-model/script.json
+DynamicUser=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=notes internal web app
+After=network.target
+
+[Service]
+User=notes
+ExecStart=/usr/local/bin/notes-app
+
+[Install]
+WantedBy=multi-user.target

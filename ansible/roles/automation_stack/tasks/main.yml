@@ -1,0 +1,82 @@
+---
+# Everything the automation track's labs need, installed at image build time so labs work offline.
+# Services are installed but left disabled: each lab enables what it teaches.
+
+- name: Automation packages
+  ansible.builtin.apt:
+    name:
+      - git
+      - jq
+      - nginx
+      - openssl
+      - postgresql
+      - postgresql-18-pgvector
+      - python3-pip
+      - python3-venv
+      - sqlite3
+      - xz-utils
+      - zstd
+    state: present
+    install_recommends: false
+
+- name: Leave the heavy services off until a lab asks for them
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: false
+    state: stopped
+  loop:
+    - nginx
+    - postgresql
+
+# --- Ollama, CPU only ------------------------------------------------------------------------
+
+- name: Install Ollama without its GPU libraries (streamed; only the CPU backend is kept)
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -fsSL "https://github.com/ollama/ollama/releases/download/{{ automation_stack_ollama_version }}/ollama-linux-{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}.tar.zst" \
+      | zstd -dc \
+      | tar -x -C /usr/local --exclude='lib/ollama/cuda_*' --exclude='lib/ollama/rocm*' \
+            --exclude='lib/ollama/vulkan*' --exclude='lib/ollama/mlx*'
+  args:
+    executable: /bin/bash
+    creates: /usr/local/bin/ollama
+
+- name: ollama system user
+  ansible.builtin.user:
+    name: ollama
+    system: true
+    home: /var/lib/ollama
+    create_home: true
+    shell: /usr/sbin/nologin
+
+- name: Model directory
+  ansible.builtin.file:
+    path: /var/lib/ollama/models
+    state: directory
+    owner: ollama
+    group: ollama
+    mode: "0755"
+
+- name: Pull the models into the image
+  ansible.builtin.shell: |
+    set -e
+    OLLAMA_MODELS=/var/lib/ollama/models /usr/local/bin/ollama serve >/tmp/ollama-build.log 2>&1 &
+    pid=$!
+    for i in $(seq 1 60); do curl -fs http://127.0.0.1:11434/api/tags >/dev/null && break; sleep 1; done
+    {% for m in automation_stack_ollama_models %}
+    /usr/local/bin/ollama pull {{ m }}
+    {% endfor %}
+    kill $pid
+    wait $pid || true
+    chown -R ollama:ollama /var/lib/ollama
+  args:
+    executable: /bin/bash
+    creates: /var/lib/ollama/models/manifests
+
+# --- Python wheelhouse -------------------------------------------------------------------------
+
+- name: Wheelhouse for offline venvs
+  ansible.builtin.command: >-
+    pip3 download --dest /opt/wheels --only-binary=:all: {{ automation_stack_wheels | map('quote') | join(' ') }}
+  args:
+    creates: /opt/wheels

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="section">
+  <div class="wrap narrow">
+    <div class="kicker">Privacy policy</div>
+    <h1>What Norboten keeps about you</h1>
+    <p class="lede">
+      As little as the features need, and nothing at all until you sign in. This page says what,
+      where, and for how long — every line of it is checked against the code, which is
+      <a href="{{ github }}" rel="noopener">open</a> for you to check too.
+    </p>
+    <p class="muted mono small">Last updated {{ privacy_updated }}</p>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap narrow prose policy">
+    <h2 id="who">Who runs it</h2>
+    <p>
+      Norboten is an open-source project run by one person, Ihar Petushkou, from Kraków, Poland. The
+      site <span class="mono">{{ domain }}</span> and the API <span class="mono">api.{{ domain }}</span>
+      run on a single server rented in the European Union. Anyone may run their own copy; this policy
+      covers only the one at <span class="mono">{{ domain }}</span>.
+    </p>
+
+    <h2 id="locally">What runs on your machine, and sends nothing</h2>
+    <p>
+      The labs, the virtual machines, the grading, the theory, the journals and the tutor all run on
+      your own computer. Without signing in the terminal app talks to the network only to download
+      what it needs (Lima, the golden images), to ask PyPI whether a newer version exists, and to
+      read the public boards and live sessions from the API — requests that carry no identity. The
+      tutor runs on your machine too, on the model it finds there — Claude Code on your own
+      subscription, your own API key, or a local Ollama — and nothing of it passes through our server. There is no telemetry in the terminal app.
+    </p>
+
+    <h2 id="site">The website</h2>
+    <p>
+      The site is static files. It sets <strong>no cookies</strong>. When you sign in, the site keeps
+      a token in your browser's storage — <span class="mono">localStorage</span> under
+      <span class="mono">norboten.token</span> if you ticked "Remember this browser" (valid 90 days),
+      otherwise <span class="mono">sessionStorage</span> (valid 12 hours, gone when the tab
+      closes) — and, for the minute a sign-in takes, a random <span class="mono">norboten.signin.state</span>
+      value that protects it from forgery. Signing out deletes the token here and on the server.
+    </p>
+    <p>
+      <strong>Analytics.</strong> {% if ga_id %}This build loads Google Analytics 4
+      (<span class="mono">{{ ga_id }}</span>), which sets Google's own <span class="mono">_ga</span>
+      cookies and reports pages viewed, the referring site, the device type and an approximate
+      location to Google. {% else %}This build loads no analytics script at all. {% endif %}Google
+      Analytics is only ever on when the server's operator sets a measurement ID when building the
+      site; a self-hosted copy has none unless its operator adds one.
+    </p>
+    <p>
+      <strong>The consultant</strong> (the chat button) answers with a model that runs on our own
+      server. Your question is not stored: the server records only that a question was asked, the
+      lab page it came from, and whether it was refused. An AI client connected over MCP is recorded
+      the same way — which tool was called and whether the caller was signed in, not what it asked.
+    </p>
+
+    <h2 id="account">Your account</h2>
+    <p>
+      You sign in with <strong>GitHub, and nothing else</strong> — there is no password and no email.
+      GitHub tells us your numeric GitHub user id and your login, with no extra permission asked; the
+      GitHub token that carried them is revoked at once and never stored. What the server keeps:
+    </p>
+    <ul>
+      <li>your GitHub user id and login, which your public profile links to;</li>
+      <li>the nick you choose, once, and the country you choose;</li>
+      <li>the attempts you submit — lab or theory, when, how long, the score, pass or fail — and the
+        ratings computed from them;</li>
+      <li>the sign-in tokens for this browser, each terminal and each AI client you connect, stored
+        only as hashes, each with when it was made, last used and expires.</li>
+    </ul>
+    <p>
+      Your nick, country, GitHub login, attempts, ratings and activity heatmap form your
+      <strong>public profile</strong> and appear on the boards — that is what an account is for.
+    </p>
+    <p>
+      <strong>The country guess.</strong> To pre-fill the country field, the server looks up the
+      address your request came from in an offline table (DB-IP Lite, a file on our own server). The
+      address is not sent anywhere and not stored, and the guess is not stored either — only the
+      country you actually submit.
+    </p>
+
+    <h2 id="discord">Discord</h2>
+    <p>
+      Linking Discord is optional. It asks Discord for your identity only, plus permission to add you
+      to the Norboten server if — and only if — you tick that box, which is off by default. Discord's
+      token is used for those calls and dropped; we keep only your Discord user id, whether you want
+      the weekly digest (off by default), and the last error Discord gave when a digest could not be
+      delivered. The digest is a direct message from our bot. Unlinking deletes the id.
+    </p>
+
+    <h2 id="live">Recordings and live sessions</h2>
+    <p>
+      Nothing you do in a lab is recorded unless you ask. <kbd>p</kbd> records to your own disk.
+      <kbd>P</kbd> publishes a session, after a confirmation, and it is <strong>public by design</strong>:
+      anyone on the Live page sees your terminal, the commands you type and the files you change, with
+      your nick and country. A published session and its recording are deleted automatically a week
+      after it started. Do not type anything into a published session that you would not show a
+      stranger.
+    </p>
+
+    <h2 id="donations">Donations</h2>
+    <p>
+      Donations go through Stripe Checkout. Your card, name and address are entered on Stripe's page
+      and never reach our server; nothing about a donation is stored here. Stripe's own
+      <a href="https://stripe.com/privacy" rel="noopener">privacy policy</a> applies to what you give
+      Stripe.
+    </p>
+
+    <h2 id="server">Logs, statistics and backups</h2>
+    <ul>
+      <li>The web server keeps no access log.</li>
+      <li>The API's process log has a line per request: the address it came from, the method, the
+        path and the status. It is kept only as long as the running container, which every deploy
+        replaces, and it is not copied anywhere.</li>
+      <li>Rate limits count requests per address in memory, for about a minute, and keep nothing
+        afterwards.</li>
+      <li>Server health metrics (CPU, memory, request counts) are kept for 30 days and name nobody.</li>
+      <li>The database is backed up nightly on the same server and each backup is kept for 14 days.
+        An encrypted copy may also go to off-site storage, which keeps a daily copy for 14 days and a
+        weekly one for 8 weeks — so something deleted from the database is gone from every backup
+        within 8 weeks.</li>
+    </ul>
+
+    <h2 id="delete">Seeing and deleting your data</h2>
+    <p>
+      Your profile page shows everything the server holds about your work; the account page lists
+      where you are signed in, and signing out there ends that sign-in. To delete the account entirely, open an
+      issue on <a href="{{ github }}/issues" rel="noopener">GitHub</a> from the GitHub account you
+      sign in with — that is how we know it is you — or ask on the
+      <a href="{{ root }}community/index.html">community server</a>. The account, its attempts,
+      ratings, tokens and Discord link are deleted within 30 days, and leave the backups within
+      8 weeks after that. You can also revoke Norboten in your GitHub settings under Applications at any time.
+    </p>
+
+    <h2 id="licence">Licences</h2>
+    <p>
+      The code and the content in the repository are licensed Apache-2.0. The country table is
+      <a href="https://db-ip.com" rel="noopener">IP geolocation by DB-IP</a>, licensed
+      <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>.
+    </p>
+
+    <h2 id="contact">Contact and changes</h2>
+    <p>
+      Questions about this policy go to the <a href="{{ github }}/issues" rel="noopener">GitHub issues</a>
+      or the <a href="{{ root }}community/index.html">community</a>. When what Norboten keeps changes,
+      this page changes with it, in the same commit, and the date at the top moves; the full history
+      is in the repository.
+    </p>
+  </div>
+</section>
+{% endblock %}

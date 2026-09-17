@@ -1,0 +1,12 @@
+---
+automation_stack_ollama_version: v0.34.0
+automation_stack_ollama_models:
+  - qwen2.5:0.5b      # a small chat model: proves a deployment works on a CPU, nothing more
+  - all-minilm        # a small embedding model for the RAG lab
+automation_stack_wheels:
+  - fastapi
+  - uvicorn
+  - httpx
+  - "psycopg[binary]"
+  - pydantic
+  - python-multipart

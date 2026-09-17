@@ -1,0 +1,22 @@
+{# One theory question, answerable in place: the choices are buttons, and the answer, the
+   explanation and the reference appear only after one is pressed (site/static/quiz.js). #}
+{% macro question(q, label="") %}
+<div class="quiz" data-answer="{{ q.answer|join(',') }}" data-type="{{ q.type }}">
+  {% if label %}<div class="kicker">{{ label }}</div>{% endif %}
+  <p class="prompt">{{ q.prompt }}</p>
+  {% if q.code %}<pre><code>{{ q.code }}</code></pre>{% endif %}
+  <div class="choices">
+    {% for c in q.choices %}
+    <button type="button" class="choice" data-choice="{{ c.id }}">
+      <span class="mark mono">{{ c.id }}</span><span class="text">{{ c.text }}</span>
+    </button>
+    {% endfor %}
+  </div>
+  <div class="verdict" hidden>
+    <p class="answer"><strong>{{ q.answer_text }}</strong>
+      {% if q.type == 'multiple' %}<span class="muted"> — more than one answer</span>{% endif %}</p>
+    <p class="muted">{{ q.explanation }}</p>
+    <p class="mono muted refs">{{ q.references }}{% if q.verified %} · executed in a sandbox{% endif %}</p>
+  </div>
+</div>
+{% endmacro %}

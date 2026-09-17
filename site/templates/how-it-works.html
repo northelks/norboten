@@ -1,0 +1,1229 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">How it works</div>
+    <h1>The whole system, part by part</h1>
+    <p class="lede prose">
+      A terminal interface that drives real virtual machines on your own computer, a runner inside
+      each machine that breaks it and grades it, one server that holds everything a laptop should
+      not, and a CI that refuses to ship a lab nobody can solve. This is the architecture, the data,
+      the pipelines, and the measurements that settled the arguable decisions.
+    </p>
+    <nav class="page-index" aria-label="On this page">
+      <a href="#overview"><span class="n">01</span><span class="t">The system</span><span class="muted">the two halves, and what each one may do</span></a>
+      <a href="#lifecycle"><span class="n">02</span><span class="t">A lab</span><span class="muted">start, break, check, reset</span></a>
+      <a href="#grading"><span class="n">03</span><span class="t">Grading</span><span class="muted">checks, the reboot, the score</span></a>
+      <a href="#gate"><span class="n">04</span><span class="t">The gate</span><span class="muted">why a lab cannot merge unsolved</span></a>
+      <a href="#vm"><span class="n">05</span><span class="t">Inside the VM</span><span class="muted">you, the grader, the witness</span></a>
+      <a href="#claude"><span class="n">06</span><span class="t">Claude labs</span><span class="muted">a model inside the machine</span></a>
+      <a href="#claude-ci"><span class="n">07</span><span class="t">Claude in CI</span><span class="muted">the jobs that run headless</span></a>
+      <a href="#server"><span class="n">08</span><span class="t">The server</span><span class="muted">one Compose project, nine containers</span></a>
+      <a href="#rated"><span class="n">09</span><span class="t">Rated and unrated</span><span class="muted">which answers are public, and why</span></a>
+      <a href="#data"><span class="n">10</span><span class="t">The data</span><span class="muted">accounts, attempts, ratings</span></a>
+      <a href="#signin"><span class="n">11</span><span class="t">Signing in</span><span class="muted">GitHub only, and no token kept</span></a>
+      <a href="#live"><span class="n">12</span><span class="t">Live sessions</span><span class="muted">a PTY, server-sent to viewers</span></a>
+      <a href="#agents"><span class="n">13</span><span class="t">The agents</span><span class="muted">what each one may read</span></a>
+      <a href="#mcp"><span class="n">14</span><span class="t">The MCP server</span><span class="muted">tools for AI clients, behind a gate</span></a>
+      <a href="#consultant"><span class="n">15</span><span class="t">The consultant</span><span class="muted">BM25 over this repository</span></a>
+      <a href="#questions"><span class="n">16</span><span class="t">Questions</span><span class="muted">drafted, criticised, executed</span></a>
+      <a href="#plugin"><span class="n">17</span><span class="t">The plugin</span><span class="muted">from an idea to a proven lab</span></a>
+      <a href="#analytics"><span class="n">18</span><span class="t">Analytics</span><span class="muted">what the numbers are drawn from</span></a>
+      <a href="#cicd"><span class="n">19</span><span class="t">CI/CD</span><span class="muted">test, image, site, rollout</span></a>
+      <a href="#decisions"><span class="n">20</span><span class="t">Decisions</span><span class="muted">the arguable ones, with the measurement</span></a>
+      <a href="#stack"><span class="n">21</span><span class="t">The stack</span><span class="muted">every dependency, and why</span></a>
+    </nav>
+  </div>
+</section>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#2c463a"/>
+    </marker>
+    <marker id="arrg" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#4ade80"/>
+    </marker>
+    <marker id="arra" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#fbbf24"/>
+    </marker>
+  </defs>
+</svg>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="overview">The system</h2>
+    <div class="prose">
+      <p>
+        Everything a learner needs runs on their own machine, and keeps working with no network once
+        an image and a lab are downloaded. The server exists for what a client must not do alone:
+        keep accounts and ratings, run the consultant on its own Ollama, carry live
+        sessions to viewers, and serve the site. It calls no hosted model. It is one Docker Compose project on one machine — no cloud provider's services, no
+        Kubernetes.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 470" role="img" aria-label="System overview">
+        <rect class="svg-box" x="10" y="10" width="440" height="450" rx="12"/>
+        <text class="svg-title" x="30" y="38">Your machine</text>
+        <rect class="svg-box-accent" x="30" y="54" width="400" height="70" rx="8"/>
+        <text class="svg-label" x="46" y="80">norboten — the TUI (Textual)</text>
+        <text class="svg-label-sm" x="46" y="100">eight sections · the lab screen · doctor</text>
+        <text class="svg-label-sm" x="46" y="116">the terminal player · the activity log</text>
+        <rect class="svg-box" x="30" y="142" width="400" height="56" rx="8"/>
+        <text class="svg-label" x="46" y="166">engine → Lima 2.2.0 (pinned) → QEMU + HVF / KVM</text>
+        <text class="svg-label-sm" x="46" y="186">disk snapshots · serial console · QMP reset</text>
+        <rect class="svg-box" x="30" y="216" width="400" height="176" rx="8"/>
+        <text class="svg-title" x="46" y="240">Lab VM — Rocky 10 · Ubuntu 26.04 · Alpine</text>
+        <rect class="svg-box-accent" x="46" y="254" width="176" height="56" rx="6"/>
+        <text class="svg-label" x="60" y="278">norboten-runner</text>
+        <text class="svg-label-sm" x="60" y="296">standard library only</text>
+        <rect class="svg-box" x="236" y="254" width="178" height="56" rx="6"/>
+        <text class="svg-label-sm" x="250" y="276">break/ → the faults</text>
+        <text class="svg-label-sm" x="250" y="294">check/ → pass + evidence</text>
+        <rect class="svg-box" x="46" y="322" width="368" height="56" rx="6"/>
+        <text class="svg-label-sm" x="60" y="344">your shell · norboten-grader (its own key and sudo)</text>
+        <text class="svg-label-sm" x="60" y="362">git in /var/lib/norboten/watch → a diff per command</text>
+        <text class="svg-label-sm" x="30" y="420">~/.norboten: images · labs · sessions · recordings · token</text>
+        <text class="svg-label-sm" x="30" y="442">tutor + review: your Claude Code, API key or Ollama</text>
+        <path class="svg-line-accent" d="M230,124 L230,142" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M230,198 L230,216" marker-end="url(#arrg)"/>
+
+        <rect class="svg-box" x="530" y="10" width="460" height="300" rx="12"/>
+        <text class="svg-title" x="550" y="38">One server — docker compose up -d</text>
+        <rect class="svg-box-accent" x="550" y="54" width="420" height="42" rx="8"/>
+        <text class="svg-label" x="566" y="80">caddy — TLS · the site · proxy</text>
+        <rect class="svg-box-accent" x="550" y="110" width="200" height="54" rx="8"/>
+        <text class="svg-label" x="566" y="134">api — FastAPI</text>
+        <text class="svg-label-sm" x="566" y="152">auth · ratings · play · chat</text>
+        <rect class="svg-box" x="770" y="110" width="200" height="54" rx="8"/>
+        <text class="svg-label" x="786" y="134">grafana · digest</text>
+        <text class="svg-label-sm" x="786" y="152">dashboards · a weekly timer</text>
+        <rect class="svg-box" x="550" y="178" width="128" height="54" rx="8"/>
+        <text class="svg-label" x="566" y="202">postgres</text>
+        <text class="svg-label-sm" x="566" y="220">every table</text>
+        <rect class="svg-box" x="692" y="178" width="128" height="54" rx="8"/>
+        <text class="svg-label" x="708" y="202">redis</text>
+        <text class="svg-label-sm" x="708" y="220">live · limits</text>
+        <rect class="svg-box" x="834" y="178" width="136" height="54" rx="8"/>
+        <text class="svg-label" x="850" y="202">ollama</text>
+        <text class="svg-label-sm" x="850" y="220">a local model</text>
+        <rect class="svg-box" x="550" y="246" width="420" height="44" rx="8"/>
+        <text class="svg-label-sm" x="566" y="273">prometheus · exporters · backup and analytics jobs</text>
+
+        <rect class="svg-box" x="530" y="336" width="460" height="124" rx="12"/>
+        <text class="svg-title" x="550" y="364">GitHub</text>
+        <rect class="svg-box" x="550" y="380" width="200" height="60" rx="8"/>
+        <text class="svg-label" x="566" y="404">Actions</text>
+        <text class="svg-label-sm" x="566" y="424">tests · the gate · Claude Code jobs</text>
+        <rect class="svg-box" x="770" y="380" width="200" height="60" rx="8"/>
+        <text class="svg-label" x="786" y="404">GHCR</text>
+        <text class="svg-label-sm" x="786" y="424">images · labs</text>
+
+        <path class="svg-line-accent" d="M430,89 L550,75" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="466" y="72">HTTPS</text>
+        <path class="svg-line" d="M530,420 L452,420" marker-end="url(#arr)"/>
+        <text class="svg-label-sm" x="454" y="408">pull</text>
+        <text class="svg-label-sm" x="454" y="440">images, labs</text>
+        <path class="svg-line" d="M760,336 L760,310" marker-end="url(#arr)"/>
+        <text class="svg-label-sm" x="770" y="328">rsync + deploy.sh</text>
+      </svg>
+      <figcaption>
+        Without the server, labs, theory, journals, local recordings and the tutor all still work —
+        the tutor runs on your own model — and the boards say they are offline.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="lifecycle">A lab, from download to grade</h2>
+    <div class="prose">
+      <p>
+        A golden image is the distribution's own cloud image plus a baseline applied by Ansible:
+        every package the track needs, a serial console, a persistent journal, shell history
+        written after every command. Nothing is installed while you work, which is why a lab runs
+        on a plane. The keys below are the lab screen's.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 250" role="img" aria-label="Lab lifecycle">
+        {% for step in lifecycle %}
+        <rect class="{{ 'svg-box-accent' if step.accent else 'svg-box' }}"
+              x="{{ step.x }}" y="50" width="150" height="96" rx="10"/>
+        <text class="svg-title" x="{{ step.x + 16 }}" y="78">{{ step.n }}<tspan class="svg-label-sm" dx="10">{{ step.key }}</tspan></text>
+        <text class="svg-label" x="{{ step.x + 16 }}" y="102">{{ step.title }}</text>
+        <text class="svg-label-sm" x="{{ step.x + 16 }}" y="124">{{ step.note }}</text>
+        {% if not loop.last %}
+        <path class="svg-line-accent" d="M{{ step.x + 150 }},98 L{{ step.x + 162 }},98"
+              marker-end="url(#arrg)"/>
+        {% endif %}
+        {% endfor %}
+        <path class="svg-line-accent" d="M900,146 C900,205 300,215 430,146"
+              marker-end="url(#arrg)" stroke-dasharray="5 5"/>
+        <text class="svg-label-sm" x="330" y="232">r — roll the disks back to 03, cold-boot, re-apply the faults (≈10 s)</text>
+      </svg>
+      <figcaption>
+        The clean snapshot is taken before the faults, with the VM stopped, so a reset is a disk
+        rollback and a cold boot rather than a rebuild.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="grading">Grading is a sequence, not a comparison</h2>
+    <div class="prose">
+      <p>
+        <code>c</code> copies the lab's check scripts into the guest, runs them as the grading
+        account with a 30-second timeout each, deletes them, reboots the machine, waits for SSH,
+        and runs them again. A check counts as passed only if it passed both times. If the machine
+        never comes back, every check fails with the tail of the serial console as evidence — which
+        is exactly what you want to read when a boot stops in emergency mode.
+      </p>
+      <p>
+        <code>x</code> is the same run without the reboot: feedback while you work, and it can
+        never mark a lab passed. <code>w</code> repeats it every couple of seconds in a side panel.
+        Persistence is the thing being taught.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 250" role="img" aria-label="Check, reboot, check">
+                <rect class="svg-box-accent" x="30" y="70" width="190" height="100" rx="10"/>
+        <text class="svg-title" x="46" y="96">Pass 1</text>
+        <text class="svg-label-sm" x="46" y="118">copy check/ to the guest</text>
+        <text class="svg-label-sm" x="46" y="136">as norboten-grader, 30 s</text>
+        <text class="svg-label-sm" x="46" y="154">pass · message · evidence</text>
+        <path class="svg-line-accent" d="M220,120 L262,120" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="266" y="70" width="190" height="100" rx="10"/>
+        <text class="svg-title" x="282" y="96">Reboot</text>
+        <text class="svg-label-sm" x="282" y="118">delete the scripts</text>
+        <text class="svg-label-sm" x="282" y="136">reboot, poll SSH ≤ 300 s</text>
+        <text class="svg-label-sm" x="282" y="154">fresh short connections</text>
+        <path class="svg-line-accent" d="M456,120 L498,120" marker-end="url(#arrg)"/>
+        <rect class="svg-box-accent" x="502" y="70" width="190" height="100" rx="10"/>
+        <text class="svg-title" x="518" y="96">Pass 2</text>
+        <text class="svg-label-sm" x="518" y="118">the same checks again</text>
+        <text class="svg-label-sm" x="518" y="136">on the booted machine</text>
+        <text class="svg-label-sm" x="518" y="154">nothing carried over</text>
+        <path class="svg-line-accent" d="M692,120 L734,120" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="738" y="70" width="232" height="100" rx="10"/>
+        <text class="svg-title" x="754" y="96">Report</text>
+        <text class="svg-label-sm" x="754" y="118">passed = pass 1 ∧ pass 2</text>
+        <text class="svg-label-sm" x="754" y="136">score = weighted by objective</text>
+        <text class="svg-label-sm" x="754" y="154">sessions/&lt;lab&gt;.last.json</text>
+        <path class="svg-line" d="M361,170 L361,214 L854,214 L854,170" marker-end="url(#arr)" stroke-dasharray="4 4"/>
+        <text class="svg-label-sm" x="420" y="236">no SSH after the reboot → every check fails, the serial console's tail as evidence</text>
+        <text class="svg-label-sm" x="30" y="40">c — the grade that counts</text>
+        <text class="svg-label-sm" x="738" y="40">then, if signed in: POST /attempts</text>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="gate">The solvability gate</h2>
+    <div class="prose">
+      <p>
+        This runs in CI for every lab a change touches and every base image the lab supports, and
+        for every lab when the runner, the engine, the image registry or the baseline role change.
+        It is the reason the labs can be trusted, and the reason an upstream change that quietly
+        breaks a lab shows up as a red build instead of a bad afternoon.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 200" role="img" aria-label="The solvability gate">
+        {% for g in gate %}
+        <rect class="{{ 'svg-box-accent' if g.accent else 'svg-box' }}"
+              x="{{ g.x }}" y="36" width="172" height="96" rx="10"/>
+        <text class="svg-title" x="{{ g.x + 16 }}" y="64">{{ loop.index }}</text>
+        <text class="svg-label" x="{{ g.x + 16 }}" y="88">{{ g.title }}</text>
+        <text class="svg-label-sm" x="{{ g.x + 16 }}" y="108">{{ g.note }}</text>
+        {% if not loop.last %}
+        <path class="svg-line-accent" d="M{{ g.x + 172 }},84 L{{ g.x + 196 }},84" marker-end="url(#arrg)"/>
+        {% endif %}
+        {% endfor %}
+        <text class="svg-label-sm" x="16" y="172">
+          A check that passes on the broken machine fails the gate too. Labs that reboot into their fault run it again after that boot.
+        </text>
+      </svg>
+      <figcaption>
+        Measured on this repository: 22–77 seconds per VM lab and image on an M-series laptop (about 100 s
+        for the two labs that reboot into their fault), which
+        is why it runs on every pull request rather than nightly. Locally: <code>make validate LAB=&lt;id&gt;</code>.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="vm">Inside a lab VM</h2>
+    <div class="prose">
+      <p>
+        Two accounts, one machine, and a line between them. The learner's account is what the lab
+        says it is — an exam simulation gives it no sudo. The grading account is created before the
+        clean snapshot, has its own key and its own sudo, and is the only one the engine uses. No
+        host directory is mounted, no port is forwarded, no agent is forwarded.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 300" role="img" aria-label="Accounts and paths in a lab VM">
+        <rect class="svg-box" x="10" y="10" width="980" height="280" rx="12"/>
+        <text class="svg-title" x="30" y="38">lab VM</text>
+        <rect class="svg-box" x="30" y="54" width="300" height="210" rx="8"/>
+        <text class="svg-label" x="46" y="80">you</text>
+        <text class="svg-label-sm" x="46" y="104">o — a shell over SSH, in a PTY</text>
+        <text class="svg-label-sm" x="46" y="124">k — the serial console</text>
+        <text class="svg-label-sm" x="46" y="144">b — reset into the bootloader</text>
+        <text class="svg-label-sm" x="46" y="176">sudo: as the lab decides</text>
+        <text class="svg-label-sm" x="46" y="196">history after every command</text>
+        <text class="svg-label-sm" x="46" y="228" style="fill:#f87171">never sees check/ or solution/</text>
+
+        <rect class="svg-box-accent" x="350" y="54" width="300" height="210" rx="8"/>
+        <text class="svg-label" x="366" y="80">norboten-grader</text>
+        <text class="svg-label-sm" x="366" y="104">its own key, its own sudo</text>
+        <text class="svg-label-sm" x="366" y="124">/run/norboten/runner — per run</text>
+        <text class="svg-label-sm" x="366" y="144">break/ → faults, ctx.state saved</text>
+        <text class="svg-label-sm" x="366" y="164">check/ → pass, message, evidence</text>
+        <text class="svg-label-sm" x="366" y="184">facts → what the tutor reads</text>
+        <text class="svg-label-sm" x="366" y="228" style="fill:#4ade80">deleted after every run</text>
+
+        <rect class="svg-box" x="670" y="54" width="300" height="210" rx="8"/>
+        <text class="svg-label" x="686" y="80">the recording's witness</text>
+        <text class="svg-label-sm" x="686" y="104">/var/lib/norboten/watch</text>
+        <text class="svg-label-sm" x="686" y="124">a git dir, work tree = /etc</text>
+        <text class="svg-label-sm" x="686" y="144">commit after each command</text>
+        <text class="svg-label-sm" x="686" y="164">diff → the command before it</text>
+        <text class="svg-label-sm" x="686" y="228">only while p or P records</text>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="claude">Grading Claude Code without a token</h2>
+    <div class="prose">
+      <p>
+        The claude track runs in a container with the real Claude Code, and nothing in it talks to
+        Anthropic. The launcher on the <code>PATH</code> points Claude Code at a scripted Messages API
+        on loopback — the same stand-in the CI rehearsal uses. A check writes the model's side of the
+        conversation: delete this directory, read that token, call this MCP tool, never stop. Claude
+        Code does everything else for real, and the check grades what it did.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 330" role="img" aria-label="A claude lab check">
+        <rect class="svg-box" x="10" y="10" width="980" height="310" rx="12"/>
+        <text class="svg-title" x="30" y="38">ubuntu-26.04-claude — a container, no network needed</text>
+
+        <rect class="svg-box-accent" x="30" y="60" width="210" height="120" rx="8"/>
+        <text class="svg-label" x="46" y="86">check/02_….py</text>
+        <text class="svg-label-sm" x="46" y="110">claude_lab.run(steps,</text>
+        <text class="svg-label-sm" x="46" y="128">  command=the learner's job)</text>
+        <text class="svg-label-sm" x="46" y="156">steps: Bash rm -rf drafts,</text>
+        <text class="svg-label-sm" x="46" y="172">Read .env, Write README…</text>
+
+        <rect class="svg-box" x="290" y="60" width="200" height="120" rx="8"/>
+        <text class="svg-label" x="306" y="86">fake_anthropic.py</text>
+        <text class="svg-label-sm" x="306" y="110">127.0.0.1, a random port</text>
+        <text class="svg-label-sm" x="306" y="128">one step per model turn</text>
+        <text class="svg-label-sm" x="306" y="156">records every request:</text>
+        <text class="svg-label-sm" x="306" y="172">tools, model, messages</text>
+
+        <rect class="svg-box-accent" x="540" y="60" width="430" height="120" rx="8"/>
+        <text class="svg-label" x="556" y="86">Claude Code 2.1.270 — the real binary, as learner</text>
+        <text class="svg-label-sm" x="556" y="110">settings levels · CLAUDE.md · hooks · subagents · .mcp.json</text>
+        <text class="svg-label-sm" x="556" y="128">permission mode and rules decide each tool call</text>
+        <text class="svg-label-sm" x="556" y="156">runs what is allowed, refuses the rest,</text>
+        <text class="svg-label-sm" x="556" y="172">sends tool results back as the next request</text>
+
+        <path class="svg-line-accent" d="M240,120 L286,120" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M536,110 L494,110" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="498" y="100">ask</text>
+        <path class="svg-line-accent" d="M494,140 L536,140" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="498" y="158">step</text>
+
+        <rect class="svg-box" x="30" y="210" width="940" height="90" rx="8"/>
+        <text class="svg-label" x="46" y="236">what the check grades</text>
+        <text class="svg-label-sm" x="46" y="260">the machine: are the drafts still there, did origin receive a push, is the file re-indented</text>
+        <text class="svg-label-sm" x="46" y="280">the requests: did the token reach the model, which tools and model did the subagent get, how many turns</text>
+        <path class="svg-line" d="M755,180 L755,206" marker-end="url(#arr)"/>
+        <path class="svg-line" d="M390,180 L390,206" marker-end="url(#arr)"/>
+      </svg>
+      <figcaption>
+        Six labs, gated in 5–8 seconds each. The same stand-in rehearses Norboten's own Claude Code
+        jobs in CI, which is where the next figure starts.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="claude-ci">Claude Code in the project's own CI</h2>
+    <div class="prose">
+      <p>
+        Four jobs use a model and four do not. Each Claude job is started by an event, runs headless with
+        a turn cap and an explicit tool list, and has its output applied by a script rather than by the
+        model. Measured on real runs: a triage label costs under half a cent, release notes two cents.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 300" role="img" aria-label="Claude Code jobs in CI">
+        <text class="svg-title" x="16" y="30">event</text>
+        <text class="svg-title" x="300" y="30">claude -p</text>
+        <text class="svg-title" x="700" y="30">applied by the script</text>
+
+        <rect class="svg-box" x="16" y="46" width="240" height="46" rx="8"/>
+        <text class="svg-label-sm" x="30" y="74">issue opened</text>
+        <rect class="svg-box-accent" x="300" y="46" width="360" height="46" rx="8"/>
+        <text class="svg-label-sm" x="314" y="74">triage · Haiku · no tools · a JSON schema</text>
+        <rect class="svg-box" x="700" y="46" width="284" height="46" rx="8"/>
+        <text class="svg-label-sm" x="714" y="74">one label · $0.003</text>
+
+        <rect class="svg-box" x="16" y="106" width="240" height="46" rx="8"/>
+        <text class="svg-label-sm" x="30" y="134">Mondays 08:00</text>
+        <rect class="svg-box-accent" x="300" y="106" width="360" height="46" rx="8"/>
+        <text class="svg-label-sm" x="314" y="134">stuck points · Haiku · no tools</text>
+        <rect class="svg-box" x="700" y="106" width="284" height="46" rx="8"/>
+        <text class="svg-label-sm" x="714" y="134">Discord summary · a hints issue</text>
+
+        <rect class="svg-box" x="16" y="166" width="240" height="46" rx="8"/>
+        <text class="svg-label-sm" x="30" y="194">a v* tag</text>
+        <rect class="svg-box-accent" x="300" y="166" width="360" height="46" rx="8"/>
+        <text class="svg-label-sm" x="314" y="194">release notes · Haiku · no tools · no thinking</text>
+        <rect class="svg-box" x="700" y="166" width="284" height="46" rx="8"/>
+        <text class="svg-label-sm" x="714" y="194">notes + the full commit list · $0.021</text>
+
+        <rect class="svg-box" x="16" y="226" width="240" height="46" rx="8"/>
+        <text class="svg-label-sm" x="30" y="254">issue labelled lab-request</text>
+        <rect class="svg-box-accent" x="300" y="226" width="360" height="46" rx="8"/>
+        <text class="svg-label-sm" x="314" y="254">lab author · Sonnet · drafts only · $1 cap</text>
+        <rect class="svg-box" x="700" y="226" width="284" height="46" rx="8"/>
+        <text class="svg-label-sm" x="714" y="254">a draft pull request · $0.33</text>
+
+        <path class="svg-line-accent" d="M256,69 L296,69" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M660,69 L696,69" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M256,129 L296,129" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M660,129 L696,129" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M256,189 L296,189" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M660,189 L696,189" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M256,249 L296,249" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M660,249 L696,249" marker-end="url(#arrg)"/>
+      </svg>
+      <figcaption>
+        Costs are Claude Code's list-price estimates from real runs on 2026-09-14; the jobs run on a
+        subscription token. Lab health, announcements, the learner digest and duplicate detection use no
+        model. Details: <a href="{{ root }}docs/claude-code-in-norboten/index.html">How Norboten uses Claude</a>.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="server">The server</h2>
+    <div class="prose">
+      <p>
+        One Ubuntu 26.04 machine, bootstrapped, hardened and configured by Ansible, running one
+        Docker Compose project. Only Caddy publishes ports. The API is stateless — everything it
+        keeps is in PostgreSQL or Redis — so a restart, a second worker or a rolled-back image loses
+        nothing.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 520" role="img" aria-label="Server topology">
+        <rect class="svg-box" x="10" y="10" width="140" height="500" rx="12"/>
+        <text class="svg-title" x="26" y="38">internet</text>
+        <text class="svg-label-sm" x="26" y="70">ufw: 22 · 80</text>
+        <text class="svg-label-sm" x="26" y="88">443 tcp + udp</text>
+        <text class="svg-label-sm" x="26" y="130">SSH: keys only</text>
+        <text class="svg-label-sm" x="26" y="148">no root login</text>
+
+        <rect class="svg-box" x="170" y="10" width="820" height="500" rx="12"/>
+        <text class="svg-title" x="190" y="38">/opt/norboten — docker compose</text>
+
+        <rect class="svg-box-accent" x="190" y="54" width="200" height="200" rx="8"/>
+        <text class="svg-label" x="206" y="80">caddy 2.10</text>
+        <text class="svg-label-sm" x="206" y="104">Let's Encrypt, renews</text>
+        <text class="svg-label-sm" x="206" y="122">h1 · h2 · h3</text>
+        <text class="svg-label-sm" x="206" y="150">norboten.org → /srv/site</text>
+        <text class="svg-label-sm" x="206" y="168">api.     → api:8000</text>
+        <text class="svg-label-sm" x="206" y="186">status.  → grafana:3000</text>
+        <text class="svg-label-sm" x="206" y="232">/metrics → 404</text>
+        <path class="svg-line-accent" d="M150,150 L190,150" marker-end="url(#arrg)"/>
+
+        <rect class="svg-box-accent" x="440" y="54" width="220" height="90" rx="8"/>
+        <text class="svg-label" x="456" y="80">api · uvicorn × 2</text>
+        <text class="svg-label-sm" x="456" y="102">/readyz: database + redis</text>
+        <text class="svg-label-sm" x="456" y="120">hourly purge of old sessions</text>
+        <rect class="svg-box" x="440" y="164" width="220" height="90" rx="8"/>
+        <text class="svg-label" x="456" y="190">digest · analytics</text>
+        <text class="svg-label-sm" x="456" y="212">one-shot jobs on host timers</text>
+        <text class="svg-label-sm" x="456" y="230">a template, no model</text>
+        <path class="svg-line" d="M390,110 L440,100" marker-end="url(#arr)"/>
+        <path class="svg-line" d="M390,190 L440,205" marker-end="url(#arr)"/>
+
+        <rect class="svg-box" x="710" y="54" width="260" height="60" rx="8"/>
+        <text class="svg-label" x="726" y="78">postgres 17</text>
+        <text class="svg-label-sm" x="726" y="98">norboten · volume pgdata</text>
+        <rect class="svg-box" x="710" y="124" width="260" height="60" rx="8"/>
+        <text class="svg-label" x="726" y="148">redis 7.4</text>
+        <text class="svg-label-sm" x="726" y="168">no persistence · 256 MB · LRU</text>
+        <rect class="svg-box" x="710" y="194" width="260" height="60" rx="8"/>
+        <text class="svg-label" x="726" y="218">ollama</text>
+        <text class="svg-label-sm" x="726" y="238">qwen2.5:0.5b, pulled on start</text>
+        <path class="svg-line-accent" d="M660,90 L710,84" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M660,110 L710,154" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M660,130 L710,224" marker-end="url(#arrg)"/>
+        <path class="svg-line" d="M660,209 L690,209 L690,100 L710,100" marker-end="url(#arr)"/>
+
+        <rect class="svg-box" x="190" y="284" width="470" height="100" rx="8"/>
+        <text class="svg-label" x="206" y="310">prometheus 3.5 → grafana 12.1</text>
+        <text class="svg-label-sm" x="206" y="332">scrapes every 30 s: api /metrics · node-exporter · postgres-exporter</text>
+        <text class="svg-label-sm" x="206" y="350">requests and latency by route template, host, database</text>
+        <text class="svg-label-sm" x="206" y="368">dashboards provisioned from deploy/grafana, behind a login</text>
+        <path class="svg-line" d="M550,284 L550,144" marker-end="url(#arr)" stroke-dasharray="4 4"/>
+
+        <rect class="svg-box" x="710" y="284" width="260" height="100" rx="8"/>
+        <text class="svg-label" x="726" y="306">systemd timers</text>
+        <text class="svg-label-sm" x="726" y="326">03:20 backup.sh</text>
+        <text class="svg-label-sm" x="726" y="342">  dump → restore check → restic</text>
+        <text class="svg-label-sm" x="726" y="358">04:10 analytics → /srv/site</text>
+        <text class="svg-label-sm" x="726" y="374">Sun 18:00 digest → Discord DMs</text>
+
+        <rect class="svg-box" x="190" y="404" width="780" height="86" rx="8"/>
+        <text class="svg-label" x="206" y="430">deploy.sh &lt;tag&gt;</text>
+        <text class="svg-label-sm" x="206" y="452">pull the image → up -d api → wait for /readyz (120 s) → record .deployed</text>
+        <text class="svg-label-sm" x="206" y="470">not ready → back to .deployed.previous, exit non-zero, the CI job fails</text>
+      </svg>
+      <figcaption>
+        Why one machine: learners' VMs run on learners' machines, so the server carries accounts,
+        text and a small model. A cloud VPS cannot run lab VMs anyway — there is no <code>/dev/kvm</code>.
+        Full steps: <a href="{{ root }}docs/deploy/index.html">Deploying the server</a>.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="rated">Rated and unrated labs</h2>
+    <div class="prose">
+      <p>
+        Anything that runs on a learner's machine can be read by that learner, so an answer cannot
+        be shipped and then hidden. The catalogue is split instead. <strong class="accent">Unrated</strong> labs and
+        banks live in this repository — faults, checks and solutions in the open — and run offline.
+        <strong class="accent">Rated</strong> ones live in a private repository attached as the
+        <span class="mono">rated/</span> submodule: GitHub shows the folder and the pointer, not a
+        byte of content, and a plain clone simply leaves it empty.
+      </p>
+      <p>
+        A rated attempt is issued by the API with a nonce and a short-lived key. The guest receives
+        what to break and which facts to collect, never the criteria those facts are compared
+        against; checking signs the facts from both sides of the reboot and sends them back, and
+        the server decides. The answers never enter the published API image either — they reach the
+        server beside the container, mounted read-only.
+      </p>
+      <p class="muted">
+        The honest limit: whatever is delivered into a VM you control can, with effort, be read out
+        of it. This raises the cost of cheating a long way; it does not make it impossible.
+        Today every lab in the catalogue is unrated.
+        <a href="{{ root }}docs/rated-labs/index.html">The full write-up</a>.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 170" role="img" aria-label="A rated attempt, from the API to a verdict">
+        <rect class="svg-box" x="10" y="30" width="220" height="90" rx="10"/>
+        <text class="svg-label" x="26" y="58">API issues an attempt</text>
+        <text class="svg-label-sm" x="26" y="80">nonce · per-attempt key</text>
+        <text class="svg-label-sm" x="26" y="100">faults · fact manifest</text>
+        <path class="svg-line-accent" d="M230,75 L266,75" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="270" y="30" width="220" height="90" rx="10"/>
+        <text class="svg-label" x="286" y="58">you fix the machine</text>
+        <text class="svg-label-sm" x="286" y="80">no criteria on it</text>
+        <text class="svg-label-sm" x="286" y="100">nothing in ~/.norboten</text>
+        <path class="svg-line-accent" d="M490,75 L526,75" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="530" y="30" width="220" height="90" rx="10"/>
+        <text class="svg-label" x="546" y="58">facts, signed</text>
+        <text class="svg-label-sm" x="546" y="80">before and after reboot</text>
+        <text class="svg-label-sm" x="546" y="100">accepted once</text>
+        <path class="svg-line-accent" d="M750,75 L786,75" marker-end="url(#arrg)"/>
+        <rect class="svg-box-accent" x="790" y="30" width="200" height="90" rx="10"/>
+        <text class="svg-label" x="806" y="58">the server decides</text>
+        <text class="svg-label-sm" x="806" y="80">pass/fail per check</text>
+        <text class="svg-label-sm" x="806" y="100">rating change</text>
+      </svg>
+      <figcaption>A rated attempt, as built: the API issues it, the guest collects and signs, the server
+        judges and rates. The machinery works end to end in the tests; the first rated labs are still
+        being written.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="data">The data, and where it lives</h2>
+    <div class="prose">
+      <p>
+        Four places, and each holds only what belongs there. PostgreSQL keeps everything that must
+        survive; Redis keeps only what may be lost — a lost key costs a reconnect or a cold
+        cache. The schema is plain SQL applied on every start under an advisory
+        lock, and a column holding data is never renamed or dropped, which is what lets an older API
+        image run against a newer database during a rollback.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 470" role="img" aria-label="Data model">
+        <rect class="svg-box" x="10" y="10" width="620" height="450" rx="12"/>
+        <text class="svg-title" x="30" y="38">PostgreSQL · database norboten</text>
+
+        <rect class="svg-box-accent" x="30" y="54" width="180" height="120" rx="8"/>
+        <text class="svg-label" x="44" y="76">credentials</text>
+        <text class="svg-label-sm" x="44" y="96">user_id  PK</text>
+        <text class="svg-label-sm" x="44" y="112">github_id  unique</text>
+        <text class="svg-label-sm" x="44" y="128">github_login</text>
+        <text class="svg-label-sm" x="44" y="144">discord_id · digest</text>
+        <text class="svg-label-sm" x="44" y="160">no password, no email</text>
+
+        <rect class="svg-box" x="30" y="200" width="180" height="120" rx="8"/>
+        <text class="svg-label" x="44" y="222">tokens</text>
+        <text class="svg-label-sm" x="44" y="242">token_hash PK sha256</text>
+        <text class="svg-label-sm" x="44" y="258">user_id → credentials</text>
+        <text class="svg-label-sm" x="44" y="274">kind web | cli | mcp</text>
+        <text class="svg-label-sm" x="44" y="290">90 d, or 12 h if not</text>
+        <text class="svg-label-sm" x="44" y="306">label · expires_at</text>
+        <path class="svg-line" d="M120,174 L120,200" marker-end="url(#arr)"/>
+
+        <rect class="svg-box-accent" x="240" y="54" width="170" height="104" rx="8"/>
+        <text class="svg-label" x="254" y="76">users</text>
+        <text class="svg-label-sm" x="254" y="96">user_id  PK</text>
+        <text class="svg-label-sm" x="254" y="112">nick     unique</text>
+        <text class="svg-label-sm" x="254" y="128">country · seed</text>
+        <path class="svg-line" d="M210,100 L240,100" stroke-dasharray="4 4"/>
+
+        <rect class="svg-box" x="240" y="190" width="170" height="136" rx="8"/>
+        <text class="svg-label" x="254" y="212">attempts</text>
+        <text class="svg-label-sm" x="254" y="232">kind lab | quiz</text>
+        <text class="svg-label-sm" x="254" y="248">lab_id · passed</text>
+        <text class="svg-label-sm" x="254" y="264">duration · score</text>
+        <text class="svg-label-sm" x="254" y="280">difficulty, topics</text>
+        <text class="svg-label-sm" x="254" y="296">  from the manifest</text>
+        <text class="svg-label-sm" x="254" y="312">rating_delta jsonb</text>
+        <path class="svg-line" d="M325,158 L325,190" marker-end="url(#arr)"/>
+
+        <rect class="svg-box" x="440" y="190" width="170" height="104" rx="8"/>
+        <text class="svg-label" x="454" y="212">ratings</text>
+        <text class="svg-label-sm" x="454" y="232">(user_id, topic) PK</text>
+        <text class="svg-label-sm" x="454" y="248">r · rd · sigma</text>
+        <text class="svg-label-sm" x="454" y="264">Glicko-2, 19 topics</text>
+        <path class="svg-line" d="M410,100 L525,100 L525,190" marker-end="url(#arr)"/>
+
+        <rect class="svg-box" x="30" y="344" width="180" height="96" rx="8"/>
+        <text class="svg-label" x="44" y="366">play_sessions</text>
+        <text class="svg-label-sm" x="44" y="386">session_id PK</text>
+        <text class="svg-label-sm" x="44" y="402">lab · nick · size</text>
+        <text class="svg-label-sm" x="44" y="418">expires_at +7 d</text>
+        <rect class="svg-box" x="240" y="344" width="170" height="96" rx="8"/>
+        <text class="svg-label" x="254" y="366">play_batches</text>
+        <text class="svg-label-sm" x="254" y="386">(session_id, seq) PK</text>
+        <text class="svg-label-sm" x="254" y="402">events · commands</text>
+        <text class="svg-label-sm" x="254" y="418">changes (diffs)</text>
+        <path class="svg-line" d="M210,392 L240,392" marker-end="url(#arr)"/>
+
+        <rect class="svg-box" x="440" y="320" width="170" height="56" rx="8"/>
+        <text class="svg-label" x="454" y="342">pending_sign_ins</text>
+        <text class="svg-label-sm" x="454" y="362">id PK · 15 min · once</text>
+        <rect class="svg-box" x="440" y="384" width="170" height="56" rx="8"/>
+        <text class="svg-label" x="454" y="406">events</text>
+        <text class="svg-label-sm" x="454" y="426">append-only jsonb</text>
+
+        <rect class="svg-box" x="650" y="10" width="340" height="226" rx="12"/>
+        <text class="svg-title" x="670" y="38">Redis · nothing persisted</text>
+        <text class="svg-label-sm" x="670" y="66">play:&lt;session&gt;       pub/sub</text>
+        <text class="svg-label-sm" x="670" y="88">rate:&lt;bucket&gt;:&lt;who&gt;:&lt;window&gt;</text>
+        <text class="svg-label-sm" x="670" y="110">  a counter per minute</text>
+        <text class="svg-label-sm" x="670" y="132">board:&lt;topic&gt;:&lt;n&gt;     30 s</text>
+        <text class="svg-label-sm" x="670" y="154">readyz                10 s</text>
+        <text class="svg-label-sm" x="670" y="212">memory fallback: one worker only</text>
+
+        <rect class="svg-box" x="650" y="256" width="340" height="204" rx="12"/>
+        <text class="svg-title" x="670" y="284">~/.norboten · the learner's</text>
+        <text class="svg-label-sm" x="670" y="312">lima/2.2.0/     vms/</text>
+        <text class="svg-label-sm" x="670" y="334">images/&lt;id&gt;/&lt;arch&gt;/</text>
+        <text class="svg-label-sm" x="670" y="356">labs/&lt;id&gt;/&lt;version&gt;/</text>
+        <text class="svg-label-sm" x="670" y="378">sessions/&lt;lab&gt;.json .last.json</text>
+        <text class="svg-label-sm" x="670" y="400">plays/*.cast *.log.json</text>
+        <text class="svg-label-sm" x="670" y="422">progress.json</text>
+        <text class="svg-label-sm" x="670" y="444">credentials.json  0600</text>
+      </svg>
+      <figcaption>
+        Not drawn: <span class="mono">rated_attempts</span> and <span class="mono">rated_quiz_sessions</span>,
+        a rated attempt while it is open. Every column, index and key:
+        <a href="{{ root }}docs/data-model/index.html">Data model</a>.
+        The stores have a memory and a PostgreSQL implementation each, and the same tests run
+        against both.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="signin">Signing in</h2>
+    <div class="prose">
+      <p>
+        GitHub, and nothing else — no password to steal, no email to keep, no registration. GitHub
+        is asked who someone is; the answer kept is GitHub's numeric user id and the login beside
+        it, and the GitHub token that carried it is revoked at once and stored nowhere. A terminal
+        uses GitHub's device flow <em>through the API</em>, so no GitHub token ever reaches the
+        learner's machine and the API never has to trust a token another app obtained. The site
+        uses the web flow and gets back only a one-time code, in the URL fragment, after checking
+        its own <span class="mono">state</span>. The server keeps the SHA-256 of each of its tokens,
+        never the token; revoking one deletes a row.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 470" role="img" aria-label="Sign-in sequence: GitHub's device flow, proxied by the API">
+        {% set lanes = [(90, "TUI"), (370, "API"), (630, "PostgreSQL"), (890, "GitHub")] %}
+        {% for x, name in lanes %}
+        <rect class="svg-box-accent" x="{{ x - 80 }}" y="12" width="160" height="36" rx="8"/>
+        <text class="svg-label" x="{{ x }}" y="35" text-anchor="middle">{{ name }}</text>
+        <path class="svg-line" d="M{{ x }},48 L{{ x }},460" stroke-dasharray="3 5"/>
+        {% endfor %}
+
+        <path class="svg-line-accent" d="M90,80 L366,80" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="100" y="72">POST /auth/github/device</text>
+        <path class="svg-line-accent" d="M370,100 L886,100" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="640" y="94">/login/device/code · no scope</text>
+        <path class="svg-line-accent" d="M370,124 L626,124" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="380" y="118">INSERT pending · device_code</text>
+        <path class="svg-line" d="M370,152 L94,152" marker-end="url(#arr)"/>
+        <text class="svg-label-sm" x="100" y="146">poll_id · WDJB-MJHT · github.com/login/device</text>
+
+        <path class="svg-line" d="M90,190 L886,190" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+        <text class="svg-label-sm" x="100" y="182">the person types the code on any device, approves</text>
+
+        <path class="svg-line" d="M90,226 L366,226" marker-end="url(#arr)"/>
+        <text class="svg-label-sm" x="100" y="218">POST /auth/github/poll  (every interval)</text>
+        <path class="svg-line" d="M370,246 L886,246" marker-end="url(#arr)"/>
+        <text class="svg-label-sm" x="640" y="240">authorization_pending</text>
+        <path class="svg-line" d="M370,268 L94,268" marker-end="url(#arr)"/>
+        <text class="svg-label-sm" x="100" y="262">428 · or 429 slow down, 403 denied, 410 expired</text>
+
+        <path class="svg-line-accent" d="M90,304 L366,304" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="100" y="296">POST /auth/github/poll · remember</text>
+        <path class="svg-line-accent" d="M370,324 L886,324" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="640" y="318">token → GET /user</text>
+        <path class="svg-line-accent" d="M370,346 L886,346" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="640" y="340">DELETE the token</text>
+        <path class="svg-line-accent" d="M370,368 L626,368" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="380" y="362">github_id: find or INSERT credentials</text>
+        <path class="svg-line-accent" d="M370,398 L94,398" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="100" y="390">Norboten token · 90 days remembered, 12 hours not</text>
+        <text class="svg-label-sm" x="100" y="430">remembered: credentials.json 0600</text>
+        <text class="svg-label-sm" x="100" y="448">not: in memory only</text>
+        <text class="svg-label-sm" x="640" y="430">no GitHub token is stored,</text>
+        <text class="svg-label-sm" x="640" y="448">and none reaches the TUI</text>
+      </svg>
+      <figcaption>
+        The site's web flow ends the same way: GitHub returns the browser to the API, which sends it
+        back to the page with a one-time code and the page's own state in the fragment; the page
+        checks the state and exchanges the code, which lives sixty seconds and works once. Flows in
+        progress are in PostgreSQL, so a restart strands nobody. Discord is separate and optional:
+        linked from the account page for the weekly digest, a direct message from the bot.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="live">A live session, from keystroke to viewer</h2>
+    <div class="prose">
+      <p>
+        <code>P</code> on a lab records the shell and publishes it. The recorder flushes a batch every
+        couple of seconds; the API stores it and publishes it; every viewer's server-sent-events
+        stream forwards it. A viewer subscribes <em>before</em> reading what is stored, so nothing
+        published in between is lost, and a late viewer replays from the first frame.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 300" role="img" aria-label="Live session flow">
+        <rect class="svg-box-accent" x="10" y="40" width="180" height="110" rx="10"/>
+        <text class="svg-label" x="26" y="66">PTY recorder</text>
+        <text class="svg-label-sm" x="26" y="88">bytes both ways</text>
+        <text class="svg-label-sm" x="26" y="106">asciicast v2 events</text>
+        <text class="svg-label-sm" x="26" y="124">commands from input</text>
+        <rect class="svg-box" x="10" y="170" width="180" height="90" rx="10"/>
+        <text class="svg-label" x="26" y="196">guest git</text>
+        <text class="svg-label-sm" x="26" y="218">diff per command</text>
+        <text class="svg-label-sm" x="26" y="236">changes[]</text>
+        <path class="svg-line" d="M100,170 L100,150" marker-end="url(#arr)"/>
+
+        <path class="svg-line-accent" d="M190,95 L262,95" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="196" y="84">every ~2 s</text>
+        <rect class="svg-box-accent" x="266" y="40" width="210" height="110" rx="10"/>
+        <text class="svg-label" x="282" y="66">POST …/frames</text>
+        <text class="svg-label-sm" x="282" y="88">{seq, at, events,</text>
+        <text class="svg-label-sm" x="282" y="106"> commands, changes}</text>
+        <text class="svg-label-sm" x="282" y="124">retried seq → ignored</text>
+
+        <path class="svg-line-accent" d="M476,70 L548,50" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="552" y="16" width="200" height="60" rx="8"/>
+        <text class="svg-label" x="568" y="40">play_batches</text>
+        <text class="svg-label-sm" x="568" y="60">PostgreSQL · 7 days</text>
+        <path class="svg-line-accent" d="M476,120 L548,140" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="552" y="110" width="200" height="60" rx="8"/>
+        <text class="svg-label" x="568" y="134">PUBLISH play:&lt;id&gt;</text>
+        <text class="svg-label-sm" x="568" y="154">Redis, any worker</text>
+
+        <rect class="svg-box-accent" x="800" y="40" width="190" height="200" rx="10"/>
+        <text class="svg-label" x="816" y="66">GET …/stream</text>
+        <text class="svg-label-sm" x="816" y="90">1 subscribe</text>
+        <text class="svg-label-sm" x="816" y="108">2 replay stored</text>
+        <text class="svg-label-sm" x="816" y="126">3 forward new</text>
+        <text class="svg-label-sm" x="816" y="150">: heartbeat 15 s</text>
+        <text class="svg-label-sm" x="816" y="168">closes idle 120 s</text>
+        <text class="svg-label-sm" x="816" y="200">→ the site's player</text>
+        <text class="svg-label-sm" x="816" y="218">   read-only terminal</text>
+        <path class="svg-line" d="M752,46 L796,100" marker-end="url(#arr)"/>
+        <path class="svg-line-accent" d="M752,140 L796,140" marker-end="url(#arrg)"/>
+        <text class="svg-label-sm" x="266" y="200">Caddy: flush_interval -1 — never buffer a live terminal</text>
+        <text class="svg-label-sm" x="266" y="222">live = not ended and a frame in the last 25 s</text>
+        <text class="svg-label-sm" x="266" y="244">p records to ~/.norboten/plays only; o records nothing</text>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="agents">What each agent may see</h2>
+    <div class="prose">
+      <p>
+        Four agents, separated by what they are allowed to know. The separation is enforced in code,
+        not in a prompt: the tutor's request model has no field for the reference solution, and the
+        guard that filters every reply is a different component from the model that wrote it.
+        Nothing a model says is executed.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 300" role="img" aria-label="Agent boundaries">
+        <rect class="svg-box" x="10" y="20" width="235" height="260" rx="12"/>
+        <text class="svg-title" x="26" y="48">Tutor · t, during a lab</text>
+        <text class="svg-label-sm" x="26" y="76">objectives, check results</text>
+        <text class="svg-label-sm" x="26" y="96">the guest's fact bundle</text>
+        <text class="svg-label-sm" x="26" y="116">the hint level asked for</text>
+        <text class="svg-label-sm" x="26" y="156" style="fill:#f87171">no solution field</text>
+        <text class="svg-label-sm" x="26" y="176" style="fill:#f87171">cannot write to the guest</text>
+        <text class="svg-label-sm" x="26" y="196" style="fill:#f87171">reply guarded on the way out</text>
+        <text class="svg-label-sm" x="26" y="230">on your machine, your model</text>
+        <text class="svg-label-sm" x="26" y="250">no model → the hint ladder</text>
+
+        <rect class="svg-box" x="258" y="20" width="235" height="260" rx="12"/>
+        <text class="svg-title" x="274" y="48">Review · m, after a lab</text>
+        <text class="svg-label-sm" x="274" y="76">recorded commands + history</text>
+        <text class="svg-label-sm" x="274" y="96">the final machine state</text>
+        <text class="svg-label-sm" x="274" y="116">the reference solution</text>
+        <text class="svg-label-sm" x="274" y="136">explains what was missed</text>
+        <text class="svg-label-sm" x="274" y="176" style="fill:#4ade80">only on pass or surrender</text>
+        <text class="svg-label-sm" x="274" y="196">never mid-attempt</text>
+
+        <rect class="svg-box" x="506" y="20" width="235" height="260" rx="12"/>
+        <text class="svg-title" x="522" y="48">Consultant · the site</text>
+        <text class="svg-label-sm" x="522" y="76">docs, briefings</text>
+        <text class="svg-label-sm" x="522" y="96">journals minus walkthroughs</text>
+        <text class="svg-label-sm" x="522" y="116">question explanations</text>
+        <text class="svg-label-sm" x="522" y="156" style="fill:#f87171">no solution file indexed</text>
+        <text class="svg-label-sm" x="522" y="176" style="fill:#f87171">no level 3–4 hint indexed</text>
+        <text class="svg-label-sm" x="522" y="196" style="fill:#f87171">the tutor's guard, again</text>
+        <text class="svg-label-sm" x="522" y="250">20 questions a minute</text>
+
+        <rect class="svg-box" x="754" y="20" width="236" height="260" rx="12"/>
+        <text class="svg-title" x="770" y="48">Drafting · off the server</text>
+        <text class="svg-label-sm" x="770" y="76">writes theory questions</text>
+        <text class="svg-label-sm" x="770" y="96">drafts labs as pull requests</text>
+        <text class="svg-label-sm" x="770" y="136">never solves its own</text>
+        <text class="svg-label-sm" x="770" y="156">its labs face the same gate</text>
+        <text class="svg-label-sm" x="770" y="196" style="fill:#4ade80">a person reads every draft</text>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="mcp">An MCP server, with a door that reads the headers</h2>
+    <div class="prose">
+      <p>
+        The API is also a Model Context Protocol server, at <code>/mcp</code>: the docs search, the
+        catalogue, a lab's briefing and first two hints, journals without their walkthroughs, the
+        boards, a quiz that asks the user rather than the model — and, with a token, the account's own
+        progress. It speaks the 2026-07-28 revision statelessly, so any worker answers any request. The
+        API is its OAuth 2.1 authorization server, and an <code>mcp</code> token opens this server and
+        nothing else.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 250" role="img" aria-label="An MCP request through the gate">
+        <rect class="svg-box" x="10" y="30" width="170" height="110" rx="10"/>
+        <text class="svg-label" x="26" y="56">MCP client</text>
+        <text class="svg-label-sm" x="26" y="80">Claude Code, Desktop,</text>
+        <text class="svg-label-sm" x="26" y="98">a claude.ai connector</text>
+        <text class="svg-label-sm" x="26" y="122">one POST per request</text>
+        <path class="svg-line-accent" d="M180,85 L216,85" marker-end="url(#arrg)"/>
+        <rect class="svg-box-accent" x="220" y="30" width="230" height="110" rx="10"/>
+        <text class="svg-label" x="236" y="56">the gate</text>
+        <text class="svg-label-sm" x="236" y="80">Mcp-Method · Mcp-Name headers</text>
+        <text class="svg-label-sm" x="236" y="98">rate limit · audit event</text>
+        <text class="svg-label-sm" x="236" y="116">no token for my_* → 401 + metadata</text>
+        <path class="svg-line-accent" d="M450,85 L486,85" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="490" y="30" width="230" height="110" rx="10"/>
+        <text class="svg-label" x="506" y="56">tools · resources · prompts</text>
+        <text class="svg-label-sm" x="506" y="80">quiz_me → input_required → you</text>
+        <text class="svg-label-sm" x="506" y="98">hints to level 2, never a solution</text>
+        <text class="svg-label-sm" x="506" y="116" style="fill:#f87171">every text: the tutor's guard</text>
+        <path class="svg-line-accent" d="M720,85 L756,85" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="760" y="30" width="230" height="110" rx="10"/>
+        <text class="svg-label" x="776" y="56">OAuth 2.1, this API</text>
+        <text class="svg-label-sm" x="776" y="80">PKCE S256 · client metadata URL</text>
+        <text class="svg-label-sm" x="776" y="98">consent on the site · iss back</text>
+        <text class="svg-label-sm" x="776" y="116">mcp token: this server only</text>
+        <text class="svg-label-sm" x="16" y="190">
+          /mcp asks for a token only when a personal tool is called; /mcp/account asks on every request, so a client signs in as it connects.
+        </text>
+        <text class="svg-label-sm" x="16" y="212">
+          Results say they are data, not instructions: a journal or a briefing contains commands a model should read, not run.
+        </text>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="consultant">The consultant: retrieval, then a model, then a guard</h2>
+    <div class="prose">
+      <p>
+        The consultant answers questions about Norboten from Norboten's own text. Retrieval is BM25,
+        not embeddings: the useful terms in this corpus are exact ones — <code>lvextend</code>,
+        <code>fstab</code>, <code>restorecon</code> — which lexical ranking finds better, for free,
+        with no vector database and a score anyone can explain. The model is the server's own
+        Ollama, and the call runs off the event loop.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 300" role="img" aria-label="Consultant pipeline">
+        <rect class="svg-box" x="10" y="30" width="170" height="140" rx="10"/>
+        <text class="svg-label" x="26" y="56">corpus</text>
+        <text class="svg-label-sm" x="26" y="80">docs/*.md</text>
+        <text class="svg-label-sm" x="26" y="98">briefings</text>
+        <text class="svg-label-sm" x="26" y="116">journals − walkthrough</text>
+        <text class="svg-label-sm" x="26" y="134">explanations</text>
+        <text class="svg-label-sm" x="26" y="152">≤ 180 words each</text>
+        <path class="svg-line-accent" d="M180,100 L216,100" marker-end="url(#arrg)"/>
+        <rect class="svg-box-accent" x="220" y="30" width="170" height="140" rx="10"/>
+        <text class="svg-label" x="236" y="56">BM25</text>
+        <text class="svg-label-sm" x="236" y="80">k1 1.5 · b 0.75</text>
+        <text class="svg-label-sm" x="236" y="98">built at API start</text>
+        <text class="svg-label-sm" x="236" y="116">top 5 passages</text>
+        <path class="svg-line-accent" d="M390,100 L426,100" marker-end="url(#arrg)"/>
+        <rect class="svg-box-accent" x="430" y="30" width="200" height="140" rx="10"/>
+        <text class="svg-label" x="446" y="56">model, first usable</text>
+        <text class="svg-label-sm" x="446" y="80">ollama/qwen2.5:0.5b</text>
+        <text class="svg-label-sm" x="446" y="98">Ollama models only</text>
+        <text class="svg-label-sm" x="446" y="116">JSON schema reply</text>
+        <text class="svg-label-sm" x="446" y="134">asyncio.to_thread</text>
+        <path class="svg-line-accent" d="M630,100 L666,100" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="670" y="30" width="140" height="140" rx="10"/>
+        <text class="svg-label" x="686" y="56">guard</text>
+        <text class="svg-label-sm" x="686" y="80">solution text?</text>
+        <text class="svg-label-sm" x="686" y="98">command leak?</text>
+        <text class="svg-label-sm" x="686" y="116">blocked → logged</text>
+        <path class="svg-line-accent" d="M810,100 L846,100" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="850" y="30" width="140" height="140" rx="10"/>
+        <text class="svg-label" x="866" y="56">answer</text>
+        <text class="svg-label-sm" x="866" y="80">+ sources</text>
+        <text class="svg-label-sm" x="866" y="98">/chat or</text>
+        <text class="svg-label-sm" x="866" y="116">/chat/stream</text>
+
+        <rect class="svg-box" x="10" y="200" width="980" height="80" rx="10"/>
+        <text class="svg-title" x="26" y="226">API unreachable</text>
+        <text class="svg-label-sm" x="26" y="250">the same corpus → site/dist/ask-index.json at build → ask-engine.js ranks it in the browser with the same</text>
+        <text class="svg-label-sm" x="26" y="268">tokenizer and BM25 → quotes the best three passages. A node test checks the two tokenizers agree.</text>
+        <path class="svg-line" d="M95,170 L95,200" marker-end="url(#arr)" stroke-dasharray="4 4"/>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="questions">How a drafted question earns its place</h2>
+    <div class="prose">
+      <p>
+        Every executable question in the repository's banks runs in CI. New ones are drafted on a
+        maintainer's machine, on a Claude subscription: no draft goes into a bank until other models
+        have solved it blind, a critic has failed to find a second defensible answer, a container has
+        printed what it claims a program prints — and a person has read it. A learner can draft
+        practice questions of their own the same way, with <kbd>g</kbd> on Theory.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 240" role="img" aria-label="Question verification pipeline">
+        {% for s in pipeline %}
+        <rect class="{{ 'svg-box-accent' if s.accent else 'svg-box' }}"
+              x="{{ s.x }}" y="30" width="145" height="104" rx="10"/>
+        <text class="svg-title" x="{{ s.x + 14 }}" y="56">{{ loop.index }}</text>
+        <text class="svg-label" x="{{ s.x + 14 }}" y="80">{{ s.title }}</text>
+        <text class="svg-label-sm" x="{{ s.x + 14 }}" y="100">{{ s.note }}</text>
+        <text class="svg-label-sm" x="{{ s.x + 14 }}" y="118" style="fill:#f87171">{{ s.reject }}</text>
+        {% if not loop.last %}
+        <path class="svg-line-accent" d="M{{ s.x + 145 }},82 L{{ s.x + 167 }},82" marker-end="url(#arrg)"/>
+        {% endif %}
+        {% endfor %}
+        <text class="svg-label-sm" x="16" y="180">
+          A surviving draft keeps its provenance: the writer, each verifier's blind answer, the critic's verdict, and what the snippet printed.
+        </text>
+        <text class="svg-label-sm" x="16" y="202">
+          Solvers never include the writer; without two usable models besides it — Claude Code, or exported keys — the pipeline refuses to start.
+        </text>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="plugin">From an idea to a lab: the Claude Code plugin</h2>
+    <div class="prose">
+      <p>
+        Content is written with <code>norboten-author</code>, a Claude Code plugin this repository
+        publishes as its own marketplace. <code>/norboten-author:idea</code> takes an idea, decides
+        whether it is a lab, theory questions or a journal, and asks only what the specifications
+        need and the idea leaves open, with a default for each. After a yes to its plan, the work
+        runs in the same session, where the author steers it, or in a subagent that returns a draft
+        — the questions always come first, because a subagent cannot ask them. Nothing is done
+        until the repository's own checks say so: a hook lints every edited lab, and the gate,
+        the question pipeline or the journal linter has the last word.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 300" role="img" aria-label="From an idea to content with the plugin">
+        <rect class="svg-box" x="10" y="24" width="240" height="96" rx="10"/>
+        <text class="svg-label" x="26" y="52">idea</text>
+        <text class="svg-label-sm" x="26" y="74">one sentence</text>
+        <text class="svg-label-sm" x="26" y="94">/norboten-author:idea</text>
+        <path class="svg-line-accent" d="M250,72 L286,72" marker-end="url(#arrg)"/>
+        <rect class="svg-box-accent" x="290" y="24" width="300" height="96" rx="10"/>
+        <text class="svg-label" x="306" y="52">questions</text>
+        <text class="svg-label-sm" x="306" y="74">only what the spec needs</text>
+        <text class="svg-label-sm" x="306" y="94">and what your idea left open</text>
+        <path class="svg-line-accent" d="M590,72 L626,72" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="630" y="24" width="260" height="96" rx="10"/>
+        <text class="svg-label" x="646" y="52">plan</text>
+        <text class="svg-label-sm" x="646" y="74">the files, the proof, the cost</text>
+        <text class="svg-label-sm" x="646" y="94" style="fill:#4ade80">waits for a yes</text>
+        <path class="svg-line-accent" d="M760,120 L760,150 L130,150 L130,168" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="10" y="172" width="340" height="96" rx="10"/>
+        <text class="svg-label" x="26" y="200">in this session, or in a subagent</text>
+        <text class="svg-label-sm" x="26" y="222">new-lab · new-questions · new-journal</text>
+        <text class="svg-label-sm" x="26" y="242">lab-author · question-author · journal-author</text>
+        <path class="svg-line-accent" d="M350,220 L386,220" marker-end="url(#arrg)"/>
+        <rect class="svg-box-accent" x="390" y="172" width="280" height="96" rx="10"/>
+        <text class="svg-label" x="406" y="200">draft + lint</text>
+        <text class="svg-label-sm" x="406" y="222">a hook lints every edited lab</text>
+        <text class="svg-label-sm" x="406" y="242">norboten dev lint</text>
+        <path class="svg-line-accent" d="M670,220 L706,220" marker-end="url(#arrg)"/>
+        <rect class="svg-box-accent" x="710" y="172" width="280" height="96" rx="10"/>
+        <text class="svg-label" x="726" y="200">proof</text>
+        <text class="svg-label-sm" x="726" y="222">the gate, on real VMs</text>
+        <text class="svg-label-sm" x="726" y="242">or the question pipeline</text>
+      </svg>
+      <figcaption>
+        One pull request per lab or bank, after the proof. In this checkout the plugin loads from
+        the working tree; elsewhere <code>/plugin marketplace add northelks/norboten</code>, then
+        <code>/plugin install norboten-author@norboten</code>.
+      </figcaption>
+    </figure>
+    <figure class="plain-term" style="max-width:760px">
+      <div class="term has-player">
+        <div class="termbar"><span class="termtitle">claude — {{ plugin_details[0] }}</span></div>
+        <div class="termbody"><pre class="termscreen wrap"><span class="prompt">$</span> claude plugin details norboten-author@norboten
+{{ plugin_details[1] }}</pre></div>
+      </div>
+      <figcaption>
+        What Claude Code reports about the plugin — a real run of <code>claude plugin details</code>
+        after installing it from this checkout (<code>site/capture_plugin.py</code>). More in
+        <a href="{{ root }}docs/claude-code-plugin/index.html">The Claude Code plugin</a>.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="analytics">Analytics and relations</h2>
+    <div class="prose">
+      <p>
+        The <a href="{{ root }}analytics/index.html">Analytics</a> page is drawn from the attempts
+        table: nightly on the server, from the sample population when the site is built. How labs,
+        topics, banks and journals relate is computed rather than curated — deterministic,
+        explainable, and needing nothing a relational database and scikit-learn do not already do.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 250" role="img" aria-label="Analytics pipeline">
+        <rect class="svg-box" x="10" y="30" width="200" height="120" rx="10"/>
+        <text class="svg-label" x="26" y="56">source</text>
+        <text class="svg-label-sm" x="26" y="80">PostgreSQL users,</text>
+        <text class="svg-label-sm" x="26" y="98">attempts (04:10)</text>
+        <text class="svg-label-sm" x="26" y="122">or seed/accounts.json</text>
+        <path class="svg-line-accent" d="M210,90 L246,90" marker-end="url(#arrg)"/>
+        <rect class="svg-box-accent" x="250" y="30" width="220" height="120" rx="10"/>
+        <text class="svg-label" x="266" y="56">pandas frames</text>
+        <text class="svg-label-sm" x="266" y="80">pass rate by lab, difficulty</text>
+        <text class="svg-label-sm" x="266" y="98">time to solve, over the clock</text>
+        <text class="svg-label-sm" x="266" y="116">monthly cohorts (≥ 5 users)</text>
+        <text class="svg-label-sm" x="266" y="134">ratings via accounts.rate</text>
+        <path class="svg-line-accent" d="M470,90 L506,90" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="510" y="30" width="220" height="120" rx="10"/>
+        <text class="svg-label" x="526" y="56">models</text>
+        <text class="svg-label-sm" x="526" y="80">k-means on topic ratings</text>
+        <text class="svg-label-sm" x="526" y="98">TF-IDF + cosine similarity</text>
+        <text class="svg-label-sm" x="526" y="116">networkx relation graph</text>
+        <path class="svg-line-accent" d="M730,90 L766,90" marker-end="url(#arrg)"/>
+        <rect class="svg-box-accent" x="770" y="30" width="220" height="120" rx="10"/>
+        <text class="svg-label" x="786" y="56">output</text>
+        <text class="svg-label-sm" x="786" y="80">11 SVG charts, site palette</text>
+        <text class="svg-label-sm" x="786" y="98">facts.json → the sentences</text>
+        <text class="svg-label-sm" x="786" y="116">/analytics/</text>
+        <text class="svg-label-sm" x="16" y="196">matplotlib renders to SVG with the site's colours and fonts; the page's numbers are read from facts.json, so text and charts never disagree.</text>
+        <text class="svg-label-sm" x="16" y="218">A vector store would add nothing yet; pgvector in the same PostgreSQL is the next step if semantic similarity is ever needed.</text>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="cicd">CI/CD</h2>
+    <div class="prose">
+      <p>
+        GitHub Actions does all of it. A pull request proves the code, the specs and every touched
+        lab; a push to main tests against real PostgreSQL and Redis, builds the API image and the
+        site, and rolls both out over SSH. A rollout that does not become ready rolls itself back.
+      </p>
+    </div>
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 380" role="img" aria-label="CI/CD">
+        <text class="svg-title" x="16" y="30">pull request</text>
+        <rect class="svg-box" x="140" y="10" width="200" height="60" rx="8"/>
+        <text class="svg-label" x="156" y="34">cli-test</text>
+        <text class="svg-label-sm" x="156" y="54">ruff · specs · pytest</text>
+        <path class="svg-line-accent" d="M340,40 L376,40" marker-end="url(#arrg)"/>
+        <rect class="svg-box-accent" x="380" y="10" width="260" height="60" rx="8"/>
+        <text class="svg-label" x="396" y="34">labs — the gate</text>
+        <text class="svg-label-sm" x="396" y="54">touched labs × images, /dev/kvm</text>
+        <path class="svg-line-accent" d="M640,40 L676,40" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="680" y="10" width="300" height="60" rx="8"/>
+        <text class="svg-label" x="696" y="34">quiz-verify</text>
+        <text class="svg-label-sm" x="696" y="54">executable questions, no network</text>
+
+        <text class="svg-title" x="16" y="130">push to main</text>
+        <rect class="svg-box" x="140" y="100" width="200" height="70" rx="8"/>
+        <text class="svg-label" x="156" y="124">test</text>
+        <text class="svg-label-sm" x="156" y="144">postgres + redis services</text>
+        <text class="svg-label-sm" x="156" y="160">node checks</text>
+        <path class="svg-line-accent" d="M340,120 L376,105" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M340,150 L376,175" marker-end="url(#arrg)"/>
+        <rect class="svg-box" x="380" y="84" width="260" height="50" rx="8"/>
+        <text class="svg-label" x="396" y="106">image</text>
+        <text class="svg-label-sm" x="396" y="124">buildx amd64 + arm64 → GHCR :sha</text>
+        <rect class="svg-box" x="380" y="150" width="260" height="50" rx="8"/>
+        <text class="svg-label" x="396" y="172">site</text>
+        <text class="svg-label-sm" x="396" y="190">build.py against api.&lt;domain&gt;</text>
+        <path class="svg-line-accent" d="M640,109 L676,130" marker-end="url(#arrg)"/>
+        <path class="svg-line-accent" d="M640,175 L676,150" marker-end="url(#arrg)"/>
+        <rect class="svg-box-accent" x="680" y="96" width="300" height="100" rx="8"/>
+        <text class="svg-label" x="696" y="120">rollout · environment production</text>
+        <text class="svg-label-sm" x="696" y="142">rsync deploy/ and site/dist</text>
+        <text class="svg-label-sm" x="696" y="160">ssh: sudo deploy.sh &lt;sha&gt;</text>
+        <text class="svg-label-sm" x="696" y="178">curl /readyz and the site</text>
+
+        <rect class="svg-box" x="680" y="222" width="300" height="70" rx="8"/>
+        <text class="svg-label" x="696" y="246">deploy.sh on the server</text>
+        <text class="svg-label-sm" x="696" y="266">ready in 120 s → .deployed = sha</text>
+        <text class="svg-label-sm" x="696" y="282" style="fill:#fbbf24">not ready → previous tag, job fails</text>
+        <path class="svg-line-accent" d="M830,196 L830,222" marker-end="url(#arrg)"/>
+
+        <text class="svg-title" x="16" y="250">manual</text>
+        <rect class="svg-box" x="140" y="222" width="500" height="70" rx="8"/>
+        <text class="svg-label" x="156" y="246">deploy with api_tag = an older commit</text>
+        <text class="svg-label-sm" x="156" y="266">builds skipped; that commit's deploy/ and image, still in GHCR</text>
+        <path class="svg-line" d="M640,257 L676,257" marker-end="url(#arra)" stroke="#fbbf24"/>
+
+        <text class="svg-title" x="16" y="340">tag v* · manual</text>
+        <rect class="svg-box" x="140" y="312" width="400" height="56" rx="8"/>
+        <text class="svg-label" x="156" y="336">lab-publish</text>
+        <text class="svg-label-sm" x="156" y="354">labs as OCI artifacts, signed with cosign</text>
+        <rect class="svg-box" x="560" y="312" width="420" height="56" rx="8"/>
+        <text class="svg-label" x="576" y="336">image-publish</text>
+        <text class="svg-label-sm" x="576" y="354">golden image on KVM → oras push → PR with the digest</text>
+      </svg>
+      <figcaption>
+        Every workflow and its secrets: <a href="{{ root }}docs/ci-cd/index.html">CI/CD</a>.
+        Locally, <code>make server-rehearsal</code> runs the production playbook and
+        <code>deploy.sh</code> against an Ubuntu VM on the laptop.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 id="decisions">Decisions worth defending</h2>
+    <div class="grid two" style="margin-top:1.4rem">
+      {% for d in decisions %}
+      <div class="card">
+        <h3>{{ d.title }}</h3>
+        <p class="muted">{{ d.body|keys }}</p>
+        {% if d.measured %}<p class="mono muted" style="font-size:0.85rem">Measured: {{ d.measured }}</p>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2 id="stack">The stack</h2>
+    <p class="muted prose">Every row does a job nothing else in the stack does, at the version
+      this repository pins. If a row could be deleted without breaking something, it would be.</p>
+    {% for layer in stack %}
+    <h3 class="stack-layer">{{ layer.layer }}</h3>
+    <div class="tablewrap">
+    <table class="stack-table">
+      <colgroup><col style="width:17%"><col style="width:12%"><col style="width:29%"><col style="width:27%"><col style="width:15%"></colgroup>
+      <tr><th>Technology</th><th>Version</th><th>What it does here</th><th>Why this one</th><th>Where</th></tr>
+      {% for row in layer.rows %}
+      <tr>
+        <td><strong>{{ row.tech }}</strong></td>
+        <td class="mono muted">{{ row.version }}</td>
+        <td class="muted">{{ row.job }}</td>
+        <td class="muted">{{ row.why }}</td>
+        <td class="mono muted">{{ row.where }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

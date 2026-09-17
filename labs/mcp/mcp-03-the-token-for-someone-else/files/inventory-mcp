@@ -1,0 +1,23 @@
+#!/bin/sh
+# inventory-mcp start|stop|restart|status — the inventory MCP server, without an init system.
+PID=/run/inventory-mcp.pid
+running() { [ -f "$PID" ] && kill -0 "$(cat "$PID")" 2>/dev/null; }
+start() {
+    running && return 0
+    setsid python3 /opt/inventory-mcp/inventory_mcp.py </dev/null >>/var/log/inventory-mcp.log 2>&1 &
+    echo $! > "$PID"
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+        python3 -c 'import socket; socket.create_connection(("127.0.0.1", 8931), 0.3)' 2>/dev/null && return 0
+        sleep 0.2
+    done
+    echo "inventory-mcp: did not start; see /var/log/inventory-mcp.log" >&2
+    return 1
+}
+stop() { running && kill "$(cat "$PID")" 2>/dev/null; rm -f "$PID"; sleep 0.3; }
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart) stop; start ;;
+    status) if running; then echo "running, pid $(cat "$PID")"; else echo "stopped"; exit 3; fi ;;
+    *) echo "usage: inventory-mcp start|stop|restart|status" >&2; exit 2 ;;
+esac

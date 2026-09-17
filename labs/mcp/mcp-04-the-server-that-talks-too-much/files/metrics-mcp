@@ -1,0 +1,4 @@
+#!/bin/sh
+# Start the metrics MCP server. Kept as a wrapper so the version shows when it starts.
+printf 'metrics-mcp 3.1 ready '
+exec python3 /opt/metrics-mcp/metrics_mcp.py "$@"

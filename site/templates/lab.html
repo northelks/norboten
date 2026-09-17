@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% from "_question.html" import question %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": {{ lab.title|tojson }},
+  "description": {{ page_description|tojson }},
+  "url": {{ canonical|tojson }},
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "teaches": {{ lab.objectives|tojson }},
+  "timeRequired": "PT{{ lab.minutes }}M",
+  "provider": {"@type": "Organization", "name": "Norboten", "url": "{{ site_url }}/"},
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "online",
+    "courseWorkload": "PT{{ lab.minutes }}M"
+  }
+}
+</script>
+{% endblock %}
+{% block body %}
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">{{ lab.track }} · lab {{ lab.short_id }}</div>
+    <h1>{{ lab.title }}</h1>
+    <p class="muted">
+      <span class="diff">{{ lab.dots|safe }}</span> ·
+      about {{ lab.minutes }} minutes ·
+      runs on <span class="mono">{{ lab.images|join(', ') }}</span>
+      · {% if lab.rated %}<span class="tag rated">rated</span>{% else %}<span class="tag">unrated</span>{% endif %}
+      {% if lab.time_limit %} · timed: {{ lab.time_limit }} minutes, pass line {{ lab.pass_percent }}%{% endif %}
+    </p>
+    <div class="cta">
+      {% if lab.journal %}
+      <a class="btn solid" href="{{ root }}journals/{{ lab.id }}/index.html">Read the journal</a>
+      {% endif %}
+      <a class="btn" href="{{ github }}/tree/main/{{ lab.repo_path }}" rel="noopener">Read its source</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="note prose">
+      {% if lab.rated %}
+      <strong>A rated lab.</strong> It needs an account and a reachable server: the faults come
+      from the API for the length of one attempt, the verdict is computed there from the machine's
+      own state, and this is the kind of work a rating is made of. Its solution is not published,
+      and it has no journal.
+      {% else %}
+      <strong>An unrated lab.</strong> It runs on your machine with no account and no network, and
+      everything about it — the faults, the checks, the hints and the reference solution — is in
+      the repository. An attempt on it is recorded on your profile and never moves a rating: only
+      rated labs do.
+      {% endif %}
+      <a href="{{ root }}docs/rated-labs/index.html">Rated and unrated labs</a>.
+    </p>
+    <div class="grid two" style="gap:2.5rem; align-items:start">
+      <div>
+        <h2>The briefing</h2>
+        <div class="prose">{{ lab.briefing_html|safe }}</div>
+      </div>
+      <div>
+        <h2>What is graded</h2>
+        {% if lab.runtime == "container" %}
+        <p class="muted">This lab runs in a container — Docker or Podman, no VM — so there is no boot
+          to survive: the checks run once, against the state you left.</p>
+        {% elif lab.reboot_required %}
+        <p class="muted">The machine is checked, rebooted, and checked again. A check passes only
+          if it passes both times.</p>
+        {% else %}
+        <p class="muted">The machine is checked once, as you left it.</p>
+        {% endif %}
+        <table>
+          <tr><th>Check</th><th>Objective</th></tr>
+          {% for c in lab.checks %}
+          <tr><td class="mono">{{ c.id }}</td><td class="muted">{{ c.objective }}</td></tr>
+          {% endfor %}
+        </table>
+        <h3>Start it</h3>
+        <ol class="keysteps">
+          <li><kbd>2</kbd><span>Labs</span></li>
+          <li><span class="mono pick">{{ lab.short_id }}</span><span>select this one</span></li>
+          <li><kbd>u</kbd><span>download it</span></li>
+          <li><kbd>s</kbd><span>{% if lab.rated %}start the attempt — the clock runs{% else %}start the machine{% endif %}</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if lab.reading %}
+<section class="section no-line">
+  <div class="wrap">
+    <h2>Reading</h2>
+    <p class="muted">Where the lab's hints send you, level by level, as you ask for them
+      (<kbd>h</kbd>, then <kbd>l</kbd> opens a journal section in the TUI).</p>
+    <ul class="prose">
+      {% for r in lab.reading %}<li>{% if r.external %}<a href="{{ r.href }}" rel="noopener">{{ r.label }}</a>{% elif r.href %}<a href="{{ root }}{{ r.href }}">{{ r.label }}</a>{% else %}<code>{{ r.label }}</code>{% endif %}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+
+{% if lab.theory %}
+<section class="section no-line">
+  <div class="wrap">
+    <h2>Theory for this lab</h2>
+    <p class="prose muted">{{ lab.theory.count }} questions on the same topic, in the lab's Theory
+      tab. They never affect the lab's grade.
+      {% if lab.theory.count > lab.theory.questions|length %}Three of them, to answer here:
+      {% else %}Here they are, to answer in place:{% endif %}</p>
+    <div class="quiz-grid">
+      {% for q in lab.theory.questions %}
+      {{ question(q, "Question " ~ loop.index) }}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}<script src="{{ root }}quiz.js"></script>{% endblock %}

@@ -1,0 +1,6 @@
+[Unit]
+Description=Write the system report
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/sysreport -o /var/log/sysreport.txt

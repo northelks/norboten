@@ -1,0 +1,10 @@
+[Unit]
+Description=Inventory records API
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/bin/records-api
+DynamicUser=yes
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

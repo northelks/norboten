@@ -1,0 +1,31 @@
+checks:
+  01_api_through_the_front:
+    level_1: "The front cannot reach the API: it either fails to start or answers /api/ with an
+              error."
+    level_2: "Inside a container, localhost is that container. How does one Compose service reach
+              another?"
+    level_3: "Compare the networks each service joins in the compose file with the address in the
+              proxy_pass line of the web service's nginx configuration."
+    level_4: "web and api are on different networks, and web proxies to localhost:8089 — itself. Put
+              both on one network and proxy to http://api/ on the port the container listens on."
+    refs:
+      2: ["https://docs.docker.com/compose/how-tos/networking/"]
+      3: ["journal:docker-02-stack-cannot-find-its-api#every-container-has-its-own-network-namespace", "journal:docker-02-stack-cannot-find-its-api#how-compose-services-find-each-other", "journal:docker-02-stack-cannot-find-its-api#what-user-defined-networks-change"]
+  02_api_not_published:
+    level_1: "The API can be reached directly from the host, bypassing the front."
+    level_2: "Services on the same Compose network reach each other without any published port."
+    level_3: "Look for a ports entry under the api service."
+    level_4: "api publishes 8089:80. Remove that ports entry."
+    refs:
+      2: ["journal:networking#listening-on-loopback-or-on-everything"]
+      3: ["journal:docker-02-stack-cannot-find-its-api#exposing-versus-publishing"]
+  03_stack_back_after_boot:
+    level_1: "After a reboot, the shop's containers stay stopped."
+    level_2: "Docker restarts containers at boot only when their restart policy says so, and only if
+              Docker itself starts."
+    level_3: "docker inspect shows each container's RestartPolicy; the compose file sets none."
+    level_4: "No service has a restart policy. Add restart: unless-stopped to both (or start the
+              project from an enabled systemd unit) and recreate the containers."
+    refs:
+      2: ["https://docs.docker.com/engine/containers/start-containers-automatically/"]
+      3: ["journal:docker-02-stack-cannot-find-its-api#surviving-a-reboot"]

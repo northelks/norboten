@@ -1,0 +1,11 @@
+[Unit]
+Description=myapp, with its configuration rendered at start
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/usr/local/bin/render-config
+ExecStart=/usr/local/bin/myapp-login
+
+[Install]
+WantedBy=multi-user.target

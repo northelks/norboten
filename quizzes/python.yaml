@@ -1,0 +1,970 @@
+schema_version: 1
+topic: python
+topics: [python]
+title: Python for automation
+description: The Python that automation scripts are made of — and the surprises in it.
+questions:
+  - id: py-001
+    type: single
+    difficulty: 1
+    prompt: What does this print?
+    code: print([1, 2, 3][-1])
+    code_lang: python
+    choices:
+      - {id: a, text: "1"}
+      - {id: b, text: "[3]"}
+      - {id: c, text: "3"}
+      - {id: d, text: "IndexError"}
+    answer: [c]
+    explanation: Negative indices count from the end, so -1 is the last element. Slicing ([-1:]) would give a list.
+    references: ["https://docs.python.org/3/tutorial/introduction.html#lists"]
+    tags: [lists]
+    verify:
+      runtime: python
+      code: print([1, 2, 3][-1])
+  - id: py-002
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      d = {}
+      d.setdefault("k", []).append(1)
+      print(d)
+    code_lang: python
+    choices:
+      - {id: a, text: "{'k': [1]}"}
+      - {id: b, text: "{}"}
+      - {id: c, text: "KeyError: 'k'"}
+      - {id: d, text: "{'k': []}"}
+    answer: [a]
+    explanation: >-
+      setdefault inserts the default when the key is missing and returns the stored value, so
+      append modifies the list inside the dict.
+    references: ["https://docs.python.org/3/library/stdtypes.html#dict.setdefault"]
+    tags: [dicts]
+    verify:
+      runtime: python
+      code: |
+        d = {}
+        d.setdefault("k", []).append(1)
+        print(d)
+  - id: py-003
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      def add(x, acc=[]):
+          acc.append(x)
+          return acc
+
+      add(1)
+      print(add(2))
+    code_lang: python
+    choices:
+      - {id: a, text: "None"}
+      - {id: b, text: "[2]"}
+      - {id: c, text: "[1, 2]"}
+      - {id: d, text: "[1]"}
+    answer: [c]
+    explanation: >-
+      Default values are evaluated once, when the function is defined, so every call without acc
+      shares the same list. Use acc=None and create the list inside the function.
+    references: ["https://docs.python.org/3/tutorial/controlflow.html#default-argument-values"]
+    tags: [functions, pitfalls]
+    verify:
+      runtime: python
+      code: |
+        def add(x, acc=[]):
+            acc.append(x)
+            return acc
+        add(1)
+        print(add(2))
+  - id: py-004
+    type: single
+    difficulty: 1
+    prompt: What does the `if __name__ == "__main__":` block do?
+    choices:
+      - {id: a, text: "Runs its code only when the file is executed directly, not when it is imported"}
+      - {id: b, text: "Marks the function Python should call first"}
+      - {id: c, text: "Runs its code before anything else in the file"}
+      - {id: d, text: "Makes the file importable"}
+    answer: [a]
+    explanation: >-
+      A module's __name__ is "__main__" only when it is the program being run. Importing sets it
+      to the module name, so the block is skipped — handy for scripts that are also libraries.
+    references: ["https://docs.python.org/3/library/__main__.html"]
+    tags: [modules]
+  - id: py-005
+    type: single
+    difficulty: 1
+    prompt: Which is the standard-library way to run a command and capture its output and exit status?
+    choices:
+      - {id: a, text: "sys.exec(...)"}
+      - {id: b, text: "subprocess.run(..., capture_output=True, text=True)"}
+      - {id: c, text: "os.system(...)"}
+      - {id: d, text: "shutil.run(...)"}
+    answer: [b]
+    explanation: >-
+      subprocess.run returns a CompletedProcess with returncode, stdout and stderr. os.system only
+      returns the status and runs through a shell; shutil.run and sys.exec do not exist.
+    references: ["https://docs.python.org/3/library/subprocess.html#subprocess.run"]
+    tags: [subprocess]
+  - id: py-006
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: print(sorted(["b", "A", "a"]))
+    code_lang: python
+    choices:
+      - {id: a, text: "['A', 'b', 'a']"}
+      - {id: b, text: "['A', 'a', 'b']"}
+      - {id: c, text: "['a', 'A', 'b']"}
+      - {id: d, text: "['a', 'b', 'A']"}
+    answer: [b]
+    explanation: >-
+      Strings compare by code point, and uppercase letters come before lowercase in ASCII. For a
+      case-insensitive order use key=str.lower (or str.casefold).
+    references: ["https://docs.python.org/3/howto/sorting.html"]
+    tags: [sorting]
+    verify:
+      runtime: python
+      code: print(sorted(["b", "A", "a"]))
+  - id: py-007
+    type: single
+    difficulty: 1
+    prompt: What does `python3 -m venv .venv` create?
+    choices:
+      - {id: a, text: "A lock file of the installed packages"}
+      - {id: b, text: "A copy of the whole Python installation, standard library included"}
+      - {id: c, text: "An isolated environment with its own interpreter entry point and site-packages"}
+      - {id: d, text: "A container image with Python inside"}
+    answer: [c]
+    explanation: >-
+      A venv links to the base interpreter and has its own site-packages, so pip installs stay
+      out of the system Python. Scripts that need it must use .venv/bin/python — not
+      /usr/bin/python3.
+    references: ["https://docs.python.org/3/library/venv.html"]
+    tags: [packaging]
+  - id: py-008
+    type: single
+    difficulty: 1
+    prompt: What does this print?
+    code: print(" a  b ".split())
+    code_lang: python
+    choices:
+      - {id: a, text: "['', 'a', '', 'b', '']"}
+      - {id: b, text: "['a', '', 'b']"}
+      - {id: c, text: "['a', 'b']"}
+      - {id: d, text: "[' a  b ']"}
+    answer: [c]
+    explanation: >-
+      With no separator, split() splits on runs of whitespace and drops leading and trailing
+      whitespace. split(" ") would keep the empty strings.
+    references: ["https://docs.python.org/3/library/stdtypes.html#str.split"]
+    tags: [strings]
+    verify:
+      runtime: python
+      code: print(" a  b ".split())
+  - id: py-009
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: print(0.1 + 0.2 == 0.3)
+    code_lang: python
+    choices:
+      - {id: a, text: "False"}
+      - {id: b, text: "0.3"}
+      - {id: c, text: "True"}
+      - {id: d, text: "None"}
+    answer: [a]
+    explanation: >-
+      Binary floating point cannot represent 0.1 exactly; the sum is 0.30000000000000004. Compare
+      with math.isclose, or use decimal.Decimal for money.
+    references: ["https://docs.python.org/3/tutorial/floatingpoint.html"]
+    tags: [numbers]
+    verify:
+      runtime: python
+      code: print(0.1 + 0.2 == 0.3)
+  - id: py-010
+    type: multiple
+    difficulty: 2
+    prompt: Which HTTP methods are idempotent by definition, so a client may safely retry them?
+    choices:
+      - {id: a, text: PUT}
+      - {id: b, text: GET}
+      - {id: c, text: DELETE}
+      - {id: d, text: PATCH}
+      - {id: e, text: POST}
+    answer: [a, b, c]
+    explanation: >-
+      RFC 9110 defines GET, HEAD, OPTIONS, TRACE, PUT and DELETE as idempotent: repeating the
+      request has the same effect as sending it once. POST and PATCH are not, so retrying them
+      needs an idempotency key or a server-side check.
+    references: ["https://www.rfc-editor.org/rfc/rfc9110#section-9.2.2"]
+    tags: [http, retries]
+  - id: py-011
+    type: single
+    difficulty: 1
+    prompt: What does `with open(path) as f:` guarantee?
+    choices:
+      - {id: a, text: "The file is created if it does not exist"}
+      - {id: b, text: "The file is read completely into memory"}
+      - {id: c, text: "The file is locked against other processes"}
+      - {id: d, text: "The file is closed when the block exits, even if an exception is raised"}
+    answer: [d]
+    explanation: >-
+      The file object is a context manager: __exit__ closes it however the block ends. It does not
+      lock the file, read it, or create it (that depends on the mode).
+    references: ["https://docs.python.org/3/reference/compound_stmts.html#with"]
+    tags: [files]
+  - id: py-012
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import json
+      print(type(json.loads('{"a": 1}')).__name__)
+    code_lang: python
+    choices:
+      - {id: a, text: dict}
+      - {id: b, text: list}
+      - {id: c, text: str}
+      - {id: d, text: JSONObject}
+    answer: [a]
+    explanation: JSON objects decode to dict, arrays to list, strings to str, numbers to int or float.
+    references: ["https://docs.python.org/3/library/json.html#json-to-py-table"]
+    tags: [json]
+    verify:
+      runtime: python
+      code: |
+        import json
+        print(type(json.loads('{"a": 1}')).__name__)
+  - id: py-013
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      a = [1, 2, 3]
+      b = a
+      b += [4]
+      print(len(a))
+    code_lang: python
+    choices:
+      - {id: a, text: "4"}
+      - {id: b, text: "3"}
+      - {id: c, text: "TypeError"}
+      - {id: d, text: "7"}
+    answer: [a]
+    explanation: >-
+      b = a copies the reference, not the list, and += on a list extends it in place. Both names
+      point at the same four-element list. b = b + [4] would have built a new list and left a
+      alone; a.copy() or list(a) makes a real copy.
+    references: ["https://docs.python.org/3/faq/programming.html#why-did-changing-list-y-also-change-list-x"]
+    tags: [lists, pitfalls]
+    verify:
+      runtime: python
+      code: |
+        a = [1, 2, 3]
+        b = a
+        b += [4]
+        print(len(a))
+  - id: py-014
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      grid = [[0] * 2] * 2
+      grid[0][0] = 1
+      print(grid)
+    code_lang: python
+    choices:
+      - {id: a, text: "[[1, 0], [0, 0]]"}
+      - {id: b, text: "[[1, 0], [1, 0]]"}
+      - {id: c, text: "[[1, 0]]"}
+      - {id: d, text: "[[1, 1], [0, 0]]"}
+    answer: [b]
+    explanation: >-
+      Multiplying the outer list repeats a reference to the same inner list, so both rows are one
+      object and the change shows twice. [[0] * 2 for _ in range(2)] builds independent rows.
+    references: ["https://docs.python.org/3/faq/programming.html#how-do-i-create-a-multidimensional-list"]
+    tags: [lists, pitfalls]
+    verify:
+      runtime: python
+      code: |
+        grid = [[0] * 2] * 2
+        grid[0][0] = 1
+        print(grid)
+  - id: py-015
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      fs = [lambda: i for i in range(3)]
+      print([f() for f in fs])
+    code_lang: python
+    choices:
+      - {id: a, text: "NameError"}
+      - {id: b, text: "[0, 0, 0]"}
+      - {id: c, text: "[2, 2, 2]"}
+      - {id: d, text: "[0, 1, 2]"}
+    answer: [c]
+    explanation: >-
+      A closure looks up i when it is called, not when it is created, and by then the loop has
+      finished with i = 2. Binding the value at creation — lambda i=i: i — gives [0, 1, 2].
+    references: ["https://docs.python.org/3/faq/programming.html#why-do-lambdas-defined-in-a-loop-with-different-values-all-return-the-same-result"]
+    tags: [functions, pitfalls]
+    verify:
+      runtime: python
+      code: |
+        fs = [lambda: i for i in range(3)]
+        print([f() for f in fs])
+  - id: py-016
+    type: single
+    difficulty: 1
+    prompt: What does this print?
+    code: print("a,b,,c".split(","))
+    code_lang: python
+    choices:
+      - {id: a, text: "['a', 'b', 'c']"}
+      - {id: b, text: "['a,b,,c']"}
+      - {id: c, text: "['a', 'b', '', 'c']"}
+      - {id: d, text: "['a', 'b', ',', 'c']"}
+    answer: [c]
+    explanation: >-
+      With an explicit separator, split keeps empty fields between adjacent separators. Only
+      split() with no argument splits on runs of whitespace and drops empty strings.
+    references: ["https://docs.python.org/3/library/stdtypes.html#str.split"]
+    tags: [strings]
+    verify:
+      runtime: python
+      code: print("a,b,,c".split(","))
+  - id: py-017
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: print("  host:8080\n".strip().rsplit(":", 1))
+    code_lang: python
+    choices:
+      - {id: a, text: "['  host', '8080\\n']"}
+      - {id: b, text: "['host:8080']"}
+      - {id: c, text: "('host', '8080')"}
+      - {id: d, text: "['host', '8080']"}
+    answer: [d]
+    explanation: >-
+      strip() removes surrounding whitespace, newline included, and rsplit(":", 1) splits once
+      from the right — which keeps an IPv6-ish or colon-containing host part intact on the left.
+      split returns a list, not a tuple.
+    references: ["https://docs.python.org/3/library/stdtypes.html#str.rsplit"]
+    tags: [strings]
+    verify:
+      runtime: python
+      code: print("  host:8080\n".strip().rsplit(":", 1))
+  - id: py-018
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: print(round(2.5), round(3.5))
+    code_lang: python
+    choices:
+      - {id: a, text: "3 3"}
+      - {id: b, text: "2 4"}
+      - {id: c, text: "2 3"}
+      - {id: d, text: "3 4"}
+    answer: [b]
+    explanation: >-
+      Python 3 rounds halves to the nearest even integer (banker's rounding), so 2.5 goes down and
+      3.5 goes up. It avoids a systematic upward bias when summing many rounded values.
+    references: ["https://docs.python.org/3/library/functions.html#round"]
+    tags: [numbers]
+    verify:
+      runtime: python
+      code: print(round(2.5), round(3.5))
+  - id: py-019
+    type: single
+    difficulty: 1
+    prompt: What does this print?
+    code: print(7 // 2, -7 // 2, 7 % -2)
+    code_lang: python
+    choices:
+      - {id: a, text: "3 -3 -1"}
+      - {id: b, text: "3 -4 -1"}
+      - {id: c, text: "3.5 -3.5 1"}
+      - {id: d, text: "3 -3 1"}
+    answer: [b]
+    explanation: >-
+      // floors towards negative infinity, so -7 // 2 is -4, not -3; and % takes the sign of the
+      divisor so that (a // b) * b + a % b == a always holds.
+    references: ["https://docs.python.org/3/reference/expressions.html#binary-arithmetic-operations"]
+    tags: [numbers]
+    verify:
+      runtime: python
+      code: print(7 // 2, -7 // 2, 7 % -2)
+  - id: py-020
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      d = {"b": 1, "a": 2}
+      d["c"] = 3
+      print(list(d))
+    code_lang: python
+    choices:
+      - {id: a, text: "[1, 2, 3]"}
+      - {id: b, text: "an order that changes from run to run"}
+      - {id: c, text: "['b', 'a', 'c']"}
+      - {id: d, text: "['a', 'b', 'c']"}
+    answer: [c]
+    explanation: >-
+      Since Python 3.7, dicts keep insertion order as part of the language, and iterating a dict
+      yields its keys. Sorting needs sorted(d).
+    references: ["https://docs.python.org/3/library/stdtypes.html#dict"]
+    tags: [dicts]
+    verify:
+      runtime: python
+      code: |
+        d = {"b": 1, "a": 2}
+        d["c"] = 3
+        print(list(d))
+  - id: py-021
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      from collections import Counter
+      c = Counter("mississippi")
+      print(c.most_common(2))
+    code_lang: python
+    choices:
+      - {id: a, text: "[('s', 4), ('i', 4)]"}
+      - {id: b, text: "[('i', 4), ('p', 2)]"}
+      - {id: c, text: "{'i': 4, 's': 4}"}
+      - {id: d, text: "[('i', 4), ('s', 4)]"}
+    answer: [d]
+    explanation: >-
+      i and s both occur four times; elements with equal counts keep the order in which they were
+      first seen, and i comes before s in the string. most_common returns a list of
+      (element, count) pairs.
+    references: ["https://docs.python.org/3/library/collections.html#collections.Counter.most_common"]
+    tags: [collections]
+    verify:
+      runtime: python
+      code: |
+        from collections import Counter
+        c = Counter("mississippi")
+        print(c.most_common(2))
+  - id: py-022
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      from collections import defaultdict
+      hosts = defaultdict(list)
+      hosts["web"].append("w1")
+      print(dict(hosts), hosts["db"])
+    code_lang: python
+    choices:
+      - {id: a, text: "{'web': ['w1']} []"}
+      - {id: b, text: "{'web': ['w1']} None"}
+      - {id: c, text: "{'web': 'w1'} []"}
+      - {id: d, text: "KeyError: 'db'"}
+    answer: [a]
+    explanation: >-
+      A defaultdict calls its factory for a missing key, stores the result and returns it, so
+      hosts["db"] is a new empty list — and, as a side effect, "db" is now a key. dict(hosts) was
+      taken before that lookup, so it has only web.
+    references: ["https://docs.python.org/3/library/collections.html#collections.defaultdict"]
+    tags: [collections, dicts]
+    verify:
+      runtime: python
+      code: |
+        from collections import defaultdict
+        hosts = defaultdict(list)
+        hosts["web"].append("w1")
+        print(dict(hosts), hosts["db"])
+  - id: py-023
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      gen = (x * x for x in range(3))
+      print(sum(gen), sum(gen))
+    code_lang: python
+    choices:
+      - {id: a, text: "0 0"}
+      - {id: b, text: "5 0"}
+      - {id: c, text: "5 5"}
+      - {id: d, text: "TypeError"}
+    answer: [b]
+    explanation: >-
+      A generator can be consumed once. The first sum reads 0, 1 and 4; the second finds it
+      exhausted and sums nothing. Use a list when the values are needed twice.
+    references: ["https://docs.python.org/3/glossary.html#term-generator-iterator"]
+    tags: [iterators]
+    verify:
+      runtime: python
+      code: |
+        gen = (x * x for x in range(3))
+        print(sum(gen), sum(gen))
+  - id: py-024
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      names = ["web1", "web2", "db1"]
+      ports = [80, 8080]
+      print(list(zip(names, ports)))
+    code_lang: python
+    choices:
+      - {id: a, text: "[['web1', 80], ['web2', 8080]]"}
+      - {id: b, text: "ValueError"}
+      - {id: c, text: "[('web1', 80), ('web2', 8080)]"}
+      - {id: d, text: "[('web1', 80), ('web2', 8080), ('db1', None)]"}
+    answer: [c]
+    explanation: >-
+      zip stops at the shortest input and silently drops the rest. itertools.zip_longest fills the
+      gaps, and zip(..., strict=True) (Python 3.10+) raises ValueError when lengths differ.
+    references: ["https://docs.python.org/3/library/functions.html#zip"]
+    tags: [iterators]
+    verify:
+      runtime: python
+      code: |
+        names = ["web1", "web2", "db1"]
+        ports = [80, 8080]
+        print(list(zip(names, ports)))
+  - id: py-025
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      def f():
+          try:
+              return "try"
+          finally:
+              print("finally", end=" ")
+      print(f())
+    code_lang: python
+    choices:
+      - {id: a, text: "finally try"}
+      - {id: b, text: "try finally"}
+      - {id: c, text: "try"}
+      - {id: d, text: "finally"}
+    answer: [a]
+    explanation: >-
+      The finally block runs on the way out of the function, after the return value is computed
+      but before the caller receives it, so its print comes first. A return inside finally would
+      even replace the original return value.
+    references: ["https://docs.python.org/3/reference/compound_stmts.html#the-try-statement"]
+    tags: [exceptions]
+    verify:
+      runtime: python
+      code: |
+        def f():
+            try:
+                return "try"
+            finally:
+                print("finally", end=" ")
+        print(f())
+  - id: py-026
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      try:
+          int("8080 ")
+          print("int")
+      except ValueError:
+          print("ValueError")
+    code_lang: python
+    choices:
+      - {id: a, text: "8080"}
+      - {id: b, text: "int"}
+      - {id: c, text: "TypeError"}
+      - {id: d, text: "ValueError"}
+    answer: [b]
+    explanation: >-
+      int() ignores leading and trailing whitespace, so "8080 " converts. It raises ValueError for
+      anything else that is not a whole number, such as "80.5" or "80a".
+    references: ["https://docs.python.org/3/library/functions.html#int"]
+    tags: [numbers, strings]
+    verify:
+      runtime: python
+      code: |
+        try:
+            int("8080 ")
+            print("int")
+        except ValueError:
+            print("ValueError")
+  - id: py-027
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      from pathlib import Path
+      p = Path("/etc/nginx/conf.d/site.conf")
+      print(p.parent.name, p.stem, p.suffix)
+    code_lang: python
+    choices:
+      - {id: a, text: "conf.d site .conf"}
+      - {id: b, text: "/etc/nginx/conf.d site.conf .conf"}
+      - {id: c, text: "nginx site .conf"}
+      - {id: d, text: "conf.d site conf"}
+    answer: [a]
+    explanation: >-
+      parent is the containing directory and .name its last component; stem is the file name
+      without its final suffix; suffix includes the dot.
+    references: ["https://docs.python.org/3/library/pathlib.html#methods-and-properties"]
+    tags: [files]
+    verify:
+      runtime: python
+      code: |
+        from pathlib import Path
+        p = Path("/etc/nginx/conf.d/site.conf")
+        print(p.parent.name, p.stem, p.suffix)
+  - id: py-028
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      from pathlib import Path
+      print(Path("/srv/app") / "/etc/passwd")
+    code_lang: python
+    choices:
+      - {id: a, text: "ValueError"}
+      - {id: b, text: "/srv/app/etc/passwd"}
+      - {id: c, text: "/etc/passwd"}
+      - {id: d, text: "/srv/app//etc/passwd"}
+    answer: [c]
+    explanation: >-
+      Joining an absolute path discards everything before it, as os.path.join does. It is how a
+      user-supplied "file name" escapes the intended directory; resolve the result and check it
+      is still inside the base (is_relative_to) before using it.
+    references: ["https://docs.python.org/3/library/pathlib.html#operators"]
+    tags: [files, security]
+    verify:
+      runtime: python
+      code: |
+        from pathlib import Path
+        print(Path("/srv/app") / "/etc/passwd")
+  - id: py-029
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import subprocess
+      r = subprocess.run(["sh", "-c", "exit 3"])
+      print(r.returncode)
+    code_lang: python
+    choices:
+      - {id: a, text: "CalledProcessError"}
+      - {id: b, text: "0"}
+      - {id: c, text: "3"}
+      - {id: d, text: "None"}
+    answer: [c]
+    explanation: >-
+      subprocess.run does not raise on a non-zero exit unless check=True; it returns a
+      CompletedProcess whose returncode says what happened. Scripts that forget both carry on
+      after a failed command.
+    references: ["https://docs.python.org/3/library/subprocess.html#subprocess.run"]
+    tags: [subprocess]
+    verify:
+      runtime: python
+      code: |
+        import subprocess
+        r = subprocess.run(["sh", "-c", "exit 3"])
+        print(r.returncode)
+  - id: py-030
+    type: single
+    difficulty: 3
+    prompt: Why is `subprocess.run(f"grep {pattern} {path}", shell=True)` dangerous when pattern comes from a user?
+    choices:
+      - {id: a, text: "The shell interprets the string, so ; $( ) and quotes in pattern run other commands"}
+      - {id: b, text: "It is slower, which allows a timing attack"}
+      - {id: c, text: "f-strings cannot be passed to subprocess"}
+      - {id: d, text: "shell=True runs the command as root"}
+    answer: [a]
+    explanation: >-
+      With shell=True the whole string goes to /bin/sh, so input like "x; rm -rf ~" becomes a
+      second command. Pass a list — ["grep", pattern, path] — so each argument reaches the program
+      untouched, or use shlex.quote if a shell is truly needed. Privileges are unchanged.
+    references: ["https://docs.python.org/3/library/subprocess.html#security-considerations"]
+    tags: [subprocess, security]
+  - id: py-031
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import json
+      print(json.dumps({"n": None, "ok": True, "t": (1, 2)}))
+    code_lang: python
+    choices:
+      - {id: a, text: "{'n': None, 'ok': True, 't': (1, 2)}"}
+      - {id: b, text: "TypeError: tuple is not JSON serializable"}
+      - {id: c, text: "{\"n\": \"None\", \"ok\": \"True\", \"t\": [1, 2]}"}
+      - {id: d, text: "{\"n\": null, \"ok\": true, \"t\": [1, 2]}"}
+    answer: [d]
+    explanation: >-
+      json.dumps maps None to null, True to true and any tuple or list to a JSON array. Loading
+      the result back gives a list, not a tuple — JSON has no tuple type.
+    references: ["https://docs.python.org/3/library/json.html#py-to-json-table"]
+    tags: [json]
+    verify:
+      runtime: python
+      code: |
+        import json
+        print(json.dumps({"n": None, "ok": True, "t": (1, 2)}))
+  - id: py-032
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import json
+      print(json.loads('{"a": 1, "a": 2}'))
+    code_lang: python
+    choices:
+      - {id: a, text: "{'a': 2}"}
+      - {id: b, text: "{'a': [1, 2]}"}
+      - {id: c, text: "json.decoder.JSONDecodeError"}
+      - {id: d, text: "{'a': 1}"}
+    answer: [a]
+    explanation: >-
+      JSON does not forbid duplicate keys, and Python's parser keeps the last value without a
+      warning. Pass object_pairs_hook to detect duplicates when a configuration file must not have
+      them.
+    references: ["https://docs.python.org/3/library/json.html#repeated-names-within-an-object"]
+    tags: [json]
+    verify:
+      runtime: python
+      code: |
+        import json
+        print(json.loads('{"a": 1, "a": 2}'))
+  - id: py-033
+    type: single
+    difficulty: 1
+    prompt: What does this print?
+    code: |
+      port = 8080
+      print(f"{port:>6}|{port:06d}|{0.5:.0%}")
+    code_lang: python
+    choices:
+      - {id: a, text: "8080|8080|0.5"}
+      - {id: b, text: "  8080|008080|50%"}
+      - {id: c, text: "8080  |008080|0.5%"}
+      - {id: d, text: "  8080|8080  |50%"}
+    answer: [b]
+    explanation: >-
+      >6 right-aligns in six characters, 06d zero-pads an integer to six digits, and .0% multiplies
+      by 100 and adds a percent sign with no decimals.
+    references: ["https://docs.python.org/3/library/string.html#format-specification-mini-language"]
+    tags: [strings]
+    verify:
+      runtime: python
+      code: |
+        port = 8080
+        print(f"{port:>6}|{port:06d}|{0.5:.0%}")
+  - id: py-034
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import re
+      m = re.match(r"(\w+)@(\w+)\.org", "ops@norboten.org")
+      print(m.group(2) if m else None)
+    code_lang: python
+    choices:
+      - {id: a, text: "norboten"}
+      - {id: b, text: "ops"}
+      - {id: c, text: "ops@norboten.org"}
+      - {id: d, text: "None"}
+    answer: [a]
+    explanation: >-
+      group(0) is the whole match and numbered groups count opening parentheses from the left, so
+      group(2) is the second (\w+). The r prefix keeps the backslashes for the regex engine.
+    references: ["https://docs.python.org/3/library/re.html#re.Match.group"]
+    tags: [regex]
+    verify:
+      runtime: python
+      code: |
+        import re
+        m = re.match(r"(\w+)@(\w+)\.org", "ops@norboten.org")
+        print(m.group(2) if m else None)
+  - id: py-035
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      import re
+      print(re.match(r"\d+", "port 8080"), re.search(r"\d+", "port 8080").group())
+    code_lang: python
+    choices:
+      - {id: a, text: "None 8080"}
+      - {id: b, text: "None None"}
+      - {id: c, text: "AttributeError"}
+      - {id: d, text: "8080 8080"}
+    answer: [a]
+    explanation: >-
+      re.match only matches at the beginning of the string, and "port 8080" starts with a letter.
+      re.search scans for the first match anywhere. re.fullmatch requires the whole string.
+    references: ["https://docs.python.org/3/library/re.html#search-vs-match"]
+    tags: [regex]
+    verify:
+      runtime: python
+      code: |
+        import re
+        print(re.match(r"\d+", "port 8080"), re.search(r"\d+", "port 8080").group())
+  - id: py-036
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import os
+      os.environ.pop("NB_MODE", None)
+      print(os.environ.get("NB_MODE", "dev"), os.getenv("NB_MODE"))
+    code_lang: python
+    choices:
+      - {id: a, text: "dev None"}
+      - {id: b, text: "dev dev"}
+      - {id: c, text: "KeyError: 'NB_MODE'"}
+      - {id: d, text: "None None"}
+    answer: [a]
+    explanation: >-
+      os.environ is a mapping, so .get returns the default for a missing variable, and os.getenv
+      returns None when no default is given. Only os.environ["NB_MODE"] raises KeyError.
+    references: ["https://docs.python.org/3/library/os.html#os.getenv"]
+    tags: [environment]
+    verify:
+      runtime: python
+      code: |
+        import os
+        os.environ.pop("NB_MODE", None)
+        print(os.environ.get("NB_MODE", "dev"), os.getenv("NB_MODE"))
+  - id: py-037
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: print(sorted(["10.0.0.9", "10.0.0.10", "10.0.0.2"]))
+    code_lang: python
+    choices:
+      - {id: a, text: "['10.0.0.2', '10.0.0.9', '10.0.0.10']"}
+      - {id: b, text: "['10.0.0.10', '10.0.0.2', '10.0.0.9']"}
+      - {id: c, text: "['10.0.0.9', '10.0.0.2', '10.0.0.10']"}
+      - {id: d, text: "TypeError"}
+    answer: [b]
+    explanation: >-
+      Strings sort character by character, and "1" sorts before "2" and "9". Sort addresses with
+      key=ipaddress.ip_address to get numeric order.
+    references: ["https://docs.python.org/3/howto/sorting.html", "https://docs.python.org/3/library/ipaddress.html"]
+    tags: [sorting, strings]
+    verify:
+      runtime: python
+      code: print(sorted(["10.0.0.9", "10.0.0.10", "10.0.0.2"]))
+  - id: py-038
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import ipaddress
+      net = ipaddress.ip_network("10.20.0.0/22")
+      print(net.num_addresses, ipaddress.ip_address("10.20.3.7") in net)
+    code_lang: python
+    choices:
+      - {id: a, text: "1024 True"}
+      - {id: b, text: "1024 False"}
+      - {id: c, text: "256 False"}
+      - {id: d, text: "1022 True"}
+    answer: [a]
+    explanation: >-
+      A /22 leaves 10 host bits: 2**10 = 1024 addresses, of which 1022 are usable hosts. It spans
+      10.20.0.0 to 10.20.3.255, so 10.20.3.7 is inside.
+    references: ["https://docs.python.org/3/library/ipaddress.html#network-objects"]
+    tags: [networking]
+    verify:
+      runtime: python
+      code: |
+        import ipaddress
+        net = ipaddress.ip_network("10.20.0.0/22")
+        print(net.num_addresses, ipaddress.ip_address("10.20.3.7") in net)
+  - id: py-039
+    type: single
+    difficulty: 1
+    prompt: What does this print?
+    code: |
+      x = [3, 1, 2]
+      y = x.sort()
+      print(y, x)
+    code_lang: python
+    choices:
+      - {id: a, text: "None [3, 1, 2]"}
+      - {id: b, text: "None [1, 2, 3]"}
+      - {id: c, text: "[1, 2, 3] [3, 1, 2]"}
+      - {id: d, text: "[1, 2, 3] [1, 2, 3]"}
+    answer: [b]
+    explanation: >-
+      list.sort() sorts in place and returns None, by convention for methods that mutate. sorted(x)
+      returns a new sorted list and leaves x unchanged.
+    references: ["https://docs.python.org/3/library/stdtypes.html#list.sort"]
+    tags: [sorting, lists]
+    verify:
+      runtime: python
+      code: |
+        x = [3, 1, 2]
+        y = x.sort()
+        print(y, x)
+  - id: py-040
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      a = {"x": 1, "y": 2}
+      b = {"y": 20, "z": 30}
+      print(a | b)
+    code_lang: python
+    choices:
+      - {id: a, text: "{'y'}"}
+      - {id: b, text: "{'x': 1, 'y': 20, 'z': 30}"}
+      - {id: c, text: "{'x': 1, 'y': 2, 'z': 30}"}
+      - {id: d, text: "TypeError"}
+    answer: [b]
+    explanation: >-
+      The | operator on dicts (Python 3.9+) merges them into a new dict, and on a shared key the
+      right-hand value wins — the usual way to lay overrides over defaults.
+    references: ["https://docs.python.org/3/library/stdtypes.html#dict"]
+    tags: [dicts]
+    verify:
+      runtime: python
+      code: |
+        a = {"x": 1, "y": 2}
+        b = {"y": 20, "z": 30}
+        print(a | b)
+  - id: py-041
+    type: multiple
+    difficulty: 2
+    prompt: A script calls an HTTP API with urllib or requests. Which of these keep it from hanging forever or retrying blindly?
+    choices:
+      - {id: a, text: "Retry only on errors that can succeed later, such as 429, 503 or a connection reset, with backoff"}
+      - {id: b, text: "Pass a timeout on every request"}
+      - {id: c, text: "Rely on the library's default timeout"}
+      - {id: d, text: "Wrap the call in while True until it succeeds"}
+    answer: [a, b]
+    explanation: >-
+      Neither urllib.request.urlopen nor requests has a timeout by default, so a server that
+      accepts a connection and never answers blocks the script indefinitely. Retrying a 400 or
+      401 cannot help, and an unbounded loop turns an outage into a flood of requests.
+    references: ["https://docs.python.org/3/library/urllib.request.html#urllib.request.urlopen", "https://requests.readthedocs.io/en/latest/user/advanced/#timeouts"]
+    tags: [http, retries]
+  - id: py-042
+    type: single
+    difficulty: 2
+    prompt: Why does `pip install requests` on Ubuntu 24.04 or 26.04 fail with "externally-managed-environment"?
+    choices:
+      - {id: a, text: "requests is not available for Python 3.11 and later"}
+      - {id: b, text: "The system Python is marked as managed by apt (PEP 668), so pip refuses to change it; use a venv or pipx"}
+      - {id: c, text: "PyPI blocks Ubuntu's user agent"}
+      - {id: d, text: "pip needs to be run with sudo"}
+    answer: [b]
+    explanation: >-
+      The distribution ships an EXTERNALLY-MANAGED marker next to its Python, and pip honours it
+      so that it cannot overwrite packages apt installed. Install into a virtual environment
+      (python3 -m venv), use apt's python3-requests, or use pipx for applications. sudo makes it
+      worse, not better.
+    references: ["https://peps.python.org/pep-0668/"]
+    tags: [packaging]

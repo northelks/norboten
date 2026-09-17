@@ -1,0 +1,154 @@
+---
+- name: Secrets must come from the vault, not from defaults
+  ansible.builtin.assert:
+    that:
+      - norboten_postgres_password | length >= 16
+      - norboten_grafana_admin_password | length >= 12
+    fail_msg: Put the stack's secrets in group_vars/all/vault.yml (ansible-vault encrypt it).
+    quiet: true
+
+- name: Stack directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.owner | default('root') }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - {path: "{{ norboten_dir }}", mode: "0755"}
+    - {path: "{{ norboten_dir }}/site", mode: "0755", owner: "{{ server_base_admin_user }}"}
+    - {path: "{{ norboten_backup_dir }}", mode: "0700"}
+
+- name: The compose project, exactly as it is in the repository's deploy/ directory
+  ansible.posix.synchronize:
+    src: "{{ playbook_dir }}/../../deploy/"
+    dest: "{{ norboten_dir }}/"
+    rsync_opts: ["--exclude=.env*", "--exclude=compose.local.yaml", "--exclude=Caddyfile.local"]
+    delete: false
+  notify: Restart the stack
+
+- name: Environment file
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ norboten_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  # API_TAG here is the tag this run deploys; deploy.sh, next, pulls it and waits for it
+
+- name: Bring the stack up at the requested API tag, rolling back if it does not become ready
+  ansible.builtin.command:
+    cmd: ./deploy.sh {{ norboten_api_tag }}
+    chdir: "{{ norboten_dir }}"
+  register: deploy
+  changed_when: "'is ready' in deploy.stdout"
+  when: not (norboten_skip_deploy | default(false))  # the rehearsal loads its image first
+
+- name: Nightly backup, restore-checked
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ item.name }}"
+    content: "{{ item.content }}"
+    mode: "0644"
+  loop:
+    - name: norboten-backup.service
+      content: |
+        [Unit]
+        Description=Back up the Norboten databases, and prove the dump restores
+        Requires=docker.service
+        After=docker.service
+        [Service]
+        Type=oneshot
+        ExecStart={{ norboten_dir }}/backup.sh
+    - name: norboten-backup.timer
+      content: |
+        [Unit]
+        Description=Nightly Norboten backup
+        [Timer]
+        OnCalendar=*-*-* 03:20:00
+        RandomizedDelaySec=10m
+        Persistent=true
+        [Install]
+        WantedBy=timers.target
+  notify: Reload systemd
+
+- name: Nightly analytics, drawn from the database into the site
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ item.name }}"
+    content: "{{ item.content }}"
+    mode: "0644"
+  loop:
+    - name: norboten-analytics.service
+      content: |
+        [Unit]
+        Description=Redraw the Norboten Analytics page from the database
+        Requires=docker.service
+        After=docker.service
+        [Service]
+        Type=oneshot
+        WorkingDirectory={{ norboten_dir }}
+        ExecStart=/usr/bin/docker compose --env-file .env --profile jobs run --rm analytics
+    - name: norboten-analytics.timer
+      content: |
+        [Unit]
+        Description=Nightly Norboten analytics
+        [Timer]
+        OnCalendar=*-*-* 04:10:00
+        Persistent=true
+        [Install]
+        WantedBy=timers.target
+  notify: Reload systemd
+
+- name: Weekly learner digest, from the database, by a template
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ item.name }}"
+    content: "{{ item.content }}"
+    mode: "0644"
+  loop:
+    - name: norboten-digest.service
+      content: |
+        [Unit]
+        Description=Send the Norboten learner digest to those who asked for it
+        Requires=docker.service
+        After=docker.service
+        [Service]
+        Type=oneshot
+        WorkingDirectory={{ norboten_dir }}
+        ExecStart=/usr/bin/docker compose --env-file .env --profile jobs run --rm digest
+    - name: norboten-digest.timer
+      content: |
+        [Unit]
+        Description=Sunday evening Norboten learner digest
+        [Timer]
+        OnCalendar=Sun *-*-* 18:00:00
+        Persistent=true
+        [Install]
+        WantedBy=timers.target
+  notify: Reload systemd
+
+- name: Say out loud when nobody will be able to sign in
+  ansible.builtin.debug:
+    msg: >-
+      norboten_github_client_id is empty. Signing in is GitHub and nothing else, so nobody can
+      sign in to this server until it has a GitHub OAuth App (docs/deploy.md, "Signing in").
+  when: norboten_github_client_id | length == 0 or norboten_github_client_secret | length == 0
+
+- name: Enable the digest timer, when there is a Discord bot to send it
+  ansible.builtin.systemd_service:
+    name: norboten-digest.timer
+    enabled: "{{ norboten_discord_bot_token | length > 0 }}"
+    state: "{{ 'started' if norboten_discord_bot_token | length > 0 else 'stopped' }}"
+    daemon_reload: true
+
+- name: Enable the analytics timer
+  ansible.builtin.systemd_service:
+    name: norboten-analytics.timer
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Enable the backup timer
+  ansible.builtin.systemd_service:
+    name: norboten-backup.timer
+    enabled: true
+    state: started
+    daemon_reload: true

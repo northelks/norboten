@@ -1,0 +1,12 @@
+#!/bin/sh
+# myapp-login — log in to the database with the configured password (the database is simulated:
+# the password it accepts is in /var/lib/myapp-db/password)
+conf=/etc/myapp/app.conf
+given=$(sed -n 's/^password = //p' "$conf")
+wanted=$(cat /var/lib/myapp-db/password)
+if [ "$given" = "$wanted" ]; then
+    echo "myapp: logged in to $(sed -n 's/^host = //p' "$conf")"
+else
+    echo "myapp: FATAL: password authentication failed for user \"myapp\"" >&2
+    exit 1
+fi

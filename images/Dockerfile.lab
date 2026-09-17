@@ -1,0 +1,15 @@
+# Wraps one lab directory into an OCI artifact — docs/lab-spec.md section 10.
+#
+#   docker build -f images/Dockerfile.lab -t ghcr.io/<owner>/norboten-labs/<id>:<version> labs/<track>/<id>
+#
+# FROM scratch, one layer: the lab directory at /lab. Nothing here ever runs; Docker is only the
+# packaging and distribution format (versioned, content-addressed, cacheable, signable).
+FROM scratch
+ARG LAB_ID
+ARG LAB_VERSION
+LABEL org.opencontainers.image.title="${LAB_ID}" \
+      org.opencontainers.image.version="${LAB_VERSION}" \
+      org.opencontainers.image.source="https://github.com/northelks/norboten" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      dev.norboten.lab.id="${LAB_ID}"
+COPY . /lab/

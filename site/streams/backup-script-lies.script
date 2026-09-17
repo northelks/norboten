@@ -1,0 +1,96 @@
+// lab: linux-03
+// image: alpine
+// title: The backup script that lies
+// blurb: No strict mode, unquoted filenames, an unconditional "backup OK" and a cron line with no
+// blurb: path. Rewritten, then proved against its own failure cases.
+// cols: 96
+// rows: 28
+cat /etc/os-release | head -2
+id
+ls -l /usr/local/bin/backup-data
+cat /usr/local/bin/backup-data
+ls -la /var/backups
+tail -5 /var/log/backup-data.log 2>/dev/null || echo "no log yet"
+find /srv/data -type f
+find /srv/data -type f | wc -l
+du -sh /srv/data
+sudo /usr/local/bin/backup-data
+echo "exit status: $?"
+tail -3 /var/log/backup-data.log
+ls -lt /var/backups | head -5
+NEWEST=$(ls -t /var/backups/*.tar.gz | head -1); echo "$NEWEST"
+tar -tzf "$NEWEST"
+tar -tzf "$NEWEST" | wc -l
+cd /srv/data && find . -type f
+cd
+bash -x /usr/local/bin/backup-data 2>&1 | head -20
+sudo bash -x /usr/local/bin/backup-data 2>&1 | tail -8
+mkdir -p /tmp/t/src/'with space' /tmp/t/dest
+echo one > '/tmp/t/src/with space/a b.txt'
+echo two > /tmp/t/src/plain.txt
+BACKUP_SRC=/tmp/t/src BACKUP_DEST=/tmp/t/dest BACKUP_LOG=/tmp/t/log /usr/local/bin/backup-data; echo "exit $?"
+cat /tmp/t/log
+tar -tzf /tmp/t/dest/*.tar.gz
+BACKUP_SRC=/nonexistent BACKUP_DEST=/tmp/t/dest BACKUP_LOG=/tmp/t/log /usr/local/bin/backup-data; echo "exit $?"
+tail -1 /tmp/t/log
+BACKUP_SRC=/tmp/t/src BACKUP_DEST=/nonexistent BACKUP_LOG=/tmp/t/log /usr/local/bin/backup-data; echo "exit $?"
+tail -1 /tmp/t/log
+sudo cat /etc/crontabs/root
+ls /etc/periodic/
+rc-service crond status
+sudo sh -c 'env -i sh -c "command -v backup-data || echo not found on an empty PATH"'
+echo "$PATH"
+sudo cp /usr/local/bin/backup-data /root/backup-data.orig
+cat > /tmp/backup-data <<'SCRIPT'
+#!/bin/bash
+# backup-data — nightly archive of the data directory.
+# BACKUP_SRC, BACKUP_DEST and BACKUP_LOG override the defaults.
+set -euo pipefail
+SRC=${BACKUP_SRC:-/srv/data}
+DEST=${BACKUP_DEST:-/var/backups}
+LOG=${BACKUP_LOG:-/var/log/backup-data.log}
+ARCHIVE="$DEST/data-$(date +%Y%m%d-%H%M%S).tar.gz"
+
+log() { echo "$(date -Iseconds) $*" >> "$LOG"; }
+fail() { echo "backup-data: $*" >&2; log "backup FAILED: $*"; exit 1; }
+
+[ -d "$SRC" ] || fail "source $SRC does not exist"
+tar -czf "$ARCHIVE" -C "$SRC" . || fail "could not write $ARCHIVE"
+log "backup OK: $ARCHIVE"
+SCRIPT
+bash -n /tmp/backup-data && echo "syntax ok"
+head -4 /tmp/backup-data
+rm -rf /tmp/t/dest/* /tmp/t/log
+BACKUP_SRC=/tmp/t/src BACKUP_DEST=/tmp/t/dest BACKUP_LOG=/tmp/t/log bash /tmp/backup-data; echo "exit $?"
+tar -tzf /tmp/t/dest/*.tar.gz
+cat /tmp/t/log
+BACKUP_SRC=/nonexistent BACKUP_DEST=/tmp/t/dest BACKUP_LOG=/tmp/t/log bash /tmp/backup-data; echo "exit $?"
+tail -1 /tmp/t/log
+BACKUP_SRC=/tmp/t/src BACKUP_DEST=/nonexistent BACKUP_LOG=/tmp/t/log bash /tmp/backup-data; echo "exit $?"
+tail -1 /tmp/t/log
+grep -c 'backup OK' /tmp/t/log
+sudo install -m 0755 /tmp/backup-data /usr/local/bin/backup-data
+ls -l /usr/local/bin/backup-data
+sudo sed -i 's#\* backup-data$#* /usr/local/bin/backup-data#' /etc/crontabs/root
+sudo cat /etc/crontabs/root
+sudo rc-service crond restart
+rc-service crond status
+sudo /usr/local/bin/backup-data; echo "exit $?"
+NEWEST=$(ls -t /var/backups/*.tar.gz | head -1); echo "$NEWEST"
+tar -tzf "$NEWEST"
+tar -tzf "$NEWEST" | grep -c .
+find /srv/data -type f | wc -l
+tar -xzf "$NEWEST" -O './contracts/Acme Corp — signed.pdf'
+tar -xzf "$NEWEST" -O './invoices/2026 Q3 summary.csv'
+tail -2 /var/log/backup-data.log
+sudo BACKUP_DEST=/root/nope /usr/local/bin/backup-data; echo "exit $?"
+tail -1 /var/log/backup-data.log
+sudo BACKUP_SRC=/srv/missing /usr/local/bin/backup-data; echo "exit $?"
+tail -1 /var/log/backup-data.log
+sudo sh -c 'cd / && env -i PATH=/usr/bin:/bin /usr/local/bin/backup-data'; echo "cron-like exit $?"
+ls -lt /var/backups | head -4
+(cd /srv/data && find . -type f | sort) > /tmp/src.list
+tar -tzf "$(ls -t /var/backups/*.tar.gz | head -1)" | grep -v '/$' | sort > /tmp/tar.list
+diff /tmp/src.list /tmp/tar.list && echo "archive matches source"
+rm -rf /tmp/t /tmp/backup-data /tmp/src.list /tmp/tar.list
+echo "backup-data: strict mode, quoted, fails loudly, and cron can find it"

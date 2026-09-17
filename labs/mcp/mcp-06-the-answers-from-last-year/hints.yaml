@@ -1,0 +1,33 @@
+checks:
+  01_answers_come_from_the_current_edition:
+    level_1: "The job answers from last year's handbook, though .mcp.json names this year's."
+    level_2: "Claude Code reads MCP servers from more than one place, and one definition can hide
+              another. Ask Claude Code which docs server it actually runs."
+    level_3: "claude mcp list and claude mcp get docs, run in ~/handbook-bot, name the command and
+              the scope it came from."
+    level_4: "A local-scope docs server in ~/.claude.json, serving edition 1, wins over the
+              project's. Remove it from that scope."
+    refs:
+      2: ["https://code.claude.com/docs/en/mcp", "journal:mcp#clients-scopes-and-secrets"]
+      3: ["journal:mcp-06-the-answers-from-last-year#which-one-wins", "journal:mcp-06-the-answers-from-last-year#seeing-it"]
+  02_one_docs_server_defined:
+    level_1: "More than one docs server is defined for this project."
+    level_2: "There are three scopes. Find every definition of the name, not only the one in
+              effect."
+    level_3: "Local and user definitions are both in ~/.claude.json; claude mcp list reports
+              conflicting scopes."
+    level_4: "Remove the local one with claude mcp remove docs -s local; leave .mcp.json as the only
+              definition."
+    refs:
+      2: ["https://code.claude.com/docs/en/mcp", "journal:mcp#clients-scopes-and-secrets"]
+      3: ["journal:mcp-06-the-answers-from-last-year#three-scopes"]
+  03_the_key_is_not_in_the_repository:
+    level_1: "The handbook service's key is in the repository."
+    level_2: "A committed file is shared with everyone who clones it. Claude Code can fill a
+              server's environment from its own instead."
+    level_3: "git grep the key; the job already loads it from ~/.config/handbook/env before it
+              starts claude."
+    level_4: ".mcp.json holds the key literally. Use ${DOCS_API_KEY} there and commit."
+    refs:
+      2: ["https://code.claude.com/docs/en/mcp", "journal:mcp#clients-scopes-and-secrets"]
+      3: ["journal:mcp-06-the-answers-from-last-year#secrets-var-in-mcpjson", "journal:mcp-06-the-answers-from-last-year#a-committed-secret-is-a-burned-secret"]

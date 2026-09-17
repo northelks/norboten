@@ -1,0 +1,32 @@
+checks:
+  01_a_token_for_another_service_is_refused:
+    level_1: "The server lets in callers holding tokens that were never meant for it."
+    level_2: "A signed token says who issued it and which service it is for. Find out which of those
+              the server actually checks."
+    level_3: "Decode a token with lab-idp show and compare its aud with the server's settings in
+              /etc/inventory-mcp/config.json; the server's log names each caller."
+    level_4: "audience is null, so a token for any service is accepted. It should be the server's own
+              URL."
+    refs:
+      2: ["https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization", "journal:mcp#authorization-for-remote-servers"]
+      3: ["journal:mcp-03-the-token-for-someone-else#audience-the-one-check-that-stops-a-confused-deputy", "journal:mcp-03-the-token-for-someone-else#a-token-is-a-signed-list-of-claims"]
+  02_an_expired_token_is_refused:
+    level_1: "Old tokens still work, however old."
+    level_2: "Every token carries an expiry. Check whether the server looks at it."
+    level_3: "exp in lab-idp show; verify_exp in the server's settings; sudo inventory-mcp restart
+              reads them again."
+    level_4: "verify_exp is false. Turn it on."
+    refs:
+      2: ["https://www.rfc-editor.org/rfc/rfc9068", "journal:mcp#authorization-for-remote-servers"]
+      3: ["journal:mcp-03-the-token-for-someone-else#expiry"]
+  03_the_job_uses_its_own_token:
+    level_1: "The report job does not hold a token of its own."
+    level_2: "A client that talks to a service needs a token issued for that service. Decode the
+              one the job sends."
+    level_3: "~/.config/inventory/env holds INVENTORY_TOKEN; lab-idp show decodes it, and sudo
+              lab-idp mint makes a new one."
+    level_4: "The job's token was issued for https://billing.example/api. Mint one for
+              http://127.0.0.1:8931/mcp and put it in the job's environment file."
+    refs:
+      2: ["https://www.rfc-editor.org/rfc/rfc8707", "journal:mcp#authorization-for-remote-servers"]
+      3: ["journal:mcp-03-the-token-for-someone-else#the-clients-side-one-token-per-audience", "journal:mcp-03-the-token-for-someone-else#what-a-refused-client-looks-like"]

@@ -1,0 +1,44 @@
+checks:
+  01_the_model_cannot_run_commands:
+    level_1: "What a message says can end up running on the server."
+    level_2: "The model only chooses among the tools the agent offers it. Find where that list
+              comes from."
+    level_3: "The agent's docstring names its settings; one lists the tools. The journal of
+              inbox-agent shows every tool call it made."
+    level_4: "AGENT_TOOLS includes run_shell. An agent that reads untrusted text must not have a
+              tool that runs commands; take it out."
+    refs:
+      2: ["journal:claude-code#what-the-model-may-do"]
+      3: ["journal:ai-03-the-agent-that-never-stops#the-loop", "journal:ai-03-the-agent-that-never-stops#where-the-models-text-goes"]
+  02_a_looping_model_is_stopped:
+    level_1: "One confusing message keeps the agent calling the model forever."
+    level_2: "An agent loop needs its own limit on model calls per task; nothing in a model
+              guarantees it stops."
+    level_3: "Read how agent.py decides to stop, and what the configuration sets for it."
+    level_4: "MAX_STEPS is 0, which means no limit. Set a small positive number (10 or fewer)."
+    refs:
+      2: ["journal:claude-code#what-a-run-costs"]
+      3: ["journal:ai-03-the-agent-that-never-stops#the-loop"]
+  03_the_agent_is_unprivileged_and_confined:
+    level_1: "The agent has every privilege on the machine."
+    level_2: "The unit decides which account runs the job and what the job may change. Look at
+              what it leaves at the defaults."
+    level_3: "systemctl show inbox-agent -p User -p DynamicUser -p ProtectSystem -p
+              NoNewPrivileges. systemd.exec describes each, and StateDirectory= gives a job a
+              writable directory of its own."
+    level_4: "The unit sets no user and no sandboxing, so it runs as root. Use a dedicated or
+              dynamic user with its state directory, ProtectSystem=strict and NoNewPrivileges=yes."
+    refs:
+      2: ["man 5 systemd.exec"]
+      3: ["journal:ai-03-the-agent-that-never-stops#confining-a-service"]
+  04_it_runs_on_a_timer_not_a_loop:
+    level_1: "The agent is started again and again, day and night, whether or not there is mail."
+    level_2: "A job that should run periodically is a different kind of unit from a service that
+              should always be up."
+    level_3: "Restart=always restarts a process every time it exits, even successfully. Compare
+              Type=oneshot with a .timer unit, and RuntimeMaxSec= for a run that hangs."
+    level_4: "The service has Restart=always and is enabled at boot. Make it a one-shot job with
+              a runtime limit, not enabled itself, and start it from an enabled timer."
+    refs:
+      2: ["man 5 systemd.timer", "man 5 systemd.service"]
+      3: ["journal:ai-03-the-agent-that-never-stops#restartalways-is-not-a-schedule"]

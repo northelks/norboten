@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Secrets — never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+vault-password*
+.vault_pass*
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+
+# Generated sample data: it is dated relative to today, so it is built, not stored.
+/seed/accounts.json
+
+# Build outputs
+/out/
+/images/out/
+/site/dist/
+node_modules/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# the server's secrets and the laptop stack's
+deploy/.env
+deploy/.env.local
+
+terraform/terraform.tfvars
+terraform/*.tfstate*
+ansible/group_vars/all/vault.yml
+ansible/inventory/production.yml
+
+# Questions drafted by the pipeline wait here for a person; they are never a bank
+/quizzes/_drafts/

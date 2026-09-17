@@ -1,0 +1,56 @@
+# Golden base images: built from the pinned upstream cloud image plus the Ansible baseline,
+# then pushed to GHCR as plain blobs. Manual, because it needs a machine with KVM and takes
+# a while — and because a base image change re-runs the gate for every lab.
+name: publish base images
+
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: Which base image to build
+        required: true
+        type: choice
+        options: [rocky-10, ubuntu-26.04, ubuntu-26.04-automation, alpine]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v5
+      - name: Tools
+        run: |
+          test -e /dev/kvm || { echo "::error::this runner has no /dev/kvm"; exit 1; }
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq qemu-system-x86 qemu-utils ansible oras
+      - run: uv sync --all-packages --frozen
+      - name: Build ${{ inputs.image }}
+        run: uv run python images/build.py "${{ inputs.image }}"
+      - name: Push to GHCR
+        run: |
+          set -euo pipefail
+          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          meta=images/out/${{ inputs.image }}-x86_64.json
+          tag=$(uv run python -c "import json,sys;print(json.load(open(sys.argv[1]))['version'])" "$meta")
+          oras login ghcr.io -u "${{ github.actor }}" -p "${{ secrets.GITHUB_TOKEN }}"
+          oras push "ghcr.io/$owner/norboten-base/${{ inputs.image }}:$tag" \
+            --artifact-type application/vnd.norboten.image.v1 \
+            "images/out/${{ inputs.image }}-x86_64.qcow2:application/vnd.norboten.image.qcow2"
+      - name: Open a pull request with the new digest
+        run: |
+          uv run python images/record_publish.py "${{ inputs.image }}" x86_64
+          git config user.name "norboten-ci"
+          git config user.email "ci@norboten.org"
+          branch="image/${{ inputs.image }}-$(date +%Y%m%d%H%M)"
+          git checkout -b "$branch"
+          git commit -am "chore(images): publish ${{ inputs.image }}"
+          git push origin "$branch"
+          gh pr create --fill --title "chore(images): publish ${{ inputs.image }}" \
+            --body "Rebuilt golden image. Merging re-runs the solvability gate for every lab on it."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

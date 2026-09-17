@@ -1,0 +1,21 @@
+schema_version: 1
+id: python-05-module-that-shadows-the-stdlib
+version: 1.0.0
+title: The Module That Shadows the Standard Library
+track: python
+topics: [python, linux-basics]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Know where Python looks for a module, and in which order"
+  - "Keep a program's own modules from standing in for the standard library"
+  - "Run a program from a systemd unit without depending on the caller's directory"
+checks:
+  - {id: 01_runs_from_its_own_directory, objective: 2, weight: 2}
+  - {id: 02_runs_from_anywhere, objective: 3}
+  - {id: 03_the_stdlib_is_not_shadowed, objective: 1, weight: 2}
+  - {id: 04_the_service_writes_its_digest, objective: 3}
+reboot_required: true

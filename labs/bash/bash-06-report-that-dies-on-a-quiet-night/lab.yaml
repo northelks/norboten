@@ -1,0 +1,22 @@
+schema_version: 1
+id: bash-06-report-that-dies-on-a-quiet-night
+version: 1.0.0
+title: The Report That Dies on a Quiet Night
+track: bash
+topics: [bash, logging-journald]
+difficulty: 2
+estimated_minutes: 30
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Tell 'nothing matched' from 'something failed' in a pipeline under set -e and pipefail"
+  - "Count occurrences correctly with sort and uniq"
+  - "Run a report from a systemd timer and prove the run succeeded"
+checks:
+  - {id: 01_a_quiet_night_is_a_report, objective: 1, weight: 2}
+  - {id: 02_counts_are_per_endpoint, objective: 2}
+  # 03 passes on the broken script by design: it fails anyone who "fixes" the quiet night with || true
+  - {id: 03_a_missing_log_is_an_error, objective: 1, baseline_pass: true}
+  - {id: 04_the_nightly_run_succeeds, objective: 3}
+reboot_required: true

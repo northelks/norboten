@@ -1,0 +1,649 @@
+schema_version: 1
+topic: ansible
+topics: [ansible]
+title: Ansible
+description: Idempotence, modules, variables and handlers — configuration you can run twice.
+questions:
+  - id: ans-001
+    type: single
+    difficulty: 1
+    prompt: What does it mean for an Ansible task to be idempotent?
+    choices:
+      - {id: a, text: "It never fails"}
+      - {id: b, text: "It can be undone automatically"}
+      - {id: c, text: "It runs on every host at the same time"}
+      - {id: d, text: "Running it again changes nothing when the system is already in the described state"}
+    answer: [d]
+    explanation: >-
+      Modules describe a desired state and act only when the host differs from it, which is why a
+      second run should report ok, not changed. shell and command tasks are not idempotent unless
+      you make them so (creates, removes, changed_when).
+    references: ["https://docs.ansible.com/ansible/latest/reference_appendices/glossary.html"]
+    tags: [concepts]
+  - id: ans-002
+    type: single
+    difficulty: 1
+    prompt: Which module makes sure a single line is present in a file, without adding it twice?
+    choices:
+      - {id: a, text: "ansible.builtin.shell with echo >>"}
+      - {id: b, text: ansible.builtin.lineinfile}
+      - {id: c, text: ansible.builtin.fetch}
+      - {id: d, text: ansible.builtin.command}
+    answer: [b]
+    explanation: >-
+      lineinfile adds or replaces a line (optionally matched by regexp) only when needed. An echo
+      >> in shell appends on every run; command runs no shell at all; fetch copies files from the
+      host to the controller.
+    references: ["https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html"]
+    tags: [modules]
+  - id: ans-003
+    type: single
+    difficulty: 1
+    prompt: 'What does `become: true` do?'
+    choices:
+      - {id: a, text: "Makes the task wait for a condition"}
+      - {id: b, text: "Runs the task on the control node"}
+      - {id: c, text: "Runs the task with privilege escalation — sudo by default"}
+      - {id: d, text: "Turns a task into a handler"}
+    answer: [c]
+    explanation: >-
+      become switches to become_user (root by default) using become_method (sudo by default).
+      Running on the controller is delegate_to: localhost; waiting is wait_for or until.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_privilege_escalation.html"]
+    tags: [privilege]
+  - id: ans-004
+    type: single
+    difficulty: 2
+    prompt: Where do role variables with the lowest precedence live?
+    choices:
+      - {id: a, text: "-e on the command line"}
+      - {id: b, text: "group_vars/all.yml"}
+      - {id: c, text: "roles/<role>/defaults/main.yml"}
+      - {id: d, text: "roles/<role>/vars/main.yml"}
+    answer: [c]
+    explanation: >-
+      Role defaults are meant to be overridden by anything else. Role vars sit much higher,
+      inventory group_vars in between, and extra vars (-e) always win.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html#understanding-variable-precedence"]
+    tags: [variables]
+  - id: ans-005
+    type: single
+    difficulty: 1
+    prompt: What does `ansible-playbook --check` do?
+    choices:
+      - {id: a, text: "Runs the playbook and then verifies it"}
+      - {id: b, text: "Reports what would change without changing anything"}
+      - {id: c, text: "Checks the playbook's YAML syntax only"}
+      - {id: d, text: "Checks that every host is reachable"}
+    answer: [b]
+    explanation: >-
+      Check mode is a dry run; modules that support it predict their changes. Syntax only is
+      --syntax-check; reachability is the ping module.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html"]
+    tags: [cli]
+  - id: ans-006
+    type: multiple
+    difficulty: 2
+    prompt: Which statements about handlers are true?
+    choices:
+      - {id: a, text: "They run at the end of every play whether notified or not"}
+      - {id: b, text: "meta: flush_handlers runs pending handlers immediately"}
+      - {id: c, text: "They run after the play's tasks, and only if a task notified them"}
+      - {id: d, text: "A handler notified several times runs once"}
+    answer: [b, c, d]
+    explanation: >-
+      Handlers run when notified by a task that reported changed, once per play by default, at the
+      end of the tasks section — or earlier when flushed. A handler nobody notified never runs.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html"]
+    tags: [handlers]
+  - id: ans-007
+    type: single
+    difficulty: 1
+    prompt: What is the fully qualified collection name of the copy module?
+    choices:
+      - {id: a, text: builtin.copy}
+      - {id: b, text: community.general.copy}
+      - {id: c, text: ansible.copy}
+      - {id: d, text: ansible.builtin.copy}
+    answer: [d]
+    explanation: >-
+      Core modules live in the ansible.builtin collection. FQCNs make it unambiguous which
+      collection's module runs — ansible-lint expects them.
+    references: ["https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html"]
+    tags: [modules]
+  - id: ans-008
+    type: single
+    difficulty: 2
+    prompt: 'What does `changed_when: false` on a command task do?'
+    choices:
+      - {id: a, text: "The task runs only in check mode"}
+      - {id: b, text: "The task is skipped"}
+      - {id: c, text: "The task never fails"}
+      - {id: d, text: "The task never reports changed"}
+    answer: [d]
+    explanation: >-
+      changed_when overrides how the result is reported; false suits read-only commands such as a
+      version query. Skipping is when:, never failing is failed_when: false or ignore_errors.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_error_handling.html"]
+    tags: [tasks]
+  - id: ans-009
+    type: single
+    difficulty: 1
+    prompt: What does Ansible Vault protect?
+    choices:
+      - {id: a, text: "Secrets in variable files and strings, encrypted at rest in the repository"}
+      - {id: b, text: "The SSH connection to the hosts"}
+      - {id: c, text: "The playbook against modification"}
+      - {id: d, text: "Files on the managed hosts"}
+    answer: [a]
+    explanation: >-
+      Vault encrypts data files or single values with AES; Ansible decrypts them at run time with
+      the vault password. SSH already encrypts the transport; files on hosts are not vault-managed.
+    references: ["https://docs.ansible.com/ansible/latest/vault_guide/index.html"]
+    tags: [secrets]
+  - id: ans-010
+    type: single
+    difficulty: 1
+    prompt: To which hosts do the variables in group_vars/web.yml apply?
+    choices:
+      - {id: a, text: "Hosts whose name starts with web"}
+      - {id: b, text: "The host named web"}
+      - {id: c, text: "Hosts in the inventory group web"}
+      - {id: d, text: "Every host"}
+    answer: [c]
+    explanation: >-
+      group_vars/<group>.yml (or a directory of that name) applies to members of that inventory
+      group; host_vars/<host> applies to one host; group_vars/all to every host.
+    references: ["https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html#organizing-host-and-group-variables"]
+    tags: [inventory]
+  - id: ans-011
+    type: single
+    difficulty: 2
+    prompt: 'What does `register: result` on a task store?'
+    choices:
+      - {id: a, text: "The task's return values, such as rc, stdout and changed"}
+      - {id: b, text: "The task's output in a log file"}
+      - {id: c, text: "The task's name, for later notify"}
+      - {id: d, text: "A fact on the managed host"}
+    answer: [a]
+    explanation: >-
+      register saves the module's return dictionary in a variable for later tasks — for example
+      when: result.rc != 0. It is not a fact on the host and is gone after the run.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html#registering-variables"]
+    tags: [variables]
+  - id: ans-012
+    type: single
+    difficulty: 2
+    prompt: A variable is defined in a role's defaults/main.yml, in group_vars/all.yml and with -e on the command line. Which value wins?
+    choices:
+      - {id: a, text: "Whichever file was loaded last"}
+      - {id: b, text: "The -e extra var"}
+      - {id: c, text: "group_vars/all.yml"}
+      - {id: d, text: "The role default"}
+    answer: [b]
+    explanation: >-
+      Extra vars always have the highest precedence and role defaults the lowest; inventory
+      group_vars sit in between. That is why role defaults are the place for values meant to be
+      overridden.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html#understanding-variable-precedence"]
+    tags: [variables]
+  - id: ans-013
+    type: single
+    difficulty: 2
+    prompt: Why is `ansible.builtin.command` a poor way to install a package, compared with `ansible.builtin.package`?
+    choices:
+      - {id: a, text: "package installs faster because it skips dependencies"}
+      - {id: b, text: "command runs every time and reports changed, while package checks the current state first"}
+      - {id: c, text: "command is deprecated"}
+      - {id: d, text: "command cannot run as root"}
+    answer: [b]
+    explanation: >-
+      A state module compares desired and actual state and only acts when they differ, which gives
+      idempotence, accurate changed reporting and --check support. command knows nothing about the
+      result unless you add creates, removes or changed_when.
+    references: ["https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html"]
+    tags: [modules, concepts]
+  - id: ans-014
+    type: single
+    difficulty: 2
+    prompt: What is the difference between `ansible.builtin.command` and `ansible.builtin.shell`?
+    choices:
+      - {id: a, text: "There is no difference"}
+      - {id: b, text: "shell is idempotent and command is not"}
+      - {id: c, text: "shell runs the command through /bin/sh, so pipes, redirections and variables work; command does not use a shell"}
+      - {id: d, text: "command runs on the controller, shell on the managed host"}
+    answer: [c]
+    explanation: >-
+      command executes the program directly, which is safer when arguments include untrusted
+      values; operators like | and > are passed as literal arguments. shell interprets them. Neither
+      is idempotent by itself.
+    references: ["https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html"]
+    tags: [modules]
+  - id: ans-015
+    type: single
+    difficulty: 2
+    prompt: 'What does `creates: /opt/app/.installed` do on a command task?'
+    choices:
+      - {id: a, text: "Creates the file after the command succeeds"}
+      - {id: b, text: "Runs the command inside that directory"}
+      - {id: c, text: "Skips the task if that path already exists"}
+      - {id: d, text: "Fails the task if the file is missing"}
+    answer: [c]
+    explanation: >-
+      creates makes a one-off command idempotent: once the marker exists, the task reports ok and
+      does nothing. The command must create the path itself. removes is the opposite, and chdir
+      sets the working directory.
+    references: ["https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html#parameter-creates"]
+    tags: [modules, tasks]
+  - id: ans-016
+    type: single
+    difficulty: 2
+    prompt: What is the practical difference between the template and copy modules?
+    choices:
+      - {id: a, text: "template renders the file with Jinja2 on the controller before sending it; copy sends it as it is"}
+      - {id: b, text: "template runs on the managed host"}
+      - {id: c, text: "copy works only for binary files"}
+      - {id: d, text: "copy cannot set file permissions"}
+    answer: [a]
+    explanation: >-
+      template expands variables, loops and conditionals in a .j2 file, then transfers the result;
+      both modules set owner, group and mode, and both report changed only when the content differs.
+    references: ["https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html"]
+    tags: [modules, templates]
+  - id: ans-017
+    type: single
+    difficulty: 3
+    prompt: A template task writes /etc/nginx/nginx.conf. How can the task refuse to install a file that nginx cannot parse?
+    choices:
+      - {id: a, text: "notify: validate nginx"}
+      - {id: b, text: "validate: nginx -t -c %s"}
+      - {id: c, text: "failed_when: nginx -t"}
+      - {id: d, text: "check_mode: true"}
+    answer: [b]
+    explanation: >-
+      validate runs the command against the rendered temporary file (%s) before it replaces the real
+      one, and the task fails without touching the destination if the command fails. Handlers run
+      only after the file is already in place.
+    references: ["https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html#parameter-validate"]
+    tags: [templates, safety]
+  - id: ans-018
+    type: single
+    difficulty: 2
+    prompt: 'What does `when: ansible_facts[''os_family''] == "RedHat"` rely on?'
+    choices:
+      - {id: a, text: "A variable that must be set in the inventory"}
+      - {id: b, text: "The controller's operating system"}
+      - {id: c, text: "A Jinja2 filter called os_family"}
+      - {id: d, text: "Facts gathered from the host at the start of the play"}
+    answer: [d]
+    explanation: >-
+      With gather_facts enabled (the default), the setup module collects details such as
+      distribution, os_family, interfaces and memory before the first task. If gather_facts is off,
+      the fact is undefined and the condition errors.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html"]
+    tags: [facts, conditionals]
+  - id: ans-019
+    type: single
+    difficulty: 2
+    prompt: 'A task has `loop: "{{ users }}"`. How do you refer to the current element inside the task?'
+    choices:
+      - {id: a, text: "{{ users.current }}"}
+      - {id: b, text: "{{ item }}"}
+      - {id: c, text: "{{ loop.item }}"}
+      - {id: d, text: "$item"}
+    answer: [b]
+    explanation: >-
+      Each iteration exposes the element as item; loop_control.loop_var renames it, which is needed
+      when an included task file loops inside another loop. loop_control.label shortens what the
+      output prints for each item.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html"]
+    tags: [loops]
+  - id: ans-020
+    type: single
+    difficulty: 3
+    prompt: What does a `block` with a `rescue` section do?
+    choices:
+      - {id: a, text: "Runs the rescue tasks in parallel with the block"}
+      - {id: b, text: "Retries the block until it succeeds"}
+      - {id: c, text: "Rolls back every change the block made"}
+      - {id: d, text: "If a task in the block fails, the rescue tasks run and the host is not counted as failed if they succeed"}
+    answer: [d]
+    explanation: >-
+      block/rescue/always is Ansible's try/except/finally. rescue can undo or report, and always runs
+      regardless. Nothing is rolled back automatically: undoing is whatever the rescue tasks do.
+      Retrying a task is until with retries.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_blocks.html"]
+    tags: [error-handling]
+  - id: ans-021
+    type: single
+    difficulty: 2
+    prompt: 'What does `ignore_errors: true` do, and what does it not do?'
+    choices:
+      - {id: a, text: "It hides the failure from the output"}
+      - {id: b, text: "It turns the failure into changed"}
+      - {id: c, text: "It ignores unreachable hosts too"}
+      - {id: d, text: "The play continues after the task fails; it does not ignore connection failures or syntax errors"}
+    answer: [d]
+    explanation: >-
+      The task still shows as failed, and later tasks run. An unreachable host needs
+      ignore_unreachable, and an undefined variable in the task's arguments is still an error.
+      failed_when describes when a result should count as failure at all.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_error_handling.html"]
+    tags: [error-handling]
+  - id: ans-022
+    type: single
+    difficulty: 2
+    prompt: Which command shows which hosts a playbook would target, without running any task?
+    choices:
+      - {id: a, text: "ansible-inventory --graph site.yml"}
+      - {id: b, text: "ansible-playbook site.yml --list-hosts"}
+      - {id: c, text: "ansible all -m ping --dry-run"}
+      - {id: d, text: "ansible-playbook site.yml --check"}
+    answer: [b]
+    explanation: >-
+      --list-hosts resolves each play's hosts pattern against the inventory and prints the result;
+      --list-tasks does the same for tasks. --check connects and runs modules in check mode.
+      ansible-inventory --graph shows the inventory, not a playbook's selection.
+    references: ["https://docs.ansible.com/ansible/latest/cli/ansible-playbook.html"]
+    tags: [cli, inventory]
+  - id: ans-023
+    type: single
+    difficulty: 2
+    prompt: What does `--limit web01` do on ansible-playbook?
+    choices:
+      - {id: a, text: "Runs at most one task on web01"}
+      - {id: b, text: "Restricts the run to hosts matching web01 within each play's hosts"}
+      - {id: c, text: "Adds web01 to the inventory for this run"}
+      - {id: d, text: "Runs only the tasks tagged web01"}
+    answer: [b]
+    explanation: >-
+      --limit intersects the play's hosts with the pattern, so a host not already in the play is not
+      added. Tags are selected with --tags, and the number of hosts in parallel is --forks or serial.
+    references: ["https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html#patterns-and-ansible-playbook-flags"]
+    tags: [cli, inventory]
+  - id: ans-024
+    type: single
+    difficulty: 3
+    prompt: A rolling update must touch two web servers at a time so the load balancer always has capacity. Which play keyword does that?
+    choices:
+      - {id: a, text: "forks: 2"}
+      - {id: b, text: "throttle: 2 on every task"}
+      - {id: c, text: "strategy: free"}
+      - {id: d, text: "serial: 2"}
+    answer: [d]
+    explanation: >-
+      serial runs the whole play on a batch of hosts before starting the next batch, and
+      max_fail_percentage can stop the rollout early. forks limits parallel connections per task
+      across all hosts, throttle limits one task, and the free strategy removes ordering entirely.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_strategies.html#setting-the-batch-size-with-serial"]
+    tags: [execution]
+  - id: ans-025
+    type: single
+    difficulty: 2
+    prompt: Where does a role keep files meant for the template module?
+    choices:
+      - {id: a, text: "vars/"}
+      - {id: b, text: "files/"}
+      - {id: c, text: "meta/"}
+      - {id: d, text: "templates/"}
+    answer: [d]
+    explanation: >-
+      Inside a role, template looks in templates/ and copy in files/ without a path. vars/ holds
+      high-precedence role variables, defaults/ the low-precedence ones, handlers/ the handlers and
+      meta/ dependencies and Galaxy metadata.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_reuse_roles.html#role-directory-structure"]
+    tags: [roles]
+  - id: ans-026
+    type: single
+    difficulty: 3
+    prompt: What is the difference between `import_tasks` and `include_tasks`?
+    choices:
+      - {id: a, text: "import only works inside roles"}
+      - {id: b, text: "include is faster because it caches the file"}
+      - {id: c, text: "import is processed when the playbook is parsed; include is processed when execution reaches it"}
+      - {id: d, text: "There is no difference since ansible-core 2.10"}
+    answer: [c]
+    explanation: >-
+      Static imports are expanded up front, so tags and when on the import apply to every task
+      inside and --list-tasks shows them. Dynamic includes are evaluated at run time, so they can
+      use a loop or a variable file name, but conditions apply to the include itself.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_reuse.html#comparing-includes-and-imports-dynamic-and-static-re-use"]
+    tags: [reuse]
+  - id: ans-027
+    type: single
+    difficulty: 2
+    prompt: How do you run a playbook that uses a vault-encrypted variables file without typing the password?
+    choices:
+      - {id: a, text: "Export ANSIBLE_VAULT=off"}
+      - {id: b, text: "Put the password in ansible.cfg under [defaults] password"}
+      - {id: c, text: "ansible-vault decrypt the file before every run and commit it"}
+      - {id: d, text: "ansible-playbook site.yml --vault-password-file ~/.vault_pass (a file readable only by you)"}
+    answer: [d]
+    explanation: >-
+      A password file (or an executable script that prints it, such as a password-manager lookup)
+      is read at run time; vault_password_file in ansible.cfg can set it by default. Decrypting and
+      committing defeats the vault.
+    references: ["https://docs.ansible.com/ansible/latest/vault_guide/vault_using_encrypted_content.html"]
+    tags: [secrets]
+  - id: ans-028
+    type: single
+    difficulty: 2
+    prompt: A task prints a database password in its output. Which keyword hides the task's result from the log?
+    choices:
+      - {id: a, text: "quiet: true"}
+      - {id: b, text: "verbosity: 0"}
+      - {id: c, text: "no_log: true"}
+      - {id: d, text: "vault: true"}
+    answer: [c]
+    explanation: >-
+      no_log censors the task's arguments and results in the output and callback logs, which
+      matters for modules that echo parameters, such as user with a password. It also hides the
+      details you need when the task fails, so use it on specific tasks.
+    references: ["https://docs.ansible.com/ansible/latest/reference_appendices/logging.html#protecting-sensitive-data-with-no-log"]
+    tags: [secrets]
+  - id: ans-029
+    type: single
+    difficulty: 2
+    prompt: What does `ansible all -m ansible.builtin.ping` test?
+    choices:
+      - {id: a, text: "The latency between controller and hosts"}
+      - {id: b, text: "That Ansible can connect to each host and run a module with its Python"}
+      - {id: c, text: "That the hosts can reach each other"}
+      - {id: d, text: "That each host answers ICMP echo"}
+    answer: [b]
+    explanation: >-
+      The ping module is a trivial module run over the normal connection, so pong proves SSH,
+      authentication and a usable interpreter. It sends no ICMP. For network devices without Python
+      there are platform-specific equivalents.
+    references: ["https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ping_module.html"]
+    tags: [cli, connection]
+  - id: ans-030
+    type: single
+    difficulty: 2
+    prompt: What does `--diff` add to an ansible-playbook run?
+    choices:
+      - {id: a, text: "It prints the difference between facts from the last run"}
+      - {id: b, text: "It compares two playbooks"}
+      - {id: c, text: "It runs only tasks that changed since the last commit"}
+      - {id: d, text: "It shows the changes modules such as template, copy and lineinfile make to files"}
+    answer: [d]
+    explanation: >-
+      Modules that support it print a unified diff of the before and after content. Together with
+      --check, it previews what a run would change without changing it.
+    references: ["https://docs.ansible.com/ansible/latest/cli/ansible-playbook.html"]
+    tags: [cli]
+  - id: ans-031
+    type: single
+    difficulty: 3
+    prompt: 'What does `delegate_to: localhost` on a task do?'
+    choices:
+      - {id: a, text: "Runs the task on the controller, while variables still refer to the host being processed"}
+      - {id: b, text: "Runs the task on every host at once"}
+      - {id: c, text: "Adds localhost to the inventory group"}
+      - {id: d, text: "Skips the task for remote hosts"}
+    answer: [a]
+    explanation: >-
+      Delegation changes where the task executes, not whose play it is: inventory_hostname is still
+      the current host. It is used to call an API, update a load balancer, or wait_for a port from
+      outside. run_once makes such a task run a single time.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_delegation.html"]
+    tags: [execution]
+  - id: ans-032
+    type: single
+    difficulty: 2
+    prompt: What does the `|default('80')` filter do in `{{ http_port | default('80') }}`?
+    choices:
+      - {id: a, text: "Uses '80' when http_port is undefined"}
+      - {id: b, text: "Converts http_port to the string '80'"}
+      - {id: c, text: "Uses '80' when http_port is empty or false"}
+      - {id: d, text: "Sets http_port permanently for the play"}
+    answer: [a]
+    explanation: >-
+      default replaces only an undefined variable. To replace empty strings and other falsy values
+      too, pass true as the second argument: default('80', true). The filter does not assign
+      anything.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_filters.html#providing-default-values"]
+    tags: [templates, variables]
+  - id: ans-033
+    type: single
+    difficulty: 2
+    prompt: A handler is notified by three tasks in a play. How many times does it run?
+    choices:
+      - {id: a, text: "Three times, right after each task"}
+      - {id: b, text: "Never, unless listed in the play's handlers order"}
+      - {id: c, text: "Once, at the end of the play (or at a meta flush_handlers)"}
+      - {id: d, text: "Once per task that reported ok"}
+    answer: [c]
+    explanation: >-
+      Notifications are collected, and each handler runs once per host when handlers flush — by
+      default after all tasks of the play section. Only tasks that report changed notify. If a later
+      task fails, pending handlers do not run unless force_handlers is set.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html"]
+    tags: [handlers]
+  - id: ans-034
+    type: single
+    difficulty: 3
+    prompt: Why is `ansible.builtin.lineinfile` risky for managing a whole configuration file?
+    choices:
+      - {id: a, text: "It always reports changed"}
+      - {id: b, text: "It only controls the lines it is told about, so everything else in the file drifts unmanaged"}
+      - {id: c, text: "It rewrites the file from scratch each time"}
+      - {id: d, text: "It cannot use regular expressions"}
+    answer: [b]
+    explanation: >-
+      lineinfile is right for one setting in a file someone else owns. When the file is yours,
+      template makes the whole content declared, reviewable and reproducible; a pile of lineinfile
+      tasks with regexes tends to depend on the file's previous state.
+    references: ["https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html"]
+    tags: [modules, design]
+  - id: ans-035
+    type: single
+    difficulty: 2
+    prompt: Which module waits until a service's port accepts connections before the play continues?
+    choices:
+      - {id: a, text: "ansible.builtin.wait_for"}
+      - {id: b, text: "ansible.builtin.pause"}
+      - {id: c, text: "ansible.builtin.service with state: started"}
+      - {id: d, text: "ansible.builtin.meta: flush_handlers"}
+    answer: [a]
+    explanation: >-
+      wait_for with port (and host, timeout) polls until the port is open, or a file exists, or a
+      string appears in it. pause waits a fixed time or for a keypress; service returns once systemd
+      reports the unit started, which may be before the application is listening.
+    references: ["https://docs.ansible.com/ansible/latest/collections/ansible/builtin/wait_for_module.html"]
+    tags: [modules]
+  - id: ans-036
+    type: single
+    difficulty: 2
+    prompt: 'What does `become_user: postgres` do together with `become: true`?'
+    choices:
+      - {id: a, text: "Creates the postgres user if it is missing"}
+      - {id: b, text: "Runs the task as the postgres user, using the become method (sudo by default)"}
+      - {id: c, text: "Connects over SSH as postgres"}
+      - {id: d, text: "Changes the owner of every file the task touches"}
+    answer: [b]
+    explanation: >-
+      The connection still uses remote_user; become then switches to become_user, root by default.
+      Becoming an unprivileged user from another unprivileged user needs extra care with temporary
+      files, which Ansible handles with ACLs when available.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_privilege_escalation.html"]
+    tags: [privilege]
+  - id: ans-037
+    type: single
+    difficulty: 3
+    prompt: What does `changed_when` combined with `register` let you do on a command task?
+    choices:
+      - {id: a, text: "Retry until the output changes"}
+      - {id: b, text: "Run the command only when a previous task changed"}
+      - {id: c, text: "Report changed only when the command's output or return code says it changed something"}
+      - {id: d, text: "Store the command output in a file"}
+    answer: [c]
+    explanation: >-
+      For example, changed_when: "'created' in result.stdout" turns a script's own report into
+      accurate changed status, so handlers fire only when needed. Running only after a change is
+      when: other.changed, or a handler.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_error_handling.html#defining-changed"]
+    tags: [tasks, variables]
+  - id: ans-038
+    type: multiple
+    difficulty: 3
+    prompt: Which of these make a playbook safer to run against production?
+    choices:
+      - {id: a, text: "Put ignore_errors: true on every task so a run never stops halfway"}
+      - {id: b, text: "Use serial with max_fail_percentage for rolling changes"}
+      - {id: c, text: "Run it with --check --diff first"}
+      - {id: d, text: "Replace modules with shell tasks so every command is visible"}
+    answer: [b, c]
+    explanation: >-
+      A check run with diffs previews the changes; batches with a failure threshold keep a broken
+      change from reaching every host. shell tasks lose idempotence and check-mode support, and
+      ignoring errors lets a failed step cascade into the next.
+    references: ["https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html", "https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_strategies.html"]
+    tags: [safety, execution]
+  - id: ans-039
+    type: single
+    difficulty: 2
+    prompt: What does ansible-lint's `fqcn` rule ask for?
+    choices:
+      - {id: a, text: "Fully qualified module names such as ansible.builtin.copy instead of copy"}
+      - {id: b, text: "A comment above each task"}
+      - {id: c, text: "Fully qualified host names in the inventory"}
+      - {id: d, text: "Quoted strings for every value"}
+    answer: [a]
+    explanation: >-
+      A short name is resolved through the collections search path, so installing a collection that
+      provides a module of the same name can silently change what a task runs. The full name removes
+      the ambiguity.
+    references: ["https://ansible.readthedocs.io/projects/lint/rules/fqcn/"]
+    tags: [modules, lint]
+  - id: ans-040
+    type: single
+    difficulty: 2
+    prompt: Which inventory entry makes Ansible connect to a host on SSH port 2222 as the user deploy?
+    choices:
+      - {id: a, text: "web01 port=2222 user=deploy"}
+      - {id: b, text: "deploy@web01 -p 2222"}
+      - {id: c, text: "web01:2222@deploy"}
+      - {id: d, text: "web01 ansible_host=203.0.113.10 ansible_port=2222 ansible_user=deploy"}
+    answer: [d]
+    explanation: >-
+      Behavioural inventory variables start with ansible_: ansible_host is the address, ansible_port
+      and ansible_user configure SSH. Plain port= and user= are just ordinary variables to Ansible.
+    references: ["https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html#connecting-to-hosts-behavioral-inventory-parameters"]
+    tags: [inventory, connection]
+  - id: ans-041
+    type: single
+    difficulty: 3
+    prompt: A playbook takes minutes because gathering facts is slow on hundreds of hosts. Which change helps without losing facts the tasks use?
+    choices:
+      - {id: a, text: "Set forks: 1"}
+      - {id: b, text: "Enable fact caching (for example jsonfile) with gathering = smart"}
+      - {id: c, text: "Add serial: 1 to every play"}
+      - {id: d, text: "Use strategy: debug"}
+    answer: [b]
+    explanation: >-
+      With a fact cache and smart gathering, facts are collected only when the cache has none for a
+      host or they expired. gather_subset can also limit what is collected. Fewer forks or a serial
+      of one makes runs slower, not faster.
+    references: ["https://docs.ansible.com/ansible/latest/plugins/cache.html", "https://docs.ansible.com/ansible/latest/reference_appendices/config.html#default-gathering"]
+    tags: [facts, performance]

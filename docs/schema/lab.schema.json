@@ -1,0 +1,245 @@
+{
+  "$defs": {
+    "CheckRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^\\d{2}_[a-z0-9_]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "objective": {
+          "minimum": 1,
+          "title": "Objective",
+          "type": "integer"
+        },
+        "weight": {
+          "default": 1,
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Weight",
+          "type": "integer"
+        },
+        "baseline_pass": {
+          "default": false,
+          "title": "Baseline Pass",
+          "type": "boolean"
+        },
+        "maintenance_pass": {
+          "default": false,
+          "title": "Maintenance Pass",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "objective"
+      ],
+      "title": "CheckRef",
+      "type": "object"
+    },
+    "Disk": {
+      "additionalProperties": false,
+      "properties": {
+        "size": {
+          "title": "Size",
+          "type": "string"
+        }
+      },
+      "required": [
+        "size"
+      ],
+      "title": "Disk",
+      "type": "object"
+    },
+    "Resources": {
+      "additionalProperties": false,
+      "properties": {
+        "cpus": {
+          "default": 1,
+          "maximum": 4,
+          "minimum": 1,
+          "title": "Cpus",
+          "type": "integer"
+        },
+        "memory": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Memory"
+        },
+        "disks": {
+          "items": {
+            "$ref": "#/$defs/Disk"
+          },
+          "maxItems": 4,
+          "title": "Disks",
+          "type": "array"
+        }
+      },
+      "title": "Resources",
+      "type": "object"
+    },
+    "Track": {
+      "enum": [
+        "rhcsa",
+        "linux",
+        "automation",
+        "python",
+        "ansible",
+        "bash",
+        "docker",
+        "terraform",
+        "claude",
+        "mcp",
+        "intro"
+      ],
+      "title": "Track",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "id": {
+      "maxLength": 63,
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "version": {
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "title": "Version",
+      "type": "string"
+    },
+    "title": {
+      "maxLength": 60,
+      "minLength": 3,
+      "title": "Title",
+      "type": "string"
+    },
+    "track": {
+      "$ref": "#/$defs/Track"
+    },
+    "topics": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 5,
+      "minItems": 1,
+      "title": "Topics",
+      "type": "array"
+    },
+    "difficulty": {
+      "maximum": 5,
+      "minimum": 1,
+      "title": "Difficulty",
+      "type": "integer"
+    },
+    "estimated_minutes": {
+      "maximum": 240,
+      "minimum": 5,
+      "title": "Estimated Minutes",
+      "type": "integer"
+    },
+    "base_images": {
+      "items": {
+        "maxLength": 63,
+        "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Base Images",
+      "type": "array"
+    },
+    "runtime": {
+      "default": "vm",
+      "enum": [
+        "vm",
+        "container"
+      ],
+      "title": "Runtime",
+      "type": "string"
+    },
+    "resources": {
+      "$ref": "#/$defs/Resources"
+    },
+    "objectives": {
+      "items": {
+        "minLength": 3,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Objectives",
+      "type": "array"
+    },
+    "checks": {
+      "items": {
+        "$ref": "#/$defs/CheckRef"
+      },
+      "minItems": 1,
+      "title": "Checks",
+      "type": "array"
+    },
+    "reboot_required": {
+      "title": "Reboot Required",
+      "type": "boolean"
+    },
+    "boot_after_break": {
+      "default": false,
+      "title": "Boot After Break",
+      "type": "boolean"
+    },
+    "time_limit_minutes": {
+      "anyOf": [
+        {
+          "minimum": 5,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Time Limit Minutes"
+    },
+    "pass_percent": {
+      "default": 100,
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Pass Percent",
+      "type": "integer"
+    },
+    "rated": {
+      "default": false,
+      "title": "Rated",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "version",
+    "title",
+    "track",
+    "topics",
+    "difficulty",
+    "estimated_minutes",
+    "base_images",
+    "objectives",
+    "checks",
+    "reboot_required"
+  ],
+  "title": "LabManifest",
+  "type": "object"
+}

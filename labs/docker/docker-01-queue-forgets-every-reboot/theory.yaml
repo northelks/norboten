@@ -1,0 +1,68 @@
+schema_version: 1
+topic: docker-01-queue-forgets-every-reboot
+topics: [containers, boot-systemd]
+title: "Theory: data that outlives its container"
+description: Writable layers, volumes, --rm, Redis persistence and published ports.
+questions:
+  - id: dk1-001
+    type: single
+    difficulty: 2
+    prompt: A container was started with `docker run --rm -v /srv/data:/data IMAGE`. The image also declares `VOLUME /cache`. What remains after the container stops?
+    choices:
+      - {id: a, text: "Only /srv/data on the host"}
+      - {id: b, text: "The container, stopped, with both directories"}
+      - {id: c, text: "Nothing: --rm removes bind mounts too"}
+      - {id: d, text: "/srv/data and the anonymous volume for /cache"}
+    answer: [a]
+    explanation: >-
+      --rm removes the container, its writable layer and its anonymous volumes. A bind-mounted host
+      directory belongs to the host and is untouched; a named volume would also survive.
+    references: ["https://docs.docker.com/reference/cli/docker/container/run/#rm", "https://docs.docker.com/engine/storage/volumes/"]
+    tags: [volumes]
+  - id: dk1-002
+    type: single
+    difficulty: 2
+    prompt: Which `-p` option makes a container's port 6379 reachable only from the host itself?
+    choices:
+      - {id: a, text: "-p 6379:127.0.0.1:6379"}
+      - {id: b, text: "--expose 6379"}
+      - {id: c, text: "-p 6379:6379"}
+      - {id: d, text: "-p 127.0.0.1:6379:6379"}
+    answer: [d]
+    explanation: >-
+      The host IP comes first. Without it Docker publishes on every address, IPv4 and IPv6. --expose
+      only documents a port and publishes nothing on the host.
+    references: ["https://docs.docker.com/engine/network/#published-ports"]
+    tags: [ports, security]
+  - id: dk1-003
+    type: single
+    difficulty: 3
+    prompt: Redis runs with `--save ""`. Which command still writes the dataset to dump.rdb?
+    choices:
+      - {id: a, text: "docker commit"}
+      - {id: b, text: "redis-cli CONFIG REWRITE"}
+      - {id: c, text: "redis-cli SAVE"}
+      - {id: d, text: "redis-cli FLUSHALL"}
+    answer: [c]
+    explanation: >-
+      An empty save setting only disables automatic snapshots; SAVE (or BGSAVE) writes one on
+      demand. CONFIG REWRITE writes the configuration file, docker commit captures the container's
+      writable layer but not an unmounted volume, and FLUSHALL deletes everything.
+    references: ["https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/"]
+    tags: [redis, persistence]
+  - id: dk1-004
+    type: single
+    difficulty: 2
+    prompt: Why does `docker restart NAME` fail to reveal that a service started with `--rm` loses its data?
+    choices:
+      - {id: a, text: "A restart keeps the same container, so its writable layer and anonymous volumes are still there"}
+      - {id: b, text: "docker restart does not stop the process"}
+      - {id: c, text: "docker restart copies the data to a new container"}
+      - {id: d, text: "--rm only applies after a reboot"}
+    answer: [a]
+    explanation: >-
+      restart stops and starts the existing container. The loss appears when the container is
+      removed and recreated — by --rm on stop, by a unit that runs docker run on each start, or by
+      an image upgrade.
+    references: ["https://docs.docker.com/reference/cli/docker/container/restart/"]
+    tags: [containers, testing]

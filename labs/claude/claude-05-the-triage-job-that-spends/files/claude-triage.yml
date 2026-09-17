@@ -1,0 +1,31 @@
+name: Claude triage
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+  issue_comment:
+    types: [created]
+  pull_request_target:
+
+permissions: write-all
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Claude Code
+        run: curl -fsSL https://claude.ai/install.sh | bash -s 2.1.270
+
+      - name: Check the token is there
+        run: echo "token starts ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}" | cut -c1-24
+
+      - name: Triage
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Triaging: ${{ github.event.issue.title }}"
+          label=$(sh ci/triage.sh)
+          gh issue edit ${{ github.event.issue.number }} --add-label "$label"

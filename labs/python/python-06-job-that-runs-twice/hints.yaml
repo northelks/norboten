@@ -1,0 +1,41 @@
+checks:
+  01_a_single_run_still_works:
+    level_1: "Keep a plain rebuild working while you make the rest true."
+    level_2: "Whatever you change, one run on its own must still produce the whole price list."
+    level_3: "Run the rebuild by hand with its own catalogue and output, and read the result."
+    level_4: "The output is a JSON object with one entry per product in the catalogue."
+    refs:
+      2: ["https://docs.python.org/3/library/json.html"]
+      3: ["journal:python-06-job-that-runs-twice#what-a-reader-sees"]
+  02_a_second_run_is_refused:
+    level_1: "Two rebuilds started a second apart both run, and both write."
+    level_2: "Two processes know nothing about each other unless something outside them says so;
+              the kernel offers exactly that, on a file."
+    level_3: "Look at what the script does with the lock file it already names, and at the
+              difference between waiting for a lock and asking for it without waiting."
+    level_4: "Nothing takes the lock at all. A lock has to be taken before the work, without blocking,
+              and released only when the process ends — not by a file that merely exists."
+    refs:
+      2: ["https://docs.python.org/3/library/fcntl.html#fcntl.flock", "man 2 flock"]
+      3: ["journal:python-06-job-that-runs-twice#the-kernel-already-has-a-lock"]
+  03_the_output_is_never_half_written:
+    level_1: "While a rebuild runs, a reader of the price list can find it incomplete."
+    level_2: "A file being written and a file being read are the same file unless the writer arranges
+              otherwise."
+    level_3: "Watch the output file in a loop while the rebuild works, and see what a reader gets."
+    level_4: "The run writes the live file product by product; it should build the result first and
+              put it in place in one step that a reader cannot see into."
+    refs:
+      2: ["https://docs.python.org/3/library/os.html#os.replace"]
+      3: ["journal:python-06-job-that-runs-twice#what-a-reader-sees"]
+  04_the_timer_runs_it_often:
+    level_1: "The timer starts a rebuild every minute; make sure that stays true and stays clean."
+    level_2: "A timer does not wait for the last run to finish unless the service prevents overlap."
+    level_3: "systemctl list-timers and journalctl -u pricing-rebuild show what the timer has been
+              starting."
+    level_4: "Once a second run refuses to start, a timer that fires during a long rebuild costs a
+              refused run and nothing else — a unit can also serialise runs, but the script must be
+              safe on its own."
+    refs:
+      2: ["man 5 systemd.timer", "man 5 systemd.unit"]
+      3: ["journal:python-06-job-that-runs-twice#overlap-is-systemds-business-too"]

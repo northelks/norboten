@@ -1,0 +1,42 @@
+checks:
+  01_good_release_goes_live:
+    level_1: "On a web root whose path contains a space, even a perfect archive fails to deploy."
+    level_2: "How does the shell split an unquoted variable into words before running the command?"
+    level_3: "Read every line of deploy-site that uses $SITE_ROOT, $release or $tarball without
+              double quotes around it."
+    level_4: "Every expansion of a path in the script is unquoted, so mkdir, tar, rm and ln each
+              receive the path in pieces."
+    refs:
+      2: ["man 1 bash"]
+      3: ["journal:bash-01-deploy-took-the-site-down#word-splitting-again-because-paths-have-spaces"]
+  02_bad_release_changes_nothing:
+    level_1: "A truncated archive still becomes the live site, and the script reports success."
+    level_2: "A shell script carries on after a failing command unless it is told otherwise, and its
+              exit status is that of its last command."
+    level_3: "Follow what happens in deploy-site after tar fails: which lines still run, and what does
+              the final echo return?"
+    level_4: "Nothing checks tar's exit status: the switch of current runs anyway, the empty release
+              directory stays, and echo makes the script exit 0. A missing file behaves the same."
+    refs:
+      2: ["journal:monitoring#a-check-is-an-exit-status"]
+      3: ["journal:bash-01-deploy-took-the-site-down#exit-status-is-the-only-channel-a-caller-has", "journal:bash-01-deploy-took-the-site-down#set--euo-pipefail-a-net-with-holes"]
+  03_no_argument_changes_nothing:
+    level_1: "Without an argument the script still replaces the live site."
+    level_2: "A script that needs an argument should check for it before it touches anything."
+    level_3: "What does tar receive in deploy-site when $1 is empty, and does anything stop the
+              lines after it?"
+    level_4: "There is no check of the argument count, no usage message on stderr and no early exit."
+    refs:
+      2: ["journal:linux-04-write-the-report#validating-and-the-three-exit-statuses"]
+      3: ["journal:bash-01-deploy-took-the-site-down#arguments-first", "journal:bash-01-deploy-took-the-site-down#cleaning-up-after-a-failure"]
+  04_two_deploys_in_a_row:
+    level_1: "Two deploys within a second end up mixed together."
+    level_2: "Look at how the name of a new release directory is chosen, and how the live link is
+              replaced."
+    level_3: "In deploy-site, a timestamp with one-second resolution names the release, and mkdir -p
+              quietly reuses a directory that already exists."
+    level_4: "Both deploys unpack into the same directory. Give each release a unique directory, and
+              replace current in one step without ln placing a link inside the old release."
+    refs:
+      2: ["man 1 ln", "man 1 mktemp"]
+      3: ["journal:bash-01-deploy-took-the-site-down#unique-release-directories", "journal:bash-01-deploy-took-the-site-down#replacing-a-symlink-atomically"]

@@ -1,0 +1,84 @@
+schema_version: 1
+topic: claude-04-the-mcp-server-that-never-connects
+topics: [claude-code, ai-agents]
+title: "Theory: MCP servers in a headless job"
+description: .mcp.json, what disables a server, variable expansion, tool names and diagnostics.
+questions:
+  - id: cc4-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      A project's .mcp.json declares a server named `tickets` with a tool `list_tickets`. What name
+      must a job pass to --allowedTools so that it may call that tool in dontAsk mode?
+    choices:
+      - {id: a, text: "list_tickets"}
+      - {id: b, text: "mcp__tickets__list_tickets (or mcp__tickets for every tool of the server)"}
+      - {id: c, text: "MCP(tickets:list_tickets)"}
+      - {id: d, text: "tickets.list_tickets"}
+    answer: [b]
+    explanation: >-
+      Claude Code names MCP tools mcp__<server>__<tool>, with the server name from the configuration.
+      Permission rules and hook matchers use that name; a rule of just the prefix mcp__<server>
+      covers all the server's tools. A misspelled server name in the rule allows nothing, and the
+      call shows up in permission_denials.
+    references:
+      - "https://code.claude.com/docs/en/mcp"
+      - "https://code.claude.com/docs/en/permissions"
+  - id: cc4-002
+    type: single
+    difficulty: 3
+    prompt: >-
+      .mcp.json passes `"env": {"TICKETS_TOKEN": "${TICKET_TOKEN}"}` to a stdio server, and
+      TICKET_TOKEN is not set in Claude Code's environment. What does the server receive?
+    choices:
+      - {id: a, text: "An empty string"}
+      - {id: b, text: "Nothing: the server is not started"}
+      - {id: c, text: "The literal text ${TICKET_TOKEN}; claude mcp list warns about a missing variable"}
+      - {id: d, text: "The value of TICKETS_TOKEN, matched by prefix"}
+    answer: [c]
+    explanation: >-
+      ${VAR} and ${VAR:-default} are expanded in command, args, env, url and headers. A variable that
+      is unset and has no default stays literal, so the server starts and gets the placeholder text.
+      `claude mcp list` reports "Missing environment variables: TICKET_TOKEN" in its diagnostics.
+      Verified with Claude Code 2.1.270.
+    references:
+      - "https://code.claude.com/docs/en/mcp"
+  - id: cc4-003
+    type: single
+    difficulty: 3
+    prompt: >-
+      A `claude -p` run offers the model no tools from a project MCP server, and the server's command
+      works when run by hand. Which setting would explain it?
+    choices:
+      - {id: a, text: "\"enableAllProjectMcpServers\": true in .claude/settings.local.json"}
+      - {id: b, text: "MCP_TIMEOUT left at its default of 30 seconds"}
+      - {id: c, text: "\"disabledMcpjsonServers\": [\"tickets\"] in a settings file, for example .claude/settings.local.json"}
+      - {id: d, text: "The workspace not being trusted, since -p never starts .mcp.json servers there"}
+    answer: [c]
+    explanation: >-
+      disabledMcpjsonServers keeps a named .mcp.json server from loading at all; the stream-json
+      init event then lists no such server. -p loads .mcp.json servers without a trust prompt, so
+      trust is not the reason; enableAllProjectMcpServers approves servers rather than disabling
+      them; and a server that works by hand starts well within 30 seconds.
+    references:
+      - "https://code.claude.com/docs/en/mcp"
+      - "https://code.claude.com/docs/en/settings"
+  - id: cc4-004
+    type: single
+    difficulty: 2
+    prompt: >-
+      Which command shows, for one headless run, whether each MCP server connected or failed?
+    choices:
+      - {id: a, text: "claude doctor --mcp"}
+      - {id: b, text: "claude -p \"…\" --output-format stream-json --verbose, reading mcp_servers in the system init event"}
+      - {id: c, text: "claude -p \"…\" --output-format json, reading the mcp_servers field of the result"}
+      - {id: d, text: "claude mcp list, which always runs a health check of project servers"}
+    answer: [b]
+    explanation: >-
+      The first stream-json event (type system, subtype init) lists mcp_servers with a status such as
+      connected or failed, and the tools that were loaded. The final json result has no per-server
+      status. In an untrusted project, `claude mcp list` shows .mcp.json servers as pending approval
+      rather than checking them. --debug-file also records each server's start and its stderr.
+    references:
+      - "https://code.claude.com/docs/en/headless"
+      - "https://code.claude.com/docs/en/mcp"

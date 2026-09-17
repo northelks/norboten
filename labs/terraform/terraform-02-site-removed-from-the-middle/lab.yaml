@@ -1,0 +1,19 @@
+schema_version: 1
+id: terraform-02-site-removed-from-the-middle
+version: 1.0.0
+title: The Site Removed From the Middle
+track: terraform
+topics: [terraform, networking]
+difficulty: 4
+estimated_minutes: 40
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Remove one instance of a repeated resource without disturbing the others"
+  - "Key repeated resources by a stable name instead of a position"
+checks:
+  - {id: 01_blog_retired, objective: 1}
+  - {id: 02_shop_and_docs_untouched, objective: 1, weight: 2}
+  - {id: 03_keyed_by_name, objective: 2}
+reboot_required: true

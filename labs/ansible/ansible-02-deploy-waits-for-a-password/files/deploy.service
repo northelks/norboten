@@ -1,0 +1,13 @@
+[Unit]
+Description=Render the application's configuration with Ansible
+After=network.target
+
+[Service]
+Type=oneshot
+User=deploy
+WorkingDirectory=/srv/deploy
+Environment=HOME=/var/lib/deploy ANSIBLE_NOCOLOR=1 LANG=C.UTF-8
+ExecStart=/usr/bin/ansible-playbook deploy.yml
+
+[Install]
+WantedBy=multi-user.target

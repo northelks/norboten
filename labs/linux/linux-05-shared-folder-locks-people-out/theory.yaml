@@ -1,0 +1,83 @@
+schema_version: 1
+topic: linux-05-shared-folder-locks-people-out
+topics: [users-permissions, linux-basics]
+title: "Theory: sharing a folder with a group"
+description: Permission classes, directory bits, umask, setgid and default ACLs.
+questions:
+  - id: lx5-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      alice owns plan.txt, mode 0460 (r--rw----), group reports, and alice is a member of reports.
+      What can alice do with the file?
+    choices:
+      - {id: a, text: "Read it, but not write it"}
+      - {id: b, text: "Read and write it, through the group bits"}
+      - {id: c, text: "Nothing: the owner bits and group bits conflict"}
+      - {id: d, text: "Write it, but not read it"}
+    answer: [a]
+    explanation: >-
+      The kernel picks one class — owner, else group, else other — and uses only its bits. alice is
+      the owner, so r-- applies; her membership in the group adds nothing.
+    references: ["man 7 inode (The file type and mode)", "man 2 access"]
+    tags: [permissions]
+  - id: lx5-002
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      umask 077
+      touch f
+      mkdir d
+      echo "$(stat -c %a f) $(stat -c %a d)"
+    code_lang: bash
+    choices:
+      - {id: a, text: "600 700"}
+      - {id: b, text: "700 700"}
+      - {id: c, text: "077 077"}
+      - {id: d, text: "644 755"}
+    answer: [a]
+    explanation: >-
+      touch asks for 0666 and mkdir for 0777; the umask removes the group and other bits, leaving
+      0600 and 0700. The umask only ever removes bits — it never adds execute to a file.
+    references: ["man 2 umask", "man 1 bash (umask)"]
+    tags: [umask]
+    verify:
+      runtime: bash
+      code: |
+        umask 077; touch f; mkdir d; echo "$(stat -c %a f) $(stat -c %a d)"
+  - id: lx5-003
+    type: single
+    difficulty: 3
+    prompt: >-
+      /srv/reports is drwxrws--- root:reports. alice, in reports, creates a file there with umask 077
+      and no ACLs. What are its group and mode?
+    choices:
+      - {id: a, text: "Group reports, mode 0600"}
+      - {id: b, text: "Group alice, mode 0660"}
+      - {id: c, text: "Group alice, mode 0600"}
+      - {id: d, text: "Group reports, mode 0660"}
+    answer: [a]
+    explanation: >-
+      The setgid bit on the directory gives new files the directory's group, but it changes no
+      permission bits: the umask still strips the group's access. Group access needs a different
+      umask or a default ACL.
+    references: ["man 7 inode (The set-group-ID bit)", "man 2 umask"]
+    tags: [setgid, umask]
+  - id: lx5-004
+    type: single
+    difficulty: 3
+    prompt: >-
+      getfacl on a shared file prints `group:reports:rwx  #effective:r--`. Which command most likely
+      produced that?
+    choices:
+      - {id: a, text: "setfacl -d -m g:reports:rwx on the directory"}
+      - {id: b, text: "chmod g-w on the file"}
+      - {id: c, text: "umask 077 in the author's profile"}
+      - {id: d, text: "usermod -aG reports bob"}
+    answer: [b]
+    explanation: >-
+      On a file with an ACL, the group bits chmod changes are the mask, which caps every named user
+      and group entry. Lowering it to r-- leaves the entry saying rwx but effective r--.
+    references: ["man 5 acl (ACCESS CHECK ALGORITHM)", "man 1 getfacl"]
+    tags: [acl]

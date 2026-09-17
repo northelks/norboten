@@ -1,0 +1,65 @@
+schema_version: 1
+topic: rhcsa-03-storage-and-lvm
+topics: [storage-lvm, boot-systemd]
+title: "Theory: LVM, fstab and swap"
+description: Growing volumes, mounting by UUID and swap.
+questions:
+  - id: rh3-001
+    type: single
+    difficulty: 2
+    prompt: The volume group has no free extents. Which sequence grows the LV onto a new disk /dev/vdc?
+    choices:
+      - {id: a, text: "mkfs.xfs /dev/vdc; mount /dev/vdc /var/lib/app"}
+      - {id: b, text: "vgcreate vg0 /dev/vdc; lvextend -r vg0/applv"}
+      - {id: c, text: "lvextend -L +2G vg0/applv /dev/vdc"}
+      - {id: d, text: "pvcreate /dev/vdc; vgextend vg0 /dev/vdc; lvextend -r -l +100%FREE vg0/applv"}
+    answer: [d]
+    explanation: >-
+      The disk becomes a PV, joins the VG, and the LV takes the new extents; -r grows the
+      filesystem in the same step. Creating a VG with an existing name fails; formatting the disk
+      mounts a separate filesystem on top of the old one.
+    references: ["man 8 lvextend", "man 8 vgextend"]
+  - id: rh3-002
+    type: single
+    difficulty: 2
+    prompt: Why mount by UUID rather than /dev/vdb1 in /etc/fstab?
+    choices:
+      - {id: a, text: "Device names are not allowed in fstab"}
+      - {id: b, text: "Device names can change between boots; a UUID identifies the filesystem itself"}
+      - {id: c, text: "A UUID encrypts the filesystem"}
+      - {id: d, text: "UUIDs mount faster"}
+    answer: [b]
+    explanation: >-
+      Disk order depends on detection order and hardware changes; a filesystem's UUID travels
+      with it. blkid shows it. LABEL= works for the same reason.
+    references: ["man 5 fstab", "man 8 blkid"]
+  - id: rh3-003
+    type: single
+    difficulty: 2
+    prompt: Which fstab line enables an existing swap file at boot?
+    choices:
+      - {id: a, text: "swap /swapfile ext4 defaults 0 0"}
+      - {id: b, text: "/swapfile swap none sw 0 2"}
+      - {id: c, text: "/swapfile none swap defaults 0 0"}
+      - {id: d, text: "/swapfile /swap swap defaults 0 1"}
+    answer: [c]
+    explanation: >-
+      Swap has no mount point (none or swap), type swap, and fsck pass 0. swapon -a activates what
+      fstab lists without a reboot.
+    references: ["man 5 fstab", "man 8 swapon"]
+  - id: rh3-004
+    type: single
+    difficulty: 3
+    prompt: The machine stops at "Give root password for maintenance". What should you look at first?
+    choices:
+      - {id: a, text: "The GRUB configuration"}
+      - {id: b, text: "The network configuration"}
+      - {id: c, text: "Why the boot stopped — usually a mount waiting for a device — with journalctl -xb -p err"}
+      - {id: d, text: "The SELinux mode"}
+    answer: [c]
+    explanation: >-
+      Emergency mode means something required for booting did not happen; a broken fstab entry is
+      the classic cause. The journal names the device it waited for. Do not rely on systemctl
+      --failed: when the device job times out, the mount is never attempted and nothing is listed
+      as failed.
+    references: ["man 7 systemd.special (emergency.target)", "man 1 journalctl"]

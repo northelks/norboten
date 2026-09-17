@@ -1,0 +1,9 @@
+[Unit]
+Description=Write the disk use report after boot and every night
+
+[Timer]
+OnBootSec=15s
+OnCalendar=*-*-* 05:00:00
+
+[Install]
+WantedBy=timers.target

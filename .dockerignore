@@ -1,0 +1,17 @@
+# The API image needs cli/, runner/, api/, labs/, quizzes/, journals/, docs/, site/static/print.css,
+# site/streams and images/registry.yaml.
+.git
+.venv
+**/__pycache__
+**/.pytest_cache
+.ruff_cache
+images/out
+site/dist
+site/static/captures
+terraform/.terraform
+deploy/.env*
+seed/accounts.json
+*.qcow2
+
+# the private submodule: never in an image, whatever the Dockerfile says
+rated

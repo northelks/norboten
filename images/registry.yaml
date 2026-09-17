@@ -1,0 +1,146 @@
+# Base image registry — normative, see docs/lab-spec.md section 3.
+#
+# upstream: the distro's cloud image. Read only by the golden image builder (images/build.py).
+#           URLs and digests are pinned; bump them deliberately, then rebuild and re-run the
+#           solvability gate for every lab on that image.
+# golden:   what the CLI downloads. tag/arch are written by the publish workflow — never by hand.
+#
+# min_memory is a VM's memory unless a lab asks for more. Measured with images/memory.py (every lab
+# through the gate, the guest sampled each second; peak = MemTotal - MemAvailable) — the Ubuntu
+# images on 2026-09-16, the others on 2026-09-14:
+#   alpine                 256 MiB  peak   52 MiB; passes at 224; does not boot at 192 or 128
+#   ubuntu-26.04           512 MiB  peak  154 MiB (linux-02), 5 labs
+#   ubuntu-26.04-devops   1024 MiB  peak  490 MiB (docker-01), 10 labs
+#   ubuntu-26.04-automation 3072 MiB peak 1086 MiB (ollama-02), 7 labs; ollama-03's 3 OOM kills
+#                                     are its own MemoryMax=400M fault, inside the service's cgroup
+#   rocky-10              1536 MiB  peak  425 MiB (rhcsa-04)
+# The values keep at least twice the reference solution's peak, because a learner does more than
+# the solution does (docs/open-questions.md Q12).
+# Ubuntu holds 512 MiB only because the baseline builds the initramfs with MODULES=dep: with the
+# stock 91 MiB initramfs a 512 MiB VM panics on "System is deadlocked on memory" about one boot
+# in three (2026-09-16).
+#
+# ubuntu-26.04*: the plain amd64 cloud image, not amd64v3, so any x86-64 host can run it. The
+# baseline purges what the cloud image carries for building rather than running — kernel headers,
+# the perf and BPF tools with their LLVM and clang libraries, botocore, fwupd — which is 616 MiB of
+# root filesystem and about 200 MiB of each golden image: 663 / 932 / 1141 MiB, aarch64, 2026-09-16.
+#
+# kind: container images have no upstream or golden artifact: the CLI builds them with Docker or
+#       Podman from the Dockerfile named under `container`, on first use.
+
+schema_version: 1
+
+images:
+  rocky-10:
+    distro: Rocky Linux 10.2
+    tracks: [rhcsa, intro]
+    init: systemd
+    pkg: dnf
+    mac: selinux
+    min_memory: 1536MiB
+    upstream:
+      x86_64:
+        url: https://dl.rockylinux.org/pub/rocky/10.2/images/x86_64/Rocky-10-GenericCloud-Base-10.2-20260525.0.x86_64.qcow2
+        digest: sha256:9fc9e9ff16888bb68ac39b0392e25c9c92684d50c85f1cce6ab549363bbc4b48
+      aarch64:
+        url: https://dl.rockylinux.org/pub/rocky/10.2/images/aarch64/Rocky-10-GenericCloud-Base-10.2-20260525.0.aarch64.qcow2
+        digest: sha256:457c8375e19496f43a25c4a6169fa11237536c53cef6f85a20ea3c5a751aa0f5
+    golden:
+      ref: ghcr.io/northelks/norboten-base/rocky-10
+      tag: null
+
+  ubuntu-26.04:
+    distro: Ubuntu 26.04 LTS (Resolute Raccoon)
+    tracks: [linux, intro]
+    init: systemd
+    pkg: apt
+    mac: apparmor
+    min_memory: 512MiB
+    upstream:
+      x86_64:
+        url: https://cloud-images.ubuntu.com/releases/resolute/release-20260823/ubuntu-26.04-server-cloudimg-amd64.img
+        digest: sha256:8196be9d7958059cb56c6c75c80fdf6cee8a8885bc149ea791d7db1c7ef93035
+      aarch64:
+        url: https://cloud-images.ubuntu.com/releases/resolute/release-20260823/ubuntu-26.04-server-cloudimg-arm64.img
+        digest: sha256:00e2d9f09373125eb9040952ae3b8d5553fe3df8f5004c08838473a1f61b74bf
+    golden:
+      ref: ghcr.io/northelks/norboten-base/ubuntu-26.04
+      tag: null
+
+  ubuntu-26.04-automation:
+    distro: Ubuntu 26.04 LTS + Python, Ollama, Postgres/pgvector
+    tracks: [automation]
+    init: systemd
+    pkg: apt
+    mac: apparmor
+    min_memory: 3GiB
+    upstream:
+      x86_64:
+        url: https://cloud-images.ubuntu.com/releases/resolute/release-20260823/ubuntu-26.04-server-cloudimg-amd64.img
+        digest: sha256:8196be9d7958059cb56c6c75c80fdf6cee8a8885bc149ea791d7db1c7ef93035
+      aarch64:
+        url: https://cloud-images.ubuntu.com/releases/resolute/release-20260823/ubuntu-26.04-server-cloudimg-arm64.img
+        digest: sha256:00e2d9f09373125eb9040952ae3b8d5553fe3df8f5004c08838473a1f61b74bf
+    golden:
+      ref: ghcr.io/northelks/norboten-base/ubuntu-26.04-automation
+      tag: null
+
+  ubuntu-26.04-devops:
+    distro: Ubuntu 26.04 LTS + Docker, Terraform, Ansible, Python tooling
+    tracks: [python, ansible, bash, docker, terraform]
+    init: systemd
+    pkg: apt
+    mac: apparmor
+    min_memory: 1GiB
+    upstream:
+      x86_64:
+        url: https://cloud-images.ubuntu.com/releases/resolute/release-20260823/ubuntu-26.04-server-cloudimg-amd64.img
+        digest: sha256:8196be9d7958059cb56c6c75c80fdf6cee8a8885bc149ea791d7db1c7ef93035
+      aarch64:
+        url: https://cloud-images.ubuntu.com/releases/resolute/release-20260823/ubuntu-26.04-server-cloudimg-arm64.img
+        digest: sha256:00e2d9f09373125eb9040952ae3b8d5553fe3df8f5004c08838473a1f61b74bf
+    golden:
+      ref: ghcr.io/northelks/norboten-base/ubuntu-26.04-devops
+      tag: null
+
+  alpine:
+    distro: Alpine Linux 3.23
+    tracks: [linux, intro]
+    init: openrc
+    pkg: apk
+    mac: none
+    min_memory: 256MiB
+    upstream:
+      x86_64:
+        url: https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/cloud/nocloud_alpine-3.23.4-x86_64-uefi-cloudinit-r0.qcow2
+        digest: sha512:849196e26640b33fb1f106d46cebdf341c715f7f49363564eacece8097464b6af7041618e94c4eb1a006394663252a86c0fb3158fee5d0ffb094899730679a71
+      aarch64:
+        url: https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/cloud/nocloud_alpine-3.23.4-aarch64-uefi-cloudinit-r0.qcow2
+        digest: sha512:737b0eb365944ffcf6da477c059c105bbde222942fd5a8380c07db088365b18dbc60a0f2824ea9a3904d57e194e0d05a7074302c3ebc104d0aecb6ddc6ffd91c
+    golden:
+      ref: ghcr.io/northelks/norboten-base/alpine
+      tag: null
+
+  ubuntu-26.04-container:
+    distro: Ubuntu 26.04 LTS, container
+    tracks: [linux]
+    kind: container
+    init: none
+    pkg: apt
+    mac: none
+    min_memory: 256MiB
+    container:
+      dockerfile: base/ubuntu-26.04-container/Dockerfile
+      tag: norboten-base/ubuntu-26.04-container:1
+
+  ubuntu-26.04-claude:
+    distro: Ubuntu 26.04 LTS + Claude Code 2.1.270 and a scripted model, container
+    tracks: [claude, mcp]
+    kind: container
+    init: none
+    pkg: apt
+    mac: none
+    min_memory: 1GiB
+    container:
+      dockerfile: base/ubuntu-26.04-claude/Dockerfile
+      tag: norboten-base/ubuntu-26.04-claude:2

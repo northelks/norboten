@@ -1,0 +1,21 @@
+schema_version: 1
+id: python-04-worker-that-goes-silent
+version: 1.0.0
+title: The Worker That Goes Silent
+track: python
+topics: [python, logging-journald]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Make a long-running program's output appear while it runs, not when it ends"
+  - "Stop on SIGTERM without leaving half-written work behind"
+  - "Record what is finished so that a restart does not do it twice"
+checks:
+  - {id: 01_progress_appears_while_it_runs, objective: 1, weight: 2}
+  - {id: 02_a_stop_leaves_no_half_row, objective: 2, weight: 2}
+  - {id: 03_nothing_is_ingested_twice, objective: 3}
+  - {id: 04_the_service_reports_progress, objective: 1}
+reboot_required: true

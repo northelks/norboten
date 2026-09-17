@@ -1,0 +1,29 @@
+---
+- name: Create /etc/norboten
+  ansible.builtin.file:
+    path: /etc/norboten
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Write base.json (the runner's source of distro facts)
+  ansible.builtin.template:
+    src: base.json.j2
+    dest: /etc/norboten/base.json
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create the runner state directory
+  ansible.builtin.file:
+    path: /var/lib/norboten
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Set the documented root password
+  ansible.builtin.user:
+    name: root
+    password: "{{ lab_baseline_root_password_hash }}"

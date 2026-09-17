@@ -1,0 +1,17 @@
+checks:
+  01_message_readable:
+    level_1: "You are refused before the file is even opened — the system decided you may not."
+    level_2: "Every file has an owner, a group, and permission bits for each. Look at them."
+    level_3: "List the message with its permissions. What can 'others' do with it?"
+    level_4: "The file allows reading only to its owner, root. Others need read permission too."
+    refs:
+      2: ["man 1 ls", "man 1 chmod"]
+      3: ["journal:hello#how-the-kernel-picks-a-triad", "journal:hello#changing-it-with-chmod"]
+  02_reply_written:
+    level_1: "The grader cannot find your reply, or it does not hold the right word."
+    level_2: "You need to read the message first. Then write a file in your own home directory."
+    level_3: "The secret word is on the last line of the message. Your home directory is ~."
+    level_4: "reply.txt must exist in your home and contain only the word, nothing else."
+    refs:
+      2: ["man 1 cat"]
+      3: ["journal:hello#what-sudo-covers-and-what-it-does-not"]

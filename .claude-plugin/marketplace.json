@@ -1,0 +1,24 @@
+{
+  "name": "norboten",
+  "owner": {
+    "name": "Norboten",
+    "url": "https://norboten.org"
+  },
+  "description": "Claude Code plugins for writing Norboten content: labs, theory questions and journals.",
+  "plugins": [
+    {
+      "name": "norboten-author",
+      "source": "./plugins/norboten-author",
+      "description": "Turn an idea into a Norboten lab, theory questions or a journal: it asks what the specs need, shows a plan, then drafts, lints and proves it — in your session or in a subagent.",
+      "version": "0.2.0",
+      "author": {
+        "name": "Norboten"
+      },
+      "homepage": "https://norboten.org/docs/claude-code-plugin/",
+      "repository": "https://github.com/northelks/norboten",
+      "license": "Apache-2.0",
+      "keywords": ["linux", "labs", "education", "authoring"],
+      "category": "development"
+    }
+  ]
+}

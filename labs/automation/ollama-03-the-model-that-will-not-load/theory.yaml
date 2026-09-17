@@ -1,0 +1,71 @@
+schema_version: 1
+topic: ollama-03-the-model-that-will-not-load
+topics: [ollama, kernel-performance, boot-systemd]
+title: "Theory: memory for a model server"
+description: What a loaded model costs, the key-value cache, MemoryMax= and telling an OOM kill from a failed allocation.
+questions:
+  - id: ol3-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      A model file is 400 MB. Ollama is started with OLLAMA_CONTEXT_LENGTH=32768 and OLLAMA_NUM_PARALLEL=8.
+      Why does loading need far more memory than 400 MB?
+    choices:
+      - {id: a, text: "Parallel requests each start their own server process with its own weights"}
+      - {id: b, text: "The key-value cache is allocated for context length times parallel requests: 262,144 tokens here"}
+      - {id: c, text: "It does not; memory use is the file size"}
+      - {id: d, text: "Ollama loads eight copies of the model file"}
+    answer: [b]
+    explanation: >-
+      Besides the weights, the runtime reserves a key-value cache sized for every token of every parallel
+      slot. On the lab VM qwen2.5:0.5b at 32,768 × 8 tried to allocate 3,072 MB for that cache alone; at
+      4,096 × 2 the whole server peaked at about 770 MB. The weights are loaded once.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+  - id: ol3-002
+    type: single
+    difficulty: 3
+    prompt: >-
+      The journal of a service says "A process of this unit has been killed by the OOM killer" and "Failed
+      with result 'oom-kill'", and the machine has gigabytes free. What is the likeliest cause?
+    choices:
+      - {id: a, text: "vm.overcommit_memory is 2"}
+      - {id: b, text: "The process leaked file descriptors"}
+      - {id: c, text: "The unit's own MemoryMax= (its cgroup limit), not the machine, ran out"}
+      - {id: d, text: "Swap is disabled"}
+    answer: [c]
+    explanation: >-
+      systemd puts each service in a cgroup; MemoryMax= caps it, and the kernel's OOM killer acts within
+      that cgroup when the cap is reached ("constraint=CONSTRAINT_MEMCG" in the kernel log), however much the
+      machine has free. systemctl show -p MemoryMax -p MemoryPeak shows the cap and the peak.
+    references: ["man 5 systemd.resource-control (MemoryMax=)", "https://docs.kernel.org/admin-guide/cgroup-v2.html"]
+  - id: ol3-003
+    type: single
+    difficulty: 2
+    prompt: >-
+      Ollama answers a request with HTTP 500 "failed to allocate buffer for kv cache", and NRestarts does not
+      change. How does this differ from an OOM kill?
+    choices:
+      - {id: a, text: "It is the same event, reported through the API"}
+      - {id: b, text: "The model file is corrupt"}
+      - {id: c, text: "The kernel killed the server and systemd hid the restart"}
+      - {id: d, text: "The runtime asked for memory it could not get and gave up cleanly; nothing was killed"}
+    answer: [d]
+    explanation: >-
+      An allocation failure is reported by the program: the load fails, the server stays up, the client gets
+      a 500 with the error. An OOM kill happens to the program: the process dies mid-request, the client sees
+      the connection drop, and systemd restarts the unit (NRestarts rises).
+    references: ["man 5 systemd.resource-control", "https://github.com/ollama/ollama/blob/main/docs/api.md"]
+  - id: ol3-004
+    type: single
+    difficulty: 1
+    prompt: Which command shows the memory limit and the highest memory use of a systemd service since it started?
+    choices:
+      - {id: a, text: "systemctl show <unit> -p MemoryMax -p MemoryPeak"}
+      - {id: b, text: "ulimit -v"}
+      - {id: c, text: "cat /proc/meminfo"}
+      - {id: d, text: "free -m"}
+    answer: [a]
+    explanation: >-
+      MemoryMax is the cgroup cap from the unit; MemoryPeak is the cgroup's high-water mark since the unit started.
+      free and /proc/meminfo describe the whole machine; ulimit is a per-process limit of the current shell.
+    references: ["man 5 systemd.resource-control"]

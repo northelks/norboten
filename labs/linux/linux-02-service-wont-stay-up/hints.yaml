@@ -1,0 +1,50 @@
+checks:
+  01_notes_active_and_enabled:
+    level_1: "notes is not running now, and nothing would start it at boot."
+    level_2: "The init system records why a service stopped. Read its status and its log before
+              changing anything."
+    level_3: "systemctl status notes and sudo journalctl -u notes show each failed start and its
+              error."
+    level_4: "notes is not enabled, and each start fails — first on its config file, then on its
+              port, then on its data."
+    refs:
+      2: ["journal:logging-journald#asking-precise-questions", "man 1 journalctl"]
+      3: ["journal:linux-02-service-wont-stay-up#ask-the-two-questions-in-the-right-order"]
+  02_notes_restarts_on_failure:
+    level_1: "When notes dies, it stays dead."
+    level_2: "A unit can tell systemd what to do when its process exits. Look at the unit's
+              restart policy."
+    level_3: "systemctl show -p Restart notes, then look at the unit with systemctl cat notes."
+    level_4: "The unit has no Restart= setting. Add one without editing the vendor file in place."
+    refs:
+      2: ["man 5 systemd.service"]
+      3: ["journal:linux-02-service-wont-stay-up#restart-and-the-limiter-that-stops-it"]
+  03_notes_serves_its_notes:
+    level_1: "People reach something on port 8080, but not notes."
+    level_2: "Only one process can listen on a port. Find out which process holds it, and what
+              stops notes from starting."
+    level_3: "ss -tlnp shows who owns 8080. The notes journal shows what it could not open."
+    level_4: "A retired unit, notes-legacy, owns the port, and the notes user cannot read
+              /etc/notes/notes.ini."
+    refs:
+      2: ["journal:networking#listening-on-loopback-or-on-everything", "man 8 ss"]
+      3: ["journal:linux-02-service-wont-stay-up#who-owns-the-port", "journal:linux-02-service-wont-stay-up#test-as-the-user-not-as-root"]
+  04_data_access_confined:
+    level_1: "notes starts, but cannot read its own data, although the file permissions allow
+              it."
+    level_2: "When permissions look right and access is still denied, a security module is
+              deciding. Look for its denials in the kernel log."
+    level_3: "Look for apparmor=\"DENIED\" in the journal, then read the notes profile under
+              /etc/apparmor.d."
+    level_4: "The profile allows /var/lib/notes, but the data lives in /srv/notes."
+    refs:
+      2: ["man 7 apparmor", "https://ubuntu.com/server/docs/how-to/security/apparmor/"]
+      3: ["journal:linux-02-service-wont-stay-up#apparmor-rules-attached-to-paths", "journal:linux-02-service-wont-stay-up#reading-and-fixing-a-denial"]
+  05_profile_still_enforced:
+    level_1: "The notes profile has to keep protecting the system."
+    level_2: "A profile can be loaded, unloaded, or put into a mode where it only logs."
+    level_3: "aa-status lists every profile and its mode."
+    level_4: "The notes profile must be loaded in enforce mode after your fix."
+    refs:
+      2: ["man 8 aa-status"]
+      3: ["journal:linux-02-service-wont-stay-up#the-two-modes-and-the-fix-that-is-not-a-fix"]

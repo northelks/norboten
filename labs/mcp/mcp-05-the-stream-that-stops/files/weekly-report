@@ -1,0 +1,10 @@
+#!/bin/sh
+# The weekly operations report, from the reports MCP server. The answer is ~/weekly-report.json.
+cd "$HOME/ops-report" || exit 1
+# a report takes seconds; a tool that has said nothing for twenty is not coming back
+export MCP_TOOL_TIMEOUT=20000
+claude -p "Build this week's operations report and give me the headline numbers." \
+    --permission-mode dontAsk \
+    --allowedTools "mcp__reports" \
+    --max-turns 4 \
+    --output-format json > "$HOME/weekly-report.json" 2>&1

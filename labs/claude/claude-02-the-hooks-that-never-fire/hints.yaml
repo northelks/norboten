@@ -1,0 +1,47 @@
+checks:
+  01_written_code_gets_tidied:
+    level_1: "The re-indenting hook does nothing to what the agent writes."
+    level_2: "A hook has two ways to fail silently: it never runs, or it runs without the
+              information it needs. Find out which, by making it leave a trace."
+    level_3: "Add a line that appends its stdin to a file in /tmp, run the job, and look. Hook
+              matchers are compared with tool names exactly as Claude Code spells them, and a
+              command hook receives its input as JSON on stdin, not as arguments."
+    level_4: "The matcher is in lower case, so it matches no tool, and the script reads the file
+              path from $1, which is always empty. Match Edit|Write, and read tool_input.file_path
+              from the JSON on stdin."
+    refs:
+      2: ["https://code.claude.com/docs/en/hooks"]
+      3: ["journal:claude-02-the-hooks-that-never-fire#matchers-are-tool-names-exactly", "journal:claude-02-the-hooks-that-never-fire#input-arrives-as-json-on-stdin"]
+  02_agents_cannot_push:
+    level_1: "The guard that should stop pushes lets them through."
+    level_2: "The guard does notice the push. What it does next decides whether Claude Code
+              stops the call; look at how it ends."
+    level_3: "Read how Claude Code treats a hook's exit status and where it looks for the reason:
+              one code blocks a PreToolUse call, every other non-zero code is reported and the
+              call goes ahead."
+    level_4: "no-push.sh exits 1, a non-blocking error, and prints its reason on stdout. Exit 2,
+              with the reason on stderr."
+    refs:
+      2: ["journal:claude-code#guards-helpers-and-outside-data"]
+      3: ["journal:claude-02-the-hooks-that-never-fire#exit-status-decides-whether-a-pretooluse-hook-blocks"]
+  03_applied_migrations_are_protected:
+    level_1: "The guard for applied migrations never stops anything."
+    level_2: "Its logic may well be right. Check whether Claude Code can run it at all."
+    level_3: "Compare the three scripts in .claude/hooks with ls -l, and run the migration guard
+              by hand the way Claude Code would, by its path."
+    level_4: "protect-migrations.sh is not executable. Claude Code cannot run it, reports a
+              non-blocking error, and lets the edit through."
+    refs:
+      2: ["https://code.claude.com/docs/en/hooks"]
+      3: ["journal:claude-02-the-hooks-that-never-fire#where-hooks-live-and-when-they-run"]
+  04_the_applied_migration_is_restored:
+    level_1: "Production ran one version of a migration; the repository now holds another."
+    level_2: "The change is committed and pushed. Undo it the way you would undo any pushed
+              commit on a shared branch."
+    level_3: "git log -p on the migration shows the commit that changed it and the one that
+              added it. A shared branch is fixed with a new commit, not by rewriting history."
+    level_4: "Last night's commit edited 0002 and was pushed. Take the file back from the commit
+              that added it (or revert the commit), commit, and push that yourself."
+    refs:
+      2: ["https://git-scm.com/docs/git-revert"]
+      3: ["journal:claude-02-the-hooks-that-never-fire#claude-codes-own-edits"]

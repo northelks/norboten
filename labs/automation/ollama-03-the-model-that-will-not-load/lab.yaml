@@ -1,0 +1,19 @@
+schema_version: 1
+id: ollama-03-the-model-that-will-not-load
+version: 1.0.0
+title: The Model That Will Not Load
+track: automation
+topics: [ollama, kernel-performance, boot-systemd]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-automation]
+resources:
+  cpus: 2
+objectives:
+  - "Size a model server's context and parallelism to the memory it has"
+  - "Cap a service's memory without starving it, and tell an out-of-memory kill from an allocation failure"
+checks:
+  - {id: 01_a_question_gets_an_answer, objective: 1, weight: 2}
+  - {id: 02_two_people_with_4096_tokens_each, objective: 1}
+  - {id: 03_a_memory_limit_with_room_to_work, objective: 2}
+reboot_required: true

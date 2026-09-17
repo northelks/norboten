@@ -1,0 +1,51 @@
+checks:
+  01_key_not_in_the_unit:
+    level_1: "Any account on this machine can read the upstream key without being root."
+    level_2: "A unit's environment is not private: the service manager will print it to anyone
+              who asks. Find every place the key is written down."
+    level_3: "systemctl show chat-gateway and systemctl cat chat-gateway; systemd can also pass a
+              secret from a file as a credential."
+    level_4: "Remove the Environment= line with the key and let the service read it from a
+              private file — EnvironmentFile, UPSTREAM_KEY_FILE or LoadCredential=upstream_key."
+    refs:
+      2: ["man 5 systemd.exec"]
+      3: ["journal:ai-02-chatbot-leaks-key#where-a-secret-actually-lives", "journal:ai-02-chatbot-leaks-key#three-good-homes-for-a-secret-in-increasing-order-of-isolation", "journal:ai-02-chatbot-leaks-key#removing-it-from-the-unit-really"]
+  02_key_file_private:
+    level_1: "The file holding the key can be read by everyone."
+    level_2: "A secret file should belong to the account that uses it and be unreadable to
+              anyone else."
+    level_3: "Look at the owner and mode of the files under /etc/chat-gateway."
+    level_4: "Give the key file to the gateway's account with mode 0600 (0400 also works)."
+    refs:
+      2: ["journal:hello#how-the-kernel-picks-a-triad"]
+      3: ["journal:ai-02-chatbot-leaks-key#three-good-homes-for-a-secret-in-increasing-order-of-isolation"]
+  03_gateway_requires_a_token:
+    level_1: "The gateway serves anyone who can reach it."
+    level_2: "The gateway can require a client token; it reads its settings from an environment
+              file."
+    level_3: "REQUIRE_TOKEN in /etc/chat-gateway/gateway.env, and the token file it compares
+              against."
+    level_4: "Set REQUIRE_TOKEN=1 and restart the service."
+    refs:
+      2: ["man 5 systemd.exec"]
+      3: ["journal:ai-02-chatbot-leaks-key#authentication-who-is-asking"]
+  04_bursts_are_rate_limited:
+    level_1: "One script in a loop can send as many requests as it likes."
+    level_2: "The proxy in front of the gateway can limit the rate per client before the request
+              reaches the model."
+    level_3: "nginx's limit_req_zone (in the http context) and limit_req in the location."
+    level_4: "Add a request zone and apply it to the proxied location, leaving a small burst
+              allowance so ordinary use still works."
+    refs:
+      2: ["https://nginx.org/en/docs/http/ngx_http_limit_req_module.html"]
+      3: ["journal:ai-02-chatbot-leaks-key#rate-limiting-the-leaky-bucket"]
+  05_logs_have_no_secrets:
+    level_1: "Secrets end up in the service's log."
+    level_2: "The gateway has a setting that decides whether it logs request headers."
+    level_3: "LOG_HEADERS in the gateway's environment file; the journal keeps what was written
+              before you changed it."
+    level_4: "Set LOG_HEADERS=0 and restart the service — the check looks only at what was logged
+              since then."
+    refs:
+      2: ["journal:logging-journald#everything-a-service-prints-becomes-a-journal-entry"]
+      3: ["journal:ai-02-chatbot-leaks-key#logs-are-a-copy-of-every-secret-they-print", "journal:ai-02-chatbot-leaks-key#a-leaked-secret-is-a-burned-secret"]

@@ -1,0 +1,86 @@
+schema_version: 1
+topic: claude-02-the-hooks-that-never-fire
+topics: [claude-code, bash]
+title: "Theory: hooks that fire and hooks that block"
+description: Matchers, hook input on stdin, exit codes, and what a PreToolUse hook can stop.
+questions:
+  - id: cc2-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      A PreToolUse hook has `"matcher": "bash"`. The model runs `git push` through the Bash tool.
+      Does the hook run?
+    choices:
+      - {id: a, text: "Only in interactive sessions; -p ignores matchers and runs every hook"}
+      - {id: b, text: "Yes: matchers are compared case-insensitively"}
+      - {id: c, text: "Yes: a matcher is a regular expression, and bash is found inside Bash"}
+      - {id: d, text: "No: a matcher of plain letters is an exact, case-sensitive tool name, and the tool is Bash"}
+    answer: [d]
+    explanation: >-
+      A matcher made only of letters, digits, _, -, commas, | and spaces is a list of exact tool
+      names, and names are case-sensitive: `bash` matches nothing. Anything with other characters is
+      an unanchored JavaScript regex, and even then `bash` would not match `Bash`. -p runs hooks the
+      same way as an interactive session. Verified with Claude Code 2.1.270: a `bash` matcher never
+      fired, and neither did `edit|write` for the Write tool.
+    references:
+      - "https://code.claude.com/docs/en/hooks"
+  - id: cc2-002
+    type: single
+    difficulty: 2
+    prompt: >-
+      A PreToolUse hook for Bash detects `git push`, prints "Blocked: agents do not push" and exits
+      with status 1. What happens to the push?
+    choices:
+      - {id: a, text: "It is blocked silently"}
+      - {id: b, text: "It is blocked, and the model sees the message"}
+      - {id: c, text: "It runs: exit 1 is a non-blocking error, reported but not enforced"}
+      - {id: d, text: "The whole run stops with exit status 1"}
+    answer: [c]
+    explanation: >-
+      Only exit status 2 is a blocking error for PreToolUse: the call is refused and stderr is given
+      to the model as the reason. Status 0 is success, and any other status is a non-blocking error —
+      the action proceeds. The run does not stop. To block, exit 2 with the reason on stderr, or exit
+      0 with JSON whose hookSpecificOutput.permissionDecision is "deny".
+    references:
+      - "https://code.claude.com/docs/en/hooks"
+  - id: cc2-003
+    type: single
+    difficulty: 3
+    prompt: >-
+      A PostToolUse hook for Edit|Write is `file="$1"; expand -i -t 4 "$file" ...`. The hook runs
+      (a trace line proves it), yet no file is ever re-indented. Why?
+    choices:
+      - {id: a, text: "Hooks run in a read-only sandbox and cannot modify files"}
+      - {id: b, text: "$1 holds the tool name, so expand is given the word Write"}
+      - {id: c, text: "PostToolUse hooks run before the file is written, so there is nothing to change yet"}
+      - {id: d, text: "Command hooks get their input as JSON on stdin; $1 is empty, the file path is tool_input.file_path"}
+    answer: [d]
+    explanation: >-
+      Claude Code starts a command hook with no arguments and writes a JSON object to its stdin:
+      hook_event_name, tool_name, tool_input (for Write: file_path and content), session_id, cwd and
+      more. Read it with jq: `jq -r .tool_input.file_path`. PostToolUse runs after the tool
+      succeeded, so the file exists, and hooks run with the user's own permissions — no sandbox.
+    references:
+      - "https://code.claude.com/docs/en/hooks"
+  - id: cc2-004
+    type: single
+    difficulty: 3
+    prompt: >-
+      A correct PreToolUse guard script, exiting 2 on a forbidden path, is listed in settings as
+      `$CLAUDE_PROJECT_DIR/.claude/hooks/guard.sh`, but the file's mode is 0644. What does a headless
+      run do when the model edits a forbidden path?
+    choices:
+      - {id: a, text: "Claude Code runs the script with sh, so the mode does not matter"}
+      - {id: b, text: "The edit goes through: the hook cannot be executed, which is a non-blocking error"}
+      - {id: c, text: "The edit is blocked, because a hook that fails to start is treated as a denial"}
+      - {id: d, text: "The run refuses to start until the hook is executable"}
+    answer: [b]
+    explanation: >-
+      The shell cannot execute the file (status 126, "Permission denied"), and any non-zero status
+      other than 2 is a non-blocking error: the call proceeds. Nothing refuses to start and nothing
+      runs the script through sh for you. Either make it executable or write the command as `sh
+      "$CLAUDE_PROJECT_DIR/.claude/hooks/guard.sh"`. A guard hook should fail closed where it can —
+      and be tested by feeding it the JSON it will receive.
+    references:
+      - "https://code.claude.com/docs/en/hooks"
+      - "man 1 bash (EXIT STATUS)"

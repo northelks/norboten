@@ -1,0 +1,6 @@
+[Unit]
+Description=Server errors per endpoint, for the morning stand-up
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/errors-report

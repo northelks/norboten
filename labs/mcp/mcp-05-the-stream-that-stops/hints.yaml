@@ -1,0 +1,32 @@
+checks:
+  01_the_report_arrives:
+    level_1: "Through the proxy, the report tool fails; straight to the server, it works."
+    level_2: "A long tool call comes back as a stream that goes quiet between events. Find out what
+              the proxy does when the upstream is quiet, and read its error log."
+    level_3: "Compare /etc/nginx/conf.d/reports.conf with how long the server takes per step
+              (/etc/reports-mcp/config.json); /var/log/nginx/error.log says why it stopped."
+    level_4: "proxy_read_timeout is 2s and the server is silent for 3s between events, so nginx
+              cuts the stream. Give it longer than the longest silence."
+    refs:
+      2: ["https://nginx.org/en/docs/http/ngx_http_proxy_module.html", "journal:mcp#transports"]
+      3: ["journal:mcp-05-the-stream-that-stops#the-read-timeout", "journal:mcp-05-the-stream-that-stops#a-long-answer-is-a-stream"]
+  02_progress_streams_through_the_proxy:
+    level_1: "Through the proxy, nothing arrives until everything has."
+    level_2: "Time each event on the way through the proxy and on the way straight to the server.
+              Something between them is holding the stream."
+    level_3: "curl -N through :8080 and through :8931; one proxy directive decides whether nginx
+              collects the response first."
+    level_4: "proxy_buffering is on, so nginx holds the event stream. Turn it off for /mcp."
+    refs:
+      2: ["https://nginx.org/en/docs/http/ngx_http_proxy_module.html", "https://html.spec.whatwg.org/multipage/server-sent-events.html", "journal:mcp#transports"]
+      3: ["journal:mcp-05-the-stream-that-stops#buffering", "journal:mcp-05-the-stream-that-stops#what-the-client-does-about-it"]
+  03_the_server_answers_only_the_proxy:
+    level_1: "The server can be reached without going through the proxy."
+    level_2: "A proxied server should listen where only the proxy can reach it. Check which
+              address it listens on."
+    level_3: "ss -ltn shows the listening address; hostname -I shows the machine's other address.
+              The server's settings choose where it binds."
+    level_4: "It binds 0.0.0.0. Bind 127.0.0.1 and restart it."
+    refs:
+      2: ["man 8 ss", "journal:mcp#transports"]
+      3: ["journal:mcp-05-the-stream-that-stops#one-way-in"]

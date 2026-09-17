@@ -1,0 +1,22 @@
+schema_version: 1
+id: claude-06-the-settings-that-disagree
+version: 1.0.0
+title: The Settings That Disagree
+track: claude
+topics: [claude-code, linux-basics]
+difficulty: 4
+estimated_minutes: 40
+base_images: [ubuntu-26.04-claude]
+runtime: container
+resources:
+  cpus: 1
+objectives:
+  - "Enforce a machine-wide policy no project, user or flag can loosen"
+  - "Predict which settings level wins, and keep personal settings personal"
+  - "Make project instructions, imports included, reach the model"
+checks:
+  - {id: 01_the_machine_policy_holds_everywhere, objective: 1, weight: 2}
+  - {id: 02_the_team_model_is_used, objective: 2}
+  - {id: 03_personal_settings_stay_out_of_git, objective: 2}
+  - {id: 04_the_conventions_reach_the_model, objective: 3}
+reboot_required: false

@@ -1,0 +1,3 @@
+#!/bin/sh
+# report-fmt — "<KiB> <path>" lines from du -sk, as a table
+awk '{ printf "%-40s %10d KiB\n", $2, $1 }'

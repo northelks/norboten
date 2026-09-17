@@ -1,0 +1,48 @@
+checks:
+  01_boots_clean:
+    level_1: "The system did not reach a normal login. Something during boot gave up and waited."
+    level_2: "When a filesystem in the boot sequence cannot be mounted, systemd stops and tells you
+              which unit failed. Have you read what it said?"
+    level_3: "Look at the mount unit that failed and compare its device reference against what the
+              system can actually see — lsblk and blkid show what exists."
+    level_4: "The /var/lib/app entry in /etc/fstab names /dev/vdb1, which does not exist."
+    refs:
+      2: ["man 5 fstab", "man 5 systemd.mount"]
+      3: ["journal:rhcsa-03-storage-and-lvm#fstab-and-what-systemd-does-with-it", "journal:rhcsa-03-storage-and-lvm#the-maintenance-prompt"]
+  02_app_volume_has_headroom:
+    level_1: "The volume is full, and deleting the data is not allowed."
+    level_2: "A logical volume can grow when its volume group has free extents, and a volume
+              group can grow onto another physical volume."
+    level_3: "pvs, vgs and lvs show what is free and where. The filesystem has to grow with the
+              LV."
+    level_4: "vg0 has no free extents; /dev/vdc is an unused PV that can be added to it."
+    refs:
+      2: ["man 8 lvm"]
+      3: ["journal:rhcsa-03-storage-and-lvm#the-stack-layer-by-layer", "journal:rhcsa-03-storage-and-lvm#growing-it"]
+  03_swap_active_after_reboot:
+    level_1: "The machine has no swap, and nothing would enable any at boot."
+    level_2: "Swap can be a partition, a logical volume or a file. Look for one that already
+              exists before creating anything."
+    level_3: "swapon --show lists active swap; look at the files in / and at fstab."
+    level_4: "/swapfile exists and is formatted as swap, but it is off and missing from fstab."
+    refs:
+      2: ["man 8 swapon"]
+      3: ["journal:rhcsa-03-storage-and-lvm#swap"]
+  04_fstab_uses_uuid:
+    level_1: "A mount depends on a device name, which can change from one boot to the next."
+    level_2: "Filesystems have identifiers that do not depend on the order disks are found. Use
+              one of those."
+    level_3: "blkid shows the UUID of the logical volume; /etc/fstab is where the entry lives."
+    level_4: "The /var/lib/app entry must use the logical volume's UUID instead of /dev/vdb1."
+    refs:
+      2: ["man 8 blkid", "man 5 fstab"]
+      3: ["journal:rhcsa-03-storage-and-lvm#fstab-and-what-systemd-does-with-it"]
+  05_held_space_released:
+    level_1: "Some of the space on the volume belongs to a file that has no name any more."
+    level_2: "A file's blocks are freed only when the last process holding it open lets go. Ask
+              which processes have deleted files open."
+    level_3: "lsof -a +L1 /var/lib/app, or the fd links under /proc, show who holds it."
+    level_4: "app-spooler holds a deleted spool file. Restarting it releases the space."
+    refs:
+      2: ["journal:linux-01-disk-full#deleting-a-file-does-not-delete-a-file", "man 1 lsof"]
+      3: ["journal:rhcsa-03-storage-and-lvm#why-df-and-du-disagree"]

@@ -1,0 +1,10 @@
+#!/sbin/openrc-run
+name="ledger"
+description="ledger transaction logger"
+command="/usr/local/bin/ledger"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+
+depend() {
+    need localmount
+}

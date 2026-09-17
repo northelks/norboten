@@ -1,0 +1,22 @@
+schema_version: 1
+id: claude-02-the-hooks-that-never-fire
+version: 1.0.0
+title: The Hooks That Never Fire
+track: claude
+topics: [claude-code, bash]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-claude]
+runtime: container
+resources:
+  cpus: 1
+objectives:
+  - "Make a PostToolUse hook run on the tools it is meant for, with the input Claude Code gives it"
+  - "Make PreToolUse hooks actually block what they are written to block"
+  - "Undo what an agent pushed, the way a person would"
+checks:
+  - {id: 01_written_code_gets_tidied, objective: 1}
+  - {id: 02_agents_cannot_push, objective: 2, weight: 2}
+  - {id: 03_applied_migrations_are_protected, objective: 2, weight: 2}
+  - {id: 04_the_applied_migration_is_restored, objective: 3}
+reboot_required: false

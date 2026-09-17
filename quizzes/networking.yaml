@@ -1,0 +1,691 @@
+schema_version: 1
+topic: networking
+topics: [networking, firewall-selinux]
+title: Networking
+description: Addresses, routes, sockets, name resolution and firewalls — from a Linux shell.
+questions:
+  - id: net-001
+    type: single
+    difficulty: 1
+    prompt: Which command shows listening TCP sockets together with the owning process?
+    choices:
+      - {id: a, text: "ss -tlnp"}
+      - {id: b, text: "ip neigh"}
+      - {id: c, text: "ip route show"}
+      - {id: d, text: "netstat -r"}
+    answer: [a]
+    explanation: >-
+      ss -t selects TCP, -l listening sockets, -n skips name resolution, -p shows the process.
+      ip route and netstat -r print the routing table; ip neigh shows the neighbour (ARP) cache.
+    references: ["man 8 ss"]
+    tags: [sockets]
+  - id: net-002
+    type: single
+    difficulty: 2
+    prompt: How many usable host addresses does 192.168.10.0/26 have?
+    choices:
+      - {id: a, text: "30"}
+      - {id: b, text: "126"}
+      - {id: c, text: "64"}
+      - {id: d, text: "62"}
+    answer: [d]
+    explanation: >-
+      A /26 leaves 6 host bits: 2^6 = 64 addresses. The first is the network address and the last
+      the broadcast address, which leaves 62 for hosts. 30 is a /27, 126 a /25.
+    references: ["https://www.rfc-editor.org/rfc/rfc4632"]
+    tags: [addressing]
+    verify:
+      runtime: python
+      code: |
+        import ipaddress
+        print(len(list(ipaddress.ip_network("192.168.10.0/26").hosts())))
+  - id: net-003
+    type: single
+    difficulty: 2
+    prompt: Which file decides whether host names are looked up in /etc/hosts or DNS first?
+    choices:
+      - {id: a, text: /etc/nsswitch.conf}
+      - {id: b, text: /etc/resolv.conf}
+      - {id: c, text: /etc/hostname}
+      - {id: d, text: /etc/services}
+    answer: [a]
+    explanation: >-
+      The hosts line in nsswitch.conf (for example "hosts: files dns") sets the order of sources.
+      resolv.conf lists the DNS servers to use once DNS is consulted; /etc/hostname is this
+      machine's name; /etc/services maps service names to ports.
+    references: ["man 5 nsswitch.conf"]
+    tags: [dns]
+  - id: net-004
+    type: single
+    difficulty: 1
+    prompt: Which command shows the default route?
+    choices:
+      - {id: a, text: "ip neigh show"}
+      - {id: b, text: "ip link show"}
+      - {id: c, text: "ip route show default"}
+      - {id: d, text: "ip addr show"}
+    answer: [c]
+    explanation: >-
+      The routing table lives under ip route; "default" filters for the default route. ip addr
+      shows addresses, ip link interfaces and their state, ip neigh the ARP/NDP cache.
+    references: ["man 8 ip-route"]
+    tags: [routing]
+  - id: net-005
+    type: multiple
+    difficulty: 2
+    prompt: Which ranges are private IPv4 address space as defined in RFC 1918?
+    choices:
+      - {id: a, text: 172.16.0.0/12}
+      - {id: b, text: 100.64.0.0/10}
+      - {id: c, text: 192.168.0.0/16}
+      - {id: d, text: 10.0.0.0/8}
+      - {id: e, text: 169.254.0.0/16}
+    answer: [a, c, d]
+    explanation: >-
+      RFC 1918 reserves exactly three blocks: 10/8, 172.16/12 and 192.168/16. 100.64/10 is
+      carrier-grade NAT space (RFC 6598) and 169.254/16 is link-local (RFC 3927) — both
+      non-routable, neither RFC 1918.
+    references: ["https://www.rfc-editor.org/rfc/rfc1918"]
+    tags: [addressing]
+  - id: net-006
+    type: single
+    difficulty: 2
+    prompt: "curl says \"Connection refused\" immediately. What is the most likely cause?"
+    choices:
+      - {id: a, text: "Nothing is listening on that address and port"}
+      - {id: b, text: "A firewall is silently dropping the packets"}
+      - {id: c, text: "The host name does not resolve"}
+      - {id: d, text: "The TLS certificate has expired"}
+    answer: [a]
+    explanation: >-
+      Refused means the peer answered the SYN with a reset — typically because no socket listens
+      there. A silent drop shows up as a timeout instead; a resolution failure is reported before
+      any connection; a TLS problem happens after the TCP connection is established.
+    references: ["man 7 tcp", "man 1 curl"]
+    tags: [troubleshooting]
+  - id: net-007
+    type: single
+    difficulty: 2
+    prompt: What does `firewall-cmd --permanent --add-port=8090/tcp` do on its own?
+    choices:
+      - {id: a, text: "Opens the port now and after every reboot"}
+      - {id: b, text: "Opens the port in every zone"}
+      - {id: c, text: "Opens the port now only"}
+      - {id: d, text: "Adds the port to the saved configuration, but not to the running firewall"}
+    answer: [d]
+    explanation: >-
+      --permanent writes the zone's configuration without touching runtime. Follow it with
+      firewall-cmd --reload, or run the same command without --permanent as well. Without
+      --zone it applies to the default zone only.
+    references: ["man 1 firewall-cmd"]
+    tags: [firewall]
+  - id: net-008
+    type: single
+    difficulty: 1
+    prompt: Which transport and port do ordinary DNS queries use?
+    choices:
+      - {id: a, text: "UDP port 123"}
+      - {id: b, text: "UDP port 53"}
+      - {id: c, text: "TCP port 25"}
+      - {id: d, text: "TCP port 853"}
+    answer: [b]
+    explanation: >-
+      Plain DNS uses port 53, over UDP for ordinary queries and TCP for large answers and zone
+      transfers. 853 is DNS over TLS, 123/udp is NTP and 25/tcp is SMTP.
+    references: ["https://www.rfc-editor.org/rfc/rfc1035"]
+    tags: [dns]
+  - id: net-009
+    type: single
+    difficulty: 3
+    prompt: After `nmcli connection modify eth0 +ipv4.addresses 10.1.1.5/24`, when does the interface get the address?
+    choices:
+      - {id: a, text: "Only after a reboot"}
+      - {id: b, text: "When the connection is activated again, for example with nmcli device reapply eth0"}
+      - {id: c, text: "Never, unless ipv4.method is manual"}
+      - {id: d, text: "Immediately"}
+    answer: [b]
+    explanation: >-
+      connection modify edits the stored profile. The change reaches the interface when the
+      profile is (re)applied: nmcli connection up, nmcli device reapply, or the next boot.
+      Additional static addresses also work alongside DHCP (method auto).
+    references: ["man 1 nmcli"]
+    tags: [networkmanager]
+  - id: net-010
+    type: single
+    difficulty: 3
+    prompt: On Ethernet with a 1500-byte MTU, what is the largest TCP payload per IPv4 segment without options?
+    choices:
+      - {id: a, text: "1500 bytes"}
+      - {id: b, text: "1480 bytes"}
+      - {id: c, text: "1472 bytes"}
+      - {id: d, text: "1460 bytes"}
+    answer: [d]
+    explanation: >-
+      The MTU covers the IP packet: 1500 minus a 20-byte IPv4 header minus a 20-byte TCP header
+      leaves 1460, the usual MSS. 1480 subtracts only the IP header; 1472 is the ICMP/UDP payload
+      (1500 − 20 − 8).
+    references: ["https://www.rfc-editor.org/rfc/rfc9293"]
+    tags: [tcp]
+  - id: net-011
+    type: single
+    difficulty: 1
+    prompt: Which IPv4 block is reserved for loopback?
+    choices:
+      - {id: a, text: 169.254.0.0/16}
+      - {id: b, text: 127.0.0.0/8}
+      - {id: c, text: 127.0.0.1/32 only}
+      - {id: d, text: 0.0.0.0/8}
+    answer: [b]
+    explanation: >-
+      The whole 127/8 block is loopback, though 127.0.0.1 is the address everyone uses. 0.0.0.0/8
+      means "this network", and 169.254/16 is link-local.
+    references: ["https://www.rfc-editor.org/rfc/rfc5735"]
+    tags: [addressing]
+  - id: net-012
+    type: single
+    difficulty: 2
+    prompt: What is the broadcast address of 172.16.5.130/25?
+    choices:
+      - {id: a, text: "172.16.255.255"}
+      - {id: b, text: "172.16.5.255"}
+      - {id: c, text: "172.16.5.254"}
+      - {id: d, text: "172.16.5.127"}
+    answer: [b]
+    explanation: >-
+      A /25 splits the last octet into 0–127 and 128–255. .130 is in the upper half, whose network
+      address is .128 and broadcast .255; the usable hosts are .129 to .254.
+    references: ["https://datatracker.ietf.org/doc/html/rfc4632"]
+    tags: [addressing]
+    verify:
+      runtime: python
+      code: |
+        import ipaddress
+        print(ipaddress.ip_interface("172.16.5.130/25").network.broadcast_address)
+  - id: net-013
+    type: single
+    difficulty: 2
+    prompt: Which prefix length gives exactly 30 usable host addresses?
+    choices:
+      - {id: a, text: "/28"}
+      - {id: b, text: "/27"}
+      - {id: c, text: "/26"}
+      - {id: d, text: "/30"}
+    answer: [b]
+    explanation: >-
+      A /27 leaves 5 host bits: 2^5 = 32 addresses, minus the network and broadcast addresses, is
+      30. A /28 has 14 usable hosts, a /26 62, and a /30 two — the classic point-to-point link.
+    references: ["https://datatracker.ietf.org/doc/html/rfc4632"]
+    tags: [addressing]
+    verify:
+      runtime: python
+      code: |
+        import ipaddress
+        for p in (26, 27, 28, 30):
+            if ipaddress.ip_network(f"10.0.0.0/{p}").num_addresses - 2 == 30:
+                print(f"/{p}")
+  - id: net-014
+    type: single
+    difficulty: 2
+    prompt: Two hosts are 10.0.1.20/23 and 10.0.0.200/23. Can they reach each other without a router?
+    choices:
+      - {id: a, text: "No: the third octets differ"}
+      - {id: b, text: "Only if both use the same default gateway"}
+      - {id: c, text: "No: /23 is not a valid prefix"}
+      - {id: d, text: "Yes: both are in 10.0.0.0/23"}
+    answer: [d]
+    explanation: >-
+      A /23 spans two /24s: 10.0.0.0 to 10.0.1.255. Both addresses fall inside, so each host
+      considers the other on-link and sends ARP for it directly. Looking only at the third octet is
+      correct for /24 and nothing else.
+    references: ["https://datatracker.ietf.org/doc/html/rfc4632"]
+    tags: [addressing, routing]
+    verify:
+      runtime: python
+      code: |
+        import ipaddress
+        a = ipaddress.ip_interface("10.0.1.20/23").network
+        b = ipaddress.ip_interface("10.0.0.200/23").network
+        print("Yes: both are in 10.0.0.0/23" if a == b else "No")
+  - id: net-015
+    type: single
+    difficulty: 2
+    prompt: Which command asks the kernel which route, source address and interface it would use to reach 1.1.1.1?
+    choices:
+      - {id: a, text: "ip route get 1.1.1.1"}
+      - {id: b, text: "traceroute 1.1.1.1"}
+      - {id: c, text: "ip neigh show 1.1.1.1"}
+      - {id: d, text: "dig 1.1.1.1"}
+    answer: [a]
+    explanation: >-
+      ip route get performs a real routing-table lookup and prints the chosen gateway, device and
+      source address, including policy rules — without sending a packet. traceroute sends probes,
+      ip neigh shows the ARP/NDP cache, and dig resolves names.
+    references: ["man 8 ip-route"]
+    tags: [routing]
+  - id: net-016
+    type: single
+    difficulty: 2
+    prompt: Which route does the kernel pick for a packet to 10.1.2.3 when it has 10.0.0.0/8 via A, 10.1.0.0/16 via B and a default route via C?
+    choices:
+      - {id: a, text: "A and B in turn, to balance load"}
+      - {id: b, text: "A, the first route that matches"}
+      - {id: c, text: "C, the default route"}
+      - {id: d, text: "B, the longest matching prefix"}
+    answer: [d]
+    explanation: >-
+      IP routing uses the most specific match: /16 beats /8, and the default route (0.0.0.0/0)
+      matches everything but is the least specific. Metrics only choose between routes of the same
+      prefix length.
+    references: ["man 8 ip-route", "https://datatracker.ietf.org/doc/html/rfc1812#section-5.2.4.3"]
+    tags: [routing]
+  - id: net-017
+    type: single
+    difficulty: 1
+    prompt: Which command sends a DNS query to the server 9.9.9.9 directly, bypassing /etc/resolv.conf?
+    choices:
+      - {id: a, text: "getent hosts norboten.org 9.9.9.9"}
+      - {id: b, text: "ping -s 9.9.9.9 norboten.org"}
+      - {id: c, text: "host -t 9.9.9.9 norboten.org"}
+      - {id: d, text: "dig @9.9.9.9 norboten.org"}
+    answer: [d]
+    explanation: >-
+      dig @server asks that server and prints the full answer, flags and timing. getent uses the
+      system's resolver order (nsswitch.conf, hosts file included), which is what applications see;
+      host's -t selects a record type, not a server.
+    references: ["man 1 dig", "man 1 getent"]
+    tags: [dns]
+  - id: net-018
+    type: single
+    difficulty: 2
+    prompt: '`dig norboten.org` works, but `curl https://norboten.org` fails with "Could not resolve host". What is the likeliest difference?'
+    choices:
+      - {id: a, text: "dig talks to DNS directly, while curl uses the system resolver (nsswitch.conf, /etc/hosts, systemd-resolved)"}
+      - {id: b, text: "dig caches answers and curl does not"}
+      - {id: c, text: "HTTPS names need a special TLS DNS record"}
+      - {id: d, text: "curl only resolves over IPv6"}
+    answer: [a]
+    explanation: >-
+      dig bypasses the C library's resolver, so a broken hosts line in nsswitch.conf, a bad
+      /etc/hosts entry or a failing local stub resolver only shows up for normal programs. getent
+      hosts norboten.org reproduces what curl sees.
+    references: ["man 5 nsswitch.conf", "man 1 getent"]
+    tags: [dns, troubleshooting]
+  - id: net-019
+    type: single
+    difficulty: 2
+    prompt: Which DNS record type maps a name to an IPv6 address?
+    choices:
+      - {id: a, text: "PTR"}
+      - {id: b, text: "A6"}
+      - {id: c, text: "CNAME"}
+      - {id: d, text: "AAAA"}
+    answer: [d]
+    explanation: >-
+      A holds IPv4 addresses and AAAA IPv6. PTR maps an address back to a name (reverse DNS), and a
+      CNAME makes one name an alias of another. A6 was an experimental IPv6 type, now historic.
+    references: ["https://datatracker.ietf.org/doc/html/rfc3596"]
+    tags: [dns]
+  - id: net-020
+    type: single
+    difficulty: 3
+    prompt: Why can't a CNAME record exist at the apex of a zone, such as norboten.org itself?
+    choices:
+      - {id: a, text: "The apex can hold only A records"}
+      - {id: b, text: "Browsers refuse to follow a CNAME at the apex"}
+      - {id: c, text: "CNAMEs only work for names with three or more labels"}
+      - {id: d, text: "A CNAME may not coexist with other records for the same name, and the apex must have SOA and NS records"}
+    answer: [d]
+    explanation: >-
+      RFC 1034 says a name with a CNAME has no other data, and a zone apex always has SOA and NS.
+      Providers work around it with flattened "ALIAS" or "ANAME" records that resolve the target
+      and serve plain A/AAAA answers.
+    references: ["https://datatracker.ietf.org/doc/html/rfc1034#section-3.6.2"]
+    tags: [dns]
+  - id: net-021
+    type: single
+    difficulty: 2
+    prompt: A DNS record was changed ten minutes ago, but some clients still get the old address. What controls how long that lasts?
+    choices:
+      - {id: a, text: "The domain registrar's renewal period"}
+      - {id: b, text: "The zone's serial number"}
+      - {id: c, text: "The old record's TTL, which resolvers use to cache it"}
+      - {id: d, text: "The client's ARP cache"}
+    answer: [c]
+    explanation: >-
+      Resolvers may keep an answer for its TTL, so a record with a 3600-second TTL can be stale for
+      up to an hour after a change. Lowering the TTL well before a migration shortens the window.
+      The serial tells secondary servers to transfer the zone.
+    references: ["https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.1"]
+    tags: [dns]
+  - id: net-022
+    type: single
+    difficulty: 2
+    prompt: A connection attempt hangs for a long time and then times out, instead of failing immediately. What does that usually mean?
+    choices:
+      - {id: a, text: "The DNS name does not exist"}
+      - {id: b, text: "Nothing is listening on the port"}
+      - {id: c, text: "Packets are being silently dropped, typically by a firewall"}
+      - {id: d, text: "The TLS certificate has expired"}
+    answer: [c]
+    explanation: >-
+      A closed port answers with a TCP RST, which is an immediate "Connection refused". A timeout
+      means the SYN got no answer at all: a DROP rule, a wrong route, or a host that is down.
+      firewalld's default reject answers with ICMP and fails fast too.
+    references: ["https://datatracker.ietf.org/doc/html/rfc9293"]
+    tags: [troubleshooting, firewall]
+  - id: net-023
+    type: single
+    difficulty: 2
+    prompt: A service listens on 127.0.0.1:8080. Why can't other machines reach it even with the firewall open?
+    choices:
+      - {id: a, text: "The loopback address only accepts connections from the same host"}
+      - {id: b, text: "It needs an AAAA record"}
+      - {id: c, text: "Other machines must connect to 127.0.0.2"}
+      - {id: d, text: "Port 8080 is blocked by the kernel for remote hosts"}
+    answer: [a]
+    explanation: >-
+      A socket bound to 127.0.0.1 accepts only traffic that arrives on the loopback interface. To
+      accept remote connections, bind to the host's address or 0.0.0.0 (all IPv4 addresses) —
+      ss -tlnp shows which address each socket is bound to.
+    references: ["man 8 ss", "man 7 ip"]
+    tags: [sockets, troubleshooting]
+  - id: net-024
+    type: single
+    difficulty: 3
+    prompt: A web server shows thousands of sockets in TIME_WAIT. Which statement is correct?
+    choices:
+      - {id: a, text: "Each TIME_WAIT socket holds a worker process"}
+      - {id: b, text: "It shows a SYN flood in progress"}
+      - {id: c, text: "It means the clients crashed"}
+      - {id: d, text: "It is the normal state of the side that closed a TCP connection first, and it clears by itself"}
+    answer: [d]
+    explanation: >-
+      The endpoint that sends the first FIN waits about twice the maximum segment lifetime so that
+      delayed packets of the old connection are not mistaken for a new one. It costs little memory
+      and no process. A SYN flood shows up as SYN_RECV.
+    references: ["https://datatracker.ietf.org/doc/html/rfc9293#section-3.6", "man 8 ss"]
+    tags: [tcp, sockets]
+  - id: net-025
+    type: single
+    difficulty: 1
+    prompt: Which is the TCP three-way handshake?
+    choices:
+      - {id: a, text: "SYN, ACK, FIN"}
+      - {id: b, text: "SYN, SYN-ACK, ACK"}
+      - {id: c, text: "SYN, SYN, ACK-ACK"}
+      - {id: d, text: "HELLO, ACK, DATA"}
+    answer: [b]
+    explanation: >-
+      The client sends SYN with its initial sequence number, the server answers SYN-ACK with its
+      own, and the client acknowledges with ACK. FIN is for closing, and HELLO belongs to TLS, which
+      runs on top of the established connection.
+    references: ["https://datatracker.ietf.org/doc/html/rfc9293#section-3.5"]
+    tags: [tcp]
+  - id: net-026
+    type: single
+    difficulty: 2
+    prompt: Which of these uses UDP?
+    choices:
+      - {id: a, text: "SMTP"}
+      - {id: b, text: "SSH"}
+      - {id: c, text: "NTP"}
+      - {id: d, text: "HTTPS over HTTP/2"}
+    answer: [c]
+    explanation: >-
+      NTP runs on UDP port 123. SSH (22), HTTP/2 over TLS (443) and SMTP (25, 587) all run over TCP.
+      HTTP/3 is the web protocol that moved to UDP, through QUIC.
+    references: ["https://datatracker.ietf.org/doc/html/rfc5905"]
+    tags: [ports]
+  - id: net-027
+    type: single
+    difficulty: 2
+    prompt: Which command makes firewalld allow HTTPS now and after a reboot?
+    choices:
+      - {id: a, text: "firewall-cmd --permanent --add-service=https"}
+      - {id: b, text: "firewall-cmd --permanent --add-service=https && firewall-cmd --reload"}
+      - {id: c, text: "systemctl restart firewalld --add-service=https"}
+      - {id: d, text: "firewall-cmd --add-service=https"}
+    answer: [b]
+    explanation: >-
+      --permanent writes the configuration but does not touch the running rules, and a runtime-only
+      change is lost at the next reload or boot. Either do both, reload after --permanent, or make
+      the runtime change and then run firewall-cmd --runtime-to-permanent.
+    references: ["man 1 firewall-cmd"]
+    tags: [firewall]
+  - id: net-028
+    type: single
+    difficulty: 3
+    prompt: A service runs on port 8090 on Rocky Linux. The firewall allows it, yet nginx cannot connect to it as a reverse proxy and the audit log shows an AVC denial. What is the targeted fix?
+    choices:
+      - {id: a, text: "firewall-cmd --add-port=8090/tcp"}
+      - {id: b, text: "setsebool -P httpd_can_network_connect 1"}
+      - {id: c, text: "setenforce 0"}
+      - {id: d, text: "chmod 777 /etc/nginx"}
+    answer: [b]
+    explanation: >-
+      SELinux stops httpd_t from opening outgoing network connections unless the boolean is on; -P
+      keeps it across reboots. setenforce 0 disables enforcement for everything, file modes are not
+      the problem, and the firewall does not govern local connections. (httpd_can_network_connect_db
+      covers only database ports.)
+    references: ["man 8 setsebool", "man 8 httpd_selinux"]
+    tags: [selinux, firewall]
+  - id: net-029
+    type: single
+    difficulty: 3
+    prompt: sshd is moved to port 2222 on an SELinux-enforcing system and fails to bind. Which command fixes it?
+    choices:
+      - {id: a, text: "setsebool -P ssh_use_any_port 1"}
+      - {id: b, text: "restorecon -Rv /etc/ssh"}
+      - {id: c, text: "semanage port -a -t ssh_port_t -p tcp 2222"}
+      - {id: d, text: "chcon -t ssh_port_t /etc/ssh/sshd_config"}
+    answer: [c]
+    explanation: >-
+      SELinux labels ports, and sshd may bind only ports labelled ssh_port_t — 22 by default.
+      semanage port -a adds 2222 to that type permanently. File contexts (chcon, restorecon) do not
+      apply to ports, and there is no such boolean. Open the port in the firewall too.
+    references: ["man 8 semanage-port"]
+    tags: [selinux, ssh]
+  - id: net-030
+    type: single
+    difficulty: 2
+    prompt: Which nmcli command gives the connection "eth0" a static address and gateway?
+    choices:
+      - {id: a, text: "nmcli dev set eth0 ip 10.0.0.5 gw 10.0.0.1"}
+      - {id: b, text: "nmcli con mod eth0 ipv4.addresses 10.0.0.5/24 ipv4.method auto"}
+      - {id: c, text: "nmcli con add eth0 10.0.0.5/24 10.0.0.1"}
+      - {id: d, text: "nmcli con mod eth0 ipv4.method manual ipv4.addresses 10.0.0.5/24 ipv4.gateway 10.0.0.1"}
+    answer: [d]
+    explanation: >-
+      A static profile needs method manual plus the addresses (and usually gateway and DNS). With
+      method auto, DHCP is still used. nmcli dev set changes device properties, not addresses. Apply
+      the change with nmcli con up eth0.
+    references: ["man 1 nmcli", "man 5 nm-settings-nmcli"]
+    tags: [networkmanager]
+  - id: net-031
+    type: single
+    difficulty: 2
+    prompt: Where does NetworkManager on Rocky Linux 10 store connection profiles?
+    choices:
+      - {id: a, text: "/etc/netplan/*.yaml"}
+      - {id: b, text: "/etc/NetworkManager/system-connections/*.nmconnection"}
+      - {id: c, text: "/etc/sysconfig/network-scripts/ifcfg-*"}
+      - {id: d, text: "/etc/network/interfaces"}
+    answer: [b]
+    explanation: >-
+      RHEL 9 made the keyfile format the default, and RHEL 10 removed support for ifcfg files.
+      /etc/network/interfaces belongs to Debian's ifupdown, and netplan to Ubuntu.
+    references: ["man 5 nm-settings-keyfile"]
+    tags: [networkmanager]
+  - id: net-032
+    type: single
+    difficulty: 2
+    prompt: What does ARP do?
+    choices:
+      - {id: a, text: "Finds the MAC address that belongs to an IPv4 address on the local network"}
+      - {id: b, text: "Assigns IP addresses to hosts"}
+      - {id: c, text: "Translates host names to addresses"}
+      - {id: d, text: "Chooses the route to a remote network"}
+    answer: [a]
+    explanation: >-
+      Before sending a frame to an on-link address or to the gateway, a host broadcasts an ARP
+      request and caches the reply (ip neigh). IPv6 does the same with Neighbour Discovery. DHCP
+      assigns addresses and DNS resolves names.
+    references: ["https://datatracker.ietf.org/doc/html/rfc826", "man 8 ip-neighbour"]
+    tags: [layer2]
+  - id: net-033
+    type: single
+    difficulty: 3
+    prompt: A host has the address 10.0.0.5/24 and the default gateway 10.0.1.1. What happens?
+    choices:
+      - {id: a, text: "The mask is widened to /23 automatically"}
+      - {id: b, text: "The kernel routes through the gateway anyway"}
+      - {id: c, text: "The gateway is not on-link, so the default route cannot be used and remote traffic fails"}
+      - {id: d, text: "DHCP replaces the gateway"}
+    answer: [c]
+    explanation: >-
+      A next hop must be reachable directly, and 10.0.1.1 is outside 10.0.0.0/24. ip route refuses to
+      add it ("Nexthop has invalid gateway") unless forced with onlink, and even then nothing on the
+      segment answers ARP for it unless the router really has that address there.
+    references: ["man 8 ip-route"]
+    tags: [routing, troubleshooting]
+  - id: net-034
+    type: single
+    difficulty: 2
+    prompt: What does `curl -v https://example.com` show that helps separate a TLS problem from an HTTP one?
+    choices:
+      - {id: a, text: "The connection, the TLS handshake and certificate details, then the request and response headers"}
+      - {id: b, text: "A traceroute to the server"}
+      - {id: c, text: "Only the response body, with colours"}
+      - {id: d, text: "The server's firewall rules"}
+    answer: [a]
+    explanation: >-
+      -v prints lines starting with * for connection and TLS events, > for request headers and < for
+      response headers. A failure before any > line is DNS, TCP or TLS; a 4xx or 5xx after them is
+      the application.
+    references: ["man 1 curl"]
+    tags: [troubleshooting, http]
+  - id: net-035
+    type: single
+    difficulty: 2
+    prompt: Which command shows the certificate a server presents, including its expiry date?
+    choices:
+      - {id: a, text: "nc -z host 443"}
+      - {id: b, text: "openssl s_client -connect host:443 -servername host </dev/null | openssl x509 -noout -dates"}
+      - {id: c, text: "dig host CERT"}
+      - {id: d, text: "ssh-keyscan host"}
+    answer: [b]
+    explanation: >-
+      s_client performs the handshake and prints the chain; -servername sends SNI so a server with
+      several sites returns the right certificate, and x509 -dates prints notBefore and notAfter.
+      ssh-keyscan fetches SSH host keys, and nc -z only tests the port.
+    references: ["man 1 openssl-s_client", "man 1 openssl-x509"]
+    tags: [tls]
+  - id: net-036
+    type: single
+    difficulty: 3
+    prompt: Large downloads over a VPN stall while small requests work. What is the classic cause?
+    choices:
+      - {id: a, text: "The DNS TTL is too short"}
+      - {id: b, text: "The VPN only allows UDP"}
+      - {id: c, text: "TCP window scaling is disabled on the client"}
+      - {id: d, text: "A lower path MTU with ICMP 'fragmentation needed' messages blocked, so large packets vanish"}
+    answer: [d]
+    explanation: >-
+      Tunnels add headers, lowering the MTU. Path MTU discovery depends on ICMP; when a firewall
+      drops it, full-size packets are lost silently and connections hang after the handshake. Allow
+      the ICMP, lower the interface MTU, or clamp the TCP MSS.
+    references: ["https://datatracker.ietf.org/doc/html/rfc1191", "https://datatracker.ietf.org/doc/html/rfc4459"]
+    tags: [mtu, troubleshooting]
+  - id: net-037
+    type: single
+    difficulty: 2
+    prompt: Which address is the IPv6 loopback?
+    choices:
+      - {id: a, text: "::"}
+      - {id: b, text: "fe80::1"}
+      - {id: c, text: "ff02::1"}
+      - {id: d, text: "::1"}
+    answer: [d]
+    explanation: >-
+      ::1 is loopback, :: the unspecified address, fe80::/10 link-local addresses that every
+      interface has, and ff02::1 the all-nodes multicast group on the link.
+    references: ["https://datatracker.ietf.org/doc/html/rfc4291"]
+    tags: [ipv6, addressing]
+    verify:
+      runtime: python
+      code: |
+        import ipaddress
+        for a in ("::1", "fe80::1", "::", "ff02::1"):
+            if ipaddress.ip_address(a).is_loopback:
+                print(a)
+  - id: net-038
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import ipaddress
+      print(ipaddress.ip_address("2001:0db8:0000:0000:0000:0000:0000:0001"))
+    code_lang: python
+    choices:
+      - {id: a, text: "2001:db8:0:0:0:0:0:1"}
+      - {id: b, text: "2001:db8::1"}
+      - {id: c, text: "2001:0db8::0001"}
+      - {id: d, text: "2001:db8:::1"}
+    answer: [b]
+    explanation: >-
+      The canonical text form (RFC 5952) drops leading zeros in each group and replaces the longest
+      run of zero groups with ::, once. Three colons in a row are never valid.
+    references: ["https://datatracker.ietf.org/doc/html/rfc5952"]
+    tags: [ipv6, addressing]
+    verify:
+      runtime: python
+      code: |
+        import ipaddress
+        print(ipaddress.ip_address("2001:0db8:0000:0000:0000:0000:0000:0001"))
+  - id: net-039
+    type: single
+    difficulty: 2
+    prompt: What does NAT on a home router or cloud gateway do to outgoing packets from 192.168.1.20?
+    choices:
+      - {id: a, text: "Drops them unless a port is forwarded"}
+      - {id: b, text: "Rewrites the source address (and often port) to the router's public address, and tracks the connection to reverse it on replies"}
+      - {id: c, text: "Encrypts them"}
+      - {id: d, text: "Rewrites the destination to 192.168.1.1"}
+    answer: [b]
+    explanation: >-
+      Source NAT (masquerading) lets private addresses share one public address; conntrack
+      remembers each flow so replies are translated back. Port forwarding is destination NAT for
+      inbound connections, and nothing about NAT encrypts.
+    references: ["https://datatracker.ietf.org/doc/html/rfc3022", "man 8 nft"]
+    tags: [nat]
+  - id: net-040
+    type: multiple
+    difficulty: 3
+    prompt: Which commands show whether something is listening on TCP port 5432 on this host?
+    choices:
+      - {id: a, text: "ping -p 5432 localhost"}
+      - {id: b, text: "lsof -iTCP:5432 -sTCP:LISTEN"}
+      - {id: c, text: "ip route show port 5432"}
+      - {id: d, text: "ss -tlnp 'sport = :5432'"}
+    answer: [b, d]
+    explanation: >-
+      ss filters sockets by source port and shows listeners with -l; lsof lists the process holding
+      the socket. ping's -p sets a payload pattern, and routes have no ports.
+    references: ["man 8 ss", "man 8 lsof"]
+    tags: [sockets]
+  - id: net-041
+    type: single
+    difficulty: 2
+    prompt: A client resolves a name correctly but connects to the wrong server. `getent hosts name` shows an unexpected address. Where should you look first?
+    choices:
+      - {id: a, text: "/etc/hosts"}
+      - {id: b, text: "The DNS zone's SOA record"}
+      - {id: c, text: "The ARP cache"}
+      - {id: d, text: "/etc/services"}
+    answer: [a]
+    explanation: >-
+      With the usual "hosts: files dns" order in nsswitch.conf, an /etc/hosts entry wins over DNS
+      for every program, and it is easy to leave one behind after a migration. /etc/services maps
+      port names, and ARP resolves on-link MAC addresses.
+    references: ["man 5 hosts", "man 5 nsswitch.conf"]
+    tags: [dns, troubleshooting]

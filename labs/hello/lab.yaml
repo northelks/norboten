@@ -1,0 +1,16 @@
+schema_version: 1
+id: hello
+version: 1.0.0
+title: A Message You Are Not Allowed to Read
+track: intro
+topics: [linux-basics, users-permissions]
+difficulty: 1
+estimated_minutes: 5
+base_images: [alpine, ubuntu-26.04, rocky-10]
+objectives:
+  - "Read file permissions and use sudo"
+  - "Create a file with given contents"
+checks:
+  - {id: 01_message_readable, objective: 1}
+  - {id: 02_reply_written, objective: 2}
+reboot_required: true

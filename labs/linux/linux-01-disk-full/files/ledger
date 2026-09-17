@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+"""ledger — a stand-in transaction logger. Appends a line every half second; reopens on SIGHUP."""
+import datetime
+import signal
+import time
+
+LOG = "/var/log/app/ledger.log"
+log = open(LOG, "a", buffering=1)
+
+
+def reopen(*_):
+    global log
+    log.close()
+    log = open(LOG, "a", buffering=1)
+
+
+signal.signal(signal.SIGHUP, reopen)
+n = 0
+while True:
+    n += 1
+    log.write(f"{datetime.datetime.now().isoformat(timespec='seconds')} txn={n} status=ok\n")
+    time.sleep(0.5)

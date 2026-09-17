@@ -1,0 +1,21 @@
+schema_version: 1
+id: bash-03-backup-that-skips-files
+version: 1.0.0
+title: The Backup That Skips Files
+track: bash
+topics: [bash, linux-basics]
+difficulty: 2
+estimated_minutes: 30
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Walk a directory tree in a shell script without breaking on any file name"
+  - "Keep a count across a loop, and report failures with an exit status"
+  - "Run a script from a systemd timer and prove the run succeeded"
+checks:
+  - {id: 01_every_file_is_copied, objective: 1, weight: 2}
+  - {id: 02_the_count_is_true, objective: 2}
+  - {id: 03_a_failed_copy_is_reported, objective: 2}
+  - {id: 04_the_nightly_run_succeeds, objective: 3}
+reboot_required: true

@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netprobe"
+version = "1.4.0"
+description = "Which of these host:port targets accept a TCP connection?"
+requires-python = ">=3.11"
+dependencies = ["pyyaml>=6"]
+
+[project.scripts]
+netprobe = "netprobe.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

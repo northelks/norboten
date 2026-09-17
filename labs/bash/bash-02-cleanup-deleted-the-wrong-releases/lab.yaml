@@ -1,0 +1,21 @@
+schema_version: 1
+id: bash-02-cleanup-deleted-the-wrong-releases
+version: 1.0.0
+title: The Cleanup That Kept the Wrong Releases
+track: bash
+topics: [bash, boot-systemd]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Select files by the data in their names, not by incidental metadata"
+  - "Handle every file name safely, spaces included, and never act in the wrong directory"
+  - "Schedule a maintenance script with a systemd timer that survives reboots"
+checks:
+  - {id: 01_keeps_the_five_newest, objective: 1, weight: 2}
+  - {id: 02_names_with_spaces, objective: 2}
+  - {id: 03_missing_directory_deletes_nothing, objective: 2, weight: 2}
+  - {id: 04_runs_every_night, objective: 3}
+reboot_required: true

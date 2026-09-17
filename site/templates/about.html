@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="section">
+  <div class="wrap narrow">
+    <div class="kicker">About</div>
+    <h1>Who makes Norboten</h1>
+    <p class="lede">
+      I am Ihar Petushkou, a Linux engineer who automates with Python and AI.<br>Norboten is my pet
+      project: nobody pays for it and nobody asked for it.
+    </p>
+    {% if personal_site %}
+    <p class="muted about-me">
+      The rest of what I do — the work I take on, the projects behind it, my CV and how to hire me —
+      is on my own site.
+    </p>
+    <p class="cta">
+      <a class="btn solid" href="{{ personal_site }}" target="_blank" rel="noopener">Visit my site ↗</a>
+    </p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap narrow prose">
+    <h2>Why it exists</h2>
+    <p>
+      Over the last years I have gathered a lot of know-how about keeping Linux machines alive:
+      what breaks them, how you find out why, and which fix still holds after a reboot. Norboten puts
+      that in one place, in a form you can use. Every lab is a machine I broke on purpose, every
+      check is how I would confirm the fix, and every journal is what I would tell a colleague
+      afterwards. It is also the honest way to show that expertise: a project you can install,
+      read and break yourself, not a list of claims.
+    </p>
+
+    <h2>What I do for a living</h2>
+    <p>
+      I have been a freelancer for many years: thousands of hours and dozens of projects on
+      Upwork, and plenty of work before that. At its core that work has been
+      <strong>Linux administration, DevOps, and Python automation</strong> of both: setting up,
+      securing and fixing the servers, building the pipelines that deploy to them, and writing the
+      Python and Bash that take the manual steps away. Around it, often end to end, came the products
+      those servers run — mobile apps, websites, backends in several languages and their databases.
+      Some of it lived on private on-premises Linux servers, some in the cloud — Firebase and Google
+      Cloud — and in recent years mostly on <strong>AWS</strong>.
+    </p>
+    <p>
+      Today it is Linux engineering automated with Ansible, Terraform and Python, and AI agents on
+      Claude Code and MCP that do real engineering chores. Norboten uses all of it: QEMU and Lima for
+      the machines, Ansible for the images, FastAPI and PostgreSQL on the server, and Claude Code
+      jobs in CI.
+    </p>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap narrow prose">
+    <h2>Getting in touch</h2>
+    <p class="muted">
+      Broke a machine in a way no lab has yet? Found a check that let a wrong fix through? Have a
+      failure from real life that deserves to become a lab? Bring it to the
+      <a href="{{ root }}community/index.html">community</a> or open a
+      <a href="{{ github }}/issues" rel="noopener">GitHub issue</a> — the best labs start as someone's
+      bad day. What the site and the server keep about you is in the
+      <a href="{{ root }}privacy/index.html">privacy policy</a>.
+    </p>
+  </div>
+</section>
+{% endblock %}

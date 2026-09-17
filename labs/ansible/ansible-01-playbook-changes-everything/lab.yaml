@@ -1,0 +1,19 @@
+schema_version: 1
+id: ansible-01-playbook-changes-everything
+version: 1.0.0
+title: The Playbook That Changes Everything, Every Time
+track: ansible
+topics: [ansible, boot-systemd]
+difficulty: 2
+estimated_minutes: 35
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 2
+objectives:
+  - "Know where a variable's value comes from, and set it where it belongs"
+  - "Describe state with modules, so a playbook converges and a second run changes nothing"
+checks:
+  - {id: 01_app_on_the_inventory_port, objective: 1}
+  - {id: 02_forwarding_configured_once, objective: 2}
+  - {id: 03_check_mode_finds_nothing_to_do, objective: 2, weight: 2}
+reboot_required: true

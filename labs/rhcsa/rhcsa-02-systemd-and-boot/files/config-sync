@@ -1,0 +1,5 @@
+#!/bin/sh
+# Prepare the API's runtime config from the source of truth.
+set -e
+mkdir -p /run/inventory
+cp /etc/inventory/source.json /run/inventory/config.json

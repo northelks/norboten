@@ -1,0 +1,6 @@
+[Unit]
+Description=Disk use per project, for the morning mail
+
+[Service]
+Type=oneshot
+ExecStart=/opt/reports/bin/nightly-report

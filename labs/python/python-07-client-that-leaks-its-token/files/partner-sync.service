@@ -1,0 +1,10 @@
+[Unit]
+Description=Fetch the partner's orders
+After=partner-api.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/partner/sync.py
+
+[Install]
+WantedBy=multi-user.target

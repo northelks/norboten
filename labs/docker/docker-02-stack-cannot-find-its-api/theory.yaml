@@ -1,0 +1,69 @@
+schema_version: 1
+topic: docker-02-stack-cannot-find-its-api
+topics: [containers, networking]
+title: "Theory: how Compose services find each other"
+description: Container loopback, Compose networks and DNS, publishing, restart policies.
+questions:
+  - id: dk2-001
+    type: single
+    difficulty: 2
+    prompt: In a Compose project, service `web` must call service `api`, whose container listens on 80 and is published as `8089:80`. Which URL should `web` use?
+    choices:
+      - {id: a, text: "http://127.0.0.1:80/"}
+      - {id: b, text: "http://api:8089/"}
+      - {id: c, text: "http://localhost:8089/"}
+      - {id: d, text: "http://api:80/"}
+    answer: [d]
+    explanation: >-
+      On a shared network Docker's DNS resolves the service name, and containers talk to each
+      other on the ports their processes listen on. localhost is web itself, and 8089 exists only on
+      the host.
+    references: ["https://docs.docker.com/compose/how-tos/networking/"]
+    tags: [networking, compose]
+  - id: dk2-002
+    type: single
+    difficulty: 3
+    prompt: "`web` is attached only to network `front` and `api` only to `back`. What happens inside `web` for `getent hosts api`?"
+    choices:
+      - {id: a, text: "The name does not resolve, because the containers share no network"}
+      - {id: b, text: "It resolves, because all containers of a project share DNS"}
+      - {id: c, text: "It resolves to the host's address"}
+      - {id: d, text: "It resolves, but connections are refused"}
+    answer: [a]
+    explanation: >-
+      Containers can resolve and reach only containers on networks they are attached to. A service
+      that must reach both sides has to join both networks.
+    references: ["https://docs.docker.com/compose/how-tos/networking/#specify-custom-networks"]
+    tags: [networking, compose]
+  - id: dk2-003
+    type: single
+    difficulty: 2
+    prompt: Why does nginx exit at start-up with `host not found in upstream "api"`?
+    choices:
+      - {id: a, text: "The upstream's port is not published"}
+      - {id: b, text: "It resolves proxy_pass host names when loading its configuration, and the name did not resolve"}
+      - {id: c, text: "The api container returned HTTP 404"}
+      - {id: d, text: "nginx cannot proxy to other containers"}
+    answer: [b]
+    explanation: >-
+      A literal host name in proxy_pass is resolved once at load time; if resolution fails the
+      configuration is invalid and nginx does not start. A running upstream that answers with errors
+      would produce 4xx or 502 responses instead.
+    references: ["https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass"]
+    tags: [nginx, dns]
+  - id: dk2-004
+    type: single
+    difficulty: 2
+    prompt: Which restart policy brings a container back after a reboot unless someone stopped it deliberately before?
+    choices:
+      - {id: a, text: "unless-stopped"}
+      - {id: b, text: "no"}
+      - {id: c, text: "on-failure"}
+      - {id: d, text: "always"}
+    answer: [a]
+    explanation: >-
+      unless-stopped restarts containers when the daemon starts, except those stopped with docker
+      stop. always also restarts deliberately stopped containers, on-failure only restarts after a
+      non-zero exit, and no never restarts.
+    references: ["https://docs.docker.com/engine/containers/start-containers-automatically/"]
+    tags: [restart-policy]

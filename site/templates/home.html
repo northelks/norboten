@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% block body %}
+
+<section class="hero">
+  <div class="wrap">
+    <div class="grid two" style="align-items:center; gap:3rem">
+      <div>
+        <h1>Learn Linux<br>by fixing it.</h1>
+        <p class="lede">
+          Norboten boots a real Linux VM on your machine with something genuinely wrong with it.
+          A service will not start. A disk will not mount. SELinux is quietly denying a request.
+          You find it and fix it — and then the machine is graded, rebooted, and graded again.
+        </p>
+        <div class="install">
+          <span class="prompt">$</span>
+          <span id="installcmd">curl -fsSL {{ site_url }}/install.sh | sh</span>
+          <button type="button" data-copy="#installcmd">copy</button>
+        </div>
+        <div class="cta">
+          <a class="btn solid" href="{{ root }}install/index.html">Install</a>
+          <a class="btn" href="{{ root }}labs/index.html">See the labs</a>
+          <a class="btn" href="{{ root }}how-it-works/index.html">How it works</a>
+        </div>
+      </div>
+      <figure class="capture hero-capture">
+        <img src="{{ root }}captures/tui-system.svg" alt="The Norboten TUI's System section: doctor's findings with the fix for each, and the base images on this machine">
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">What it is</div>
+    <h2>A broken machine, not a quiz</h2>
+    <div class="prose">
+      <p>
+        You do not learn systemd by reading about systemd. You learn it at 2 a.m., when a unit
+        will not start and the journal is the only thing that knows why. Norboten is that moment,
+        on demand: <strong>{{ labs|length }} labs</strong> that each break a real virtual machine
+        in a specific, realistic way, and grade you on the state of the machine afterwards.
+      </p>
+      <p>
+        Nothing is multiple choice about the lab itself. There is no answer field. The lab is
+        passed when the system behaves, and it only counts when the fix is still there after a
+        reboot — the way the RHCSA exam does it, and the way production does it.
+      </p>
+      <p>
+        Most of the catalogue is <a class="accent" href="{{ root }}docs/rated-labs/index.html"><strong>unrated</strong></a>: those labs run entirely
+        on your machine, need no account, and their faults, checks and reference solutions are in
+        the repository for you to read — for learning, the solution is often the clearest
+        explanation a lab has. <a class="accent" href="{{ root }}docs/rated-labs/index.html"><strong>Rated</strong></a> labs are the other half: they
+        are graded by the server, their answers are not published, and they are what the boards
+        are made of. The first ones are still being
+        written, so today every lab is unrated.
+        <a href="{{ root }}docs/rated-labs/index.html">How that works</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">The terminal</div>
+    <h2>Everything is a key</h2>
+    <p class="prose muted">
+      <span class="mono">norboten</span> opens one full-screen interface: labs, theory, journals,
+      recordings and your profile, eight sections along the top on the keys 1 to 8 (the arrows
+      walk them too). These are the real screens, rendered by the app itself.
+    </p>
+    <div class="grid three capture-grid">
+      {% for c in home_captures %}
+      <figure class="capture">
+        <img src="{{ root }}captures/{{ c.slug }}.svg" alt="{{ c.title }}" loading="lazy">
+        <figcaption><strong>{{ c.title }}</strong> <span class="muted">{{ c.blurb|keys }}</span></figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+    <p style="margin-top:2rem"><a class="btn" href="{{ root }}features/index.html">Every screen, on the features page</a></p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="grid two" style="gap:2.5rem; align-items:center">
+      <div>
+        <div class="kicker">For authors</div>
+        <h2>An idea in, a proven lab out</h2>
+        <p class="muted">
+          Norboten's labs, questions and journals are written with <code>norboten-author</code>, a
+          Claude Code plugin in the same repository. Give it an idea: it asks what the lab
+          specification needs and the idea leaves open, shows a plan, and after your yes drafts it —
+          in your session, or in a subagent. It is finished when the solvability gate or the
+          question pipeline says so, not when the files look right.
+        </p>
+        <p>
+          <a class="btn" href="{{ root }}docs/claude-code-plugin/index.html">The plugin</a>
+          <a class="btn" href="{{ root }}how-it-works/index.html#plugin">How it fits</a>
+        </p>
+      </div>
+      <div>
+        <ol class="pipeline">
+          <li class="pipe-step" style="--step:var(--violet)">
+            <span class="num">1</span>
+            <div><strong>Your idea</strong>
+              <span class="what">one line — "the backup cron job runs as the wrong user"</span></div>
+          </li>
+          <li class="pipe-step" style="--step:var(--blue)">
+            <span class="num">2</span>
+            <div><strong>Its questions</strong>
+              <span class="what">which image, which objectives, what the learner is allowed to see</span></div>
+          </li>
+          <li class="pipe-step" style="--step:var(--amber)">
+            <span class="num">3</span>
+            <div><strong>A plan, before a file</strong>
+              <span class="what">the faults, the checks and the reboot they must survive</span></div>
+          </li>
+          <li class="pipe-step" style="--step:var(--text)">
+            <span class="num">4</span>
+            <div><strong>The draft</strong>
+              <span class="what">lab.yaml, break/, check/, hints.yaml, solution/, journal.md, theory.yaml</span></div>
+          </li>
+          <li class="pipe-step" style="--step:var(--green)">
+            <span class="num">5</span>
+            <div><strong>The proof</strong>
+              <span class="what">the solvability gate on a real VM — or it is not a lab yet</span></div>
+          </li>
+        </ol>
+        <pre class="small"><code>/plugin marketplace add northelks/norboten
+/plugin install norboten-author@norboten</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Tracks · {{ labs|length }} labs</div>
+    <h2>Pick the machine you want to break</h2>
+    <div class="grid two" style="margin-top:1.5rem">
+      {% for track in tracks %}
+      <div class="card track-card">
+        <h3><a href="{{ root }}labs/index.html#{{ track.id }}">{{ track.title }}</a></h3>
+        <p class="muted">{{ track.blurb|keys }}</p>
+        <ul class="lablist">
+          {% for lab in track.labs %}
+          <li>
+            <a href="{{ root }}labs/{{ lab.id }}/index.html"><span class="mono">{{ lab.short_id }}</span> {{ lab.title }}</a>
+            <span class="diff">{{ lab.dots|safe }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        <p class="mono muted" style="font-size:0.85rem">{{ track.labs|length }} lab{{ 's' if track.labs|length != 1 }} · {{ track.images|join(' · ') }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="muted" style="margin-top:1.2rem">
+      Base images are downloaded only when a lab needs one, and cached after that: Alpine
+      110 MiB, Rocky 10 814 MiB, Ubuntu 26.04 663 MiB — 932 MiB with the devops tools, 1141 MiB
+      with the automation and AI ones. Measured on the images the gate runs, 2026-09-16.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Theory · {{ question_count }} questions · {{ journals_count }} journals</div>
+    <h2>And the reading that goes with it</h2>
+    <div class="prose">
+      <p>
+        {{ topics|length }} topic banks and a bank for each of {{ lab_bank_count }} labs —
+        {{ question_count }} questions in all, each with an explanation and a reference. Questions
+        about what a command prints are <strong>executed</strong> in a sandbox before they are
+        allowed into a bank ({{ verified_count }} so far). And {{ journals_count }} journals, one
+        for every lab and for the topics no lab covers, each walked through on a real machine.
+      </p>
+    </div>
+    <div class="grid three" style="margin-top:1.2rem">
+      {% for t in topics %}
+      <a class="card" href="{{ root }}labs/index.html#theory">
+        <h3>{{ t.title }}</h3>
+        <p class="muted">{{ t.description }}</p>
+        <p class="mono muted" style="font-size:0.85rem">{{ t.count }} questions{% if t.verified %} · {{ t.verified }} executed{% endif %}</p>
+      </a>
+      {% endfor %}
+      <a class="card" href="{{ root }}journals/index.html">
+        <h3>Journals</h3>
+        <p class="muted">The mechanism, one failure walked through, the wrong turns people take, a
+          cheat sheet and review questions.</p>
+        <p class="mono muted" style="font-size:0.85rem">{{ journals_count }} journals · {{ journal_words }} words</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Why it is different</div>
+    <h2>Six decisions that shape everything</h2>
+    <div class="grid three" style="margin-top:1.5rem">
+      {% for f in highlights %}
+      <div class="card">
+        <h3>{{ f.title }}</h3>
+        <p class="muted">{{ f.body|keys }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Trust</div>
+    <h2>Every lab is proven solvable in CI</h2>
+    <div class="prose">
+      <p>
+        A lab that cannot be solved by its own reference solution cannot merge. For every lab and
+        every base image it supports, CI boots a clean VM, injects the faults, asserts that
+        <em>every check fails</em>, runs the reference solution, then grades the machine, reboots
+        it and grades it again — and every check has to pass in both passes.
+      </p>
+      <p>
+        That gate is the reason the hints can be honest about what is wrong, and the reason a
+        lab that stops working after an upstream update becomes a failing build instead of a
+        frustrated learner.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>Break your first machine</h2>
+    <div class="prose" style="margin-bottom:1.8rem">
+      <p class="muted">
+        The install script puts one command on your machine, <span class="mono">norboten</span>,
+        and its own pinned copy of Lima and QEMU under <span class="mono">~/.norboten</span>. The
+        first lab pulls a 110 MiB Alpine image, boots it, takes a clean snapshot and then breaks
+        the machine: about <strong>27 s</strong> the first time on a clean machine, Lima's own
+        download included, and <strong>21.8 s</strong> for an Ubuntu lab once its image is
+        cached. Both measured, not rounded up from a guess.
+      </p>
+      <p class="muted">
+        You get a briefing with symptoms and no answers, and a root shell on a machine that is
+        genuinely wrong. When you think it is fixed, <kbd>c</kbd> grades the machine, reboots it
+        and grades it again: a fix that does not survive the boot is not a fix. <kbd>r</kbd> puts
+        the machine back to the snapshot in about ten seconds, as often as you like.
+      </p>
+      <p class="muted">
+        Nothing of yours is inside it: no host directory is mounted, no port is forwarded, and
+        everything the tool ever writes is under <span class="mono">~/.norboten</span> — delete
+        that directory and nothing is left behind.
+      </p>
+    </div>
+    <div class="cta">
+      <a class="btn solid" href="{{ root }}install/index.html">Install Norboten</a>
+      <a class="btn" href="{{ github }}" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

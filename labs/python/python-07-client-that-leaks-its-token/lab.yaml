@@ -1,0 +1,22 @@
+schema_version: 1
+id: python-07-client-that-leaks-its-token
+version: 1.0.0
+title: The Client That Leaks Its Token
+track: python
+topics: [python, users-permissions]
+difficulty: 4
+estimated_minutes: 40
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Keep a credential out of the log, whatever is logged"
+  - "Keep a credential out of reach of other accounts on the machine"
+  - "Give a service only the access it needs, and no interactive account"
+checks:
+  # 01 passes on the broken system by design: it is the guard that the fixes keep the sync working
+  - {id: 01_the_sync_still_works, objective: 1, baseline_pass: true}
+  - {id: 02_the_journal_holds_no_token, objective: 1, weight: 2}
+  - {id: 03_the_token_file_is_private, objective: 2, weight: 2}
+  - {id: 04_the_service_is_not_root, objective: 3}
+reboot_required: true

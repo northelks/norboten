@@ -1,0 +1,39 @@
+checks:
+  01_the_old_export_is_read:
+    level_1: "One of the exports cannot be read at all, and the job stops there."
+    level_2: "A file on disk is bytes; text is bytes plus an encoding. Where does a Python program
+              get that encoding from when nobody says it?"
+    level_3: "Read the traceback: which file, which byte, and what is documented about that file in
+              the directory it came from?"
+    level_4: "open() uses the locale's encoding when none is given, and the old tool's file is not in
+              it; the file name says which encoding it is."
+    refs:
+      2: ["https://docs.python.org/3/library/functions.html#open"]
+      3: ["journal:python-03-report-that-crashes-on-one-name#writing-has-the-same-problem-in-the-other-direction"]
+      3: ["journal:python-03-report-that-crashes-on-one-name#open-has-an-encoding-whether-or-not-you-name-one", "journal:python-03-report-that-crashes-on-one-name#reading-the-error"]
+  02_every_name_survives:
+    level_1: "A run that no longer crashes can still lose characters from the names."
+    level_2: "Decoding errors can be raised, ignored or replaced — and two of those change the data."
+    level_3: "Compare a name in the summary with the same name in the export, character by character."
+    level_4: "errors='ignore' drops what does not decode and errors='replace' substitutes U+FFFD;
+              the file needs the right encoding, not a lenient one."
+    refs:
+      2: ["https://docs.python.org/3/library/codecs.html#error-handlers"]
+      3: ["journal:python-03-report-that-crashes-on-one-name#the-errors-argument-is-a-policy-not-a-fix"]
+  03_the_output_is_utf8:
+    level_1: "The summary's spelling depends on the machine's locale."
+    level_2: "Writing a file has an encoding too, and it is chosen the same way reading one is."
+    level_3: "Run the report with LC_ALL=C and look at the bytes of the summary it writes."
+    level_4: "The output open() has no encoding either, so the summary follows the locale of whoever
+              ran it; state the encoding on the way out as well."
+    refs:
+      2: ["https://docs.python.org/3/library/functions.html#open"]
+  04_the_nightly_run_succeeds:
+    level_1: "The timer's run has failed every night since the member with an ñ joined."
+    level_2: "A oneshot service fails when its process raises: the traceback is in the journal."
+    level_3: "journalctl -u members-report.service -b, then run the script by hand the same way."
+    level_4: "The service runs the same script over /srv/members: once every export is read with its
+              own encoding, a fresh run — or the one after a reboot — writes the full summary."
+    refs:
+      2: ["man 1 journalctl", "man 5 systemd.service"]
+      3: ["journal:python-03-report-that-crashes-on-one-name#a-failed-run-should-not-destroy-the-last-good-summary"]

@@ -1,0 +1,750 @@
+schema_version: 1
+topic: linux
+topics: [linux-basics, users-permissions, boot-systemd, storage-lvm]
+title: Linux fundamentals
+description: Users, permissions, processes, files and boot — the everyday mechanics of a Linux system.
+questions:
+  - id: lnx-001
+    type: single
+    difficulty: 1
+    prompt: Which file maps user names to UIDs, home directories and login shells?
+    choices:
+      - {id: a, text: /etc/shadow}
+      - {id: b, text: /etc/login.defs}
+      - {id: c, text: /etc/passwd}
+      - {id: d, text: /etc/group}
+    answer: [c]
+    explanation: >-
+      /etc/passwd holds one line per account: name, UID, GID, GECOS, home and shell. /etc/shadow
+      holds the password hashes and aging, /etc/group the groups, and /etc/login.defs the
+      defaults used when accounts are created.
+    references: ["man 5 passwd"]
+    tags: [users]
+  - id: lnx-002
+    type: single
+    difficulty: 2
+    prompt: What does `chmod 2770 /srv/project` set on the directory?
+    choices:
+      - {id: a, text: "setuid, plus read/write/execute for owner and group, nothing for others"}
+      - {id: b, text: "setgid, plus read/write/execute for owner and group, nothing for others"}
+      - {id: c, text: "read/write/execute for owner and group, read for others"}
+      - {id: d, text: "the sticky bit, plus read/write/execute for owner and group"}
+    answer: [b]
+    explanation: >-
+      The leading digit holds the special bits: 4 is setuid, 2 is setgid, 1 is sticky. 770 is
+      rwx for owner and group and nothing for others. On a directory, setgid makes new files
+      inherit the directory's group — the usual way to build a shared team directory.
+    references: ["man 1 chmod"]
+    tags: [permissions]
+  - id: lnx-003
+    type: multiple
+    difficulty: 2
+    prompt: Which of these changes still apply after a reboot?
+    choices:
+      - {id: a, text: "sysctl -w net.ipv4.ip_forward=1"}
+      - {id: b, text: "a new line in /etc/fstab"}
+      - {id: c, text: "systemctl enable nginx"}
+      - {id: d, text: "ip addr add 10.0.0.5/24 dev eth0"}
+      - {id: e, text: "hostnamectl set-hostname web01.lab.example"}
+    answer: [b, c, e]
+    explanation: >-
+      systemctl enable creates the unit's install symlinks, hostnamectl writes /etc/hostname, and
+      fstab is read at every boot. ip addr add and sysctl -w change only the running kernel; to
+      persist them you use the network manager's profile and a file in /etc/sysctl.d.
+    references: ["man 1 systemctl", "man 1 hostnamectl", "man 8 sysctl"]
+    tags: [persistence, boot]
+  - id: lnx-004
+    type: single
+    difficulty: 3
+    prompt: A running process still has a deleted 2 GB log file open. What releases the space?
+    choices:
+      - {id: a, text: "Running sync"}
+      - {id: b, text: "Running fstrim on the filesystem"}
+      - {id: c, text: "Running rm on the same path again"}
+      - {id: d, text: "Closing the file in that process — usually by restarting it"}
+    answer: [d]
+    explanation: >-
+      Unlinking removes the name, but the inode and its blocks live until the last open file
+      descriptor is closed. The path no longer exists, so rm has nothing to remove; sync flushes
+      dirty pages and fstrim discards already-free blocks — neither closes the descriptor.
+      lsof +L1 lists such files.
+    references: ["man 2 unlink", "man 8 lsof"]
+    tags: [disk, processes]
+  - id: lnx-005
+    type: single
+    difficulty: 2
+    prompt: On Ubuntu, which command tells you which installed package a file belongs to?
+    choices:
+      - {id: a, text: "dpkg -S /path/to/file"}
+      - {id: b, text: "apt show /path/to/file"}
+      - {id: c, text: "apt-cache depends /path/to/file"}
+      - {id: d, text: "dpkg -L /path/to/file"}
+    answer: [a]
+    explanation: >-
+      dpkg -S searches the installed-package file lists for a path. dpkg -L does the reverse
+      (lists a package's files), apt show and apt-cache depends take package names, not paths.
+      On Rocky the equivalent is rpm -qf.
+    references: ["man 1 dpkg"]
+    tags: [packages]
+  - id: lnx-006
+    type: single
+    difficulty: 2
+    prompt: With `umask 027`, what mode does a new file created by touch get?
+    code: |
+      umask 027
+      touch report.txt
+      stat -c %a report.txt
+    code_lang: bash
+    choices:
+      - {id: a, text: "640"}
+      - {id: b, text: "750"}
+      - {id: c, text: "751"}
+      - {id: d, text: "027"}
+    answer: [a]
+    explanation: >-
+      touch asks for 666; the umask removes the bits it has set. 666 without 027 leaves 640:
+      read/write for the owner, read for the group, nothing for others. 750 would be a new
+      directory (777 minus 027).
+    references: ["man 2 umask"]
+    tags: [permissions]
+    verify:
+      runtime: bash
+      code: |
+        cd "$(mktemp -d)"; umask 027; touch report.txt; stat -c %a report.txt
+  - id: lnx-007
+    type: single
+    difficulty: 1
+    prompt: Which signal can a process neither catch nor ignore?
+    choices:
+      - {id: a, text: SIGINT}
+      - {id: b, text: SIGHUP}
+      - {id: c, text: SIGTERM}
+      - {id: d, text: SIGKILL}
+    answer: [d]
+    explanation: >-
+      SIGKILL (and SIGSTOP) cannot be caught, blocked or ignored. SIGTERM is the polite default
+      of kill and can be handled for a clean shutdown; SIGHUP is often used to reload config;
+      SIGINT is what Ctrl-C sends.
+    references: ["man 7 signal"]
+    tags: [processes]
+  - id: lnx-008
+    type: single
+    difficulty: 2
+    prompt: What does the sticky bit on /tmp achieve?
+    choices:
+      - {id: a, text: "Users can delete or rename only the files they own"}
+      - {id: b, text: "New files inherit the directory's group"}
+      - {id: c, text: "Programs in /tmp run with the owner's privileges"}
+      - {id: d, text: "Files in /tmp are kept in RAM"}
+    answer: [a]
+    explanation: >-
+      In a world-writable directory anyone could delete anyone's files; the sticky bit restricts
+      unlink and rename to the file's owner, the directory's owner and root. Group inheritance is
+      setgid; running as the owner is setuid; tmpfs is a mount, not a permission bit.
+    references: ["man 1 chmod"]
+    tags: [permissions]
+  - id: lnx-009
+    type: multiple
+    difficulty: 2
+    prompt: Which commands show kernel messages from the current boot on a systemd system?
+    choices:
+      - {id: a, text: "dmesg"}
+      - {id: b, text: "journalctl -k"}
+      - {id: c, text: "journalctl -b -1"}
+      - {id: d, text: "last -x"}
+    answer: [a, b]
+    explanation: >-
+      journalctl -k shows kernel messages from the current boot; dmesg reads the kernel ring
+      buffer. journalctl -b -1 is the whole journal of the previous boot, and last -x reads login
+      and shutdown records from wtmp.
+    references: ["man 1 journalctl", "man 1 dmesg"]
+    tags: [logs]
+  - id: lnx-010
+    type: single
+    difficulty: 2
+    prompt: In /etc/fstab, what does 0 in the sixth field mean?
+    choices:
+      - {id: a, text: "The filesystem is not checked by fsck at boot"}
+      - {id: b, text: "The filesystem is not mounted at boot"}
+      - {id: c, text: "The filesystem is not backed up by dump"}
+      - {id: d, text: "The filesystem is mounted read-only"}
+    answer: [a]
+    explanation: >-
+      The sixth field, fs_passno, sets the fsck order at boot: 1 for the root filesystem, 2 for
+      others, 0 to skip. The fifth field is for dump; noauto in the options stops mounting at
+      boot, ro makes it read-only.
+    references: ["man 5 fstab"]
+    tags: [storage, boot]
+  - id: lnx-011
+    type: single
+    difficulty: 2
+    prompt: Which statement about a hard link is true?
+    choices:
+      - {id: a, text: "It stores the path of the file it points to"}
+      - {id: b, text: "It stops working when the original name is deleted"}
+      - {id: c, text: "It has the same inode number as the original file"}
+      - {id: d, text: "It can point to a file on another filesystem"}
+    answer: [c]
+    explanation: >-
+      A hard link is another directory entry for the same inode, so it cannot cross filesystems
+      and keeps working when another name is removed. Storing a path and breaking when the target
+      disappears describes a symbolic link.
+    references: ["man 1 ln", "man 7 inode"]
+    tags: [files]
+  - id: lnx-012
+    type: single
+    difficulty: 2
+    prompt: "`ls -l /usr/bin/passwd` shows `-rwsr-xr-x root root`. What does the s mean?"
+    choices:
+      - {id: a, text: "setuid: the program runs with the privileges of its owner, root"}
+      - {id: b, text: "The file is a socket"}
+      - {id: c, text: "The sticky bit is set"}
+      - {id: d, text: "The file is shared by all users"}
+    answer: [a]
+    explanation: >-
+      An s in the owner's execute position is the setuid bit: the process gets the file owner's
+      effective UID, which is how passwd can update /etc/shadow for an ordinary user. A socket
+      would show s as the file type in the first column; the sticky bit shows as t.
+    references: ["man 1 chmod", "man 2 execve"]
+    tags: [permissions]
+  - id: lnx-013
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      cd "$(mktemp -d)"
+      touch f && chmod 640 f && chmod u+x,g-r,o=r f
+      stat -c %a f
+    code_lang: bash
+    choices:
+      - {id: a, text: "714"}
+      - {id: b, text: "640"}
+      - {id: c, text: "744"}
+      - {id: d, text: "704"}
+    answer: [d]
+    explanation: >-
+      640 is rw-r-----. u+x adds execute for the owner (7), g-r removes the group's only bit (0),
+      and o=r sets others to exactly read (4), whatever they had before.
+    references: ["man 1 chmod"]
+    tags: [permissions]
+    verify:
+      runtime: bash
+      code: |
+        cd "$(mktemp -d)"
+        touch f && chmod 640 f && chmod u+x,g-r,o=r f
+        stat -c %a f
+  - id: lnx-014
+    type: single
+    difficulty: 2
+    prompt: A directory has mode 0733 (rwx-wx-wx). What can another, unprivileged user do in it?
+    choices:
+      - {id: a, text: "Nothing: without r a directory cannot be entered"}
+      - {id: b, text: "Create files and open files whose names they know, but not list its contents"}
+      - {id: c, text: "Only delete files they own, as with the sticky bit"}
+      - {id: d, text: "List its contents, but not create files"}
+    answer: [b]
+    explanation: >-
+      On a directory, r lists the names, w (with x) creates, renames and deletes entries, and x
+      lets you traverse it and reach entries by name. Without r, ls fails, but a known path still
+      opens. Any user with w and x can also delete other users' files unless the sticky bit is set.
+    references: ["man 1 chmod", "man 7 path_resolution"]
+    tags: [permissions]
+  - id: lnx-015
+    type: single
+    difficulty: 2
+    prompt: Which command gives the user alice read and write access to /srv/report.csv without changing its owner, group or mode bits?
+    choices:
+      - {id: a, text: "usermod -aG report.csv alice"}
+      - {id: b, text: "setfacl -m u:alice:rw /srv/report.csv"}
+      - {id: c, text: "chown alice:rw /srv/report.csv"}
+      - {id: d, text: "chmod alice+rw /srv/report.csv"}
+    answer: [b]
+    explanation: >-
+      A POSIX ACL entry grants one named user permissions on top of the owner/group/other bits;
+      getfacl shows it and ls -l marks the file with a +. chmod has no per-user form, chown changes
+      ownership, and usermod -aG adds a user to a group, not to a file.
+    references: ["man 1 setfacl", "man 5 acl"]
+    tags: [permissions, acl]
+  - id: lnx-016
+    type: single
+    difficulty: 3
+    prompt: After `setfacl -m u:alice:rw file` on a file with mode 640, `getfacl file` shows `mask::r--`. What can alice do?
+    choices:
+      - {id: a, text: "Nothing: the mask overrides all ACL entries"}
+      - {id: b, text: "Read and write: named-user entries ignore the mask"}
+      - {id: c, text: "Read only: the mask caps named-user and group entries"}
+      - {id: d, text: "Read and write, but only after a relogin"}
+    answer: [c]
+    explanation: >-
+      The ACL mask is the upper bound for named users, named groups and the owning group; getfacl
+      prints #effective:r-- beside alice's entry. setfacl normally recalculates the mask, but a
+      later chmod g-w, or setfacl -n, can leave it lower than the entries.
+    references: ["man 5 acl"]
+    tags: [permissions, acl]
+  - id: lnx-017
+    type: single
+    difficulty: 1
+    prompt: What does `usermod -G wheel alice` do when alice is already in the groups docker and dev?
+    choices:
+      - {id: a, text: "Makes wheel her only supplementary group, removing docker and dev"}
+      - {id: b, text: "Changes her primary group to wheel"}
+      - {id: c, text: "Fails, because -G needs -a"}
+      - {id: d, text: "Adds wheel to her supplementary groups"}
+    answer: [a]
+    explanation: >-
+      -G sets the complete list of supplementary groups. To add one and keep the rest, use
+      usermod -aG wheel alice. The primary group is -g. Membership changes apply to new login
+      sessions.
+    references: ["man 8 usermod"]
+    tags: [users]
+  - id: lnx-018
+    type: single
+    difficulty: 2
+    prompt: Which file holds password hashes and password-ageing data for local accounts?
+    choices:
+      - {id: a, text: "/etc/gshadow"}
+      - {id: b, text: "/etc/passwd"}
+      - {id: c, text: "/etc/login.defs"}
+      - {id: d, text: "/etc/shadow"}
+    answer: [d]
+    explanation: >-
+      /etc/shadow, readable only by root, holds the hash and the ageing fields chage edits.
+      /etc/passwd keeps an x in the password field; login.defs sets defaults for new accounts;
+      gshadow is the shadow file for groups.
+    references: ["man 5 shadow", "man 1 chage"]
+    tags: [users]
+  - id: lnx-019
+    type: single
+    difficulty: 2
+    prompt: Which command makes alice change her password at her next login?
+    choices:
+      - {id: a, text: "chage -d 0 alice"}
+      - {id: b, text: "usermod -L alice"}
+      - {id: c, text: "passwd -l alice"}
+      - {id: d, text: "chage -E 0 alice"}
+    answer: [a]
+    explanation: >-
+      Setting the last-change date to day 0 marks the password as expired, so login demands a new
+      one (passwd -e does the same). passwd -l and usermod -L lock the password; chage -E 0 expires
+      the whole account, which refuses the login.
+    references: ["man 1 chage"]
+    tags: [users]
+  - id: lnx-020
+    type: single
+    difficulty: 2
+    prompt: What does `systemctl enable --now nginx` do?
+    choices:
+      - {id: a, text: "Starts nginx now, for this boot only"}
+      - {id: b, text: "Starts nginx now and creates the symlinks that start it at boot"}
+      - {id: c, text: "Makes nginx start at boot, without starting it"}
+      - {id: d, text: "Restarts nginx if it is already running"}
+    answer: [b]
+    explanation: >-
+      enable links the unit into the target named in its [Install] section (usually
+      multi-user.target.wants), which is what makes it start at boot; --now also starts it
+      immediately. enable alone does not start anything, and start alone does not survive a reboot.
+    references: ["man 1 systemctl"]
+    tags: [systemd, persistence]
+  - id: lnx-021
+    type: single
+    difficulty: 2
+    prompt: What is the right way to change one setting of a vendor unit such as nginx.service?
+    choices:
+      - {id: a, text: "Edit /usr/lib/systemd/system/nginx.service directly"}
+      - {id: b, text: "systemctl edit nginx, which writes a drop-in under /etc/systemd/system/nginx.service.d/"}
+      - {id: c, text: "Add the setting to /etc/systemd/system.conf"}
+      - {id: d, text: "Copy the unit to /tmp and point systemd at it"}
+    answer: [b]
+    explanation: >-
+      A drop-in overrides only the directives it contains and survives package upgrades, which
+      replace files under /usr/lib/systemd. After editing by hand, systemctl daemon-reload is needed;
+      systemctl edit runs it for you. system.conf holds manager-wide defaults.
+    references: ["man 5 systemd.unit", "man 1 systemctl"]
+    tags: [systemd]
+  - id: lnx-022
+    type: single
+    difficulty: 3
+    prompt: A service's unit has `Restart=on-failure`. It crashes five times in ten seconds and systemd stops restarting it. Why?
+    choices:
+      - {id: a, text: "It hit the start rate limit (StartLimitIntervalSec and StartLimitBurst)"}
+      - {id: b, text: "The OOM killer disabled the unit"}
+      - {id: c, text: "on-failure only restarts once per boot"}
+      - {id: d, text: "RestartSec defaults to ten seconds"}
+    answer: [a]
+    explanation: >-
+      By default a unit may start 5 times within 10 seconds; beyond that systemd marks it failed
+      with "start request repeated too quickly". systemctl reset-failed clears the counter, and
+      RestartSec= spaces restarts out so the limit is not reached.
+    references: ["man 5 systemd.unit (StartLimitIntervalSec)", "man 5 systemd.service (Restart)"]
+    tags: [systemd]
+  - id: lnx-023
+    type: single
+    difficulty: 2
+    prompt: Which command lists the units that failed during this boot?
+    choices:
+      - {id: a, text: "systemctl list-unit-files --state=disabled"}
+      - {id: b, text: "systemd-analyze blame"}
+      - {id: c, text: "journalctl --list-boots"}
+      - {id: d, text: "systemctl --failed"}
+    answer: [d]
+    explanation: >-
+      systemctl --failed (list-units --state=failed) shows units currently in the failed state.
+      list-unit-files is about enablement, --list-boots lists previous boots in the journal, and
+      systemd-analyze blame ranks units by start-up time.
+    references: ["man 1 systemctl"]
+    tags: [systemd, troubleshooting]
+  - id: lnx-024
+    type: single
+    difficulty: 3
+    prompt: A machine should boot to a text console instead of a graphical login, permanently. Which command does that?
+    choices:
+      - {id: a, text: "init 3"}
+      - {id: b, text: "systemctl disable graphical.target"}
+      - {id: c, text: "systemctl isolate multi-user.target"}
+      - {id: d, text: "systemctl set-default multi-user.target"}
+    answer: [d]
+    explanation: >-
+      set-default changes the default.target symlink, which is read at every boot. isolate (and
+      the compatibility command init 3) switch the running system now but do not change what the
+      next boot does. Targets are not disabled like services.
+    references: ["man 1 systemctl", "man 7 systemd.special"]
+    tags: [boot, systemd]
+  - id: lnx-025
+    type: single
+    difficulty: 3
+    prompt: A machine with an unknown root password must be recovered on Rocky Linux 10. Which kernel argument stops the boot in the initramfs before the real root is switched to?
+    choices:
+      - {id: a, text: "single"}
+      - {id: b, text: "rd.break"}
+      - {id: c, text: "init=/bin/false"}
+      - {id: d, text: "systemd.unit=rescue.target"}
+    answer: [b]
+    explanation: >-
+      rd.break drops to a shell inside the initramfs with the real root mounted read-only at
+      /sysroot; remount it rw, chroot, passwd, and touch /.autorelabel so SELinux relabels the new
+      shadow file. rescue.target and single still ask for the root password.
+    references: ["man 7 dracut.cmdline", "https://docs.rockylinux.org/guides/security/root_password_reset/"]
+    tags: [boot, recovery]
+  - id: lnx-026
+    type: single
+    difficulty: 2
+    prompt: Why should /etc/fstab refer to a filesystem by UUID rather than by /dev/sdb1?
+    choices:
+      - {id: a, text: "UUIDs mount faster"}
+      - {id: b, text: "/dev/sdb1 only works for ext4"}
+      - {id: c, text: "The kernel cannot mount a device path from fstab"}
+      - {id: d, text: "Device names depend on detection order and can change between boots; a UUID belongs to the filesystem"}
+    answer: [d]
+    explanation: >-
+      Adding a disk or changing controller order can turn sdb into sdc, and the wrong or no
+      filesystem is mounted. blkid or lsblk -f shows the UUID; LVM paths such as /dev/vg/lv are
+      stable too.
+    references: ["man 5 fstab", "man 8 blkid"]
+    tags: [storage, boot]
+  - id: lnx-027
+    type: single
+    difficulty: 2
+    prompt: Which fstab option lets the system finish booting when a non-essential data disk is missing?
+    choices:
+      - {id: a, text: "defaults 0 0"}
+      - {id: b, text: "errors=remount-ro"}
+      - {id: c, text: "nofail"}
+      - {id: d, text: "noauto,user"}
+    answer: [c]
+    explanation: >-
+      With nofail, systemd does not make local-fs.target wait for the mount, so a missing device
+      no longer drops the boot into emergency mode. noauto skips the mount entirely; the 0 0 fields
+      disable dump and fsck; errors= controls ext4's reaction to corruption.
+    references: ["man 5 systemd.mount", "man 5 fstab"]
+    tags: [storage, boot]
+  - id: lnx-028
+    type: single
+    difficulty: 1
+    prompt: Which command checks /etc/fstab for mistakes and mounts everything in it that is not yet mounted, without rebooting?
+    choices:
+      - {id: a, text: "mount -a"}
+      - {id: b, text: "mount --bind /etc/fstab"}
+      - {id: c, text: "fsck -A"}
+      - {id: d, text: "swapon -a"}
+    answer: [a]
+    explanation: >-
+      mount -a mounts every fstab entry without noauto, so a typo shows up as an error now rather
+      than as an emergency shell at the next boot. On systemd systems, run systemctl daemon-reload
+      after editing fstab so the generated mount units match. findmnt --verify checks syntax too.
+    references: ["man 8 mount", "man 8 findmnt"]
+    tags: [storage, boot]
+  - id: lnx-029
+    type: single
+    difficulty: 3
+    prompt: A logical volume holds an XFS filesystem. Which command grows the LV by 2 GiB and the filesystem with it?
+    choices:
+      - {id: a, text: "xfs_growfs -L +2G /dev/vg0/data"}
+      - {id: b, text: "lvextend -r -L +2G /dev/vg0/data"}
+      - {id: c, text: "lvextend -L 2G /dev/vg0/data"}
+      - {id: d, text: "lvresize -L +2G /dev/vg0/data && resize2fs /dev/vg0/data"}
+    answer: [b]
+    explanation: >-
+      -r (--resizefs) calls the filesystem's own grow tool after extending — xfs_growfs for XFS.
+      -L 2G without + sets the size to 2 GiB, which may even be a shrink. resize2fs is for ext
+      filesystems, and XFS can grow but never shrink.
+    references: ["man 8 lvextend", "man 8 xfs_growfs"]
+    tags: [storage, lvm]
+  - id: lnx-030
+    type: single
+    difficulty: 2
+    prompt: In LVM, what is the correct order of layers from disk to filesystem?
+    choices:
+      - {id: a, text: "volume group → physical volume → logical volume → filesystem"}
+      - {id: b, text: "physical volume → logical volume → volume group → filesystem"}
+      - {id: c, text: "physical volume → volume group → logical volume → filesystem"}
+      - {id: d, text: "logical volume → volume group → physical volume → filesystem"}
+    answer: [c]
+    explanation: >-
+      pvcreate marks a disk or partition as a PV, vgcreate pools PVs into a VG, lvcreate carves LVs
+      out of the VG's extents, and a filesystem goes on the LV. pvs, vgs and lvs show each layer.
+    references: ["man 7 lvm"]
+    tags: [storage, lvm]
+  - id: lnx-031
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      cd "$(mktemp -d)"
+      echo data > target
+      ln -s target link
+      rm target
+      cat link 2>/dev/null || echo broken
+    code_lang: bash
+    choices:
+      - {id: a, text: "target"}
+      - {id: b, text: "link"}
+      - {id: c, text: "broken"}
+      - {id: d, text: "data"}
+    answer: [c]
+    explanation: >-
+      A symbolic link stores only a path. Once the target is removed, the link dangles and opening
+      it fails with "No such file or directory". A hard link would still reach the data, because it
+      is another name for the same inode.
+    references: ["man 7 symlink", "man 1 ln"]
+    tags: [files]
+    verify:
+      runtime: bash
+      code: |
+        cd "$(mktemp -d)"
+        echo data > target
+        ln -s target link
+        rm target
+        cat link 2>/dev/null || echo broken
+  - id: lnx-032
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      cd "$(mktemp -d)"
+      umask 077
+      mkdir d
+      stat -c %a d
+    code_lang: bash
+    choices:
+      - {id: a, text: "755"}
+      - {id: b, text: "700"}
+      - {id: c, text: "600"}
+      - {id: d, text: "077"}
+    answer: [b]
+    explanation: >-
+      mkdir starts from 777 and the umask removes bits, so 777 with 077 masked is 700. Files start
+      from 666, which is why the same umask gives new files 600 — the umask never adds execute.
+    references: ["man 2 umask", "man 1 mkdir"]
+    tags: [permissions]
+    verify:
+      runtime: bash
+      code: |
+        cd "$(mktemp -d)"
+        umask 077
+        mkdir d
+        stat -c %a d
+  - id: lnx-033
+    type: single
+    difficulty: 2
+    prompt: Which command finds files under /var larger than 100 MiB?
+    choices:
+      - {id: a, text: "du -a /var --max-size=100M"}
+      - {id: b, text: "ls -lR /var | grep 100M"}
+      - {id: c, text: "find /var -type f -size 100M"}
+      - {id: d, text: "find /var -type f -size +100M"}
+    answer: [d]
+    explanation: >-
+      -size +100M means strictly more than 100 MiB (find rounds sizes up to whole units); without
+      the + it matches exactly that rounded size. du has no --max-size, and grepping ls output
+      matches names, not sizes. Add -xdev to stay on one filesystem.
+    references: ["man 1 find"]
+    tags: [files, disk]
+  - id: lnx-034
+    type: single
+    difficulty: 3
+    prompt: df shows far more space used on a filesystem than `du -sx` finds under its mount point. Which of these would not explain the difference?
+    choices:
+      - {id: a, text: "Filesystem metadata such as the journal, which du does not count"}
+      - {id: b, text: "The filesystem has run out of inodes"}
+      - {id: c, text: "Files hidden under a directory that another filesystem is mounted on"}
+      - {id: d, text: "A process holds a deleted file open"}
+    answer: [b]
+    explanation: >-
+      Running out of inodes gives "No space left on device" while df -h still shows free blocks
+      (df -i reveals it); it does not add used blocks. A deleted file still held open (lsof +L1)
+      keeps its blocks until it is closed, files beneath a mount point are invisible to du, and
+      metadata counts in df's total but not in du's.
+    references: ["man 1 df", "man 1 du", "man 8 lsof"]
+    tags: [disk, troubleshooting]
+  - id: lnx-035
+    type: single
+    difficulty: 2
+    prompt: Which command shows the messages of the nginx unit since the last boot, following new ones as they arrive?
+    choices:
+      - {id: a, text: "journalctl -k nginx"}
+      - {id: b, text: "tail -f /var/log/journal/nginx"}
+      - {id: c, text: "journalctl -u nginx -b -f"}
+      - {id: d, text: "systemctl log nginx --follow"}
+    answer: [c]
+    explanation: >-
+      -u filters by unit, -b limits to the current boot (-b -1 is the previous one) and -f follows.
+      -k shows kernel messages only; the journal's files are binary and not per unit; systemctl has
+      no log verb, though status prints the last few lines.
+    references: ["man 1 journalctl"]
+    tags: [logs]
+  - id: lnx-036
+    type: single
+    difficulty: 2
+    prompt: Logs from before the last reboot are missing from journalctl. What is the usual fix?
+    choices:
+      - {id: a, text: "Start rsyslog"}
+      - {id: b, text: "Create /var/log/journal (or set Storage=persistent) so journald writes to disk"}
+      - {id: c, text: "Add -b -1 to every journalctl command"}
+      - {id: d, text: "Run journalctl --vacuum-time=0"}
+    answer: [b]
+    explanation: >-
+      With Storage=auto, journald keeps the journal in /run/log/journal, which is memory and is
+      lost at reboot, unless /var/log/journal exists. Vacuuming deletes logs, and -b -1 can only
+      show a previous boot that was stored.
+    references: ["man 5 journald.conf"]
+    tags: [logs, persistence]
+  - id: lnx-037
+    type: single
+    difficulty: 1
+    prompt: Which command shows which process is using the most CPU right now, refreshing continuously?
+    choices:
+      - {id: a, text: "vmstat -s"}
+      - {id: b, text: "uptime"}
+      - {id: c, text: "ps aux"}
+      - {id: d, text: "top"}
+    answer: [d]
+    explanation: >-
+      top (or htop) redraws the process list sorted by CPU. ps prints one snapshot and its %CPU is
+      averaged over each process's lifetime; uptime shows load averages only; vmstat -s prints
+      counters since boot.
+    references: ["man 1 top", "man 1 ps"]
+    tags: [processes]
+  - id: lnx-038
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      printf '10\n9\n100\n' | sort | head -n1
+    code_lang: bash
+    choices:
+      - {id: a, text: "100"}
+      - {id: b, text: "9"}
+      - {id: c, text: "10"}
+      - {id: d, text: "1"}
+    answer: [c]
+    explanation: >-
+      Without -n, sort compares text, and "10" and "100" sort before "9" because "1" comes before
+      "9". sort -n compares numbers and would put 9 first; sort -h understands 10K and 2G.
+    references: ["man 1 sort"]
+    tags: [text-processing]
+    verify:
+      runtime: bash
+      code: |
+        printf '10\n9\n100\n' | sort | head -n1
+  - id: lnx-039
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      echo "root:x:0:0:root:/root:/bin/bash" | cut -d: -f1,7
+    code_lang: bash
+    choices:
+      - {id: a, text: "root:x:0:0:root:/root"}
+      - {id: b, text: "root:/bin/bash"}
+      - {id: c, text: "root /bin/bash"}
+      - {id: d, text: "/bin/bash"}
+    answer: [b]
+    explanation: >-
+      cut splits on the delimiter given with -d and prints the chosen fields joined by that same
+      delimiter. Field 1 is the user name and field 7 the login shell.
+    references: ["man 1 cut", "man 5 passwd"]
+    tags: [text-processing, users]
+    verify:
+      runtime: bash
+      code: |
+        echo "root:x:0:0:root:/root:/bin/bash" | cut -d: -f1,7
+  - id: lnx-040
+    type: single
+    difficulty: 2
+    prompt: Where should a job that runs every night at 02:30 as root be scheduled so that it is kept with the system's configuration?
+    choices:
+      - {id: a, text: "A file in /etc/cron.d with the line: 30 2 * * * /usr/local/bin/job"}
+      - {id: b, text: "A file in /etc/cron.d with the line: 2 30 * * * root /usr/local/bin/job"}
+      - {id: c, text: "/var/spool/cron/root, edited with vi"}
+      - {id: d, text: "A file in /etc/cron.d with the line: 30 2 * * * root /usr/local/bin/job"}
+    answer: [d]
+    explanation: >-
+      Fields are minute, hour, day of month, month, day of week, and files in /etc/cron.d add a
+      user field before the command. A personal crontab (crontab -e) has no user field and lives in
+      the spool, which should not be edited directly. A systemd timer with OnCalendar=*-*-* 02:30
+      is the alternative.
+    references: ["man 5 crontab", "man 5 systemd.timer"]
+    tags: [scheduling]
+  - id: lnx-041
+    type: multiple
+    difficulty: 3
+    prompt: Which of these survive a reboot on a systemd distribution?
+    choices:
+      - {id: a, text: "sysctl -w vm.swappiness=10"}
+      - {id: b, text: "echo 1 > /proc/sys/net/ipv4/ip_forward"}
+      - {id: c, text: "hostnamectl set-hostname web01"}
+      - {id: d, text: "A line added to /etc/sysctl.d/99-local.conf"}
+    answer: [c, d]
+    explanation: >-
+      systemd-sysctl applies /etc/sysctl.d at every boot, and hostnamectl writes /etc/hostname.
+      sysctl -w and writing to /proc/sys change only the running kernel. The usual approach is to
+      set the value both ways: now, and in a file for the next boot.
+    references: ["man 5 sysctl.d", "man 1 hostnamectl"]
+    tags: [persistence, boot]
+  - id: lnx-042
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      cd "$(mktemp -d)"
+      mkdir -p a/b && touch a/b/c.txt a/x.log
+      find . -name '*.txt' | wc -l
+    code_lang: bash
+    choices:
+      - {id: a, text: "0"}
+      - {id: b, text: "2"}
+      - {id: c, text: "3"}
+      - {id: d, text: "1"}
+    answer: [d]
+    explanation: >-
+      find descends recursively, and -name matches the base name against a glob, so only c.txt
+      matches. The pattern is quoted so the shell does not expand *.txt against the current
+      directory first.
+    references: ["man 1 find"]
+    tags: [files]
+    verify:
+      runtime: bash
+      code: |
+        cd "$(mktemp -d)"
+        mkdir -p a/b && touch a/b/c.txt a/x.log
+        find . -name '*.txt' | wc -l

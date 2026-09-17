@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if page_title %}{{ page_title }} · {% endif %}Norboten</title>
+<meta name="description" content="{{ page_description|default('Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.') }}">
+{% if canonical %}<link rel="canonical" href="{{ canonical }}">{% endif %}
+<meta property="og:title" content="{% if page_title %}{{ page_title }} · {% endif %}Norboten">
+<meta property="og:description" content="{{ page_description|default('Learn Linux by fixing it.') }}">
+<meta property="og:type" content="{{ og_type|default('website') }}">
+<meta property="og:site_name" content="Norboten">
+{% if canonical %}<meta property="og:url" content="{{ canonical }}">{% endif %}
+<meta property="og:image" content="{{ site_url }}/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{% if page_title %}{{ page_title }} · {% endif %}Norboten">
+<meta name="twitter:description" content="{{ page_description|default('Learn Linux by fixing it.') }}">
+<meta name="twitter:image" content="{{ site_url }}/icon.png">
+<link rel="icon" href="{{ root }}icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="{{ root }}favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="{{ root }}favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="{{ root }}apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="{{ root }}style.css">
+{% if ga_id %}
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_id }}"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '{{ ga_id }}');
+</script>
+{% endif %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "{{ site_url }}/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "{{ site_url }}/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+{% endblock %}
+</head>
+<body data-api="{{ api }}" data-root="{{ root }}" data-lab="{{ lab.id if lab else '' }}">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="{{ root }}index.html">[ norboten ]</a>
+    <nav class="site">
+      <a href="{{ root }}features/index.html" {% if nav == 'features' %}aria-current="page"{% endif %}>Features</a>
+      <a href="{{ root }}labs/index.html" {% if nav == 'labs' %}aria-current="page"{% endif %}>Labs</a>
+      <a href="{{ root }}how-it-works/index.html" {% if nav == 'how' %}aria-current="page"{% endif %}>How it works</a>
+      <a href="{{ root }}journals/index.html" {% if nav == 'journals' %}aria-current="page"{% endif %}>Journals</a>
+      <a href="{{ root }}docs/index.html" {% if nav == 'docs' %}aria-current="page"{% endif %}>Docs</a>
+      <a class="group" href="{{ root }}players/index.html" {% if nav == 'players' %}aria-current="page"{% endif %}>Ratings</a>
+      <a class="live" href="{{ root }}live/index.html" {% if nav == 'live' %}aria-current="page"{% endif %}><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="{{ root }}install/index.html" {% if nav == 'install' %}aria-current="page"{% endif %}>Install</a>
+      <a href="{{ root }}account/index.html" {% if nav == 'account' %}aria-current="page"{% endif %}>Sign in</a>
+      <a class="donate" href="{{ root }}donate/index.html" {% if nav == 'donate' %}aria-current="page"{% endif %}><span class="heart">♥</span> Donate</a>
+      <a class="gh" href="{{ github }}" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="{{ root }}community/index.html" aria-label="Community on Discord" title="Community on Discord" {% if nav == 'community' %}aria-current="page"{% endif %}>
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+{% block body %}{% endblock %}
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="{{ root }}features/index.html">Features</a><br>
+        <a href="{{ root }}labs/index.html">Labs</a><br>
+        <a href="{{ root }}journals/index.html">Journals</a><br>
+        <a href="{{ root }}how-it-works/index.html">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="{{ root }}live/index.html">Live</a><br>
+        <a href="{{ root }}players/index.html">Ratings</a><br>
+        <a href="{{ root }}analytics/index.html">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="{{ root }}install/index.html">Install</a><br>
+        <a href="{{ root }}account/index.html">Sign in</a><br>
+        <a href="{{ root }}docs/index.html">Docs</a><br>
+        <a href="{{ root }}docs/writing-a-lab/index.html">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="{{ root }}about/index.html">About</a><br>
+        <a href="{{ root }}community/index.html">Community</a><br>
+        <a href="{{ root }}privacy/index.html">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="{{ github }}" rel="noopener">GitHub</a><br>
+        <a class="sponsor" href="{{ root }}donate/index.html">♥ Donate</a>
+        <span class="muted counts">{{ labs|length }} labs · {{ question_count }} theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script src="{{ root }}totop.js"></script>
+<script src="{{ root }}ask-engine.js"></script>
+<script src="{{ root }}chat.js"></script>
+<script src="{{ root }}copy.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

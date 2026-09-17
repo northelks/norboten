@@ -1,0 +1,42 @@
+checks:
+  01_only_the_docs_site:
+    level_1: "The fetching server returns pages from places the job never needed."
+    level_2: "A server that fetches URLs goes wherever it is told, internal addresses included.
+              Find what limits the hosts it will contact."
+    level_3: "Ask the server by hand for http://metadata.internal/latest/credentials, then read
+              /etc/mcp-web/config.json."
+    level_4: "allowed_hosts is empty, which means any host. The job needs docs.example only."
+    refs:
+      2: ["https://modelcontextprotocol.io/specification/2026-07-28/basic/security_best_practices", "journal:mcp#tool-results-are-untrusted-input"]
+      3: ["journal:mcp-02-the-page-that-gave-orders#where-a-fetch-can-go"]
+  02_a_page_cannot_run_commands:
+    level_1: "Text on a page ended up as a command on this machine."
+    level_2: "The model will ask for whatever a page tells it to. What decides whether Claude Code
+              carries out the request is the job's permission mode and allow-list."
+    level_3: "Look at how ~/bin/release-notes starts claude, and at permission_denials in
+              ~/release-notes.json."
+    level_4: "The job bypasses permissions, so every tool runs. It needs the fetch tool and Write,
+              in a mode that refuses the rest."
+    refs:
+      2: ["https://code.claude.com/docs/en/permissions", "journal:mcp#tool-results-are-untrusted-input"]
+      3: ["journal:mcp-02-the-page-that-gave-orders#permissions-are-the-wall", "journal:mcp-02-the-page-that-gave-orders#the-model-cannot-see-the-boundary"]
+  03_hidden_text_is_removed:
+    level_1: "The model reads parts of the page that nobody looking at it would see."
+    level_2: "HTML can keep text in a page and off the screen. Compare the page's source with what
+              the server hands the model."
+    level_3: "The changelog under /srv/web/docs.example has a comment and a display:none element;
+              the server has a setting for them."
+    level_4: "strip_hidden is false, so comments and hidden elements reach the model."
+    refs:
+      2: ["https://html.spec.whatwg.org/multipage/interaction.html#the-hidden-attribute", "journal:mcp#tool-results-are-untrusted-input"]
+      3: ["journal:mcp-02-the-page-that-gave-orders#text-nobody-sees"]
+  04_results_are_marked_as_data:
+    level_1: "What the page says reaches the model as if it were part of the conversation."
+    level_2: "A server can say where its text came from and that it is data. Look at what this one
+              wraps around a page, if anything."
+    level_3: "Fetch the changelog by hand and look at the start of the text; the settings file has
+              an option for it."
+    level_4: "label_untrusted is false. Turn it on so pages arrive inside <untrusted-content>."
+    refs:
+      2: ["https://modelcontextprotocol.io/specification/2026-07-28/server/tools", "journal:mcp#tool-results-are-untrusted-input"]
+      3: ["journal:mcp-02-the-page-that-gave-orders#labelling-what-came-from-outside"]

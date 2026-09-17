@@ -1,0 +1,95 @@
+# The solvability gate. A lab that cannot be solved by its own reference solution cannot merge.
+name: labs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # every night, every lab on every image, changed or not, because upstream distributions change
+    # under labs that did not; the `report` job files an issue per lab that stopped solving
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      all:
+        description: "Validate every lab, not just the changed ones"
+        type: boolean
+        default: false
+
+concurrency:
+  group: labs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.pick.outputs.matrix }}
+      any: ${{ steps.pick.outputs.any }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --all-packages --frozen
+      - id: pick
+        run: >-
+          uv run python .github/scripts/changed_labs.py
+          ${{ (inputs.all || github.event_name == 'schedule') && '--all' || format('origin/{0}', github.base_ref || 'main') }}
+
+  gate:
+    # the nightly report reads failures back by this name: keep it "gate (<lab>, <image>)"
+    name: gate (${{ matrix.lab }}, ${{ matrix.image }})
+    needs: matrix
+    if: needs.matrix.outputs.any == 'true'
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Hardware virtualization
+        if: matrix.runtime == 'vm'  # a container lab needs only the runner's Docker
+        run: |
+          test -e /dev/kvm || { echo "::error::this runner has no /dev/kvm; the gate needs it"; exit 1; }
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq qemu-system-arm qemu-system-x86 qemu-utils
+          sudo usermod -aG kvm "$USER"
+      - run: uv sync --all-packages --frozen
+      - name: Solvability gate — ${{ matrix.lab }} on ${{ matrix.image }}
+        run: |
+          sudo -E env "PATH=$PATH" -u SUDO_USER \
+            uv run norboten dev validate "${{ matrix.lab }}" --image "${{ matrix.image }}"
+      - name: Console and journal from the failed VM
+        if: failure()
+        run: |
+          for dir in "$HOME"/.norboten/vms/lg-*; do
+            [ -d "$dir" ] || continue
+            echo "::group::$(basename "$dir") serial console"
+            tail -c 20000 "$dir/serial.log" || true
+            echo "::endgroup::"
+          done
+
+  report:
+    # the nightly run only: an issue per lab × image that failed, unless one is open. No model —
+    # a failed gate job is already the verdict. automation/jobs/lab_health.py
+    needs: gate
+    if: always() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: automation
+      - name: File the labs that stopped solving
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m automation.jobs.lab_health

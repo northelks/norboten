@@ -1,0 +1,35 @@
+checks:
+  01_plan_is_clean:
+    level_1: "The plan wants to replace resources that exist and work."
+    level_2: "Read the plan: next to each action Terraform says why — a resource missing from the
+              configuration, a new one, or a real object that no longer matches."
+    level_3: "Two reasons appear: addresses that exist only in the state, and a managed file whose
+              content on disk differs from what the configuration renders."
+    level_4: "The renamed resources look like one deletion and one creation each, and
+              /etc/shop/nginx-site.conf was edited by hand. Tell Terraform about the renames, and let
+              it put the file back."
+    refs:
+      2: ["journal:terraform#state-maps-addresses-to-real-objects", "journal:terraform#drift"]
+      3: ["journal:terraform-01-rename-that-wants-to-destroy#configuration-state-reality", "journal:terraform-01-rename-that-wants-to-destroy#drift"]
+  02_session_key_kept:
+    level_1: "Applying the plan as it stands would generate a new session key."
+    level_2: "Terraform identifies objects by their address. What does it assume when an address
+              disappears from the configuration and another appears?"
+    level_3: "Compare terraform state list with the resource names in main.tf. Terraform has a way to
+              record that an object moved from one address to another."
+    level_4: "random_password.key and local_file.env were renamed without moved blocks (or terraform
+              state mv). Declare the moves, so the existing objects keep their values under the new
+              names."
+    refs:
+      2: ["journal:terraform#refactoring-without-destroying-moved"]
+      3: ["journal:terraform-01-rename-that-wants-to-destroy#why-a-rename-becomes-destroy-and-create", "journal:terraform-01-rename-that-wants-to-destroy#moved-blocks"]
+  03_state_protected:
+    level_1: "Every account on the machine can read the state."
+    level_2: "Terraform stores resource attributes in state in plain text, generated secrets
+              included."
+    level_3: "Look at the modes of the state file and its backup in the configuration directory."
+    level_4: "terraform.tfstate is mode 0644 and contains the session key. Make it, and any backup,
+              readable by root only."
+    refs:
+      2: ["journal:terraform#sensitive-is-a-display-setting"]
+      3: ["journal:terraform-01-rename-that-wants-to-destroy#secrets-in-state"]

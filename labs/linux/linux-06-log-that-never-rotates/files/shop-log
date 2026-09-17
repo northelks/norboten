@@ -1,0 +1,4 @@
+#!/bin/sh
+# What the order service does: append one line to its log, as the shop user.
+[ "$(id -u)" = 0 ] || exec sudo "$0" "$@"
+exec su -s /bin/sh -c 'echo "$(date -u +%FT%TZ) order accepted" >> /var/log/shop/app.log' shop

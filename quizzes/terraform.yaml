@@ -1,0 +1,662 @@
+schema_version: 1
+topic: terraform
+topics: [terraform]
+title: Terraform
+description: State, plans and the lifecycle of infrastructure described as code.
+questions:
+  - id: tf-001
+    type: single
+    difficulty: 1
+    prompt: What does `terraform plan` do?
+    choices:
+      - {id: a, text: "Applies the changes, asking for confirmation first"}
+      - {id: b, text: "Formats the configuration files"}
+      - {id: c, text: "Compares configuration with state and real infrastructure, and shows the changes it would make"}
+      - {id: d, text: "Downloads the providers"}
+    answer: [c]
+    explanation: >-
+      plan refreshes state, diffs it against the configuration and prints the proposed actions
+      without changing anything. apply changes infrastructure, init downloads providers, fmt
+      formats files.
+    references: ["https://developer.hashicorp.com/terraform/cli/commands/plan"]
+    tags: [cli]
+  - id: tf-002
+    type: single
+    difficulty: 2
+    prompt: Why keep Terraform state in a remote backend with locking?
+    choices:
+      - {id: a, text: "So secrets are removed from the state"}
+      - {id: b, text: "So providers are cached"}
+      - {id: c, text: "So Terraform runs faster"}
+      - {id: d, text: "So two people cannot apply at the same time and corrupt the state"}
+    answer: [d]
+    explanation: >-
+      A shared backend gives everyone the same state, and a lock stops concurrent operations from
+      overwriting each other. State still contains sensitive values in plain text — protect the
+      backend accordingly.
+    references: ["https://developer.hashicorp.com/terraform/language/state/locking"]
+    tags: [state]
+  - id: tf-003
+    type: single
+    difficulty: 1
+    prompt: A resource block is deleted from the configuration. What does the next apply do?
+    choices:
+      - {id: a, text: "Fails with an error"}
+      - {id: b, text: "Destroys the real resource"}
+      - {id: c, text: "Nothing; the resource is forgotten but kept"}
+      - {id: d, text: "Nothing; the resource stays managed"}
+    answer: [b]
+    explanation: >-
+      State still tracks the resource, so Terraform plans to destroy it to match the
+      configuration. To stop managing it without destroying it, use a removed block (or
+      terraform state rm).
+    references: ["https://developer.hashicorp.com/terraform/language/resources/syntax#removing-resources"]
+    tags: [lifecycle]
+  - id: tf-004
+    type: single
+    difficulty: 2
+    prompt: What is an import block (or terraform import) for?
+    choices:
+      - {id: a, text: "Bringing infrastructure that already exists under Terraform management"}
+      - {id: b, text: "Copying state between workspaces"}
+      - {id: c, text: "Loading a module from a registry"}
+      - {id: d, text: "Including another .tf file"}
+    answer: [a]
+    explanation: >-
+      Import records an existing object in state and associates it with a resource address.
+      Modules come from module blocks; all .tf files in a directory are read automatically.
+    references: ["https://developer.hashicorp.com/terraform/language/import"]
+    tags: [state]
+  - id: tf-005
+    type: single
+    difficulty: 3
+    prompt: Why is for_each often safer than count for a list of similar resources?
+    choices:
+      - {id: a, text: "for_each resources cannot be destroyed"}
+      - {id: b, text: "Instances are keyed by value, so removing one item does not renumber and replace the others"}
+      - {id: c, text: "for_each creates resources in parallel and count does not"}
+      - {id: d, text: "count cannot create more than ten instances"}
+    answer: [b]
+    explanation: >-
+      With count, instances are addressed by index; deleting the first element shifts every index
+      and Terraform plans to replace them. for_each addresses instances by key, so only the removed
+      key changes.
+    references: ["https://developer.hashicorp.com/terraform/language/meta-arguments/for_each"]
+    tags: [meta-arguments]
+  - id: tf-006
+    type: multiple
+    difficulty: 2
+    prompt: Which should never be committed to the repository?
+    choices:
+      - {id: a, text: .terraform.lock.hcl}
+      - {id: b, text: terraform.tfstate}
+      - {id: c, text: the .terraform/ directory}
+      - {id: d, text: main.tf}
+    answer: [b, c]
+    explanation: >-
+      State can hold secrets and belongs in a remote backend; .terraform/ is a local cache of
+      providers and modules. The dependency lock file should be committed — it pins provider
+      versions for everyone.
+    references: ["https://developer.hashicorp.com/terraform/language/files/dependency-lock"]
+    tags: [repository]
+  - id: tf-007
+    type: single
+    difficulty: 2
+    prompt: "What does `lifecycle { prevent_destroy = true }` do?"
+    choices:
+      - {id: a, text: "Changes to the resource are ignored"}
+      - {id: b, text: "The resource is recreated before it is destroyed"}
+      - {id: c, text: "Any plan that would destroy the resource fails with an error"}
+      - {id: d, text: "The resource is protected in the cloud provider's console"}
+    answer: [c]
+    explanation: >-
+      prevent_destroy makes Terraform refuse plans that destroy the object, including
+      replacements. create_before_destroy changes replacement order; ignore_changes ignores
+      attribute drift. Neither affects the provider's own console.
+    references: ["https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle"]
+    tags: [lifecycle]
+  - id: tf-008
+    type: single
+    difficulty: 1
+    prompt: What is a data source?
+    choices:
+      - {id: a, text: "A read-only lookup of information that Terraform does not manage"}
+      - {id: b, text: "A resource that stores data"}
+      - {id: c, text: "The backend where state is kept"}
+      - {id: d, text: "A variable file"}
+    answer: [a]
+    explanation: >-
+      data blocks query existing objects (an AMI, a zone, an account ID) for use in the
+      configuration without creating or destroying them.
+    references: ["https://developer.hashicorp.com/terraform/language/data-sources"]
+    tags: [concepts]
+  - id: tf-009
+    type: single
+    difficulty: 2
+    prompt: An output is marked `sensitive = true`. Where is its value still visible in plain text?
+    choices:
+      - {id: a, text: "In the state file"}
+      - {id: b, text: "Only in the provider's logs"}
+      - {id: c, text: "Nowhere; it is encrypted"}
+      - {id: d, text: "In terraform plan output"}
+    answer: [a]
+    explanation: >-
+      sensitive redacts the value in CLI output, but state stores it unencrypted. Protect the
+      backend (encryption at rest, access control) — that is where secrets actually live.
+    references: ["https://developer.hashicorp.com/terraform/language/values/outputs#sensitive-suppressing-values-in-cli-output"]
+    tags: [secrets, state]
+  - id: tf-010
+    type: single
+    difficulty: 1
+    prompt: Where do you pin a provider's version?
+    choices:
+      - {id: a, text: "In the backend block"}
+      - {id: b, text: "In required_providers inside the terraform block"}
+      - {id: c, text: "In the provider block's region argument"}
+      - {id: d, text: "In terraform.tfvars"}
+    answer: [b]
+    explanation: >-
+      terraform { required_providers { aws = { source = "hashicorp/aws", version = "~> 5.0" } } }
+      sets the constraint; the lock file records the exact version selected.
+    references: ["https://developer.hashicorp.com/terraform/language/providers/requirements"]
+    tags: [providers]
+  - id: tf-011
+    type: single
+    difficulty: 2
+    prompt: What does HashiCorp recommend about `terraform apply -target=...`?
+    choices:
+      - {id: a, text: "It is deprecated and does nothing"}
+      - {id: b, text: "It is required for resources in modules"}
+      - {id: c, text: "Use it only in exceptional situations, not as routine workflow"}
+      - {id: d, text: "Use it for every apply to reduce risk"}
+    answer: [c]
+    explanation: >-
+      Targeting applies a partial graph and can leave configuration and state out of step. The
+      documentation reserves it for recovering from mistakes or working around errors.
+    references: ["https://developer.hashicorp.com/terraform/cli/commands/plan#resource-targeting"]
+    tags: [cli]
+  - id: tf-012
+    type: single
+    difficulty: 1
+    prompt: What does terraform init do?
+    choices:
+      - {id: a, text: "Creates every resource for the first time"}
+      - {id: b, text: "Generates a configuration from existing infrastructure"}
+      - {id: c, text: "Deletes the state and starts over"}
+      - {id: d, text: "Configures the backend, downloads the providers and modules the configuration needs, and writes the lock file"}
+    answer: [d]
+    explanation: >-
+      init prepares the working directory and is safe to run repeatedly; it records provider
+      checksums in .terraform.lock.hcl. Nothing is created until apply.
+    references: ["https://developer.hashicorp.com/terraform/cli/commands/init"]
+    tags: [cli]
+  - id: tf-013
+    type: single
+    difficulty: 2
+    prompt: What is .terraform.lock.hcl for, and should it be committed?
+    choices:
+      - {id: a, text: "It stores credentials; never commit it"}
+      - {id: b, text: "It holds the state lock; no, it is temporary"}
+      - {id: c, text: "It pins the exact provider versions and checksums selected; yes, commit it"}
+      - {id: d, text: "It caches plan output; no"}
+    answer: [c]
+    explanation: >-
+      The dependency lock file makes every machine and CI run use the same provider builds.
+      terraform init -upgrade moves to newer versions within the constraints and updates it. State
+      locking is a backend feature and has nothing to do with this file.
+    references: ["https://developer.hashicorp.com/terraform/language/files/dependency-lock"]
+    tags: [providers, repository]
+  - id: tf-014
+    type: single
+    difficulty: 2
+    prompt: What does the version constraint `~> 1.52` on a provider allow?
+    choices:
+      - {id: a, text: "Only 1.52.0"}
+      - {id: b, text: "Any 1.x version from 1.52 upward, but not 2.0"}
+      - {id: c, text: "1.52.x patch releases only"}
+      - {id: d, text: "1.52 or anything newer, including 2.0"}
+    answer: [b]
+    explanation: >-
+      The pessimistic operator lets only the rightmost given component increase: ~> 1.52 means
+      >= 1.52, < 2.0, while ~> 1.52.0 means >= 1.52.0, < 1.53.0.
+    references: ["https://developer.hashicorp.com/terraform/language/expressions/version-constraints"]
+    tags: [providers]
+  - id: tf-015
+    type: single
+    difficulty: 2
+    prompt: What does this expression evaluate to?
+    code: |
+      [for s in ["web", "db"] : upper(s)]
+    code_lang: hcl
+    choices:
+      - {id: a, text: "{\"web\" = \"WEB\", \"db\" = \"DB\"}"}
+      - {id: b, text: "[\"WEB\", \"DB\"]"}
+      - {id: c, text: "an error: upper needs a string"}
+      - {id: d, text: "\"WEBDB\""}
+    answer: [b]
+    explanation: >-
+      A for expression in square brackets produces a tuple (a list), one element per input. Curly
+      braces with key => value produce an object instead. terraform console evaluates such
+      expressions interactively.
+    references: ["https://developer.hashicorp.com/terraform/language/expressions/for"]
+    tags: [expressions]
+  - id: tf-016
+    type: single
+    difficulty: 2
+    prompt: What does this expression evaluate to?
+    code: |
+      { for name, size in { web = 2, db = 4 } : name => size * 1024 if size > 2 }
+    code_lang: hcl
+    choices:
+      - {id: a, text: "[4096]"}
+      - {id: b, text: "{ db = 4096 }"}
+      - {id: c, text: "an error: a map cannot be filtered"}
+      - {id: d, text: "{ web = 2048, db = 4096 }"}
+    answer: [b]
+    explanation: >-
+      Braces with => build an object, and the if clause drops elements whose condition is false, so
+      only db survives with 4 × 1024.
+    references: ["https://developer.hashicorp.com/terraform/language/expressions/for"]
+    tags: [expressions]
+  - id: tf-017
+    type: single
+    difficulty: 2
+    prompt: 'A resource uses `count = var.enabled ? 1 : 0`. How do you refer to its id elsewhere?'
+    choices:
+      - {id: a, text: "hcloud_server[web].id"}
+      - {id: b, text: "hcloud_server.web.count.id"}
+      - {id: c, text: "hcloud_server.web.id"}
+      - {id: d, text: "hcloud_server.web[0].id, guarded for the zero case (for example with one())"}
+    answer: [d]
+    explanation: >-
+      A resource with count is a list of instances even when there is one, so it needs an index;
+      when count is 0, [0] is an error. one(hcloud_server.web[*].id) returns the id or null.
+    references: ["https://developer.hashicorp.com/terraform/language/meta-arguments/count", "https://developer.hashicorp.com/terraform/language/functions/one"]
+    tags: [meta-arguments]
+  - id: tf-018
+    type: single
+    difficulty: 3
+    prompt: Why does `depends_on` exist if Terraform already infers dependencies?
+    choices:
+      - {id: a, text: "Terraform does not infer dependencies; every resource needs depends_on"}
+      - {id: b, text: "To make resources be created in parallel"}
+      - {id: c, text: "To depend on resources in another state file"}
+      - {id: d, text: "For hidden dependencies that no attribute reference expresses, such as an IAM policy a VM needs at boot"}
+    answer: [d]
+    explanation: >-
+      References between resources build the graph automatically. depends_on is for the rare case
+      where one resource must exist first but nothing in its arguments refers to it. Overusing it
+      makes plans more conservative and slower; other states are read with a data source or
+      terraform_remote_state.
+    references: ["https://developer.hashicorp.com/terraform/language/meta-arguments/depends_on"]
+    tags: [meta-arguments, graph]
+  - id: tf-019
+    type: single
+    difficulty: 2
+    prompt: What does `create_before_destroy = true` in a lifecycle block change?
+    choices:
+      - {id: a, text: "The resource can never be destroyed"}
+      - {id: b, text: "Updates in place are turned into replacements"}
+      - {id: c, text: "When a change forces replacement, the new object is created before the old one is destroyed"}
+      - {id: d, text: "Resources are created before any are destroyed in the whole plan"}
+    answer: [c]
+    explanation: >-
+      The default order is destroy then create, which means downtime and fails when names must be
+      unique. Reversing it requires that two copies can coexist, which often means generated names.
+    references: ["https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle"]
+    tags: [lifecycle]
+  - id: tf-020
+    type: single
+    difficulty: 2
+    prompt: What does `ignore_changes = [tags]` in a lifecycle block do?
+    choices:
+      - {id: a, text: "Changes made to tags outside Terraform no longer show up as a diff to be reverted"}
+      - {id: b, text: "Tags are removed from the resource"}
+      - {id: c, text: "Terraform stops creating the resource"}
+      - {id: d, text: "Tags are applied only on destroy"}
+    answer: [a]
+    explanation: >-
+      The attribute is still set on create, but later differences between configuration and the real
+      object are ignored. It is used when another system legitimately manages that attribute, such as
+      an autoscaler changing a desired count.
+    references: ["https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes"]
+    tags: [lifecycle, drift]
+  - id: tf-021
+    type: single
+    difficulty: 2
+    prompt: A resource was renamed in the configuration from `hcloud_server.web` to `hcloud_server.app`. How do you avoid destroying and recreating it?
+    choices:
+      - {id: a, text: "Add prevent_destroy to the new name"}
+      - {id: b, text: "Run terraform refresh"}
+      - {id: c, text: "Add a moved block from hcloud_server.web to hcloud_server.app"}
+      - {id: d, text: "Delete the state file and import everything again"}
+    answer: [c]
+    explanation: >-
+      A moved block (or terraform state mv) tells Terraform the object at the old address is now at
+      the new one, so the plan shows a move instead of destroy and create. Keeping the block in
+      version control lets every workspace and colleague apply the same move.
+    references: ["https://developer.hashicorp.com/terraform/language/modules/develop/refactoring"]
+    tags: [state, refactoring]
+  - id: tf-022
+    type: single
+    difficulty: 2
+    prompt: What does `terraform state rm hcloud_server.web` do?
+    choices:
+      - {id: a, text: "Removes the resource block from the configuration"}
+      - {id: b, text: "Deletes the server and removes it from state"}
+      - {id: c, text: "Marks the server to be replaced on the next apply"}
+      - {id: d, text: "Terraform forgets the server; the real server keeps running"}
+    answer: [d]
+    explanation: >-
+      state rm only edits state. If the block is still in the configuration, the next plan wants to
+      create a second server. The declarative equivalent is a removed block with destroy = false.
+      Forcing replacement is terraform apply -replace=ADDRESS.
+    references: ["https://developer.hashicorp.com/terraform/cli/commands/state/rm"]
+    tags: [state]
+  - id: tf-023
+    type: single
+    difficulty: 2
+    prompt: What does `terraform apply -replace=hcloud_server.web` do?
+    choices:
+      - {id: a, text: "Replaces the resource block in the file"}
+      - {id: b, text: "Imports a different server under that address"}
+      - {id: c, text: "Plans to destroy and recreate that server even though its configuration did not change"}
+      - {id: d, text: "Updates only the attributes that drifted"}
+    answer: [c]
+    explanation: >-
+      -replace forces replacement of one object in the plan, which is useful for a VM whose
+      cloud-init should run again or that is known to be broken. It replaced the older terraform
+      taint command.
+    references: ["https://developer.hashicorp.com/terraform/cli/commands/plan#replace-address"]
+    tags: [cli, lifecycle]
+  - id: tf-024
+    type: single
+    difficulty: 3
+    prompt: What does `terraform plan -refresh-only` show?
+    choices:
+      - {id: a, text: "Only resources that need refreshing credentials"}
+      - {id: b, text: "The plan without contacting any provider"}
+      - {id: c, text: "How the real infrastructure differs from state, without proposing changes to match the configuration"}
+      - {id: d, text: "Only changes to outputs"}
+    answer: [c]
+    explanation: >-
+      A refresh-only plan reads every object and reports drift; applying it updates state to match
+      reality. A normal plan would instead propose changes to bring reality back to the
+      configuration. -refresh=false is the flag that skips reading providers.
+    references: ["https://developer.hashicorp.com/terraform/cli/commands/plan#planning-modes"]
+    tags: [state, drift]
+  - id: tf-025
+    type: single
+    difficulty: 2
+    prompt: How should a module receive a value from the code that calls it?
+    choices:
+      - {id: a, text: "Through an input variable declared in the module and set in the module block"}
+      - {id: b, text: "By referring to the caller's resources by address"}
+      - {id: c, text: "By reading the caller's local values directly"}
+      - {id: d, text: "Through an environment variable set in the module"}
+    answer: [a]
+    explanation: >-
+      A module is a black box: variables go in, outputs come out. It cannot see the caller's locals
+      or resources, which is what keeps it reusable. Passing whole resources as objects is fine,
+      but still through variables.
+    references: ["https://developer.hashicorp.com/terraform/language/modules/develop"]
+    tags: [modules]
+  - id: tf-026
+    type: single
+    difficulty: 2
+    prompt: What does a `validation` block inside a variable do?
+    choices:
+      - {id: a, text: "Runs terraform validate automatically"}
+      - {id: b, text: "Validates the provider's credentials"}
+      - {id: c, text: "Checks the variable's type at apply time only"}
+      - {id: d, text: "Rejects values that fail its condition, with the given error message, at plan time"}
+    answer: [d]
+    explanation: >-
+      For example condition = contains(["cx22", "cx32"], var.server_type) stops a typo before any
+      API call. Types are declared with type = and checked separately; preconditions and
+      postconditions on resources cover relationships between values.
+    references: ["https://developer.hashicorp.com/terraform/language/values/variables#custom-validation-rules"]
+    tags: [variables]
+  - id: tf-027
+    type: single
+    difficulty: 2
+    prompt: Which variable definition wins when a value is given in terraform.tfvars, in TF_VAR_region and with -var on the command line?
+    choices:
+      - {id: a, text: "The variable's default"}
+      - {id: b, text: "terraform.tfvars"}
+      - {id: c, text: "TF_VAR_region"}
+      - {id: d, text: "-var on the command line"}
+    answer: [d]
+    explanation: >-
+      Later sources override earlier ones: environment variables, then terraform.tfvars, then
+      *.auto.tfvars, then -var and -var-file in the order given. The default applies only when
+      nothing sets the variable.
+    references: ["https://developer.hashicorp.com/terraform/language/values/variables#variable-definition-precedence"]
+    tags: [variables]
+  - id: tf-028
+    type: single
+    difficulty: 3
+    prompt: Why are a variable marked `sensitive = true` and a secret stored in state not the same protection?
+    choices:
+      - {id: a, text: "sensitive values are sent to the provider encrypted"}
+      - {id: b, text: "State never contains variables"}
+      - {id: c, text: "sensitive only redacts the value in plan and output; state still holds it in plain text"}
+      - {id: d, text: "sensitive encrypts the variable in state"}
+    answer: [c]
+    explanation: >-
+      Terraform writes the attributes providers return, including passwords, into state, so state
+      must be protected: an encrypted backend with tight access. Ephemeral values and write-only
+      arguments in recent Terraform versions keep some secrets out of state altogether.
+    references: ["https://developer.hashicorp.com/terraform/language/state/sensitive-data"]
+    tags: [secrets, state]
+  - id: tf-029
+    type: single
+    difficulty: 2
+    prompt: What do `terraform fmt -check` and `terraform validate` each catch?
+    choices:
+      - {id: a, text: "fmt -check: files not in canonical formatting; validate: syntax errors and invalid references, without contacting APIs"}
+      - {id: b, text: "Both contact the provider to check resources exist"}
+      - {id: c, text: "fmt -check: invalid references; validate: formatting"}
+      - {id: d, text: "validate checks that credentials work"}
+    answer: [a]
+    explanation: >-
+      Both are offline and cheap, which makes them the first CI step. validate needs init for
+      provider schemas, but it does not read state or call APIs, so it cannot know whether a server
+      type exists.
+    references: ["https://developer.hashicorp.com/terraform/cli/commands/validate", "https://developer.hashicorp.com/terraform/cli/commands/fmt"]
+    tags: [cli, ci]
+  - id: tf-030
+    type: single
+    difficulty: 2
+    prompt: What does `terraform output -raw server_ip` print?
+    choices:
+      - {id: a, text: "The output as JSON"}
+      - {id: b, text: "The output's string value without quotes, suitable for a shell variable"}
+      - {id: c, text: "The output including sensitive values redacted"}
+      - {id: d, text: "Every output in the state"}
+    answer: [b]
+    explanation: >-
+      -raw prints a string, number or bool as plain text — IP=$(terraform output -raw server_ip).
+      -json prints all outputs, or one, as JSON, which is the form for lists and maps. Outputs are
+      read from state, so no refresh happens.
+    references: ["https://developer.hashicorp.com/terraform/cli/commands/output"]
+    tags: [cli]
+  - id: tf-031
+    type: single
+    difficulty: 3
+    prompt: Two engineers run terraform apply at the same moment against a backend without locking. What can happen?
+    choices:
+      - {id: a, text: "The second apply always waits"}
+      - {id: b, text: "Terraform merges both plans automatically"}
+      - {id: c, text: "Both write state, and one overwrites the other's changes, leaving state out of step with reality"}
+      - {id: d, text: "Nothing, because providers reject concurrent calls"}
+    answer: [c]
+    explanation: >-
+      Without a lock, the last writer wins and resources created by the other run become orphans
+      that Terraform no longer tracks. Backends with locking make the second run fail fast with a
+      lock error; force-unlock exists for a lock left by a crashed run.
+    references: ["https://developer.hashicorp.com/terraform/language/state/locking"]
+    tags: [state]
+  - id: tf-032
+    type: single
+    difficulty: 2
+    prompt: What does `terraform workspace new staging` create?
+    choices:
+      - {id: a, text: "A separate state for the same configuration and backend"}
+      - {id: b, text: "A copy of the configuration directory"}
+      - {id: c, text: "A Git branch"}
+      - {id: d, text: "A new provider account"}
+    answer: [a]
+    explanation: >-
+      CLI workspaces switch between states; terraform.workspace can vary names or sizes. They share
+      the same code and backend credentials, so HashiCorp recommends separate root modules or
+      directories when environments need different access or real isolation.
+    references: ["https://developer.hashicorp.com/terraform/cli/workspaces"]
+    tags: [state, environments]
+  - id: tf-033
+    type: single
+    difficulty: 2
+    prompt: What does `terraform console` let you do?
+    choices:
+      - {id: a, text: "Watch an apply in real time"}
+      - {id: b, text: "Edit state in a text editor"}
+      - {id: c, text: "SSH into a created server"}
+      - {id: d, text: "Evaluate expressions and functions interactively against the configuration and current state"}
+    answer: [d]
+    explanation: >-
+      It is the quickest way to check a for expression, a cidrsubnet call or what a resource
+      attribute holds, without writing an output and applying.
+    references: ["https://developer.hashicorp.com/terraform/cli/commands/console"]
+    tags: [cli, expressions]
+  - id: tf-034
+    type: single
+    difficulty: 3
+    prompt: What does `cidrsubnet("10.0.0.0/16", 8, 2)` return?
+    choices:
+      - {id: a, text: "10.0.2.0/24"}
+      - {id: b, text: "10.0.8.0/18"}
+      - {id: c, text: "10.0.0.2/24"}
+      - {id: d, text: "10.2.0.0/24"}
+    answer: [a]
+    explanation: >-
+      The second argument adds 8 bits to the prefix (/16 to /24) and the third picks subnet number 2
+      among the 256 that creates. It is how a VPC's subnets are derived from one range without
+      hand-written addresses.
+    references: ["https://developer.hashicorp.com/terraform/language/functions/cidrsubnet"]
+    tags: [expressions, networking]
+    verify:
+      runtime: python
+      code: |
+        import ipaddress
+        print(list(ipaddress.ip_network("10.0.0.0/16").subnets(prefixlen_diff=8))[2])
+  - id: tf-035
+    type: single
+    difficulty: 2
+    prompt: What is the purpose of a `locals` block?
+    choices:
+      - {id: a, text: "To store values on the local machine outside state"}
+      - {id: b, text: "To declare values a caller can set"}
+      - {id: c, text: "To run commands on the machine running Terraform"}
+      - {id: d, text: "To name an expression once and reuse it in the module, like a constant"}
+    answer: [d]
+    explanation: >-
+      local.common_labels computed from variables avoids repeating the same map in every resource.
+      Locals cannot be set from outside — that is what variables are — and running commands locally
+      is a local-exec provisioner or the external data source.
+    references: ["https://developer.hashicorp.com/terraform/language/values/locals"]
+    tags: [concepts]
+  - id: tf-036
+    type: single
+    difficulty: 3
+    prompt: Why does HashiCorp call provisioners such as remote-exec a last resort?
+    choices:
+      - {id: a, text: "They only work on Windows"}
+      - {id: b, text: "Terraform cannot model what they do, so their effects are not planned, tracked or reversible"}
+      - {id: c, text: "They are deprecated and do nothing"}
+      - {id: d, text: "They require a paid licence"}
+    answer: [b]
+    explanation: >-
+      A script run at creation is invisible to plan, runs once, and a failure taints the resource.
+      cloud-init user data, a pre-built image or a configuration tool such as Ansible keeps that
+      work declarative or at least repeatable.
+    references: ["https://developer.hashicorp.com/terraform/language/resources/provisioners/syntax"]
+    tags: [provisioners, design]
+  - id: tf-037
+    type: single
+    difficulty: 2
+    prompt: A plan shows `-/+ resource "hcloud_server" "web"` with `# forces replacement` next to `image`. What will apply do?
+    choices:
+      - {id: a, text: "Destroy the server and create a new one, because image cannot be changed in place"}
+      - {id: b, text: "Create a second server and keep the first"}
+      - {id: c, text: "Nothing until the image is available"}
+      - {id: d, text: "Update the image on the running server"}
+    answer: [a]
+    explanation: >-
+      The provider marks some arguments as immutable, and changing one requires replacement: -/+
+      is destroy then create, +/- is create then destroy (create_before_destroy). Data on the
+      server's disk goes with it, which is why plans deserve reading.
+    references: ["https://developer.hashicorp.com/terraform/cli/commands/plan"]
+    tags: [lifecycle]
+  - id: tf-038
+    type: multiple
+    difficulty: 3
+    prompt: Which belong in a CI pipeline that applies Terraform on merge?
+    choices:
+      - {id: a, text: "Commit terraform.tfstate so CI can read it"}
+      - {id: b, text: "Save the plan with -out on the pull request and apply exactly that plan file after approval"}
+      - {id: c, text: "Run apply -auto-approve on every push to every branch"}
+      - {id: d, text: "Run fmt -check and validate before plan"}
+    answer: [b, d]
+    explanation: >-
+      Applying a saved plan guarantees that what was reviewed is what runs, and cheap offline checks
+      fail early. Applying from every branch races and bypasses review, and state belongs in a
+      locked remote backend, not in Git.
+    references: ["https://developer.hashicorp.com/terraform/tutorials/automation/automate-terraform"]
+    tags: [ci, state]
+  - id: tf-039
+    type: single
+    difficulty: 2
+    prompt: What does a `data "hcloud_image" "ubuntu"` block do?
+    choices:
+      - {id: a, text: "Uploads an Ubuntu image"}
+      - {id: b, text: "Downloads the image to the machine running Terraform"}
+      - {id: c, text: "Looks up an existing image at plan time so its id can be used, without managing it"}
+      - {id: d, text: "Creates an image from a server"}
+    answer: [c]
+    explanation: >-
+      Data sources read; resources create, update and delete. Destroying the configuration never
+      touches objects that were only read.
+    references: ["https://developer.hashicorp.com/terraform/language/data-sources"]
+    tags: [concepts]
+  - id: tf-040
+    type: single
+    difficulty: 3
+    prompt: A `for_each` over a map of servers uses keys "web" and "db". "web" is removed from the map. What does the plan do?
+    choices:
+      - {id: a, text: "Keeps web in state but stops managing it"}
+      - {id: b, text: "Fails, because for_each keys cannot change"}
+      - {id: c, text: "Destroys only the web instance; db keeps its address and is untouched"}
+      - {id: d, text: "Destroys web and recreates db at a new index"}
+    answer: [c]
+    explanation: >-
+      Instances are addressed by key — hcloud_server.this["db"] — so removing one key affects only
+      that instance. With count, removing an element in the middle shifts every later index and
+      replaces those resources.
+    references: ["https://developer.hashicorp.com/terraform/language/meta-arguments/for_each"]
+    tags: [meta-arguments]
+  - id: tf-041
+    type: single
+    difficulty: 2
+    prompt: Where should provider credentials, such as an API token, come from in a shared repository?
+    choices:
+      - {id: a, text: "An environment variable the provider reads, or a sensitive variable fed from CI secrets"}
+      - {id: b, text: "A token argument written in provider.tf"}
+      - {id: c, text: "An output marked sensitive"}
+      - {id: d, text: "terraform.tfvars committed to Git"}
+    answer: [a]
+    explanation: >-
+      Most providers read a documented variable such as HCLOUD_TOKEN, so the token never appears in
+      code. A variable marked sensitive keeps it out of plan output, and .tfvars files holding
+      secrets belong in .gitignore.
+    references: ["https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs"]
+    tags: [secrets, providers]

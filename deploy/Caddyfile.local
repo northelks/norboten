@@ -1,0 +1,6 @@
+# The laptop stack: the site on :8080, plain HTTP, no certificates.
+:8080 {
+	encode zstd gzip
+	root * /srv/site
+	file_server
+}

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="section no-line">
+  <div class="wrap narrow" id="account" data-page="{{ page }}">
+    <div class="kicker">{{ 'Connect an AI client' if page == 'authorize' else 'Account' }}</div>
+    <h1>{{ 'Allow this client?' if page == 'authorize' else 'Your account' }}</h1>
+    {% if page == 'authorize' %}
+    <p class="lede">
+      An MCP client — an AI assistant such as Claude Code — asks to read your Norboten progress,
+      attempts and ratings. Sign in here to see who is asking. Allowing it gives that client a token
+      for Norboten's MCP server only, for an hour at a time; it cannot change anything, and the rest
+      of the API does not accept it.
+    </p>
+    {% else %}
+    <p class="lede">
+      An account is what makes a <strong>rating</strong> possible. Everything else — every lab,
+      journal and question bank — works on your own machine with no account and no server at all.
+    </p>
+    {% endif %}
+
+    <p class="note" id="acct-offline" hidden>The account service cannot be reached from here right now.</p>
+    <p class="acct-message" id="acct-message" role="status" hidden></p>
+
+    <div class="card acct-card" id="acct-signin" hidden>
+      <p class="muted small">Norboten signs you in with GitHub and nothing else — no password and no
+        email. GitHub tells us your GitHub user id and login, once; the token that carried them is
+        revoked straight away and never stored. Your first sign-in makes your account, and your
+        public profile links to your GitHub account.<br><a href="{{ root }}privacy/index.html">What is
+        kept, and for how long</a>.</p>
+      <button class="btn solid gh-button" type="button" id="acct-github-go">
+        <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+        Sign in with GitHub
+      </button>
+      <label class="acct-switch after-github">
+        <input type="checkbox" id="acct-remember" checked>
+        <span>Remember this browser for 90 days. Off, and you are signed in for 12 hours and
+          only in this tab.</span>
+      </label>
+      <p class="muted small acct-no-github">No GitHub account? It is free, and it is the only way in for now — the
+        labs, theory and journals never need one.</p>
+    </div>
+
+    {% if page == 'authorize' %}
+    <div class="card acct-card" id="acct-authorize" hidden>
+      <p><strong id="auth-client">A client</strong> <span class="muted" id="auth-client-uri"></span></p>
+      <p class="muted small" id="auth-what"></p>
+      <p class="muted small" id="auth-back"></p>
+      <p>
+        <button class="btn solid" type="button" id="auth-allow">Allow</button>
+        <button class="btn" type="button" id="auth-deny">Deny</button>
+      </p>
+    </div>
+    {% endif %}
+
+    <div id="acct-signed-in" hidden>
+      <p class="acct-github" id="acct-github" hidden></p>
+      <div class="card acct-card" id="acct-claim" hidden>
+        <h3>Choose your public nick</h3>
+        <p class="muted small">The nick is chosen once; the country can be changed later. Both start
+          from a guess — your GitHub login, and the country your address is in, looked up on our own
+          server — and nothing is saved until you claim it.</p>
+        <form id="claim-form">
+          <label>Nick <input type="text" name="nick" pattern="[a-z0-9][a-z0-9_-]{1,18}[a-z0-9]" placeholder="3–20: a-z 0-9 - _" required></label>
+          <label>Country <input type="text" name="country" maxlength="2" pattern="[A-Za-z]{2}" placeholder="PL" required></label>
+          <button class="btn solid" type="submit">Claim it</button>
+        </form>
+      </div>
+      <div class="card acct-card" id="acct-profile" hidden></div>
+      <div class="card acct-card" id="acct-country" hidden>
+        <form id="country-form" class="acct-inline">
+          <label>Country <input type="text" name="country" maxlength="2" pattern="[A-Za-z]{2}" required></label>
+          <button class="btn" type="submit">Change</button>
+        </form>
+        <p class="muted small">The nick stays as it is: it is chosen once.</p>
+      </div>
+      <div class="card acct-card" id="acct-discord" hidden>
+        <h3>Discord and the weekly digest</h3>
+        <p class="muted small">The weekly digest is a Discord direct message from the Norboten bot:
+          on Sunday evening, what you attempted, what your ratings did and the topic to work on next.
+          Nothing is sent in a week you did nothing, and nothing at all until you turn it on.</p>
+        <div id="discord-connect" hidden>
+          <label class="acct-switch">
+            <input type="checkbox" id="discord-join">
+            <span>Join the Norboten server too. The bot can only message you if you share a server
+              with it, so the digest needs this — or to be in the server already.</span>
+          </label>
+          <button class="btn" type="button" id="discord-connect-go">Connect Discord</button>
+        </div>
+        <div id="discord-linked" hidden>
+          <p class="muted small">Discord is linked.
+            <button type="button" class="linkish" id="discord-disconnect">Disconnect</button></p>
+        </div>
+        <p class="note small" id="discord-error" hidden></p>
+        <label class="acct-switch">
+          <input type="checkbox" id="digest-on" disabled>
+          <span>Send me the weekly digest on Discord. Needs Discord linked and a nick: the digest
+            is about your profile's week.</span>
+        </label>
+      </div>
+      <div class="card acct-card" id="acct-tokens" hidden>
+        <h3>Signed in on</h3>
+        <ul class="token-list" id="token-list"></ul>
+      </div>
+      <p><button class="btn" type="button" id="acct-signout">Sign out on this browser</button></p>
+    </div>
+  </div>
+</section>
+
+{% if page != 'authorize' %}
+<section class="section">
+  <div class="wrap">
+    <div class="grid two" style="gap:2.6rem; align-items:center">
+      <div>
+        <div class="kicker">What it is for</div>
+        <h2>One number, and where it comes from</h2>
+        <dl class="feature-list">
+          <dt>A rating per topic</dt>
+          <dd>An account is what a rated attempt is graded against. A rated lab or a rated run
+            through a question bank is graded on the server and moves the rating for the topics it
+            covers. Unrated work is still recorded on your profile and never moves the board. <a href="{{ root }}docs/rated-labs/index.html">Rated and unrated labs</a>.</dd>
+          <dt>A profile and the boards</dt>
+          <dd>The pages under <a href="{{ root }}players/index.html">Ratings</a> are built from
+            that: a year of work, a radar of the nineteen topics, every attempt with its score.</dd>
+          <dt>A terminal signs in the same way</dt>
+          <dd>There is no password to type anywhere. <kbd>a</kbd> in the TUI shows a code to type
+            at github.com/login/device — on any device, so a headless machine signs in too; a
+            remembered machine stays signed in for ninety days, and can be signed out from here.</dd>
+          <dt>An AI client connects to the same account</dt>
+          <dd>Claude Code, or any MCP client, reads your progress over Norboten's MCP server with
+            a token that is good for an hour and for nothing else.</dd>
+        </dl>
+      </div>
+      <figure class="capture">
+        <img src="{{ root }}captures/tui-you.svg" alt="The You section of the TUI: a year of attempts, ratings by topic and recent attempts" loading="lazy">
+        <figcaption class="muted">The same profile in the terminal. The account is the only part
+          of Norboten that needs a server — labs run offline, on your machine.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script src="{{ root }}account.js"></script>
+{% endblock %}

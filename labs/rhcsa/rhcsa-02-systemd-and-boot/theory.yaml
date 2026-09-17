@@ -1,0 +1,62 @@
+schema_version: 1
+topic: rhcsa-02-systemd-and-boot
+topics: [boot-systemd]
+title: "Theory: systemd units and targets"
+description: Dependencies, ordering, masking, drop-ins and targets.
+questions:
+  - id: rh2-001
+    type: single
+    difficulty: 3
+    prompt: Unit A has `After=B.service` and nothing else about B. What happens when A starts at boot?
+    choices:
+      - {id: a, text: "B is not started because of A; if something else starts B, A waits for it"}
+      - {id: b, text: "A and B start in parallel"}
+      - {id: c, text: "B is started first, then A"}
+      - {id: d, text: "A fails if B is not running"}
+    answer: [a]
+    explanation: >-
+      After= is ordering only. Pulling B in needs Wants= (or Requires= to fail with it). Ordering
+      and requirement are independent in systemd.
+    references: ["man 5 systemd.unit"]
+  - id: rh2-002
+    type: single
+    difficulty: 2
+    prompt: What does `systemctl mask foo.service` do?
+    choices:
+      - {id: a, text: "Links the unit to /dev/null so it cannot be started at all, even manually"}
+      - {id: b, text: "Disables it at boot but allows manual starts"}
+      - {id: c, text: "Hides it from systemctl list-units"}
+      - {id: d, text: "Stops it and deletes the unit file"}
+    answer: [a]
+    explanation: >-
+      A mask is a symlink to /dev/null in /etc/systemd/system; any start, including as a
+      dependency, fails. disable only removes the install symlinks. unmask reverses a mask.
+    references: ["man 1 systemctl"]
+  - id: rh2-003
+    type: single
+    difficulty: 2
+    prompt: Which command shows a unit's effective definition, including every drop-in?
+    choices:
+      - {id: a, text: "systemctl list-dependencies unit"}
+      - {id: b, text: "cat /usr/lib/systemd/system/unit.service"}
+      - {id: c, text: "systemctl cat unit"}
+      - {id: d, text: "systemctl status unit"}
+    answer: [c]
+    explanation: >-
+      systemctl cat prints the unit file and each drop-in with its path, in the order systemd
+      applies them. The vendor file alone misses overrides.
+    references: ["man 1 systemctl"]
+  - id: rh2-004
+    type: single
+    difficulty: 1
+    prompt: Which command makes the system boot to multi-user.target from now on?
+    choices:
+      - {id: a, text: "systemctl enable multi-user.target"}
+      - {id: b, text: "systemctl isolate multi-user.target"}
+      - {id: c, text: "systemctl set-default multi-user.target"}
+      - {id: d, text: "systemctl start multi-user.target"}
+    answer: [c]
+    explanation: >-
+      set-default changes the default.target link used at boot. isolate switches the running
+      system now, without changing what the next boot does.
+    references: ["man 1 systemctl"]

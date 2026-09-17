@@ -1,0 +1,6 @@
+[
+  {"text": "Handing this to the security reviewer.",
+   "tool": "Agent", "input": {"subagent_type": "security-reviewer", "description": "Pre-merge security review",
+                              "prompt": "Review the diff of feature/refund-search against main for security problems."}},
+  {"text": "Review finished: see the findings above."}
+]

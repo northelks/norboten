@@ -1,0 +1,9 @@
+[Unit]
+Description=Write the membership summary after boot and every night
+
+[Timer]
+OnBootSec=15s
+OnCalendar=*-*-* 04:00:00
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,56 @@
+checks:
+  01_site_served_on_8090:
+    level_1: "nginx will not stay up on the port it was given."
+    level_2: "When a daemon is refused something although its own configuration is fine, look
+              for denials from the security policy rather than in the daemon's log."
+    level_3: "ausearch -m avc -ts recent shows the denial; semanage port -l shows which ports
+              the web server may bind."
+    level_4: "Port 8090 is not labelled http_port_t, so SELinux refuses to let nginx bind it."
+    refs:
+      2: ["man 8 ausearch", "man 8 semanage-port"]
+      3: ["journal:rhcsa-04-selinux-firewall-network#finding-the-denial", "journal:rhcsa-04-selinux-firewall-network#the-four-fixes-in-order-of-preference"]
+  02_api_reached_through_nginx:
+    level_1: "nginx cannot reach the backend, although the backend is up."
+    level_2: "Whether a web server may open outbound network connections is a policy switch, not
+              a file permission. Look at the switches that apply to it."
+    level_3: "getsebool -a | grep httpd lists them; the denial in the audit log names the one."
+    level_4: "httpd_can_network_connect is off. It has to be on — and stay on after a reboot."
+    refs:
+      2: ["man 8 getsebool", "man 8 setsebool"]
+      3: ["journal:rhcsa-04-selinux-firewall-network#the-four-fixes-in-order-of-preference"]
+  03_contexts_survive_relabel:
+    level_1: "nginx is refused the site's files, although the file permissions allow reading."
+    level_2: "Files carry a security label as well as permissions. Some ways of changing it last
+              only until the next relabel."
+    level_3: "ls -Z /srv/status shows the label; semanage fcontext -l shows the rules restorecon
+              applies."
+    level_4: "/srv/status is labelled var_t. Add a file-context rule for it and restore the labels."
+    refs:
+      2: ["man 8 semanage-fcontext", "man 8 restorecon"]
+      3: ["journal:rhcsa-04-selinux-firewall-network#everything-has-a-label", "journal:rhcsa-04-selinux-firewall-network#chcon-versus-semanage-fcontext"]
+  04_firewall_open_persistently:
+    level_1: "Clients outside the machine are dropped before they reach nginx."
+    level_2: "firewalld has a runtime configuration and a permanent one, per zone. Check both."
+    level_3: "firewall-cmd --list-all and firewall-cmd --permanent --list-all for the active zone."
+    level_4: "The zone allows 8080/tcp, not 8090/tcp."
+    refs:
+      2: ["man 1 firewall-cmd"]
+      3: ["journal:rhcsa-04-selinux-firewall-network#firewalld-two-configurations-several-zones"]
+  05_network_config_persistent:
+    level_1: "The hostname and the extra address are there now, and gone after a reboot."
+    level_2: "Commands like hostname and ip change the running system only. Persistent settings
+              live in the tools that own the configuration."
+    level_3: "hostnamectl for the name; nmcli connection modify for the address on eth0's
+              profile."
+    level_4: "Neither the static hostname nor eth0's NetworkManager profile was changed."
+    refs:
+      2: ["man 1 nmcli", "man 1 hostnamectl"]
+      3: ["journal:rhcsa-04-selinux-firewall-network#networkmanager-owns-the-addresses"]
+  06_selinux_enforcing:
+    level_1: "SELinux has to keep protecting the system."
+    level_2: "SELinux has a current mode and a mode configured for the next boot."
+    level_3: "getenforce and /etc/selinux/config."
+    level_4: "Both must say enforcing after your fix."
+    refs:
+      2: ["man 8 selinux"]
+      3: ["journal:rhcsa-04-selinux-firewall-network#permissive-is-a-diagnostic-disabled-is-a-decision"]

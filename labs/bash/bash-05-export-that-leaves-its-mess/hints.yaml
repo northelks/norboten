@@ -1,0 +1,42 @@
+checks:
+  01_a_good_export_is_complete:
+    level_1: "Run on its own, with readable files, the export works; keep this one passing."
+    level_2: "A check that passes on the broken script is not the one to worry about — look at what
+              happens when a run does not go to plan."
+    level_3: "Run export-orders as your own user with EXPORT_SRC and EXPORT_DEST pointing at copies
+              of the order files."
+    level_4: "A good export is a header line followed by every data row of every file, in one gzip
+              file under the orders-<date>.csv.gz name."
+    refs:
+      2: ["man 1 gzip"]
+      3: ["journal:bash-05-export-that-leaves-its-mess#readers-do-not-wait"]
+  02_a_failed_export_leaves_nothing:
+    level_1: "When one order file cannot be read, a short export appears anyway and the run exits 0."
+    level_2: "A script carries on after a failing command unless told otherwise, and a redirection
+              creates its target before the command that fills it has succeeded."
+    level_3: "Follow the run when tail cannot open a file: which later lines still execute, and under
+              which name does gzip's output appear?"
+    level_4: "Nothing stops the script on the failed read, and the export is written straight to the
+              name the importer watches, so a partial file is published the moment gzip starts."
+    refs:
+      2: ["man 1 bash"]
+      3: ["journal:bash-05-export-that-leaves-its-mess#readers-do-not-wait"]
+  03_an_interrupted_export_leaves_nothing:
+    level_1: "Stopped in the middle, the export leaves files behind."
+    level_2: "When a process receives SIGTERM, which of its own lines run before it dies?"
+    level_3: "List what the script creates before it finishes, and where each of them would still be
+              if the script died on the line that reads the order files."
+    level_4: "There is no trap, so nothing removes the work file on a signal, and the work file has a
+              fixed name in /tmp that outlives the run."
+    refs:
+      2: ["man 1 bash", "man 7 signal"]
+      3: ["journal:bash-05-export-that-leaves-its-mess#traps-what-runs-when-a-script-ends", "journal:bash-05-export-that-leaves-its-mess#trapping-sigterm-yourself-makes-a-script-wait"]
+  04_two_exports_at_once:
+    level_1: "Two exports running together each lose rows."
+    level_2: "Two processes writing to the same path do not know about each other."
+    level_3: "Which file do two runs of the script share, whatever their sources and destinations?"
+    level_4: "The work file is always /tmp/export.tmp: the second run truncates it and removes it
+              while the first is still appending."
+    refs:
+      2: ["man 1 mktemp"]
+      3: ["journal:bash-05-export-that-leaves-its-mess#temporary-files-that-belong-to-one-run"]

@@ -1,0 +1,735 @@
+schema_version: 1
+topic: memory-cs
+topics: [kernel-performance, linux-basics]
+title: Memory and CS in Linux
+description: Virtual memory, the page cache, processes and scheduling — computer science as Linux shows it.
+questions:
+  - id: mem-001
+    type: single
+    difficulty: 1
+    prompt: In `free -h`, why is "available" larger than "free"?
+    choices:
+      - {id: a, text: "It is rounded up"}
+      - {id: b, text: "It includes swap"}
+      - {id: c, text: "It counts memory reserved for the kernel"}
+      - {id: d, text: "It includes page cache the kernel can reclaim for applications"}
+    answer: [d]
+    explanation: >-
+      Free memory is unused; available estimates how much can be given to new work without
+      swapping — mostly clean page cache and reclaimable slab. Swap is listed on its own line.
+    references: ["man 1 free", "man 5 proc (meminfo)"]
+    tags: [memory]
+  - id: mem-002
+    type: single
+    difficulty: 2
+    prompt: What is a process's RSS?
+    choices:
+      - {id: a, text: "Its share of swap"}
+      - {id: b, text: "The part of its memory currently held in physical RAM"}
+      - {id: c, text: "The memory it has asked for but not used"}
+      - {id: d, text: "The size of its whole virtual address space"}
+    answer: [b]
+    explanation: >-
+      Resident Set Size counts pages that are in RAM right now, shared pages included. VSZ is the
+      whole virtual address space, most of which may never be touched.
+    references: ["man 1 ps", "man 5 proc"]
+    tags: [memory, processes]
+  - id: mem-003
+    type: single
+    difficulty: 2
+    prompt: What does the OOM killer do?
+    choices:
+      - {id: a, text: "It restarts the machine"}
+      - {id: b, text: "It kills every process using swap"}
+      - {id: c, text: "It kills the process that made the last allocation"}
+      - {id: d, text: "When memory cannot be reclaimed, it kills the process with the highest badness score"}
+    answer: [d]
+    explanation: >-
+      Out of memory and out of options, the kernel picks a victim by oom_score (mostly memory use,
+      adjusted by oom_score_adj) and kills it. The victim is not necessarily the process that
+      asked last.
+    references: ["man 5 proc (oom_score)"]
+    tags: [memory]
+  - id: mem-004
+    type: single
+    difficulty: 3
+    prompt: What does vm.swappiness influence?
+    choices:
+      - {id: a, text: "The size of the swap space"}
+      - {id: b, text: "How often swap is defragmented"}
+      - {id: c, text: "How readily the kernel swaps out anonymous memory rather than dropping page cache"}
+      - {id: d, text: "Whether swap is used at all"}
+    answer: [c]
+    explanation: >-
+      It weights reclaim between anonymous pages (which must go to swap) and file-backed pages
+      (which can be re-read). It does not size swap, and 0 does not strictly disable it.
+    references: ["https://docs.kernel.org/admin-guide/sysctl/vm.html#swappiness"]
+    tags: [memory, tuning]
+  - id: mem-005
+    type: single
+    difficulty: 2
+    prompt: What makes a page fault a major fault?
+    choices:
+      - {id: a, text: "The page was larger than 4 KiB"}
+      - {id: b, text: "The fault happened in the kernel"}
+      - {id: c, text: "The data had to be read from disk"}
+      - {id: d, text: "The process accessed memory it does not own"}
+    answer: [c]
+    explanation: >-
+      A minor fault is satisfied from memory (a page already cached, or a fresh zero page); a
+      major fault needs I/O, from a file or swap. Invalid access is a segmentation fault.
+    references: ["man 1 time", "man 2 getrusage"]
+    tags: [memory]
+  - id: mem-006
+    type: single
+    difficulty: 1
+    prompt: What is a zombie process?
+    choices:
+      - {id: a, text: "One that keeps running after its terminal closed"}
+      - {id: b, text: "One stuck in uninterruptible sleep"}
+      - {id: c, text: "One that has exited but whose parent has not yet collected its exit status"}
+      - {id: d, text: "One that ignores SIGTERM"}
+    answer: [c]
+    explanation: >-
+      The process is gone; only its process table entry remains until the parent calls wait().
+      You cannot kill a zombie — fix or kill the parent. Uninterruptible sleep is state D.
+    references: ["man 2 wait"]
+    tags: [processes]
+  - id: mem-007
+    type: single
+    difficulty: 1
+    prompt: What are file descriptors 0, 1 and 2?
+    choices:
+      - {id: a, text: "The terminal, the log, the socket"}
+      - {id: b, text: "The first three files the process opened"}
+      - {id: c, text: "Standard input, standard output, standard error"}
+      - {id: d, text: "The process, its parent, and init"}
+    answer: [c]
+    explanation: >-
+      By convention every process starts with stdin (0), stdout (1) and stderr (2); 2>&1 means
+      "make descriptor 2 point where 1 points".
+    references: ["man 3 stdin"]
+    tags: [files, processes]
+  - id: mem-008
+    type: single
+    difficulty: 2
+    prompt: What does /proc/<pid>/maps show?
+    choices:
+      - {id: a, text: "The CPU cores the process may run on"}
+      - {id: b, text: "The process's memory mappings: address ranges, permissions and backing files"}
+      - {id: c, text: "The process's network connections"}
+      - {id: d, text: "The files the process has open"}
+    answer: [b]
+    explanation: >-
+      Each line is a mapping — code, heap, stack, shared libraries, mmapped files. Open files are
+      in /proc/<pid>/fd, CPU affinity comes from taskset.
+    references: ["man 5 proc (maps)"]
+    tags: [memory]
+  - id: mem-009
+    type: single
+    difficulty: 2
+    prompt: Why can the VSZ of all processes add up to far more than the RAM installed?
+    choices:
+      - {id: a, text: "ps reports VSZ in the wrong unit"}
+      - {id: b, text: "Virtual address space is not backed by physical memory until it is used, and shared pages are counted in every process"}
+      - {id: c, text: "The kernel compresses memory"}
+      - {id: d, text: "VSZ includes the disk cache"}
+    answer: [b]
+    explanation: >-
+      Memory is allocated lazily (and overcommitted), and shared libraries are mapped into many
+      processes but held once. VSZ measures address space, not usage.
+    references: ["https://docs.kernel.org/mm/overcommit-accounting.html"]
+    tags: [memory]
+  - id: mem-010
+    type: single
+    difficulty: 2
+    prompt: A 4-CPU Linux machine has a load average of 4.0. What does that mean?
+    choices:
+      - {id: a, text: "On average about four tasks were running, waiting for a CPU, or in uninterruptible I/O wait"}
+      - {id: b, text: "Four processes exist"}
+      - {id: c, text: "Memory is exhausted"}
+      - {id: d, text: "The CPUs are 400% overloaded"}
+    answer: [a]
+    explanation: >-
+      Linux load counts runnable tasks plus tasks in uninterruptible sleep (D state), averaged
+      over 1, 5 and 15 minutes. About equal to the CPU count means busy but not queueing — unless
+      the load comes from I/O waits.
+    references: ["man 5 proc (loadavg)"]
+    tags: [scheduling]
+  - id: mem-011
+    type: single
+    difficulty: 1
+    prompt: What does `nice -n 10 backup.sh` do?
+    choices:
+      - {id: a, text: "Runs it with lower CPU scheduling priority"}
+      - {id: b, text: "Delays its start by 10 seconds"}
+      - {id: c, text: "Limits it to 10% CPU"}
+      - {id: d, text: "Runs it with higher priority"}
+    answer: [a]
+    explanation: >-
+      Niceness ranges from -20 (highest priority) to 19 (lowest); a positive increment makes the
+      process yield the CPU to others. It does not cap CPU use — that is cgroups (CPUQuota=).
+    references: ["man 1 nice"]
+    tags: [scheduling]
+  - id: mem-012
+    type: single
+    difficulty: 3
+    prompt: What does copy-on-write mean after fork()?
+    choices:
+      - {id: a, text: "Files the parent has open are copied for the child"}
+      - {id: b, text: "Writes by the child are copied to the parent"}
+      - {id: c, text: "The child gets a full copy of the parent's memory at once"}
+      - {id: d, text: "Parent and child share pages until one of them writes, and only then is that page copied"}
+    answer: [d]
+    explanation: >-
+      fork() marks the shared pages read-only; the first write to a page faults and gives the
+      writer its own copy. That is why forking a large process is cheap until it starts writing.
+    references: ["man 2 fork"]
+    tags: [processes, memory]
+  - id: mem-013
+    type: multiple
+    difficulty: 3
+    prompt: Which of these live in the page cache?
+    choices:
+      - {id: a, text: "File data written but not yet flushed to disk"}
+      - {id: b, text: "Kernel stacks"}
+      - {id: c, text: "Data recently read from files"}
+      - {id: d, text: "A process's heap allocated with malloc"}
+    answer: [a, c]
+    explanation: >-
+      The page cache holds file contents, clean (read) and dirty (written, waiting for
+      writeback). Heap memory is anonymous memory, and kernel stacks are separate kernel
+      allocations.
+    references: ["https://docs.kernel.org/admin-guide/mm/concepts.html#page-cache"]
+    tags: [memory]
+  - id: mem-014
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      sh -c 'kill -KILL $$'
+      echo $?
+    code_lang: bash
+    choices:
+      - {id: a, text: "1"}
+      - {id: b, text: "9"}
+      - {id: c, text: "137"}
+      - {id: d, text: "0"}
+    answer: [c]
+    explanation: >-
+      When a child is killed by a signal, the shell reports 128 plus the signal number: SIGKILL is
+      9, so 137. Seeing 137 from a container or a CI job usually means the OOM killer or a timeout
+      sent SIGKILL; 143 is SIGTERM.
+    references: ["man 1 bash (EXIT STATUS)", "man 7 signal"]
+    tags: [processes, signals]
+    verify:
+      runtime: bash
+      code: |
+        sh -c 'kill -KILL $$'
+        echo $?
+  - id: mem-015
+    type: single
+    difficulty: 2
+    prompt: What is the difference between SIGTERM and SIGKILL?
+    choices:
+      - {id: a, text: "They are the same signal under two names"}
+      - {id: b, text: "SIGTERM asks the process to exit and can be handled; SIGKILL removes it without giving it a chance to clean up"}
+      - {id: c, text: "SIGKILL asks politely; SIGTERM is immediate"}
+      - {id: d, text: "SIGTERM only works on processes owned by root"}
+    answer: [b]
+    explanation: >-
+      kill sends SIGTERM (15) by default, and a program can catch it to flush data and remove lock
+      files. SIGKILL (9) cannot be caught, blocked or ignored. systemctl stop sends SIGTERM and falls
+      back to SIGKILL after TimeoutStopSec.
+    references: ["man 7 signal", "man 5 systemd.kill"]
+    tags: [processes, signals]
+  - id: mem-016
+    type: single
+    difficulty: 3
+    prompt: A process is in state D in ps and does not die even with kill -9. What does D mean?
+    choices:
+      - {id: a, text: "Dead: it is a zombie"}
+      - {id: b, text: "Detached from its terminal"}
+      - {id: c, text: "Debugged: it is stopped under ptrace"}
+      - {id: d, text: "Uninterruptible sleep, usually waiting on I/O inside the kernel; the signal is delivered only when the call returns"}
+    answer: [d]
+    explanation: >-
+      D-state processes are blocked in a kernel code path that cannot be interrupted, commonly a
+      hung NFS mount or a failing disk. They also count towards the load average. Z is a zombie, T
+      is stopped (including by a debugger).
+    references: ["man 1 ps (PROCESS STATE CODES)"]
+    tags: [processes]
+  - id: mem-017
+    type: single
+    difficulty: 2
+    prompt: What makes a process an orphan, and what happens to it?
+    choices:
+      - {id: a, text: "It has no open file descriptors; it is swapped out"}
+      - {id: b, text: "It exited but was never reaped; it stays as a zombie forever"}
+      - {id: c, text: "Its parent exited first; it is re-parented to init (PID 1) or a subreaper, which reaps it when it exits"}
+      - {id: d, text: "It lost its terminal; the kernel sends it SIGKILL"}
+    answer: [c]
+    explanation: >-
+      An orphan keeps running under a new parent, and PID 1 always waits for its children, so an
+      orphan never stays a zombie for long. The problem case is a live parent that never calls
+      wait() — then its dead children pile up as zombies. In a container, PID 1 must do this reaping.
+    references: ["man 2 wait", "man 2 prctl (PR_SET_CHILD_SUBREAPER)"]
+    tags: [processes]
+  - id: mem-018
+    type: single
+    difficulty: 2
+    prompt: What does fork() followed by exec() do?
+    choices:
+      - {id: a, text: "fork starts a new thread; exec joins it"}
+      - {id: b, text: "fork creates a copy of the calling process; exec replaces that copy's program with another"}
+      - {id: c, text: "fork loads a program; exec runs it in the background"}
+      - {id: d, text: "fork duplicates a file; exec makes it executable"}
+    answer: [b]
+    explanation: >-
+      This is how a shell starts every command: the child inherits open file descriptors (which is
+      how redirections work) and environment, then execve loads the new binary into it while the
+      PID stays the same. Threads come from clone with shared memory.
+    references: ["man 2 fork", "man 2 execve"]
+    tags: [processes]
+  - id: mem-019
+    type: single
+    difficulty: 2
+    prompt: What is the main difference between a thread and a process on Linux?
+    choices:
+      - {id: a, text: "Only threads can be killed with signals"}
+      - {id: b, text: "Threads cannot run on different CPUs at the same time"}
+      - {id: c, text: "Threads of one process share its address space and file descriptors; processes have their own"}
+      - {id: d, text: "Processes are created by the kernel and threads by the shell"}
+    answer: [c]
+    explanation: >-
+      Both are tasks created with clone(); threads pass flags that share memory, file table and
+      signal handlers. Threads can run in parallel on several CPUs, and ps -L or top -H shows them
+      individually.
+    references: ["man 2 clone", "man 7 pthreads"]
+    tags: [processes, scheduling]
+  - id: mem-020
+    type: single
+    difficulty: 3
+    prompt: Why does Python's GIL keep CPU-bound threads from speeding up, while I/O-bound threads still help?
+    choices:
+      - {id: a, text: "Only one thread executes Python bytecode at a time, but a thread releases the lock while it waits on I/O"}
+      - {id: b, text: "I/O-bound threads run in the kernel, which has no GIL"}
+      - {id: c, text: "The kernel pins all Python threads to one CPU"}
+      - {id: d, text: "Python threads are processes in disguise"}
+    answer: [a]
+    explanation: >-
+      In CPython with the GIL, threads take turns running bytecode, so pure computation is not
+      parallel; blocking calls such as socket reads release it so other threads can progress. For
+      CPU work, use multiprocessing, or a free-threaded build of Python 3.13 or later.
+    references: ["https://docs.python.org/3/glossary.html#term-global-interpreter-lock", "https://peps.python.org/pep-0703/"]
+    tags: [scheduling, python]
+  - id: mem-021
+    type: single
+    difficulty: 2
+    prompt: What does `ulimit -n` control?
+    choices:
+      - {id: a, text: "The number of CPU cores a process may use"}
+      - {id: b, text: "The maximum size of files a user may create"}
+      - {id: c, text: "The maximum number of open file descriptors for the shell and processes it starts"}
+      - {id: d, text: "The maximum number of processes a user may run"}
+    answer: [c]
+    explanation: >-
+      A server that fails with "Too many open files" has hit RLIMIT_NOFILE, and sockets count. For a
+      systemd service the limit comes from LimitNOFILE= in the unit, not from the shell or
+      /etc/security/limits.conf. Processes are -u and file size is -f.
+    references: ["man 1 bash (ulimit)", "man 2 getrlimit", "man 5 systemd.exec (LimitNOFILE)"]
+    tags: [limits, files]
+  - id: mem-022
+    type: single
+    difficulty: 3
+    prompt: A process's memory usage grows steadily over days until the OOM killer ends it. What does that most suggest?
+    choices:
+      - {id: a, text: "A memory leak: allocations that are kept reachable or never freed"}
+      - {id: b, text: "The page cache is too large"}
+      - {id: c, text: "The CPU is overheating"}
+      - {id: d, text: "Swap is disabled"}
+    answer: [a]
+    explanation: >-
+      Steady growth of RSS under a steady workload is the signature of a leak — in garbage-collected
+      languages, often an ever-growing cache or list. Page cache is reclaimed on demand and not
+      charged to the process like this; disabling swap changes when OOM happens, not why.
+    references: ["man 5 proc (/proc/pid/status, VmRSS)"]
+    tags: [memory, troubleshooting]
+  - id: mem-023
+    type: single
+    difficulty: 3
+    prompt: What does "overcommit" mean in Linux memory management?
+    choices:
+      - {id: a, text: "The kernel lets processes allocate more virtual memory than RAM plus swap, betting most of it will never be touched"}
+      - {id: b, text: "Two processes are given the same physical page for writing"}
+      - {id: c, text: "The kernel refuses any allocation larger than free memory"}
+      - {id: d, text: "Swap is used before RAM"}
+    answer: [a]
+    explanation: >-
+      malloc usually succeeds because pages are only backed when first written. If too many are
+      touched, the OOM killer reclaims memory by killing a process. vm.overcommit_memory selects the
+      heuristic (0), always (1) or strict accounting (2).
+    references: ["https://docs.kernel.org/mm/overcommit-accounting.html"]
+    tags: [memory]
+  - id: mem-024
+    type: single
+    difficulty: 2
+    prompt: What is a page?
+    choices:
+      - {id: a, text: "A block on disk that stores one file"}
+      - {id: b, text: "One line of the process table"}
+      - {id: c, text: "The fixed-size unit, usually 4 KiB, in which the kernel maps virtual memory to physical memory"}
+      - {id: d, text: "A CPU cache entry"}
+    answer: [c]
+    explanation: >-
+      Virtual addresses are translated page by page through page tables, and the TLB caches recent
+      translations. Some ARM64 systems use 16 KiB pages, and huge pages (2 MiB, 1 GiB) reduce TLB
+      misses for large memory users. getconf PAGESIZE prints the base size.
+    references: ["https://docs.kernel.org/admin-guide/mm/concepts.html"]
+    tags: [memory]
+  - id: mem-025
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      print(len("héllo"), len("héllo".encode("utf-8")))
+    code_lang: python
+    choices:
+      - {id: a, text: "5 5"}
+      - {id: b, text: "6 6"}
+      - {id: c, text: "5 6"}
+      - {id: d, text: "5 10"}
+    answer: [c]
+    explanation: >-
+      A Python str counts code points, but UTF-8 encodes é in two bytes. Byte lengths matter
+      wherever a limit is in bytes — a database column, a protocol header, a file name on disk.
+    references: ["https://docs.python.org/3/howto/unicode.html"]
+    tags: [encoding]
+    verify:
+      runtime: python
+      code: |
+        print(len("héllo"), len("héllo".encode("utf-8")))
+  - id: mem-026
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      print(-1 & 0xFF, 0b1010 ^ 0b0110, 1 << 10)
+    code_lang: python
+    choices:
+      - {id: a, text: "-1 16 10"}
+      - {id: b, text: "255 14 1024"}
+      - {id: c, text: "255 12 1024"}
+      - {id: d, text: "0 12 100"}
+    answer: [c]
+    explanation: >-
+      In two's complement, -1 has every bit set, so masking with 0xFF keeps eight ones: 255. XOR of
+      1010 and 0110 is 1100, which is 12. Shifting 1 left by 10 bits multiplies by 2^10.
+    references: ["https://docs.python.org/3/reference/expressions.html#binary-bitwise-operations"]
+    tags: [numbers, binary]
+    verify:
+      runtime: python
+      code: |
+        print(-1 & 0xFF, 0b1010 ^ 0b0110, 1 << 10)
+  - id: mem-027
+    type: single
+    difficulty: 1
+    prompt: What does this print?
+    code: |
+      print(int("755", 8), oct(493), hex(255))
+    code_lang: python
+    choices:
+      - {id: a, text: "493 0o755 0xff"}
+      - {id: b, text: "7 0o755 255"}
+      - {id: c, text: "493 755 ff"}
+      - {id: d, text: "755 0o493 0xFF"}
+    answer: [a]
+    explanation: >-
+      Octal 755 is 7·64 + 5·8 + 5 = 493, which is why file modes are written in octal: each digit is
+      three permission bits. oct and hex return strings with the 0o and 0x prefixes, lower-case.
+    references: ["https://docs.python.org/3/library/functions.html#int"]
+    tags: [numbers, binary]
+    verify:
+      runtime: python
+      code: |
+        print(int("755", 8), oct(493), hex(255))
+  - id: mem-028
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      print(0.1 + 0.2 == 0.3, round(0.1 + 0.2, 10) == 0.3)
+    code_lang: python
+    choices:
+      - {id: a, text: "False True"}
+      - {id: b, text: "True False"}
+      - {id: c, text: "True True"}
+      - {id: d, text: "False False"}
+    answer: [a]
+    explanation: >-
+      0.1, 0.2 and 0.3 have no exact binary representation, and the sum is 0.30000000000000004.
+      Compare floats with a tolerance (math.isclose), and keep money in integers or Decimal.
+    references: ["https://docs.python.org/3/tutorial/floatingpoint.html"]
+    tags: [numbers]
+    verify:
+      runtime: python
+      code: |
+        print(0.1 + 0.2 == 0.3, round(0.1 + 0.2, 10) == 0.3)
+  - id: mem-029
+    type: single
+    difficulty: 2
+    prompt: What is the time complexity of checking `x in s` for a Python set, and for a list, of n elements?
+    choices:
+      - {id: a, text: "O(n) for both"}
+      - {id: b, text: "O(log n) for the set, O(n) for the list"}
+      - {id: c, text: "O(1) for both"}
+      - {id: d, text: "O(1) on average for the set, O(n) for the list"}
+    answer: [d]
+    explanation: >-
+      A set is a hash table: hashing the element leads almost directly to its slot. A list has to be
+      scanned element by element. Turning a list of allowed hosts into a set before a loop that
+      checks thousands of lines is a common, large speed-up.
+    references: ["https://wiki.python.org/moin/TimeComplexity"]
+    tags: [algorithms]
+  - id: mem-030
+    type: single
+    difficulty: 3
+    prompt: Why is reading a file sequentially usually much faster than reading the same bytes at random offsets on a hard disk?
+    choices:
+      - {id: a, text: "Sequential reads use a separate faster bus"}
+      - {id: b, text: "Random reads bypass the page cache"}
+      - {id: c, text: "The kernel compresses sequential reads"}
+      - {id: d, text: "Random reads need a seek of the disk head for each one, and sequential reads benefit from kernel read-ahead"}
+    answer: [d]
+    explanation: >-
+      A seek costs milliseconds on a spinning disk, and the kernel detects sequential access and
+      reads ahead into the page cache. SSDs remove the seek, so the gap shrinks but read-ahead still
+      helps. iostat -x shows the resulting await times.
+    references: ["man 1 iostat", "https://docs.kernel.org/admin-guide/mm/concepts.html"]
+    tags: [io, performance]
+  - id: mem-031
+    type: single
+    difficulty: 2
+    prompt: What does `sync` do?
+    choices:
+      - {id: a, text: "Synchronises the clock with NTP"}
+      - {id: b, text: "Frees the page cache"}
+      - {id: c, text: "Flushes data held in the kernel's buffers and page cache to the storage devices"}
+      - {id: d, text: "Copies files between two directories"}
+    answer: [c]
+    explanation: >-
+      Writes normally land in memory and are written out later, which is why pulling a USB stick
+      without unmounting loses data. sync forces the write-out; fsync does it for one file from a
+      program. Dropping caches is echo 3 > /proc/sys/vm/drop_caches, and rsync copies files.
+    references: ["man 1 sync", "man 2 fsync"]
+    tags: [io]
+  - id: mem-032
+    type: single
+    difficulty: 3
+    prompt: iowait is high in top, but the CPUs are otherwise idle. What does that indicate?
+    choices:
+      - {id: a, text: "Memory is full"}
+      - {id: b, text: "The CPUs are overloaded with interrupts"}
+      - {id: c, text: "A process is spinning in a busy loop"}
+      - {id: d, text: "CPUs are idle while processes wait for disk or network storage to complete I/O"}
+    answer: [d]
+    explanation: >-
+      iowait is idle time during which some task was blocked on I/O; the bottleneck is storage, not
+      CPU. iostat -x and iotop show which device and which process. A busy loop shows as us or sy,
+      interrupts as hi and si.
+    references: ["man 1 top", "man 1 iostat"]
+    tags: [io, performance]
+  - id: mem-033
+    type: single
+    difficulty: 2
+    prompt: What does the `st` (steal) value in top mean on a virtual machine?
+    choices:
+      - {id: a, text: "Time spent in the idle loop"}
+      - {id: b, text: "CPU time taken by the kernel to handle system calls"}
+      - {id: c, text: "Time the hypervisor ran other work while this VM's virtual CPU wanted to run"}
+      - {id: d, text: "Memory taken from the VM by the balloon driver"}
+    answer: [c]
+    explanation: >-
+      High steal means the host is oversubscribed: the guest is ready to run but the physical CPU is
+      busy elsewhere. Nothing inside the guest can fix it; a larger or dedicated instance can. sy is
+      kernel time, and id is idle.
+    references: ["man 1 top"]
+    tags: [scheduling, virtualization]
+  - id: mem-034
+    type: single
+    difficulty: 3
+    prompt: How does a cgroup memory limit, such as MemoryMax= on a systemd service or --memory on a container, behave when it is exceeded?
+    choices:
+      - {id: a, text: "The whole machine starts swapping"}
+      - {id: b, text: "The kernel reclaims what it can inside the group, then invokes the OOM killer on processes in that group only"}
+      - {id: c, text: "The service is paused until memory frees up"}
+      - {id: d, text: "Allocations beyond the limit silently spill into host memory"}
+    answer: [b]
+    explanation: >-
+      A cgroup is its own memory domain: page cache charged to it is reclaimed first, and if that is
+      not enough the OOM killer acts inside the group, leaving the rest of the system alone.
+      MemoryHigh= throttles by reclaiming harder before that point.
+    references: ["https://docs.kernel.org/admin-guide/cgroup-v2.html#memory", "man 5 systemd.resource-control"]
+    tags: [memory, cgroups]
+  - id: mem-035
+    type: single
+    difficulty: 2
+    prompt: What does `strace -f -e trace=openat ./app` show?
+    choices:
+      - {id: a, text: "The program's source code line by line"}
+      - {id: b, text: "Every file the program and its children try to open, with the result of each call"}
+      - {id: c, text: "Network packets sent by the program"}
+      - {id: d, text: "The program's memory map"}
+    answer: [b]
+    explanation: >-
+      strace intercepts system calls; -f follows forked children and -e trace= filters the calls.
+      A failing openat with ENOENT or EACCES is often the whole explanation for "it cannot find its
+      config". ltrace traces library calls, and tcpdump captures packets.
+    references: ["man 1 strace"]
+    tags: [debugging]
+  - id: mem-036
+    type: single
+    difficulty: 2
+    prompt: What does `lsof -p 1234` list?
+    choices:
+      - {id: a, text: "The users logged in from terminal 1234"}
+      - {id: b, text: "The threads of process 1234"}
+      - {id: c, text: "The libraries process 1234 was compiled against"}
+      - {id: d, text: "The files, sockets and pipes that process 1234 has open"}
+    answer: [d]
+    explanation: >-
+      Everything a process holds is a file descriptor in /proc/1234/fd, and lsof names each one:
+      regular files, deleted files still open, TCP and UDP sockets, pipes. Threads are in
+      /proc/1234/task.
+    references: ["man 8 lsof", "man 5 proc"]
+    tags: [files, debugging]
+  - id: mem-037
+    type: single
+    difficulty: 3
+    prompt: Why can a program's stdout appear in a different order relative to its stderr when both are redirected to one file?
+    choices:
+      - {id: a, text: "The kernel writes stderr to disk first"}
+      - {id: b, text: "stderr is always written to the start of the file"}
+      - {id: c, text: "stdout is block-buffered when it is not a terminal, while stderr is unbuffered"}
+      - {id: d, text: "Files can only be appended by one descriptor at a time"}
+    answer: [c]
+    explanation: >-
+      The C library (and Python) line-buffers stdout on a terminal but buffers it in blocks when it
+      goes to a file or pipe, so stdout text is written later, in chunks. stdbuf -oL, python -u or
+      an explicit flush restores the interleaving.
+    references: ["man 3 setbuf", "man 1 stdbuf"]
+    tags: [io, files]
+  - id: mem-038
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import sys
+      print(sys.maxsize == 2**63 - 1, 2**100 > sys.maxsize)
+    code_lang: python
+    choices:
+      - {id: a, text: "True False"}
+      - {id: b, text: "False True"}
+      - {id: c, text: "True True"}
+      - {id: d, text: "OverflowError"}
+    answer: [c]
+    explanation: >-
+      On a 64-bit build, sys.maxsize is the largest value a signed 64-bit index can hold. Python
+      integers are arbitrary precision, so 2**100 is a normal int and simply larger; there is no
+      overflow as in C.
+    references: ["https://docs.python.org/3/library/sys.html#sys.maxsize"]
+    tags: [numbers, binary]
+    verify:
+      runtime: python
+      code: |
+        import sys
+        print(sys.maxsize == 2**63 - 1, 2**100 > sys.maxsize)
+  - id: mem-039
+    type: single
+    difficulty: 3
+    prompt: What is a race condition?
+    choices:
+      - {id: a, text: "A bug whose outcome depends on the timing or order of concurrent operations on shared state"}
+      - {id: b, text: "A program that uses too much CPU"}
+      - {id: c, text: "A deadlock between exactly two threads"}
+      - {id: d, text: "Two processes with the same nice value"}
+    answer: [a]
+    explanation: >-
+      Two scripts that read a counter, add one and write it back can both read 5 and both write 6.
+      Locks (flock), atomic operations (rename, O_EXCL, INSERT … ON CONFLICT) and transactions remove
+      the window. A deadlock is a different failure: each waits for the other forever.
+    references: ["man 1 flock", "man 2 rename"]
+    tags: [concurrency]
+  - id: mem-040
+    type: single
+    difficulty: 2
+    prompt: Why do configuration tools write a new file and rename it over the old one instead of editing in place?
+    choices:
+      - {id: a, text: "rename() within one filesystem is atomic, so readers see either the old file or the new one, never half of each"}
+      - {id: b, text: "Only renamed files are backed up"}
+      - {id: c, text: "Editing in place changes the file's inode number"}
+      - {id: d, text: "rename() is faster than write()"}
+    answer: [a]
+    explanation: >-
+      A process or a crash during an in-place write can leave a truncated file. Writing to a
+      temporary file in the same directory, fsyncing it and renaming it replaces the file in one
+      step. The rename does give the path a new inode, which is also why an editor can break a hard
+      link.
+    references: ["man 2 rename"]
+    tags: [files, concurrency]
+  - id: mem-041
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import hashlib
+      print(len(hashlib.sha256(b"norboten").hexdigest()))
+    code_lang: python
+    choices:
+      - {id: a, text: "32"}
+      - {id: b, text: "256"}
+      - {id: c, text: "64"}
+      - {id: d, text: "8"}
+    answer: [c]
+    explanation: >-
+      SHA-256 produces 256 bits, which is 32 bytes, and each byte is two hexadecimal characters. The
+      length never depends on the input, which is what lets a digest pin an image or a download.
+    references: ["https://docs.python.org/3/library/hashlib.html"]
+    tags: [binary, hashing]
+    verify:
+      runtime: python
+      code: |
+        import hashlib
+        print(len(hashlib.sha256(b"norboten").hexdigest()))
+  - id: mem-042
+    type: single
+    difficulty: 3
+    prompt: What does the kernel's page cache do when an application reads the same file twice?
+    choices:
+      - {id: a, text: "The second read is served from memory if the pages are still cached, without touching the disk"}
+      - {id: b, text: "The file is copied into the application's heap"}
+      - {id: c, text: "Both reads always go to disk, because the cache is only for writes"}
+      - {id: d, text: "The second read fails until the file is closed"}
+    answer: [a]
+    explanation: >-
+      File contents read once stay in otherwise unused RAM until memory is needed elsewhere. That is
+      why a second grep over a large log is much faster, why "buff/cache" is large on a healthy
+      machine, and why benchmarks drop caches first.
+    references: ["https://docs.kernel.org/admin-guide/mm/concepts.html#page-cache"]
+    tags: [memory, io]
+  - id: mem-043
+    type: single
+    difficulty: 2
+    prompt: What does `vmstat 1` show in the si and so columns?
+    choices:
+      - {id: a, text: "System interrupts in and out"}
+      - {id: b, text: "Memory swapped in from and out to disk per second"}
+      - {id: c, text: "Sockets opened and closed"}
+      - {id: d, text: "Signals sent and received"}
+    answer: [b]
+    explanation: >-
+      Sustained non-zero so means the machine is pushing memory to swap because RAM is short, and si
+      that it is paying to bring it back — the pattern of a system that is thrashing. Swap merely
+      being used, with si and so at zero, is harmless. Interrupts are the in column.
+    references: ["man 8 vmstat"]
+    tags: [memory, performance]

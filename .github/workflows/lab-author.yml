@@ -1,0 +1,41 @@
+name: lab-author
+
+# An issue labelled `lab-request` becomes a draft lab on a branch and a draft pull request. Claude
+# Code runs as the project subagent .claude/agents/lab-author.md (Sonnet), with Read, Glob, Grep and
+# Write only, writes allowed under labs/_drafts/ only, dontAsk, 20 turns and $1 at most. The script
+# checks that exactly one draft appeared, then commits, pushes and opens the pull request itself.
+# automation/jobs/lab_author.py; rehearsed by `make jobs-rehearsal`. Nothing merges without review.
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: lab-author-${{ github.event.issue.number }}
+
+jobs:
+  draft:
+    if: github.event.label.name == 'lab-request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+    steps:
+      - name: Skip without a Claude token
+        if: env.CLAUDE_CODE_OAUTH_TOKEN == ''
+        run: echo "::notice::CLAUDE_CODE_OAUTH_TOKEN is not set; no draft was written"
+      - uses: actions/checkout@v5
+        if: env.CLAUDE_CODE_OAUTH_TOKEN != ''
+        with:
+          ref: main
+      - uses: ./.github/actions/claude-code
+        if: env.CLAUDE_CODE_OAUTH_TOKEN != ''
+      - name: Draft, check, open a draft pull request
+        if: env.CLAUDE_CODE_OAUTH_TOKEN != ''
+        run: python3 -m automation.jobs.lab_author

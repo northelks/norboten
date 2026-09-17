@@ -1,0 +1,222 @@
+# The whole Norboten server side on one machine: `docker compose up -d` in this directory.
+#
+# The same file runs on the server (Ansible puts it in /opt/norboten with a .env beside it) and on a
+# laptop (`make stack-up`, which adds compose.local.yaml). Nothing here is specific to a cloud: it
+# needs Docker, a DNS name pointing at the machine, and ports 80 and 443.
+#
+#   caddy        TLS (Let's Encrypt, automatic) · the static site · reverse proxy for the rest
+#   api          FastAPI — consultant, accounts, ratings, play, theory feed
+#   postgres     every table (api/src/norboten_api/db.py)
+#   redis        live frames, device codes, rate limits, a short cache — nothing that must survive
+#   ollama       a small local model for the consultant
+#   prometheus   metrics from the API, the host and Postgres
+#   grafana      dashboards over Prometheus and Postgres, behind a login
+name: norboten
+
+x-restart: &restart
+  restart: unless-stopped
+
+# When the whole machine runs out of memory, the kernel kills the process with the highest
+# oom_score_adj first: Ollama (1000) goes, and restarts, long before PostgreSQL (-900), Caddy (-800),
+# the API or Redis (-500). Monitoring keeps the default and goes after Ollama.
+
+services:
+  caddy:
+    <<: *restart
+    image: caddy:2.10-alpine
+    oom_score_adj: -800
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      NORBOTEN_DOMAIN: ${NORBOTEN_DOMAIN:?set NORBOTEN_DOMAIN in .env}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+      CADDY_GLOBAL: ${CADDY_GLOBAL:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${SITE_DIR:-./site}:/srv/site:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+
+  api:
+    <<: *restart
+    image: ${API_IMAGE:-ghcr.io/northelks/norboten-api}:${API_TAG:-latest}
+    oom_score_adj: -500
+    environment:
+      NORBOTEN_DATABASE_URL: postgresql://norboten:${POSTGRES_PASSWORD:?}@postgres:5432/norboten
+      NORBOTEN_REDIS_URL: redis://redis:6379/0
+      NORBOTEN_OLLAMA_URL: http://ollama:11434
+      NORBOTEN_SITE_URL: ${SITE_URL:-https://${NORBOTEN_DOMAIN}}
+      NORBOTEN_API_URL: ${API_URL:-https://api.${NORBOTEN_DOMAIN}}
+      # seals an MCP question's state between its two requests; every worker needs the same key
+      NORBOTEN_MCP_STATE_KEY: ${MCP_STATE_KEY:-}
+      NORBOTEN_ALLOWED_ORIGINS: ${SITE_URL:-https://${NORBOTEN_DOMAIN}}
+      NORBOTEN_REQUIRE_AUTH: ${REQUIRE_AUTH:-true}
+      NORBOTEN_CONSULTANT_MODELS: ${CONSULTANT_MODELS:-ollama/qwen2.5:0.5b}
+      # a real session going live is announced here (announce.py); empty sends nothing
+      NORBOTEN_TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      NORBOTEN_TELEGRAM_CHAT: ${TELEGRAM_CHAT:-}
+      # donations: Stripe's secret key. Empty and the donate page says the card path is off.
+      NORBOTEN_STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      # signing in is GitHub and nothing else: without the OAuth App nobody can sign in
+      NORBOTEN_GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      NORBOTEN_GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      # optional: Discord linking; empty hides it on the account page
+      NORBOTEN_DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:-}
+      NORBOTEN_DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:-}
+      NORBOTEN_DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      NORBOTEN_DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
+      # the rated labs and banks: beside the image, never in it (docs/rated-labs.md)
+      NORBOTEN_RATED_DIR: /app/rated
+    volumes:
+      # cloned from the private repository by Ansible; absent or empty means no rated content
+      - ${RATED_DIR:-/opt/norboten/rated}:/app/rated:ro
+    command: ["uvicorn", "norboten_api.main:app", "--host", "0.0.0.0", "--port", "8000",
+              "--workers", "${API_WORKERS:-2}", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    expose: ["8000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://127.0.0.1:8000/readyz').raise_for_status()"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  postgres:
+    <<: *restart
+    image: postgres:17-alpine
+    oom_score_adj: -900
+    environment:
+      POSTGRES_DB: norboten
+      POSTGRES_USER: norboten
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    shm_size: 256mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U norboten -d norboten"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    <<: *restart
+    image: redis:7.4-alpine
+    oom_score_adj: -500
+    # nothing in Redis needs to survive a restart, so no persistence at all
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "256mb",
+              "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Ollama is the one part allowed to fail. Past its own limit only Ollama is killed, and it has no
+  # swap to thrash in; when the machine as a whole runs short it is the first to go (above). Either
+  # way it restarts, and the consultant answers with the matching passages until it is back. One
+  # request and one model at a time, each with a 4,096-token context, keeps the model in the limit.
+  ollama:
+    <<: *restart
+    image: ${OLLAMA_IMAGE:-ollama/ollama:0.34.0}
+    mem_limit: ${OLLAMA_MEMORY:-1g}
+    memswap_limit: ${OLLAMA_MEMORY:-1g}
+    oom_score_adj: 1000
+    environment:
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_CONTEXT_LENGTH: "4096"
+      OLLAMA_KEEP_ALIVE: 24h
+    volumes: [ollama_data:/root/.ollama]
+    expose: ["11434"]
+
+  # one-shot: make sure the consultant's model is on disk; a no-op when it already is
+  ollama-pull:
+    image: ${OLLAMA_IMAGE:-ollama/ollama:0.34.0}
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["sh", "-c", "sleep 3 && ollama pull ${OLLAMA_MODEL:-qwen2.5:0.5b}"]
+    depends_on: [ollama]
+    restart: "no"
+
+  # one-shot, nightly (norboten-analytics.timer): redraw the Analytics page from the database
+  analytics:
+    image: ${API_IMAGE:-ghcr.io/northelks/norboten-api}:${API_TAG:-latest}
+    command: ["python", "-m", "norboten_api.analytics",
+              "--database-url", "postgresql://norboten:${POSTGRES_PASSWORD}@postgres:5432/norboten",
+              "--out", "/srv/site/analytics"]
+    volumes: ["${SITE_DIR:-./site}:/srv/site"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    profiles: ["jobs"]
+
+  # one-shot, Sundays (norboten-digest.timer): the weekly learner digest, a template, no model
+  digest:
+    image: ${API_IMAGE:-ghcr.io/northelks/norboten-api}:${API_TAG:-latest}
+    command: ["python", "-m", "norboten_api.digest"]
+    environment:
+      NORBOTEN_DATABASE_URL: postgresql://norboten:${POSTGRES_PASSWORD}@postgres:5432/norboten
+      NORBOTEN_SITE_URL: ${SITE_URL:-https://${NORBOTEN_DOMAIN}}
+      NORBOTEN_DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    profiles: ["jobs"]
+
+  prometheus:
+    <<: *restart
+    image: prom/prometheus:v3.5.0
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=30d"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    expose: ["9090"]
+
+  node-exporter:
+    <<: *restart
+    image: prom/node-exporter:v1.9.1
+    pid: host
+    command: ["--path.rootfs=/host"]
+    volumes: ["/:/host:ro,rslave"]
+    expose: ["9100"]
+
+  postgres-exporter:
+    <<: *restart
+    image: prometheuscommunity/postgres-exporter:v0.17.1
+    environment:
+      DATA_SOURCE_NAME: postgresql://norboten:${POSTGRES_PASSWORD}@postgres:5432/norboten?sslmode=disable
+    expose: ["9187"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  grafana:
+    <<: *restart
+    image: grafana/grafana:12.1.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_SERVER_ROOT_URL: https://status.${NORBOTEN_DOMAIN}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    expose: ["3000"]
+    depends_on: [prometheus]
+
+volumes:
+  caddy_data:
+  caddy_config:
+  postgres_data:
+  ollama_data:
+  prometheus_data:
+  grafana_data:

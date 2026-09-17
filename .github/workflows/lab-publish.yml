@@ -1,0 +1,44 @@
+name: publish labs
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write     # cosign keyless signing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --all-packages --frozen
+      - uses: sigstore/cosign-installer@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build, push and sign every lab
+        run: |
+          set -euo pipefail
+          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          for manifest in labs/*/lab.yaml labs/*/*/lab.yaml; do
+            dir=$(dirname "$manifest")
+            [ "$(basename "$dir")" = "_template" ] && continue
+            id=$(uv run python -c "import sys,yaml;print(yaml.safe_load(open(sys.argv[1]))['id'])" "$manifest")
+            version=$(uv run python -c "import sys,yaml;print(yaml.safe_load(open(sys.argv[1]))['version'])" "$manifest")
+            ref="ghcr.io/$owner/norboten-labs/$id"
+            docker build -f images/Dockerfile.lab \
+              --build-arg "LAB_ID=$id" --build-arg "LAB_VERSION=$version" \
+              -t "$ref:$version" -t "$ref:latest" "$dir"
+            docker push "$ref:$version"
+            docker push "$ref:latest"
+            digest=$(docker inspect --format='{{index .RepoDigests 0}}' "$ref:$version")
+            cosign sign --yes "$digest"
+            echo "published and signed $ref:$version"
+          done

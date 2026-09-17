@@ -1,0 +1,113 @@
+---
+# The DevOps tracks' tools — Docker, Terraform, Ansible, Python packaging, shell linting — installed
+# at build time so that every lab on this image runs with no network. Docker stays disabled: each lab
+# enables what it teaches, and a lab VM that does not need it boots without it.
+
+- name: DevOps packages
+  ansible.builtin.apt:
+    name:
+      - ansible-core
+      - docker-compose-v2
+      - docker.io
+      - jq
+      - python3-pip
+      - python3-venv
+      - python3-yaml
+      - shellcheck
+      - unzip
+    state: present
+    install_recommends: false
+
+# --- Terraform ---------------------------------------------------------------------------------
+
+- name: Download Terraform
+  ansible.builtin.get_url:
+    url: "https://releases.hashicorp.com/terraform/{{ devops_stack_terraform_version }}/terraform_{{ devops_stack_terraform_version }}_linux_{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}.zip"
+    dest: /tmp/terraform.zip
+    checksum: "sha256:https://releases.hashicorp.com/terraform/{{ devops_stack_terraform_version }}/terraform_{{ devops_stack_terraform_version }}_SHA256SUMS"
+    mode: "0644"
+
+- name: Install Terraform into /usr/local/bin
+  ansible.builtin.unarchive:
+    src: /tmp/terraform.zip
+    dest: /usr/local/bin
+    remote_src: true
+    include: [terraform]
+    creates: /usr/local/bin/terraform
+
+- name: Scratch directory for the mirror
+  ansible.builtin.file:
+    path: /tmp/tf-mirror
+    state: directory
+    mode: "0755"
+
+- name: A configuration naming the mirrored providers
+  ansible.builtin.copy:
+    dest: /tmp/tf-mirror/versions.tf
+    mode: "0644"
+    content: |
+      terraform {
+        required_providers {
+      {% for p in devops_stack_terraform_providers %}
+          {{ p.name }} = { source = "{{ p.source }}", version = "{{ p.version }}" }
+      {% endfor %}
+        }
+      }
+
+# /usr/share/terraform/plugins is one of Terraform's implied local mirror directories: providers
+# found there are installed from it without any CLI configuration.
+- name: Mirror the providers
+  ansible.builtin.command: terraform providers mirror /usr/share/terraform/plugins
+  args:
+    chdir: /tmp/tf-mirror
+    creates: /usr/share/terraform/plugins/registry.terraform.io
+  environment:
+    CHECKPOINT_DISABLE: "1"
+
+- name: No update checks from Terraform (the lab VM has no business calling home)
+  ansible.builtin.copy:
+    dest: /etc/profile.d/terraform.sh
+    mode: "0644"
+    content: |
+      export CHECKPOINT_DISABLE=1
+
+- name: Remove the mirror scratch files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: [/tmp/tf-mirror, /tmp/terraform.zip]
+
+# --- Docker ------------------------------------------------------------------------------------
+
+- name: Start Docker to pull the images
+  ansible.builtin.systemd_service:
+    name: docker
+    state: started
+
+- name: Pull the images the labs run
+  ansible.builtin.command: docker pull {{ item }}
+  loop: "{{ devops_stack_docker_images }}"
+  register: devops_stack_pull
+  changed_when: "'Downloaded newer image' in devops_stack_pull.stdout"
+
+- name: Leave Docker off until a lab asks for it
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: false
+    state: stopped
+  loop: [docker.socket, docker.service, containerd.service]
+
+# --- Python ------------------------------------------------------------------------------------
+
+- name: Wheelhouse for offline venvs
+  ansible.builtin.command: >-
+    pip3 download --dest /opt/wheels --only-binary=:all:
+    {{ devops_stack_wheels | map('quote') | join(' ') }}
+  args:
+    creates: /opt/wheels
+
+- name: Wheelhouse readable by everyone
+  ansible.builtin.file:
+    path: /opt/wheels
+    mode: u=rwX,go=rX
+    recurse: true

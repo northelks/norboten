@@ -1,0 +1,64 @@
+schema_version: 1
+topic: rhcsa-04-selinux-firewall-network
+topics: [firewall-selinux, networking]
+title: "Theory: SELinux, firewalld and networking"
+description: Contexts, port labels, booleans and persistent network configuration.
+questions:
+  - id: rh4-001
+    type: single
+    difficulty: 3
+    prompt: Why is `chcon -t httpd_sys_content_t /srv/site` not a lasting fix?
+    choices:
+      - {id: a, text: "chcon does not work on directories"}
+      - {id: b, text: "A relabel or restorecon sets the context back to what the policy's rules say"}
+      - {id: c, text: "chcon changes are lost at reboot"}
+      - {id: d, text: "chcon requires SELinux to be permissive"}
+    answer: [b]
+    explanation: >-
+      The label survives a reboot, but the policy still maps /srv/site to another type, so the
+      next restorecon or full relabel undoes it. semanage fcontext -a changes the rule; restorecon
+      then applies it.
+    references: ["man 8 semanage-fcontext", "man 8 restorecon"]
+  - id: rh4-002
+    type: single
+    difficulty: 3
+    prompt: nginx cannot bind port 8090 and SELinux logs a denial. What is the fix that keeps SELinux enforcing?
+    choices:
+      - {id: a, text: "setenforce 0"}
+      - {id: b, text: "firewall-cmd --add-port=8090/tcp"}
+      - {id: c, text: "chcon -t http_port_t /etc/nginx/nginx.conf"}
+      - {id: d, text: "semanage port -a -t http_port_t -p tcp 8090"}
+    answer: [d]
+    explanation: >-
+      The policy lets httpd_t bind ports labelled http_port_t; labelling 8090 extends that. The
+      firewall controls traffic, not binding, and ports are not files.
+    references: ["man 8 semanage-port"]
+  - id: rh4-003
+    type: single
+    difficulty: 2
+    prompt: What does the -P in `setsebool -P httpd_can_network_connect on` do?
+    choices:
+      - {id: a, text: "Prints the new value"}
+      - {id: b, text: "Makes the change persistent across reboots"}
+      - {id: c, text: "Applies it to every process"}
+      - {id: d, text: "Applies it only after a reboot"}
+    answer: [b]
+    explanation: >-
+      Without -P the boolean changes in the running policy only and resets at boot. With -P it is
+      written to the policy store as well.
+    references: ["man 8 setsebool"]
+  - id: rh4-004
+    type: single
+    difficulty: 2
+    prompt: Where does a persistent static hostname live?
+    choices:
+      - {id: a, text: "/etc/hosts"}
+      - {id: b, text: "/etc/resolv.conf"}
+      - {id: c, text: "/etc/hostname, set with hostnamectl set-hostname"}
+      - {id: d, text: "/proc/sys/kernel/hostname"}
+    answer: [c]
+    explanation: >-
+      hostnamectl writes /etc/hostname, which is read at boot. The hostname command and
+      /proc/sys/kernel/hostname change the running kernel only; /etc/hosts maps names to
+      addresses.
+    references: ["man 1 hostnamectl", "man 5 hostname"]

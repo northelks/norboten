@@ -1,0 +1,42 @@
+checks:
+  01_runs_with_an_empty_environment:
+    level_1: "The report works in an interactive root shell and fails when nothing is inherited."
+    level_2: "A program started by systemd, cron or env -i does not read your shell's start-up files:
+              which variables does it have, and where does its search for commands look?"
+    level_3: "Compare `env` in your login shell with the Environment= that systemd documents for a
+              service, then find the command in the script that is not in a standard directory."
+    level_4: "report-fmt lives in a directory that only root's .bashrc adds to PATH; without it the
+              command is not found, and nothing stops the script."
+    refs:
+      2: ["man 1 env", "man 5 systemd.exec"]
+      3: ["journal:bash-04-job-that-works-only-by-hand#two-kinds-of-shell-and-what-each-one-reads", "journal:bash-04-job-that-works-only-by-hand#what-a-service-gets-instead"]
+  02_runs_from_any_directory:
+    level_1: "Started outside /opt/reports, the report is empty."
+    level_2: "A relative file name is looked up from the process's working directory — and the dot
+              command has a search rule of its own."
+    level_3: "Which directory is a service's working directory by default, and how does the script
+              name its configuration file?"
+    level_4: "The configuration is sourced by a bare file name, found only when the working directory
+              happens to be /opt/reports, as root's .bashrc arranges for a login shell."
+    refs:
+      2: ["man 1 bash", "man 5 systemd.exec"]
+      3: ["journal:bash-04-job-that-works-only-by-hand#how--finds-a-file"]
+  03_missing_config_fails_cleanly:
+    level_1: "Without its configuration the script still exits 0 and the report is emptied."
+    level_2: "When does a redirection truncate its target — before or after the commands inside run?"
+    level_3: "Follow the script when the file it sources is missing: which lines still run, and what is
+              the last command's status?"
+    level_4: "Nothing checks that sourcing worked, the output redirection empties the old report
+              before anything is written, and the final echo makes the run look successful."
+    refs:
+      2: ["man 1 bash", "journal:monitoring#a-check-is-an-exit-status"]
+      3: ["journal:bash-04-job-that-works-only-by-hand#a-redirection-happens-first", "journal:bash-04-job-that-works-only-by-hand#exit-status-again"]
+  04_the_nightly_run_succeeds:
+    level_1: "systemd reports the timer's run as successful and the report it leaves is empty."
+    level_2: "A oneshot service succeeds whenever its main process exits 0 — that is all systemd knows."
+    level_3: "Run the service by hand (systemctl start) and read its journal, then read the report."
+    level_4: "The service starts the script in the same environment as env -i from /: once the script
+              stands on its own, a fresh run — or the one after a reboot — writes the full report."
+    refs:
+      2: ["man 5 systemd.service", "man 5 systemd.timer"]
+      3: ["journal:bash-04-job-that-works-only-by-hand#what-a-service-gets-instead"]

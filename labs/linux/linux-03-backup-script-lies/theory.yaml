@@ -1,0 +1,57 @@
+schema_version: 1
+topic: linux-03-backup-script-lies
+topics: [bash, linux-basics]
+title: "Theory: honest shell scripts"
+description: Quoting, strict mode and cron's environment.
+questions:
+  - id: lx3-001
+    type: single
+    difficulty: 2
+    prompt: What does `set -e` NOT catch?
+    choices:
+      - {id: a, text: "A failing command on the left side of a pipeline, without pipefail"}
+      - {id: b, text: "A failing command at the end of the script"}
+      - {id: c, text: "A failing simple command"}
+      - {id: d, text: "A command that exits 1"}
+    answer: [a]
+    explanation: >-
+      Without pipefail a pipeline's status is its last command's, so `false | true` succeeds and
+      set -e does not fire. It is also suspended in if conditions and on the left of && or ||.
+    references: ["man 1 bash (set -e)"]
+  - id: lx3-002
+    type: single
+    difficulty: 2
+    prompt: What PATH does a cron job get when the crontab sets none?
+    choices:
+      - {id: a, text: "A minimal default such as /usr/bin:/bin"}
+      - {id: b, text: "The PATH root had when cron started"}
+      - {id: c, text: "The PATH of the user's login shell"}
+      - {id: d, text: "No PATH at all"}
+    answer: [a]
+    explanation: >-
+      cron runs jobs with a small environment. Programs in /usr/local/bin or elsewhere must be
+      called by full path, or PATH set at the top of the crontab.
+    references: ["man 5 crontab"]
+  - id: lx3-003
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      cd /nonexistent-dir 2>/dev/null
+      echo "status=$?"
+    code_lang: bash
+    choices:
+      - {id: a, text: "status=1"}
+      - {id: b, text: "status=2"}
+      - {id: c, text: "nothing; the script stops"}
+      - {id: d, text: "status=0"}
+    answer: [a]
+    explanation: >-
+      A failed cd returns 1 and the script carries on in the old directory unless set -e is on
+      or the result is checked — the reason `cd "$dir" || exit 1` exists.
+    references: ["man 1 bash (cd)"]
+    verify:
+      runtime: bash
+      code: |
+        cd /nonexistent-dir 2>/dev/null
+        echo "status=$?"

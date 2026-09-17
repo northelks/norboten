@@ -1,0 +1,13 @@
+#!/bin/bash
+# deploy-site <release.tar.gz> — unpack a release and make it the live site
+
+SITE_ROOT=${SITE_ROOT:-/srv/www}
+tarball=$1
+stamp=$(date +%Y%m%d%H%M%S)
+release=$SITE_ROOT/releases/$stamp
+
+mkdir -p $release
+tar -xzf $tarball -C $release
+rm -f $SITE_ROOT/current
+ln -s $release $SITE_ROOT/current
+echo "deployed $stamp"

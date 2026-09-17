@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="section">
+  <div class="wrap">
+    <div class="profile-head">
+      <div class="avatar big">{{ p.avatar|safe }}</div>
+      <div>
+        <div class="kicker">Profile</div>
+        <h1>{{ p.nick }} <span title="{{ p.country }}">{{ p.flag }}</span></h1>
+        <p class="muted">
+          <span class="mono">{{ p.rating }} ± {{ p.rd }}</span>
+          {% if p.provisional %}<span class="tag">provisional</span>{% endif %}
+          · {{ p.passed }} passed of {{ p.attempts }} attempts
+          · joined {{ p.joined }}
+          {% if p.github_login %}· <a href="https://github.com/{{ p.github_login }}" rel="noopener">github.com/{{ p.github_login }}</a>{% endif %}
+        </p>
+      </div>
+    </div>
+    <p class="note"><strong>Sample data.</strong> A generated account, not a real person.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>The work, year by year</h2>
+    <p class="muted">{{ p.contributions.total }} attempts in the last twelve months · best day
+      {{ p.contributions.best_day }} · current streak {{ p.contributions.streak }} days</p>
+    {% if p.years|length > 1 %}
+    <nav class="switcher years" id="heatyears" aria-label="Which year">
+      {% for y in p.years %}
+      <button type="button" class="pill" data-year="{{ y.year }}"
+              {% if loop.first %}aria-current="true"{% endif %}>{{ y.year }}</button>
+      {% endfor %}
+    </nav>
+    {% endif %}
+    <div id="heatmap">
+      {% for y in p.years %}
+      <div class="heatyear" data-year="{{ y.year }}" {% if not loop.first %}hidden{% endif %}>
+        <p class="muted mono small">{{ y.year }} · {{ y.total }} attempts · best day {{ y.best_day }}</p>
+        <div class="heatwrap">{{ y.heatmap|safe }}</div>
+      </div>
+      {% endfor %}
+      <div class="heat-tip" id="heattip" hidden></div>
+    </div>
+    <script type="application/json" id="heatdays">{{ p.days|tojson }}</script>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="grid two" style="gap:2.5rem; align-items:start">
+      <div>
+        <h2>By topic</h2>
+        <p class="muted">Nineteen axes, from the EX200 and EX342 objectives plus the automation
+          subjects. A topic never attempted sits at the centre — point at an axis for its numbers.</p>
+        <div class="radar-wrap" id="radar">{{ p.radar|safe }}</div>
+        <p class="muted mono small radar-read" id="radarread">&nbsp;</p>
+      </div>
+      <div>
+        <h2>Strongest</h2>
+        <table>
+          <tr><th>Topic</th><th class="num">Rating</th><th class="num">Labs</th></tr>
+          {% for s in p.spokes %}
+          <tr>
+            <td>{{ s.title }}</td>
+            <td class="num mono">{{ s.rating }}</td>
+            <td class="num muted">{{ s.games }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>Recent attempts</h2>
+    <p class="muted">Click an attempt to open it. Rated attempts moved the number on the left;
+      the ones marked <span class="tag">practice</span> are unrated — recorded, not counted.</p>
+    <table class="board">
+      <tr><th>When</th><th>Work</th><th>Result</th><th class="num">Time</th><th>Rating</th></tr>
+      {% for a in p.history %}
+      <tr class="attempt" tabindex="0" data-attempt='{{ a|tojson }}'>
+        <td class="muted">{{ a.when }}</td>
+        <td>{{ a.title }} {% if a.kind == 'quiz' %}<span class="tag">theory</span>{% endif %}{% if a.recording %}<span class="tag rec">▶ replay</span>{% endif %}</td>
+        <td>
+          {% if a.passed %}<span class="pass">passed</span>{% else %}<span class="fail">failed</span>{% endif %}
+          {% if not a.rated %}<span class="tag">practice</span>{% endif %}
+        </td>
+        <td class="num mono">{{ a.duration }}</td>
+        <td class="mono {{ 'pass' if a.delta > 0 else ('fail' if a.delta < 0 else 'muted') }}">
+          {% if a.rated %}{{ '%+d'|format(a.delta) }}{% else %}—{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</section>
+<div class="modal" id="attemptmodal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="attempttitle">
+    <header>
+      <div>
+        <div class="kicker" id="attemptkind">Attempt</div>
+        <h2 id="attempttitle"></h2>
+        <p class="muted" id="attemptmeta"></p>
+      </div>
+      <button type="button" class="modal-close" aria-label="Close">×</button>
+    </header>
+    <p class="note" id="attemptnote" hidden></p>
+    <div id="attemptterm"></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ root }}player.js"></script>
+<script src="{{ root }}profile.js"></script>
+{% endblock %}

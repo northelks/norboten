@@ -1,0 +1,133 @@
+---
+# Cloud-init only ever sees Lima's NoCloud seed; probing other datasources costs seconds per boot.
+- name: Restrict cloud-init to the NoCloud datasource
+  ansible.builtin.copy:
+    dest: /etc/cloud/cloud.cfg.d/90-norboten.cfg
+    content: |
+      datasource_list: [NoCloud]
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Persistent journal (previous-boot logs for checks and the tutor)
+  when: norboten_init == 'systemd'
+  block:
+    - name: Create journald drop-in directory
+      ansible.builtin.file:
+        path: /etc/systemd/journald.conf.d
+        state: directory
+        mode: "0755"
+    - name: Store the journal on disk
+      ansible.builtin.copy:
+        dest: /etc/systemd/journald.conf.d/90-norboten.conf
+        content: |
+          [Journal]
+          Storage=persistent
+        mode: "0644"
+
+# --- GRUB and the serial console -------------------------------------------------------------
+
+- name: Rocky — GRUB timeout
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_TIMEOUT='
+    line: "GRUB_TIMEOUT={{ lab_baseline_grub_timeout }}"
+  when: norboten_pkg == 'dnf'
+
+- name: Rocky — kernel console on the serial port, no crash kernel reservation
+  ansible.builtin.command: >-
+    grubby --update-kernel=ALL
+    --args="console=tty0 console={{ lab_baseline_serial_console }},115200n8"
+    --remove-args="crashkernel"
+  changed_when: true
+  when: norboten_pkg == 'dnf'
+
+- name: Rocky — regenerate grub.cfg
+  ansible.builtin.command: grub2-mkconfig -o /boot/grub2/grub.cfg
+  changed_when: true
+  when: norboten_pkg == 'dnf'
+
+# Ubuntu hides the menu and, after an unclean shutdown (a reset from the boot console), waits
+# GRUB_RECORDFAIL_TIMEOUT — 30 s — before booting. The drop-in sorts after the cloud image's own.
+#
+# net.ifnames=0: the NIC must be eth0, which is the name Lima's network-config configures. With
+# predictable names it comes up as enp0s1, cloud-init's rename fails ("[busy]"), netplan never
+# applies that config, and systemd-networkd-wait-online then blocks for its full two-minute
+# timeout on every boot — measured 2026-09-16: 132 s to boot a lab VM, 15 s with this set.
+- name: Ubuntu — GRUB timeout, a visible menu, the serial console and eth0
+  ansible.builtin.copy:
+    dest: /etc/default/grub.d/99-norboten.cfg
+    content: |
+      GRUB_TIMEOUT={{ lab_baseline_grub_timeout }}
+      GRUB_TIMEOUT_STYLE=menu
+      GRUB_RECORDFAIL_TIMEOUT={{ lab_baseline_grub_timeout }}
+      GRUB_CMDLINE_LINUX_DEFAULT="console=tty0 console={{ lab_baseline_serial_console }},115200n8 net.ifnames=0 biosdevname=0"
+    mode: "0644"
+  when: norboten_pkg == 'apt'
+
+# Ubuntu runs every script in /etc/update-motd.d at each login: news, release checks, sysinfo.
+- name: Ubuntu — no dynamic message of the day
+  ansible.builtin.shell: |
+    set -e
+    [ -d /etc/update-motd.d ] || exit 0
+    find /etc/update-motd.d -type f -perm /111 -print -exec chmod a-x {} +
+  register: lab_baseline_motd
+  changed_when: lab_baseline_motd.stdout | length > 0
+  when: norboten_pkg == 'apt'
+
+# Ubuntu ships every module in the initramfs: 91 MiB, and unpacking it into a 512 MiB VM ends in
+# "Kernel panic - not syncing: System is deadlocked on memory" (seen on ubuntu-26.04, arm64, at
+# 0.3 s). A lab VM needs the virtio drivers and its root filesystem, which is what MODULES=dep
+# collects.
+- name: Ubuntu — an initramfs with only the modules this machine boots from
+  ansible.builtin.copy:
+    dest: /etc/initramfs-tools/conf.d/90-norboten.conf
+    content: |
+      MODULES=dep
+    mode: "0644"
+  when: norboten_pkg == 'apt'
+
+- name: Ubuntu — rebuild the initramfs
+  ansible.builtin.command: update-initramfs -u -k all
+  changed_when: true
+  when: norboten_pkg == 'apt'
+
+- name: Ubuntu — regenerate grub.cfg
+  ansible.builtin.command: update-grub
+  changed_when: true
+  when: norboten_pkg == 'apt'
+
+- name: Alpine — GRUB timeout
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_TIMEOUT='
+    line: "GRUB_TIMEOUT={{ lab_baseline_grub_timeout }}"
+  when: norboten_pkg == 'apk'
+
+- name: Alpine — regenerate grub.cfg
+  ansible.builtin.command: grub-mkconfig -o /boot/grub/grub.cfg
+  changed_when: true
+  when: norboten_pkg == 'apk'
+
+# --- Alpine boot waits: chrony blocks ~15 s on initstepslew, dhcpcd ARP-probes ~5 s ----------
+
+- name: Alpine — chrony must not block boot waiting for NTP
+  ansible.builtin.lineinfile:
+    path: /etc/chrony/chrony.conf
+    regexp: '^initstepslew'
+    state: absent
+  when: norboten_pkg == 'apk'
+
+- name: Alpine — let chrony step the clock later instead
+  ansible.builtin.lineinfile:
+    path: /etc/chrony/chrony.conf
+    line: makestep 1 3
+  when: norboten_pkg == 'apk'
+
+- name: Alpine — dhcpcd without ARP probing or IPv6 solicitation
+  ansible.builtin.blockinfile:
+    path: /etc/dhcpcd.conf
+    block: |
+      noarp
+      ipv4only
+  when: norboten_pkg == 'apk'

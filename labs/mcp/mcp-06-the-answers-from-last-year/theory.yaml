@@ -1,0 +1,55 @@
+schema_version: 1
+topic: mcp-06-the-answers-from-last-year
+topics: [mcp, claude-code]
+title: "Theory: Claude Code's MCP scopes"
+description: Local, project and user MCP servers — where each lives, which wins, and secrets in .mcp.json.
+questions:
+  - id: mc6-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      A server named docs is defined in a project's .mcp.json and, for that project, in the local
+      scope. Which definition does Claude Code use in the project?
+    choices:
+      - {id: a, text: "Neither: Claude Code refuses to start either until one is removed"}
+      - {id: b, text: "Both, as docs and docs-2"}
+      - {id: c, text: "The project one: committed configuration always wins"}
+      - {id: d, text: "The local one: local beats project, and project beats user"}
+    answer: [d]
+    explanation: >-
+      For a name defined in several scopes the most personal wins for that project: local, then
+      project, then user. claude mcp list reports the conflict and names both commands; claude mcp
+      get shows which scope the one in effect came from.
+    references: ["https://code.claude.com/docs/en/mcp"]
+  - id: mc6-002
+    type: single
+    difficulty: 2
+    prompt: Where does `claude mcp add` store a server added without a --scope option?
+    choices:
+      - {id: a, text: "In ~/.claude/settings.json"}
+      - {id: b, text: "In ~/.claude.json, under the current project's entry: the local scope"}
+      - {id: c, text: "In the repository's .mcp.json"}
+      - {id: d, text: "In .claude/settings.local.json"}
+    answer: [b]
+    explanation: >-
+      The default scope is local: private to you, for this project, kept in ~/.claude.json and
+      never committed. --scope project writes .mcp.json; --scope user makes it available in every
+      project.
+    references: ["https://code.claude.com/docs/en/mcp"]
+  - id: mc6-003
+    type: single
+    difficulty: 3
+    prompt: >-
+      A key was committed in .mcp.json last month. It is replaced by ${DOCS_API_KEY} today and
+      committed. What remains to be done?
+    choices:
+      - {id: a, text: "Run claude mcp remove to clear Claude Code's cache"}
+      - {id: b, text: "Add .mcp.json to .gitignore"}
+      - {id: c, text: "Nothing: the latest commit is clean"}
+      - {id: d, text: "Rotate the key at the service: it is still in the repository's history and every clone"}
+    answer: [d]
+    explanation: >-
+      Removing a secret from the current tree does not remove it from history, forks, clones or
+      backups; git log -S shows the commit that added it. A committed secret has to be treated as
+      leaked and replaced.
+    references: ["https://git-scm.com/docs/git-log"]

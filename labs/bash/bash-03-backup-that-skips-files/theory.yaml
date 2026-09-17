@@ -1,0 +1,94 @@
+schema_version: 1
+topic: bash-03-backup-that-skips-files
+topics: [bash, linux-basics]
+title: "Theory: file names in shell loops"
+description: What read, word splitting and pipelines do to file names, and how to keep them whole.
+questions:
+  - id: bs3-001
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      count=0
+      printf 'a\nb\nc\n' | while read -r line; do count=$((count + 1)); done
+      echo "$count"
+    code_lang: bash
+    choices:
+      - {id: a, text: "3"}
+      - {id: b, text: "2"}
+      - {id: c, text: "0"}
+      - {id: d, text: "1"}
+    answer: [c]
+    explanation: >-
+      The while loop is the second command of a pipeline, so bash runs it in a subshell. The loop
+      increments that subshell's copy of count, which disappears when the loop ends; the parent still
+      has 0. It would be 3 with the loop fed by a redirection, done < <(printf ...), or with
+      shopt -s lastpipe in a non-interactive shell.
+    references: ["man 1 bash (Pipelines; COMMAND EXECUTION ENVIRONMENT)"]
+    tags: [subshell, pipelines]
+    verify:
+      runtime: bash
+      code: |
+        count=0
+        printf 'a\nb\nc\n' | while read -r line; do count=$((count + 1)); done
+        echo "$count"
+  - id: bs3-002
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      printf '%s\n' 'Q3\forecast.csv' | while read f; do echo "$f"; done
+    code_lang: bash
+    choices:
+      - {id: a, text: "Q3"}
+      - {id: b, text: "Q3\\forecast.csv"}
+      - {id: c, text: "Q3forecast.csv"}
+      - {id: d, text: "forecast.csv"}
+    answer: [c]
+    explanation: >-
+      Without -r, read treats a backslash as an escape character and removes it, so the name loses
+      its backslash before the loop body sees it. read -r keeps backslashes as ordinary characters,
+      which is what any loop over file names needs.
+    references: ["man 1 bash (SHELL BUILTIN COMMANDS: read)"]
+    tags: [read]
+    verify:
+      runtime: bash
+      code: |
+        printf '%s\n' 'Q3\forecast.csv' | while read f; do echo "$f"; done
+  - id: bs3-003
+    type: multiple
+    difficulty: 3
+    prompt: >-
+      A loop reads file names with `find "$dir" -type f | while read f`. Which of these names can
+      reach the loop body changed or split? Select all that apply.
+    choices:
+      - {id: a, text: "a name containing a backslash"}
+      - {id: b, text: "a name containing a single space in the middle"}
+      - {id: c, text: "a name containing a newline"}
+      - {id: d, text: "a name that ends with a space"}
+    answer: [a, c, d]
+    explanation: >-
+      find separates names with newlines, so a newline splits one name into two lines. read strips
+      leading and trailing IFS whitespace from the line; find prints the whole path, so a trailing
+      space in the name is lost, while blanks at the start of the last component survive because
+      they are not at the start of the line. Without -r read also removes backslashes. A single
+      space in the middle survives read — it is broken later, by an unquoted expansion. The safe
+      form is find -print0 with while IFS= read -r -d ''.
+    references: ["man 1 find (-print0)", "man 1 bash (SHELL BUILTIN COMMANDS: read)"]
+    tags: [read, find]
+  - id: bs3-004
+    type: single
+    difficulty: 1
+    prompt: How many arguments does `cp` receive from `cp $f /backup/` when `f='Contract - ACME.pdf'`?
+    choices:
+      - {id: a, text: "3"}
+      - {id: b, text: "4"}
+      - {id: c, text: "1"}
+      - {id: d, text: "2"}
+    answer: [b]
+    explanation: >-
+      The unquoted $f is split at the spaces into three words — Contract, - and ACME.pdf — and the
+      target makes four. With more than two operands cp expects the last to be a directory and tries
+      to copy three files that do not exist. "$f" keeps the name as one argument.
+    references: ["man 1 bash (Word Splitting)"]
+    tags: [quoting]

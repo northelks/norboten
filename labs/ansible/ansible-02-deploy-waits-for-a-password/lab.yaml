@@ -1,0 +1,21 @@
+schema_version: 1
+id: ansible-02-deploy-waits-for-a-password
+version: 1.0.0
+title: The Deploy That Waits for a Password
+track: ansible
+topics: [ansible, users-permissions]
+difficulty: 3
+estimated_minutes: 40
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 2
+objectives:
+  - "Run a playbook that uses Ansible Vault without a person at the keyboard"
+  - "Keep secrets encrypted at rest and the vault password readable only by the account that needs it"
+  - "Keep secrets out of logs"
+checks:
+  - {id: 01_deploy_runs_unattended, objective: 1, weight: 2}
+  - {id: 02_secrets_encrypted_at_rest, objective: 2}
+  - {id: 03_vault_password_file_protected, objective: 2}
+  - {id: 04_no_secret_in_the_log, objective: 3}
+reboot_required: true

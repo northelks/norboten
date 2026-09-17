@@ -1,0 +1,81 @@
+schema_version: 1
+topic: mcp-04-the-server-that-talks-too-much
+topics: [mcp, logging-journald]
+title: "Theory: stdout, stderr and a stdio MCP server"
+description: Framing on the stdio transport, what may be written where, and how to check it.
+questions:
+  - id: mc4-001
+    type: single
+    difficulty: 2
+    prompt: A stdio MCP server wants to print its version and debug logs. Where should they go?
+    choices:
+      - {id: a, text: "Nowhere: stdio servers may not log"}
+      - {id: b, text: "stderr or a log file; stdout carries only JSON-RPC messages"}
+      - {id: c, text: "stdout, prefixed with # so the client skips them"}
+      - {id: d, text: "stdout, but only before the initialize request"}
+    answer: [b]
+    explanation: >-
+      On the stdio transport the client reads stdout as newline-delimited JSON-RPC, and the
+      specification says a server must not write anything else there. stderr is the server's own
+      channel, which clients may capture for debugging; a file works too.
+    references: ["https://modelcontextprotocol.io/specification/2026-07-28/basic/transports"]
+  - id: mc4-002
+    type: single
+    difficulty: 3
+    prompt: >-
+      What does this print — how many lines of the server's stdout a client can parse as JSON, of
+      the three it wrote?
+    code: |
+      import json
+      stdout = 'ready {"jsonrpc":"2.0","id":1,"result":{}}\n' \
+               '12:00 DEBUG handled initialize\n' \
+               '{"jsonrpc":"2.0","id":2,"result":{}}\n'
+      ok = 0
+      for line in stdout.splitlines():
+          try:
+              json.loads(line)
+              ok += 1
+          except ValueError:
+              pass
+      print(ok)
+    code_lang: python
+    choices:
+      - {id: a, text: "1"}
+      - {id: b, text: "0"}
+      - {id: c, text: "2"}
+      - {id: d, text: "3"}
+    answer: [a]
+    explanation: >-
+      The banner without a newline shares a line with the first response, so that response cannot
+      be parsed and is lost; the log line is not JSON; only the second response survives. Losing the
+      answer to initialize is enough to stop a client connecting at all.
+    references: ["https://modelcontextprotocol.io/specification/2026-07-28/basic/transports"]
+    verify:
+      runtime: python
+      code: |
+        import json
+        stdout = 'ready {"jsonrpc":"2.0","id":1,"result":{}}\n' \
+                 '12:00 DEBUG handled initialize\n' \
+                 '{"jsonrpc":"2.0","id":2,"result":{}}\n'
+        ok = 0
+        for line in stdout.splitlines():
+            try:
+                json.loads(line)
+                ok += 1
+            except ValueError:
+                pass
+        print(ok)
+  - id: mc4-003
+    type: single
+    difficulty: 2
+    prompt: .mcp.json starts a server with `npx some-mcp-server`. Which output can break the protocol?
+    choices:
+      - {id: a, text: "Nothing: Claude Code filters npx's output"}
+      - {id: b, text: "Only what the server writes after initialize"}
+      - {id: c, text: "Anything npx or the package writes to stdout, including install messages"}
+      - {id: d, text: "Only output of the server's own tools"}
+    answer: [c]
+    explanation: >-
+      The whole command is the server as far as the client is concerned: a wrapper's echo, a package
+      manager's progress line or a library's print all land on the same stdout the client parses.
+    references: ["https://code.claude.com/docs/en/mcp"]

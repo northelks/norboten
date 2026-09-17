@@ -1,0 +1,62 @@
+schema_version: 1
+topic: rhcsa-01-users-and-permissions
+topics: [users-permissions]
+title: "Theory: users, groups and permissions"
+description: Supplementary groups, setgid directories, umask and sudo rules.
+questions:
+  - id: rh1-001
+    type: single
+    difficulty: 2
+    prompt: What does `usermod -G devops kmorris` do if kmorris is currently in wheel and developers?
+    choices:
+      - {id: a, text: "Replaces the supplementary groups: kmorris ends up in devops only"}
+      - {id: b, text: "Changes the primary group to devops"}
+      - {id: c, text: "Adds devops to the existing groups"}
+      - {id: d, text: "Fails because kmorris is in other groups"}
+    answer: [a]
+    explanation: >-
+      -G sets the complete supplementary group list. To add without removing, combine it with -a
+      (usermod -aG devops kmorris). The primary group is -g.
+    references: ["man 8 usermod"]
+  - id: rh1-002
+    type: single
+    difficulty: 2
+    prompt: A user was just added to a group. Why does their existing SSH session still not have access?
+    choices:
+      - {id: a, text: "The system must be rebooted"}
+      - {id: b, text: "The group needs a password"}
+      - {id: c, text: "sssd caches groups for 24 hours"}
+      - {id: d, text: "Group membership is read at login; the running session keeps its old groups"}
+    answer: [d]
+    explanation: >-
+      A process's supplementary groups are set when the session starts. Log in again (or use
+      newgrp / sg for one shell). No reboot is needed.
+    references: ["man 1 newgrp", "man 1 id"]
+  - id: rh1-003
+    type: single
+    difficulty: 2
+    prompt: In a sudoers file, what does `%devops ALL=(root) /usr/bin/systemctl restart nginx` grant?
+    choices:
+      - {id: a, text: "Members of group devops may run exactly that command as root, on any host"}
+      - {id: b, text: "The user devops may run any command as root"}
+      - {id: c, text: "Root may restart nginx on host devops"}
+      - {id: d, text: "Members of devops may run systemctl with any arguments"}
+    answer: [a]
+    explanation: >-
+      A leading % names a group; ALL is the host list; (root) the target user; then the allowed
+      command with its arguments. Given arguments must match exactly.
+    references: ["man 5 sudoers"]
+  - id: rh1-004
+    type: single
+    difficulty: 1
+    prompt: Which umask lets group members read and edit the files you create?
+    choices:
+      - {id: a, text: "077"}
+      - {id: b, text: "022"}
+      - {id: c, text: "027"}
+      - {id: d, text: "002"}
+    answer: [d]
+    explanation: >-
+      002 removes only write for others: new files are 664, directories 775. 022 and 027 remove
+      the group's write bit; 077 removes all access for group and others.
+    references: ["man 2 umask"]

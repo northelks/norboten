@@ -1,0 +1,23 @@
+---
+- name: Check the image variables are complete
+  ansible.builtin.assert:
+    that:
+      - norboten_image_id is defined
+      - norboten_init in ['systemd', 'openrc']
+      - norboten_pkg in ['dnf', 'apt', 'apk']
+    quiet: true
+
+- name: Install packages
+  ansible.builtin.include_tasks: packages.yml
+
+- name: Norboten identity and root password
+  ansible.builtin.include_tasks: identity.yml
+
+- name: Shell history for the tutor's fact bundle
+  ansible.builtin.include_tasks: shell.yml
+
+- name: Serial console and fast, deterministic boot
+  ansible.builtin.include_tasks: boot.yml
+
+- name: Services
+  ansible.builtin.include_tasks: services.yml

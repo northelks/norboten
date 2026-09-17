@@ -1,0 +1,256 @@
+{
+  "$defs": {
+    "Arch": {
+      "enum": [
+        "x86_64",
+        "aarch64"
+      ],
+      "title": "Arch",
+      "type": "string"
+    },
+    "BaseImage": {
+      "additionalProperties": false,
+      "properties": {
+        "distro": {
+          "title": "Distro",
+          "type": "string"
+        },
+        "tracks": {
+          "items": {
+            "$ref": "#/$defs/Track"
+          },
+          "minItems": 1,
+          "title": "Tracks",
+          "type": "array"
+        },
+        "kind": {
+          "default": "vm",
+          "enum": [
+            "vm",
+            "container"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "init": {
+          "enum": [
+            "systemd",
+            "openrc",
+            "none"
+          ],
+          "title": "Init",
+          "type": "string"
+        },
+        "pkg": {
+          "enum": [
+            "dnf",
+            "apt",
+            "apk"
+          ],
+          "title": "Pkg",
+          "type": "string"
+        },
+        "mac": {
+          "enum": [
+            "selinux",
+            "apparmor",
+            "none"
+          ],
+          "title": "Mac",
+          "type": "string"
+        },
+        "min_memory": {
+          "title": "Min Memory",
+          "type": "string"
+        },
+        "upstream": {
+          "additionalProperties": {
+            "$ref": "#/$defs/UpstreamImage"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/Arch"
+          },
+          "title": "Upstream",
+          "type": "object"
+        },
+        "golden": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GoldenImage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "container": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContainerBuild"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "distro",
+        "tracks",
+        "init",
+        "pkg",
+        "mac",
+        "min_memory"
+      ],
+      "title": "BaseImage",
+      "type": "object"
+    },
+    "ContainerBuild": {
+      "additionalProperties": false,
+      "description": "A container base image: built on the learner's machine from a Dockerfile in the content.",
+      "properties": {
+        "dockerfile": {
+          "description": "path under images/, e.g. base/ubuntu-26.04-container/Dockerfile",
+          "title": "Dockerfile",
+          "type": "string"
+        },
+        "tag": {
+          "description": "the local image name, e.g. norboten-base/ubuntu-26.04-container:1",
+          "title": "Tag",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dockerfile",
+        "tag"
+      ],
+      "title": "ContainerBuild",
+      "type": "object"
+    },
+    "GoldenArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "size_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "digest",
+        "size_bytes"
+      ],
+      "title": "GoldenArtifact",
+      "type": "object"
+    },
+    "GoldenImage": {
+      "additionalProperties": false,
+      "properties": {
+        "ref": {
+          "description": "OCI repository, e.g. ghcr.io/owner/norboten-base/rocky-10",
+          "title": "Ref",
+          "type": "string"
+        },
+        "tag": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "null until the first publish",
+          "title": "Tag"
+        },
+        "arch": {
+          "additionalProperties": {
+            "$ref": "#/$defs/GoldenArtifact"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/Arch"
+          },
+          "title": "Arch",
+          "type": "object"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "GoldenImage",
+      "type": "object"
+    },
+    "Track": {
+      "enum": [
+        "rhcsa",
+        "linux",
+        "automation",
+        "python",
+        "ansible",
+        "bash",
+        "docker",
+        "terraform",
+        "claude",
+        "mcp",
+        "intro"
+      ],
+      "title": "Track",
+      "type": "string"
+    },
+    "UpstreamImage": {
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "digest": {
+          "pattern": "^sha(256|512):[0-9a-f]+$",
+          "title": "Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "digest"
+      ],
+      "title": "UpstreamImage",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "images": {
+      "minProperties": 1,
+      "patternProperties": {
+        "^[a-z0-9]+([.-][a-z0-9]+)*$": {
+          "$ref": "#/$defs/BaseImage"
+        }
+      },
+      "propertyNames": {
+        "maxLength": 63
+      },
+      "title": "Images",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "images"
+  ],
+  "title": "Registry",
+  "type": "object"
+}

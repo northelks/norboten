@@ -1,0 +1,21 @@
+schema_version: 1
+id: linux-03-backup-script-lies
+version: 1.0.0
+title: The Backup Script That Lies
+track: linux
+topics: [bash, linux-basics]
+difficulty: 2
+estimated_minutes: 30
+base_images: [ubuntu-26.04, alpine]
+resources:
+  cpus: 1
+objectives:
+  - "Quote variables so file names with spaces survive"
+  - "Make a script fail loudly: exit status, error messages, no false success"
+  - "Run a script from cron with a working environment"
+checks:
+  - {id: 01_archives_names_with_spaces, objective: 1, weight: 2}
+  - {id: 02_fails_when_destination_unwritable, objective: 2}
+  - {id: 03_fails_when_source_missing, objective: 2}
+  - {id: 04_cron_can_run_it, objective: 3}
+reboot_required: true

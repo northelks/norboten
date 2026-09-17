@@ -1,0 +1,39 @@
+checks:
+  01_app_on_the_inventory_port:
+    level_1: "The application listens on a different port from the one the inventory gives the app
+              group."
+    level_2: "Ansible merges variables from many places in a fixed order of precedence. Which place
+              beats inventory group_vars?"
+    level_3: "Compare where app_port is defined in the inventory with the vars section of the play in
+              site.yml."
+    level_4: "The play sets app_port: 8080 in its own vars, which takes precedence over
+              group_vars/app.yml. Remove the override, then apply the playbook."
+    refs:
+      2: ["journal:ansible#variable-precedence-the-parts-that-bite"]
+      3: ["journal:ansible-01-playbook-changes-everything#where-a-variables-value-comes-from"]
+  02_forwarding_configured_once:
+    level_1: "The forwarding setting appears more than once, more times after every run, and is not
+              in effect now."
+    level_2: "A shell command that appends to a file does something every time it runs. A module
+              declares what the file should contain."
+    level_3: "Look at the task that writes to /etc/sysctl.d/90-app.conf, at that file, and at whether
+              anything loads it after it changes."
+    level_4: "echo >> appends a new line on every run, and nothing applies the setting. Manage the
+              whole file with a module, reload sysctl only when it changes, and clean up the
+              duplicates."
+    refs:
+      2: ["journal:ansible#idempotence-is-a-property-of-each-task", "journal:ansible#handlers-a-notification-is-a-promise-kept-at-the-end"]
+      3: ["journal:ansible-01-playbook-changes-everything#handlers-change-triggered-actions", "journal:ansible-01-playbook-changes-everything#kernel-parameters-two-places-two-moments"]
+  03_check_mode_finds_nothing_to_do:
+    level_1: "Check mode skips several tasks and reports others as changed on a machine that is
+              already configured."
+    level_2: "command and shell tasks do nothing in check mode, and always report changed. Which
+              modules describe accounts, files, templates and services?"
+    level_3: "Replace each command or shell task in site.yml with the matching builtin module — user,
+              copy, file, template, systemd_service — and restart through a handler."
+    level_4: "Every task except the unit copy is a shell or command task, one of them hidden behind
+              ignore_errors. Rewrite them as modules, run the playbook for real once, then --check
+              shows changed=0 and skipped=0."
+    refs:
+      2: ["journal:ansible#shell-and-command-report-changed-because-they-cannot-know", "journal:ansible#check-mode-and-what-it-cannot-see"]
+      3: ["journal:ansible-01-playbook-changes-everything#why-command-and-shell-cannot-converge", "journal:ansible-01-playbook-changes-everything#the-module-for-each-job"]

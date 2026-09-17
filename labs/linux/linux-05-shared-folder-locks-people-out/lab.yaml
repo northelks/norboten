@@ -1,0 +1,23 @@
+schema_version: 1
+id: linux-05-shared-folder-locks-people-out
+version: 1.0.0
+title: The Shared Folder That Locks People Out
+track: linux
+topics: [users-permissions, linux-basics]
+difficulty: 2
+estimated_minutes: 25
+base_images: [ubuntu-26.04-container]
+runtime: container
+resources:
+  cpus: 1
+objectives:
+  - "Put exactly the right people in a group"
+  - "Give a group read and write access to files that already exist"
+  - "Make files created later belong to the group and stay editable by it"
+  - "Keep everyone outside the group out"
+checks:
+  - {id: 01_the_whole_team_is_in_the_group, objective: 1}
+  - {id: 02_the_team_can_edit_every_file, objective: 2, weight: 2}
+  - {id: 03_new_files_stay_shared, objective: 3, weight: 2}
+  - {id: 04_outsiders_cannot_read, objective: 4}
+reboot_required: false

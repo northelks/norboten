@@ -1,0 +1,14 @@
+---
+- name: Render the application's database settings
+  hosts: app
+  gather_facts: false
+  tasks:
+    - name: Show what is being deployed
+      ansible.builtin.debug:
+        msg: "database {{ db_name }} on {{ db_host }} as {{ db_user }} with password {{ db_password }}"
+
+    - name: Database settings
+      ansible.builtin.template:
+        src: templates/db.conf.j2
+        dest: /srv/app/config/db.conf
+        mode: "0640"

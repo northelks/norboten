@@ -1,0 +1,21 @@
+schema_version: 1
+id: mcp-01-the-file-server-that-shows-everything
+version: 1.0.0
+title: The File Server That Shows Everything
+track: mcp
+topics: [mcp, claude-code]
+difficulty: 2
+estimated_minutes: 30
+base_images: [ubuntu-26.04-claude]
+runtime: container
+resources:
+  cpus: 1
+objectives:
+  - "Let an MCP server share exactly the folder a job needs, and only for reading"
+  - "Keep links and hidden files from widening what a server exposes"
+checks:
+  - {id: 01_the_notes_are_read_only, objective: 1}
+  - {id: 02_nothing_outside_the_notes, objective: 1, weight: 2}
+  - {id: 03_links_do_not_lead_out, objective: 2}
+  - {id: 04_hidden_files_stay_hidden, objective: 2}
+reboot_required: false

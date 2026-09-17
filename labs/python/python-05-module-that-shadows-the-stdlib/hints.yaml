@@ -1,0 +1,40 @@
+checks:
+  01_runs_from_its_own_directory:
+    level_1: "The traceback says a module of the standard library is missing a function it certainly has."
+    level_2: "Where does Python look for a module, and which directory comes first for a script?"
+    level_3: "Print the module's __file__ in the failing program, and list the directory the script
+              lives in."
+    level_4: "The script's own directory is searched before the standard library, so a file beside it
+              is imported instead of the library module of that name."
+    refs:
+      2: ["https://docs.python.org/3/tutorial/modules.html#the-module-search-path"]
+      3: ["journal:python-05-module-that-shadows-the-stdlib#syspath-and-what-is-at-the-front", "journal:python-05-module-that-shadows-the-stdlib#the-standard-library-does-not-win"]
+  02_runs_from_anywhere:
+    level_1: "The same traceback appears from every directory, not only from the program's own."
+    level_2: "For a script, the first entry of the search path is decided by where the script is —
+              not by where you started it."
+    level_3: "Print sys.path[0] at the top of the program, started from two different directories."
+    level_4: "WorkingDirectory= changes nothing here: the script's own directory is searched first
+              wherever it is started from, so the fix has to be in the file names."
+    refs:
+      2: ["man 5 systemd.exec"]
+      3: ["journal:python-05-module-that-shadows-the-stdlib#syspath-and-what-is-at-the-front"]
+  03_the_stdlib_is_not_shadowed:
+    level_1: "From the program's directory, importing the standard library gives something else."
+    level_2: "Deleting the helper is not a fix: the office's open days still have to be counted."
+    level_3: "python3 -c 'import calendar; print(calendar.__file__)' from /opt/digest says where the
+              module came from."
+    level_4: "The helper's name is the problem, not the helper. A module beside the program may not
+              be named after one in the standard library — sys.stdlib_module_names lists them."
+    refs:
+      2: ["https://docs.python.org/3/library/sys.html#sys.path"]
+      3: ["journal:python-05-module-that-shadows-the-stdlib#names-to-avoid-and-how-to-stop-guessing", "journal:python-05-module-that-shadows-the-stdlib#__pycache__-outlives-the-file"]
+  04_the_service_writes_its_digest:
+    level_1: "The unit fails on every start with the same traceback."
+    level_2: "The unit was changed to set a working directory; ask what that was working around."
+    level_3: "systemctl status digest and journalctl -u digest show the traceback the service got."
+    level_4: "Once the import is right, the service succeeds with or without WorkingDirectory=, and a
+              reboot changes nothing."
+    refs:
+      2: ["man 1 journalctl", "man 5 systemd.service"]
+      3: ["journal:python-05-module-that-shadows-the-stdlib#the-standard-library-does-not-win"]

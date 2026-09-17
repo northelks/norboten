@@ -1,0 +1,22 @@
+abi <abi/4.0>,
+include <tunables/global>
+
+/usr/local/bin/notes-app {
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/python>
+
+  network inet stream,
+  network inet6 stream,
+
+  /usr/local/bin/notes-app r,
+  /usr/bin/python3* ix,
+  /etc/mime.types r,
+  @{PROC}/sys/net/ipv6/conf/all/disable_ipv6 r,
+  /etc/notes/ r,
+  /etc/notes/** r,
+
+  # notes data
+  /var/lib/notes/ r,
+  /var/lib/notes/** r,
+}

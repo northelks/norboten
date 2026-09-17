@@ -1,0 +1,68 @@
+schema_version: 1
+topic: terraform-01-rename-that-wants-to-destroy
+topics: [terraform, users-permissions]
+title: "Theory: addresses, moves and state"
+description: Why renames destroy, moved blocks, drift and secrets in state.
+questions:
+  - id: tf1-001
+    type: single
+    difficulty: 2
+    prompt: A resource block is renamed from `hcloud_volume.logs` to `hcloud_volume.access_logs` with no other change. What does the next plan propose?
+    choices:
+      - {id: a, text: "An in-place update of the volume's name"}
+      - {id: b, text: "No changes, because the arguments are identical"}
+      - {id: c, text: "An error, because two addresses refer to one volume"}
+      - {id: d, text: "Destroy the volume at the old address and create one at the new address"}
+    answer: [d]
+    explanation: >-
+      Terraform tracks objects by address. The old address is in state but not in configuration,
+      the new one is in configuration but not in state. A moved block, or terraform state mv, tells
+      Terraform they are the same object.
+    references: ["https://developer.hashicorp.com/terraform/language/modules/develop/refactoring"]
+    tags: [state, refactoring]
+  - id: tf1-002
+    type: single
+    difficulty: 2
+    prompt: What does `terraform plan -detailed-exitcode` exit with when the plan has changes to make?
+    choices:
+      - {id: a, text: "2"}
+      - {id: b, text: "1"}
+      - {id: c, text: "3"}
+      - {id: d, text: "0"}
+    answer: [a]
+    explanation: >-
+      0 means no changes, 1 means an error, and 2 means a successful plan with changes. Without the
+      flag, a successful plan exits 0 whether or not it has changes.
+    references: ["https://developer.hashicorp.com/terraform/cli/commands/plan#detailed-exitcode"]
+    tags: [cli]
+  - id: tf1-003
+    type: single
+    difficulty: 3
+    prompt: A `random_password` is declared with its value marked sensitive. Where can its generated value still be read in plain text?
+    choices:
+      - {id: a, text: "Only in the plan output"}
+      - {id: b, text: "In the state file and its backup"}
+      - {id: c, text: "Only in the provider's cache directory"}
+      - {id: d, text: "Nowhere: sensitive values are encrypted"}
+    answer: [b]
+    explanation: >-
+      Sensitive only redacts plan and output display. State records every attribute, and
+      terraform.tfstate.backup keeps the previous state, so both must be protected like the secret.
+    references: ["https://developer.hashicorp.com/terraform/language/state/sensitive-data"]
+    tags: [secrets, state]
+  - id: tf1-004
+    type: single
+    difficulty: 2
+    prompt: Why is a `moved` block usually better than running `terraform state mv` for a rename that is merged into a shared repository?
+    choices:
+      - {id: a, text: "It is reviewed with the rename and applied automatically by every state that runs the code, and it shows in the plan"}
+      - {id: b, text: "state mv requires deleting the state first"}
+      - {id: c, text: "terraform state mv only works for modules"}
+      - {id: d, text: "moved blocks also rename the real objects"}
+    answer: [a]
+    explanation: >-
+      state mv edits one state, once, by hand, and nobody else's state learns about it. A moved block
+      is part of the configuration, so each workspace and colleague gets the move on their next plan
+      and apply. Neither changes the real object.
+    references: ["https://developer.hashicorp.com/terraform/language/moved"]
+    tags: [refactoring]

@@ -1,0 +1,676 @@
+schema_version: 1
+topic: ollama
+topics: [ollama, ai-services]
+title: Ollama
+description: >-
+  Running language models on your own machine with Ollama — the service, the API, Modelfiles, context
+  windows, memory, keep-alive, embeddings and exposing it safely — and what local models are good for.
+questions:
+  # -- the server ---------------------------------------------------------------------------------
+  - id: ol-001
+    type: single
+    difficulty: 1
+    prompt: On which address and port does `ollama serve` listen by default?
+    choices:
+      - {id: a, text: "127.0.0.1:8080"}
+      - {id: b, text: "0.0.0.0:11434"}
+      - {id: c, text: "A UNIX socket in /run/ollama"}
+      - {id: d, text: "127.0.0.1:11434"}
+    answer: [d]
+    explanation: >-
+      Ollama binds loopback port 11434 unless OLLAMA_HOST says otherwise. The same variable tells the ollama
+      client where to connect.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [service]
+  - id: ol-002
+    type: single
+    difficulty: 1
+    prompt: What does the `ollama` command do when you run `ollama list`?
+    choices:
+      - {id: a, text: "Queries ollama.com for available models"}
+      - {id: b, text: "Reads the model directory on disk directly"}
+      - {id: c, text: "Asks the running server over HTTP for its models"}
+      - {id: d, text: "Starts a temporary server, lists, and stops it"}
+    answer: [c]
+    explanation: >-
+      The CLI is a client of the API at OLLAMA_HOST. With the server stopped it reports that it cannot
+      connect; with the server up it shows what the server sees, whoever runs the command.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [service, cli]
+  - id: ol-003
+    type: single
+    difficulty: 2
+    prompt: Where does a systemd-run Ollama store models, and what decides it?
+    choices:
+      - {id: a, text: "Always in /usr/share/ollama"}
+      - {id: b, text: "In /tmp, unless the service has PrivateTmp="}
+      - {id: c, text: "In OLLAMA_MODELS if set, otherwise in .ollama/models under the serving user's home"}
+      - {id: d, text: "In the home directory of whoever ran ollama pull"}
+    answer: [c]
+    explanation: >-
+      The server writes blobs and manifests under OLLAMA_MODELS, or ~/.ollama/models of the account it runs
+      as. Because pulls go through the server, the client's user does not matter — a common reason models
+      "disappear" is a server started as a different user or with a different OLLAMA_MODELS.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [service, storage]
+  - id: ol-004
+    type: single
+    difficulty: 2
+    prompt: A setting in ollama.service does not take effect. Which command shows every file that changes the unit, drop-ins included?
+    choices:
+      - {id: a, text: "systemctl status ollama"}
+      - {id: b, text: "ollama show"}
+      - {id: c, text: "systemctl cat ollama"}
+      - {id: d, text: "journalctl -u ollama --list-boots"}
+    answer: [c]
+    explanation: >-
+      systemctl cat prints the unit and each drop-in from ollama.service.d/ with its path. Drop-ins apply after
+      the unit, so a later Environment= for the same variable wins. After editing, daemon-reload before restart.
+    references: ["man 1 systemctl", "man 5 systemd.unit"]
+    tags: [service, systemd]
+  - id: ol-005
+    type: single
+    difficulty: 1
+    prompt: Which kind of authentication does the Ollama API require from clients?
+    choices:
+      - {id: a, text: "HTTP basic authentication with the ollama user's password"}
+      - {id: b, text: "Mutual TLS"}
+      - {id: c, text: "None; access control is the network's and a proxy's job"}
+      - {id: d, text: "A bearer token from ~/.ollama/id_ed25519.pub"}
+    answer: [c]
+    explanation: >-
+      Anyone who reaches the port can list, run, pull and delete models. Keep it on loopback and put a proxy
+      with authentication in front for other users. The key pair in ~/.ollama identifies the installation to
+      ollama.com.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [security]
+  - id: ol-006
+    type: single
+    difficulty: 2
+    prompt: >-
+      A browser page at https://chat.internal.example calls Ollama and gets 403; curl gets 200. What must change
+      on the server, at the narrowest?
+    choices:
+      - {id: a, text: "OLLAMA_ORIGINS=*"}
+      - {id: b, text: "Nothing on the server; the browser caches the 403"}
+      - {id: c, text: "OLLAMA_ORIGINS=https://chat.internal.example"}
+      - {id: d, text: "OLLAMA_HOST=0.0.0.0:11434"}
+    answer: [c]
+    explanation: >-
+      Ollama refuses browser requests whose Origin header is not one of its local origins or listed in
+      OLLAMA_ORIGINS; curl sends no Origin. Listing the one page's origin fixes it; * lets every site's pages
+      call the server from users' browsers. Binding all addresses changes who can connect, not origins.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [security, http]
+  # -- models and Modelfiles ----------------------------------------------------------------------
+  - id: ol-007
+    type: single
+    difficulty: 1
+    prompt: In the model name `qwen2.5:0.5b`, what is `0.5b`?
+    choices:
+      - {id: a, text: "The Ollama version it needs"}
+      - {id: b, text: "The quantization, in bits"}
+      - {id: c, text: "The size of the context window"}
+      - {id: d, text: "The tag, naming a variant — here the 0.5-billion-parameter one"}
+    answer: [d]
+    explanation: >-
+      Names are model:tag, and a missing tag means latest. Tags usually distinguish sizes and quantizations;
+      `ollama show` reports the details, here 494M parameters at Q4_K_M.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [models]
+  - id: ol-008
+    type: single
+    difficulty: 2
+    prompt: What does Q4_K_M in a model's details describe?
+    choices:
+      - {id: a, text: "The fourth release of the model"}
+      - {id: b, text: "A 4 KB context window"}
+      - {id: c, text: "The quantization: weights stored in about 4 bits each, trading some quality for memory"}
+      - {id: d, text: "The model needs 4 CPU cores"}
+    answer: [c]
+    explanation: >-
+      Quantization stores weights in fewer bits than the 16 used in training. qwen2.5:0.5b at Q4_K_M is a
+      398 MB file for 494M parameters; F16 embeddings like all-minilm keep full half precision.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/import.mdx"]
+    tags: [models, memory]
+  - id: ol-009
+    type: single
+    difficulty: 2
+    prompt: What does `ollama create support-bot -f Modelfile` store on the server?
+    choices:
+      - {id: a, text: "A full copy of the base model's weights with new values baked in"}
+      - {id: b, text: "A new model whose manifest reuses the base model's weight blobs and adds the system prompt and parameters"}
+      - {id: c, text: "A symbolic link to the Modelfile, read on every request"}
+      - {id: d, text: "A fine-tuned model trained on the SYSTEM text"}
+    answer: [b]
+    explanation: >-
+      Blobs are content-addressed and shared, so a derived model costs almost no disk. The Modelfile is read
+      once; changing it later has no effect until the model is created again. Nothing is trained.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/modelfile.mdx"]
+    tags: [modelfile]
+  - id: ol-010
+    type: single
+    difficulty: 2
+    prompt: How do you see the parameters and system prompt the server actually holds for a model?
+    choices:
+      - {id: a, text: "ollama ps"}
+      - {id: b, text: "ollama show support-bot --modelfile (or --parameters, or POST /api/show)"}
+      - {id: c, text: "ollama list --verbose"}
+      - {id: d, text: "cat the Modelfile it was built from"}
+    answer: [b]
+    explanation: >-
+      show reads the stored model. The Modelfile on disk may have been edited since; ps lists what is loaded
+      in memory; list shows names, sizes and dates.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [modelfile]
+  - id: ol-011
+    type: single
+    difficulty: 2
+    prompt: What does the MESSAGE instruction in a Modelfile add?
+    choices:
+      - {id: a, text: "Example conversation turns the model sees before the user's own messages"}
+      - {id: b, text: "A message printed in the server log when the model loads"}
+      - {id: c, text: "A license notice"}
+      - {id: d, text: "A stop sequence"}
+    answer: [a]
+    explanation: >-
+      MESSAGE user … and MESSAGE assistant … build a short history that shows the model the expected style
+      of answers (few-shot prompting). Stop sequences are PARAMETER stop; licences are LICENSE.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/modelfile.mdx"]
+    tags: [modelfile, prompting]
+  - id: ol-012
+    type: single
+    difficulty: 2
+    prompt: >-
+      A model is built with PARAMETER temperature 0.2, and a request sends "options": {"temperature": 1.0}.
+      Which applies to that request?
+    choices:
+      - {id: a, text: "The request fails with a conflict error"}
+      - {id: b, text: "The average, 0.6"}
+      - {id: c, text: "0.2: the Modelfile always wins"}
+      - {id: d, text: "1.0: request options override the model's parameters"}
+    answer: [d]
+    explanation: >-
+      Request options take precedence over parameters stored with the model, which take precedence over
+      server defaults. A client can therefore undo a model's tuning on every call it makes.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [modelfile, api]
+  - id: ol-013
+    type: single
+    difficulty: 2
+    prompt: What does setting PARAMETER seed to a fixed number give you?
+    choices:
+      - {id: a, text: "The same output for the same prompt and parameters, which makes tests repeatable"}
+      - {id: b, text: "Protection against prompt injection"}
+      - {id: c, text: "Faster generation"}
+      - {id: d, text: "A different model personality per seed"}
+    answer: [a]
+    explanation: >-
+      Sampling is pseudo-random; a fixed seed makes it replay the same choices given identical inputs and
+      settings. It is a testing tool, not a quality or security setting.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/modelfile.mdx"]
+    tags: [modelfile, sampling]
+  # -- context and prompts ------------------------------------------------------------------------
+  - id: ol-014
+    type: single
+    difficulty: 2
+    prompt: What does num_ctx limit?
+    choices:
+      - {id: a, text: "The tokens one request may hold: system prompt, conversation, question and answer together"}
+      - {id: b, text: "The length of the answer only"}
+      - {id: c, text: "The number of conversations the server keeps"}
+      - {id: d, text: "The size of the model file"}
+    answer: [a]
+    explanation: >-
+      The context window covers everything the model reads and writes in one request. num_predict limits the
+      answer alone. Ollama's default window is 4096 tokens (OLLAMA_CONTEXT_LENGTH changes it).
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [context]
+  - id: ol-015
+    type: single
+    difficulty: 3
+    prompt: >-
+      A 1,388-token prompt goes to a model with num_ctx 256. The response has prompt_eval_count 130 and the
+      answer looks normal. What happened?
+    choices:
+      - {id: a, text: "Tokens were cached, so only 130 needed evaluating"}
+      - {id: b, text: "The model summarised the prompt to 130 tokens first"}
+      - {id: c, text: "130 is the answer's length"}
+      - {id: d, text: "The prompt was truncated to fit; most of it, including the system prompt's middle, was never read"}
+    answer: [d]
+    explanation: >-
+      Ollama 0.34 logs "truncating input prompt limit=130 prompt=1388 keep=4 new=130": a prompt that does not
+      fit is cut to about half the window, keeping a few tokens from the start and the most recent text. No
+      error is returned; prompt_eval_count is the evidence. Measured in Norboten's ollama-02 lab.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [context]
+  - id: ol-016
+    type: single
+    difficulty: 2
+    prompt: Why does a chat client resend the whole conversation with every message?
+    choices:
+      - {id: a, text: "The model keeps no memory between requests; each request must carry everything it should consider"}
+      - {id: b, text: "To let the server verify the conversation was not tampered with"}
+      - {id: c, text: "Because the API has no streaming"}
+      - {id: d, text: "It does not; Ollama stores conversations by session id"}
+    answer: [a]
+    explanation: >-
+      /api/chat is stateless: the messages array is the memory. That is why long conversations get slower and
+      eventually overflow the context window, and why clients trim or summarise old turns.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [context, api]
+  - id: ol-017
+    type: single
+    difficulty: 2
+    prompt: How do you ask Ollama for an answer that matches a JSON schema?
+    choices:
+      - {id: a, text: "Pass the schema in the request's format field (and still ask for JSON in the prompt)"}
+      - {id: b, text: "Use /api/embed"}
+      - {id: c, text: "Add PARAMETER json true to the Modelfile"}
+      - {id: d, text: "Set temperature to 0"}
+    answer: [a]
+    explanation: >-
+      format accepts "json" or a JSON schema, and generation is constrained to match. The documentation advises
+      also instructing the model to answer in JSON. Temperature changes randomness, not structure.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [api, structured-output]
+  - id: ol-018
+    type: single
+    difficulty: 1
+    prompt: What does num_predict limit?
+    choices:
+      - {id: a, text: "How many tokens the model may generate for the answer"}
+      - {id: b, text: "How many requests are processed in parallel"}
+      - {id: c, text: "How many models can be loaded"}
+      - {id: d, text: "How many tokens of prompt are read"}
+    answer: [a]
+    explanation: >-
+      num_predict caps the answer's length (-1 means until the model stops). Parallel requests are
+      OLLAMA_NUM_PARALLEL; the prompt is bounded by num_ctx; loaded models by OLLAMA_MAX_LOADED_MODELS.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/modelfile.mdx"]
+    tags: [api]
+  # -- memory and loading -------------------------------------------------------------------------
+  - id: ol-019
+    type: single
+    difficulty: 2
+    prompt: Which two settings multiply the size of the key-value cache Ollama reserves when it loads a model?
+    choices:
+      - {id: a, text: "OLLAMA_HOST and OLLAMA_ORIGINS"}
+      - {id: b, text: "OLLAMA_KEEP_ALIVE and OLLAMA_MAX_QUEUE"}
+      - {id: c, text: "OLLAMA_CONTEXT_LENGTH (or num_ctx) and OLLAMA_NUM_PARALLEL"}
+      - {id: d, text: "temperature and top_k"}
+    answer: [c]
+    explanation: >-
+      The cache holds per-token state for every token of every parallel slot. On a 3 GB VM qwen2.5:0.5b loaded
+      at 4,096 × 2 with a 734 MiB peak, and at 32,768 × 8 tried to allocate 3,072 MB for the cache alone.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [memory]
+  - id: ol-020
+    type: single
+    difficulty: 2
+    prompt: What does this print — the tokens of cache Ollama reserves for OLLAMA_CONTEXT_LENGTH=32768 and OLLAMA_NUM_PARALLEL=8?
+    code: |
+      context_length, parallel = 32768, 8
+      print(context_length * parallel)
+    code_lang: python
+    choices:
+      - {id: a, text: "262144"}
+      - {id: b, text: "40776"}
+      - {id: c, text: "4096"}
+      - {id: d, text: "32768"}
+    answer: [a]
+    explanation: >-
+      Each parallel slot gets a full context. The runtime logs the same figure when it loads (n_ctx = 262144,
+      n_ctx_seq = 32768), which is why the cache for a small model reached three gigabytes.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [memory]
+    verify:
+      runtime: python
+      code: |
+        context_length, parallel = 32768, 8
+        print(context_length * parallel)
+  - id: ol-021
+    type: single
+    difficulty: 3
+    prompt: >-
+      A request to Ollama gets no HTTP response at all, `systemctl show ollama -p NRestarts` went up, and the
+      journal says "Failed with result 'oom-kill'". What is the cause?
+    choices:
+      - {id: a, text: "The model file is corrupt"}
+      - {id: b, text: "The service's MemoryMax= was reached and the kernel killed a process in its cgroup"}
+      - {id: c, text: "The key-value cache allocation failed and Ollama returned 500"}
+      - {id: d, text: "OLLAMA_MAX_QUEUE was exceeded"}
+    answer: [b]
+    explanation: >-
+      An OOM kill ends the process mid-request (the client sees the connection close) and systemd restarts the
+      unit. An allocation failure is reported by Ollama itself as HTTP 500, with the server still running; a
+      full queue returns 503.
+    references: ["man 5 systemd.resource-control", "https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [memory, systemd]
+  - id: ol-022
+    type: single
+    difficulty: 3
+    prompt: Ollama logs that a load is "projected to use 3645 MiB of host memory vs. 2973 MiB of total host memory". What does that estimate not take into account?
+    choices:
+      - {id: a, text: "Whether the CPU supports AVX"}
+      - {id: b, text: "The service's own cgroup limit (MemoryMax=), which may be far lower than the host's memory"}
+      - {id: c, text: "The size of the model's weights"}
+      - {id: d, text: "The context length"}
+    answer: [b]
+    explanation: >-
+      In Ollama 0.34 the estimate compares with the machine's memory. A unit capped at 400 MB passes that
+      comparison and is OOM-killed as soon as it grows past its cap, as the ollama-03 lab shows.
+    references: ["man 5 systemd.resource-control (MemoryMax=)"]
+    tags: [memory, systemd]
+  - id: ol-023
+    type: single
+    difficulty: 2
+    prompt: Eight people use one Ollama server. Why can OLLAMA_NUM_PARALLEL=2 still be right?
+    choices:
+      - {id: a, text: "Ollama ignores values above 2 on CPUs"}
+      - {id: b, text: "Each user gets two requests per minute"}
+      - {id: c, text: "It cannot; the setting must equal the number of users"}
+      - {id: d, text: "It limits simultaneous requests, not users; others wait in the queue, and each extra slot costs a full context of memory"}
+    answer: [d]
+    explanation: >-
+      Requests beyond the parallel count queue (up to OLLAMA_MAX_QUEUE, 512 by default, then 503). People
+      rarely press enter at the same instant, and on a CPU parallel slots share the same cores anyway.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [memory, concurrency]
+  - id: ol-024
+    type: single
+    difficulty: 2
+    prompt: Which endpoint lists the models currently loaded in memory, with their size and when they will be unloaded?
+    choices:
+      - {id: a, text: "GET /api/version"}
+      - {id: b, text: "GET /api/ps"}
+      - {id: c, text: "GET /api/tags"}
+      - {id: d, text: "POST /api/show"}
+    answer: [b]
+    explanation: >-
+      /api/ps (ollama ps) reports loaded models with size, context_length and expires_at. /api/tags lists
+      models on disk; /api/show describes one model's definition.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [api, memory]
+  # -- keep-alive ---------------------------------------------------------------------------------
+  - id: ol-025
+    type: single
+    difficulty: 1
+    prompt: By default, how long does Ollama keep a model in memory after a request?
+    choices:
+      - {id: a, text: "5 minutes"}
+      - {id: b, text: "Until the next request for a different model"}
+      - {id: c, text: "It unloads immediately"}
+      - {id: d, text: "Until the server stops"}
+    answer: [a]
+    explanation: >-
+      The default keep-alive is 5m. OLLAMA_KEEP_ALIVE changes the server default; the keep_alive request field
+      overrides it; `ollama stop <model>` unloads immediately.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [keep-alive]
+  - id: ol-026
+    type: single
+    difficulty: 2
+    prompt: How do you load a model into memory before the first real question, and keep it loaded?
+    choices:
+      - {id: a, text: "It is impossible; models load only with a prompt"}
+      - {id: b, text: "Set OLLAMA_MODELS to a tmpfs"}
+      - {id: c, text: "ollama pull the model again"}
+      - {id: d, text: "Send a request with the model name and no prompt, with keep_alive -1"}
+    answer: [d]
+    explanation: >-
+      An empty /api/generate or /api/chat request loads the model (done_reason "load"); keep_alive -1, or any
+      negative value, keeps it loaded. keep_alive 0 unloads it after the response.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [keep-alive]
+  - id: ol-027
+    type: single
+    difficulty: 3
+    prompt: >-
+      In Ollama 0.34, a model is loaded with keep_alive "2m". A later request for it sends no keep_alive, and the
+      server's OLLAMA_KEEP_ALIVE is unset. When will the model unload?
+    choices:
+      - {id: a, text: "Never"}
+      - {id: b, text: "2 minutes after that request: the loaded model keeps the last keep_alive it was given"}
+      - {id: c, text: "5 minutes after that request, the server default"}
+      - {id: d, text: "Immediately"}
+    answer: [b]
+    explanation: >-
+      Measured on the lab VM: after a 2m request, a request without keep_alive set expires_at to 2 minutes later
+      again; after a -1 request, later requests left it loaded indefinitely. A client sending keep_alive affects
+      every later request for that loaded model, which is worth knowing when several apps share a server.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [keep-alive]
+  - id: ol-028
+    type: single
+    difficulty: 2
+    prompt: What does `ollama stop qwen2.5:0.5b` do?
+    choices:
+      - {id: a, text: "Unloads the model from memory; the server keeps running and the model stays on disk"}
+      - {id: b, text: "Deletes the model"}
+      - {id: c, text: "Stops the Ollama service"}
+      - {id: d, text: "Cancels its downloads"}
+    answer: [a]
+    explanation: >-
+      stop frees the model's memory; the next request loads it again. `ollama rm` deletes it from disk, and the
+      service is stopped with systemctl.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [keep-alive, cli]
+  # -- embeddings and RAG -------------------------------------------------------------------------
+  - id: ol-029
+    type: single
+    difficulty: 2
+    topics: [ai-services]
+    prompt: What does POST /api/embed return for a list of texts?
+    choices:
+      - {id: a, text: "A generated answer for each text"}
+      - {id: b, text: "The token ids of each text"}
+      - {id: c, text: "One vector of numbers per text, positioned so that similar meanings are close"}
+      - {id: d, text: "A compressed copy of each text"}
+    answer: [c]
+    explanation: >-
+      An embedding model maps text to a fixed-length vector — 384 numbers for all-minilm. Retrieval compares
+      vectors, usually by cosine similarity, to find passages related to a question even without shared words.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [embeddings]
+  - id: ol-030
+    type: single
+    difficulty: 2
+    topics: [ai-services]
+    prompt: What does this print?
+    code: |
+      import math
+      def cosine(a, b):
+          dot = sum(x * y for x, y in zip(a, b))
+          return dot / (math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(y * y for y in b)))
+      print(round(cosine([1, 0, 1], [1, 0, 1]), 2), round(cosine([1, 0], [0, 1]), 2))
+    code_lang: python
+    choices:
+      - {id: a, text: "1.0 1.0"}
+      - {id: b, text: "2 0"}
+      - {id: c, text: "1.0 0.0"}
+      - {id: d, text: "0.0 1.0"}
+    answer: [c]
+    explanation: >-
+      Cosine similarity is 1 for vectors pointing the same way and 0 for perpendicular ones, whatever their
+      length. With all-minilm on the lab VM, "disk full" and "no space left on device" scored 0.621, "disk full"
+      and "refund request" 0.228.
+    references: ["https://en.wikipedia.org/wiki/Cosine_similarity"]
+    tags: [embeddings]
+    verify:
+      runtime: python
+      code: |
+        import math
+        def cosine(a, b):
+            dot = sum(x * y for x, y in zip(a, b))
+            return dot / (math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(y * y for y in b)))
+        print(round(cosine([1, 0, 1], [1, 0, 1]), 2), round(cosine([1, 0], [0, 1]), 2))
+  - id: ol-031
+    type: single
+    difficulty: 2
+    topics: [ai-services]
+    prompt: In retrieval-augmented generation, when is the embedding model used and when is the chat model?
+    choices:
+      - {id: a, text: "Both are trained on the documents first"}
+      - {id: b, text: "Embeddings index the documents and the question to find passages; the chat model answers from the passages put in its prompt"}
+      - {id: c, text: "The embedding model answers; the chat model checks the answer"}
+      - {id: d, text: "The chat model generates embeddings; the embedding model is optional"}
+    answer: [b]
+    explanation: >-
+      Documents are split and embedded ahead of time; at question time the question is embedded, the closest
+      chunks are retrieved, and they are placed in the chat model's context. No training is involved, and the
+      retrieved text must fit the context window.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [embeddings, rag]
+  - id: ol-032
+    type: single
+    difficulty: 3
+    topics: [ai-services]
+    prompt: A RAG index was built with all-minilm. Someone switches the question side to a different embedding model. What breaks?
+    choices:
+      - {id: a, text: "Only speed"}
+      - {id: b, text: "Only the chat model's answers, not retrieval"}
+      - {id: c, text: "Nothing, as long as both models are on the same server"}
+      - {id: d, text: "Every similarity: vectors from different embedding models live in different spaces (and often have different lengths)"}
+    answer: [d]
+    explanation: >-
+      Distances are meaningful only between vectors from the same model. A different model means re-embedding
+      the whole corpus; a mismatch may not even error if the dimensions happen to match.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [embeddings, rag]
+  # -- clients and integration --------------------------------------------------------------------
+  - id: ol-033
+    type: single
+    difficulty: 2
+    prompt: A tool written for the OpenAI API must use a local Ollama. What is the least change?
+    choices:
+      - {id: a, text: "Rewrite it for /api/chat"}
+      - {id: b, text: "Install a translation proxy"}
+      - {id: c, text: "Point its base URL at http://127.0.0.1:11434/v1 and use an Ollama model name"}
+      - {id: d, text: "It cannot work; Ollama has no compatible API"}
+    answer: [c]
+    explanation: >-
+      Ollama serves OpenAI-compatible endpoints under /v1, including /v1/chat/completions with tools. The API key
+      the client insists on can be any string; Ollama ignores it.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/openai.mdx"]
+    tags: [api, integration]
+  - id: ol-034
+    type: single
+    difficulty: 2
+    prompt: What are Ollama's durations such as load_duration and eval_duration measured in?
+    choices:
+      - {id: a, text: "Tokens"}
+      - {id: b, text: "Seconds, as floats"}
+      - {id: c, text: "Milliseconds"}
+      - {id: d, text: "Nanoseconds"}
+    answer: [d]
+    explanation: >-
+      The API returns all durations in nanoseconds: a load_duration of 603007669 is 0.6 s. eval_count divided by
+      eval_duration (in seconds) gives tokens per second.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [api, performance]
+  - id: ol-035
+    type: single
+    difficulty: 2
+    prompt: >-
+      A response reports eval_count 8 and eval_duration 79914000. What does this print, in tokens per second?
+    code: |
+      eval_count, eval_duration = 8, 79914000
+      print(round(eval_count / (eval_duration / 1e9)))
+    code_lang: python
+    choices:
+      - {id: a, text: "8"}
+      - {id: b, text: "100"}
+      - {id: c, text: "10"}
+      - {id: d, text: "1000"}
+    answer: [b]
+    explanation: >-
+      79,914,000 ns is 0.0799 s; 8 tokens in that time is about 100 tokens per second — qwen2.5:0.5b on two vCPUs
+      of the lab VM, once loaded. Durations are nanoseconds.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/api.md"]
+    tags: [api, performance]
+    verify:
+      runtime: python
+      code: |
+        eval_count, eval_duration = 8, 79914000
+        print(round(eval_count / (eval_duration / 1e9)))
+  - id: ol-036
+    type: single
+    difficulty: 2
+    prompt: >-
+      A long generation through nginx fails after exactly 60 seconds with 504, but streams fine with
+      "stream": true. Which nginx directive is involved?
+    choices:
+      - {id: a, text: "keepalive_timeout"}
+      - {id: b, text: "proxy_read_timeout: with streaming off, nothing arrives until the answer is complete"}
+      - {id: c, text: "send_timeout on the client side"}
+      - {id: d, text: "client_body_timeout"}
+    answer: [b]
+    explanation: >-
+      proxy_read_timeout (60 s by default) is the gap allowed between two reads from the backend. A streamed answer
+      sends a token at a time; a non-streamed one sends nothing until generation ends.
+    references: ["https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_read_timeout"]
+    tags: [proxy]
+  # -- local models in practice -------------------------------------------------------------------
+  - id: ol-037
+    type: single
+    difficulty: 2
+    topics: [ai-services]
+    prompt: Which job is a small local model like qwen2.5:0.5b well suited to?
+    choices:
+      - {id: a, text: "Answering factual questions without retrieval"}
+      - {id: b, text: "Reliably following thirty rules in a long system prompt"}
+      - {id: c, text: "Writing and reviewing large code changes"}
+      - {id: d, text: "Short, constrained tasks — classifying, extracting fields, rephrasing — where data must stay on the machine"}
+    answer: [d]
+    explanation: >-
+      A half-billion-parameter model is fast and cheap on a CPU and keeps data local, but follows complex
+      instructions poorly and knows little. Norboten's consultant uses one to answer from retrieved passages, not
+      from its own knowledge.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [models, practice]
+  - id: ol-038
+    type: single
+    difficulty: 2
+    prompt: Does running a model with Ollama locally send prompts to ollama.com?
+    choices:
+      - {id: a, text: "Yes, unless OLLAMA_HOST is set"}
+      - {id: b, text: "No: local models run on the machine; only cloud models, if used, send prompts to Ollama's service"}
+      - {id: c, text: "Yes, for telemetry"}
+      - {id: d, text: "Only the first prompt of each session"}
+    answer: [b]
+    explanation: >-
+      The FAQ states that local runs are not seen by Ollama; cloud-hosted models are processed by its service.
+      Cloud features can be turned off with OLLAMA_NO_CLOUD=1. Pulling a model does contact the registry.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [privacy]
+  - id: ol-039
+    type: single
+    difficulty: 3
+    prompt: A machine must run Ollama with no internet access. What has to happen before it is disconnected?
+    choices:
+      - {id: a, text: "Export each model with ollama export"}
+      - {id: b, text: "Pull every model it needs into OLLAMA_MODELS (or copy that directory from a machine that has them)"}
+      - {id: c, text: "Nothing: models are downloaded on first use from a local cache in the binary"}
+      - {id: d, text: "Set OLLAMA_OFFLINE=1"}
+    answer: [b]
+    explanation: >-
+      Models are blobs and manifests under the models directory; with them present the server needs no network.
+      Norboten's automation image pulls qwen2.5:0.5b and all-minilm at build time for exactly this reason (424 MB).
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [storage, practice]
+  - id: ol-040
+    type: single
+    difficulty: 2
+    prompt: Which command answers "is the model loaded, and until when?" from a shell?
+    choices:
+      - {id: a, text: "systemctl status ollama"}
+      - {id: b, text: "ollama list"}
+      - {id: c, text: "ollama show qwen2.5:0.5b"}
+      - {id: d, text: "ollama ps"}
+    answer: [d]
+    explanation: >-
+      ollama ps shows loaded models, their memory and the UNTIL column from keep-alive. list is what is on disk;
+      systemctl status is the server process; show is a model's definition.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.mdx"]
+    tags: [cli, keep-alive]

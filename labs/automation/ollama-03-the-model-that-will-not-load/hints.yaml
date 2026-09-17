@@ -1,0 +1,34 @@
+checks:
+  01_a_question_gets_an_answer:
+    level_1: "The model never finishes loading."
+    level_2: "There are two different failures here. One is the kernel killing the server; the other
+              is the server refusing to allocate what it was told to. The journal tells them apart."
+    level_3: "journalctl -u ollama shows the allocation error and the size it tried; systemctl show
+              ollama -p MemoryMax -p MemoryPeak -p NRestarts shows the cgroup side. Read the drop-in the
+              tuning went into."
+    level_4: "A 32,768-token context for 8 parallel requests needs a 3 GB key-value cache on top of the
+              model, and MemoryMax=400M kills the server before the model is even loaded. Size context and
+              parallelism to the need, and give the service a limit it fits in."
+    refs:
+      2: ["journal:kernel-performance#oom-the-machines-or-the-cgroups", "journal:ollama#memory"]
+      3: ["journal:ollama-03-the-model-that-will-not-load#memorymax-and-the-oom-killer", "journal:ollama-03-the-model-that-will-not-load#a-failed-allocation-is-not-a-kill"]
+  02_two_people_with_4096_tokens_each:
+    level_1: "The team needs two people at a time and 4,096 tokens each."
+    level_2: "Context length and parallel requests multiply: memory for the cache grows with both."
+    level_3: "OLLAMA_CONTEXT_LENGTH and OLLAMA_NUM_PARALLEL; /api/ps shows the context of the loaded
+              model once it has loaded."
+    level_4: "Set the context to 4096 and parallel requests to 2, and make sure the model then loads."
+    refs:
+      2: ["journal:ollama#context-windows", "journal:ollama#memory"]
+      3: ["journal:ollama-03-the-model-that-will-not-load#what-the-server-holds"]
+  03_a_memory_limit_with_room_to_work:
+    level_1: "The service's memory limit is smaller than what it has to hold."
+    level_2: "A model's file size is not its memory use: the runtime and the key-value cache come on
+              top."
+    level_3: "MemoryMax= in the unit's drop-in; MemoryPeak in systemctl show after a load shows what the
+              service really used."
+    level_4: "MemoryMax=400M is below the model's working set. Choose a limit between 1 and 2 GiB that
+              leaves headroom above the peak."
+    refs:
+      2: ["journal:kernel-performance#oom-the-machines-or-the-cgroups", "man 5 systemd.resource-control"]
+      3: ["journal:ollama-03-the-model-that-will-not-load#memorymax-and-the-oom-killer", "journal:ollama-03-the-model-that-will-not-load#what-the-server-holds"]

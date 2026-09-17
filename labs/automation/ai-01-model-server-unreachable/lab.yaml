@@ -1,0 +1,22 @@
+schema_version: 1
+id: ai-01-model-server-unreachable
+version: 1.0.0
+title: The Model Server Nobody Can Reach
+track: automation
+topics: [ollama, ai-services, networking]
+difficulty: 2
+estimated_minutes: 35
+base_images: [ubuntu-26.04-automation]
+resources:
+  cpus: 2
+objectives:
+  - "Run a local model server as a service account that can read its models"
+  - "Publish an internal API through nginx without breaking streamed responses"
+  - "Make the deployment survive a reboot"
+checks:
+  - {id: 01_ollama_service_runs, objective: 3}
+  - {id: 02_models_readable_by_ollama, objective: 1}
+  - {id: 03_tags_through_the_proxy, objective: 2}
+  - {id: 04_generate_through_the_proxy, objective: 2, weight: 2}
+  - {id: 05_proxy_ready_for_streaming, objective: 2}
+reboot_required: true

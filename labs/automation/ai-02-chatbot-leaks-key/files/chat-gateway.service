@@ -1,0 +1,14 @@
+[Unit]
+Description=Internal AI chat gateway
+After=network-online.target model-api.service
+Wants=network-online.target
+
+[Service]
+User=chatgw
+EnvironmentFile=/etc/chat-gateway/gateway.env
+Environment=UPSTREAM_KEY=REPLACED_BY_BREAK
+ExecStart=/opt/chat-gateway/gateway.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

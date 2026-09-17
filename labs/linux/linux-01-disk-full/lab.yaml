@@ -1,0 +1,24 @@
+schema_version: 1
+id: linux-01-disk-full
+version: 1.0.0
+title: The Disk That Stays Full
+track: linux
+topics: [storage-lvm, logging-journald]
+difficulty: 1
+estimated_minutes: 20
+base_images: [ubuntu-26.04, alpine]
+resources:
+  cpus: 1
+  disks: [{size: 1GiB}]           # /dev/vdb becomes the application's log filesystem
+objectives:
+  - "Find what is using disk space when df and du disagree"
+  - "Configure log rotation so a service cannot fill its disk again"
+  - "Fix the cause without taking the service down"
+checks:
+  - {id: 01_log_disk_has_space, objective: 1}
+  - {id: 02_no_deleted_files_held_open, objective: 1}
+  - {id: 03_logrotate_covers_app, objective: 2}
+  # Guards against "fixing" the disk by stopping the service. On the broken system it fails
+  # too: ledger is running, but writing into a deleted file.
+  - {id: 04_ledger_still_running, objective: 3}
+reboot_required: true

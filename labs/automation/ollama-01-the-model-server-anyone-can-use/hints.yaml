@@ -1,0 +1,32 @@
+checks:
+  01_ollama_listens_only_on_loopback:
+    level_1: "The model server answers anyone who can reach this machine."
+    level_2: "Find which address the server is bound to, and where that setting comes from. A
+              unit can be changed by files other than the unit itself."
+    level_3: "ss -ltnp shows the listening address. systemctl cat ollama shows the unit and every
+              drop-in; Ollama reads its bind address from OLLAMA_HOST."
+    level_4: "A drop-in sets OLLAMA_HOST=0.0.0.0:11434. Bind 127.0.0.1:11434, so the only way in is
+              through the proxy."
+    refs:
+      2: ["journal:networking#listening-on-loopback-or-on-everything", "https://docs.ollama.com/faq"]
+      3: ["journal:ollama-01-the-model-server-anyone-can-use#configuration-through-the-environment", "journal:ollama-01-the-model-server-anyone-can-use#the-bind-address-is-the-first-lock"]
+  02_the_proxy_asks_for_the_team_password:
+    level_1: "The proxy lets anyone in."
+    level_2: "Ollama cannot check passwords; the proxy in front of it has to."
+    level_3: "nginx's auth_basic and auth_basic_user_file. The password file uses hashed entries,
+              which openssl passwd -apr1 can produce; nginx's worker must be able to read it."
+    level_4: "models.conf has no authentication. Add basic auth for the user team with the password
+              from /root/team-password."
+    refs:
+      2: ["https://nginx.org/en/docs/http/ngx_http_auth_basic_module.html"]
+      3: ["journal:ollama-01-the-model-server-anyone-can-use#basic-authentication-in-nginx"]
+  03_only_the_chat_page_may_call_from_a_browser:
+    level_1: "Any web page a colleague opens could use the model server from their browser."
+    level_2: "Browsers send an Origin header with cross-site requests, and servers decide which
+              origins to accept. Look at what this one accepts."
+    level_3: "Ollama allows its own local origins by default and more through OLLAMA_ORIGINS. nginx
+              passes the browser's Origin header on to Ollama."
+    level_4: "OLLAMA_ORIGINS is *, which accepts every site. Allow only https://chat.internal.example."
+    refs:
+      2: ["journal:ollama#the-service"]
+      3: ["journal:ollama-01-the-model-server-anyone-can-use#origins-what-a-browser-is-allowed-to-do"]

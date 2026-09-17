@@ -1,0 +1,50 @@
+schema_version: 1
+topic: linux-01-disk-full
+topics: [storage-lvm, logging-journald]
+title: "Theory: disk space and log rotation"
+description: Why df and du disagree, and how rotation keeps disks from filling.
+questions:
+  - id: lx1-001
+    type: single
+    difficulty: 2
+    prompt: df reports 95% used; du on the same mount adds up to 10%. What is the most likely reason?
+    choices:
+      - {id: a, text: "df counts swap"}
+      - {id: b, text: "The filesystem needs fsck"}
+      - {id: c, text: "Deleted files are still held open by running processes"}
+      - {id: d, text: "du does not count hidden files"}
+    answer: [c]
+    explanation: >-
+      du walks names; df asks the filesystem about blocks. Blocks of an unlinked but open file
+      are used and nameless. lsof +L1 finds them. (Files hidden under a mount point cause the
+      same gap.)
+    references: ["man 1 du", "man 1 df", "man 8 lsof"]
+  - id: lx1-002
+    type: single
+    difficulty: 2
+    prompt: What does logrotate's copytruncate do?
+    choices:
+      - {id: a, text: "Moves the log and sends the program SIGHUP"}
+      - {id: b, text: "Compresses the log without rotating it"}
+      - {id: c, text: "Copies the log, then truncates the original in place, so the writer keeps its open file"}
+      - {id: d, text: "Deletes the log when it reaches its size limit"}
+    answer: [c]
+    explanation: >-
+      It suits programs that cannot reopen their log. The alternative — rename, then postrotate
+      signals the program to reopen — avoids the small window where lines written between copy
+      and truncate are lost.
+    references: ["man 8 logrotate"]
+  - id: lx1-003
+    type: single
+    difficulty: 1
+    prompt: Which command tests a logrotate configuration without rotating anything?
+    choices:
+      - {id: a, text: "logrotate --state /etc/logrotate.d/app"}
+      - {id: b, text: "logrotate -f /etc/logrotate.d/app"}
+      - {id: c, text: "logrotate -d /etc/logrotate.d/app"}
+      - {id: d, text: "logrotate -v /etc/logrotate.d/app"}
+    answer: [c]
+    explanation: >-
+      -d is debug mode and implies a dry run. -f forces a rotation; -v rotates verbosely; --state
+      names the state file.
+    references: ["man 8 logrotate"]

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Features</div>
+    <h1>What Norboten actually does</h1>
+    <p class="lede prose">
+      Everything below exists in the repository today, and everything that grades you runs against
+      a real machine. Where something is planned rather than built, it says so.
+    </p>
+  </div>
+</section>
+
+{% set ns = namespace(side=0) %}
+{% for group in groups %}
+<section class="section{% if loop.last %} no-line{% endif %}">
+  <div class="wrap">
+    {% if group.capture %}
+    {% set ns.side = ns.side + 1 %}
+    <div class="feature-row{% if ns.side is even %} flip{% endif %}">
+      <figure class="capture">
+        <img src="{{ root }}captures/{{ group.capture }}.svg" alt="{{ group.title }} — the TUI" loading="lazy">
+      </figure>
+      <div class="kicker">{{ group.kicker }}</div>
+      <h2>{{ group.title }}</h2>
+      <p class="muted">{{ group.blurb|keys }}</p>
+      {% for part in [group.features[:group.beside], group.features[group.beside:]] if part %}
+      <dl class="feature-list{% if loop.index == 2 %} below{% endif %}">
+        {% for f in part %}
+        <dt>{{ f.title }}</dt>
+        <dd>{{ f.body|keys }}{% if f.detail %} <span class="mono detail">{{ f.detail|keys }}</span>{% endif %}</dd>
+        {% endfor %}
+      </dl>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="kicker">{{ group.kicker }}</div>
+    <h2>{{ group.title }}</h2>
+    <p class="prose muted">{{ group.blurb|keys }}</p>
+    <div class="grid two" style="margin-top:1.6rem">
+      {% for f in group.features %}
+      <div class="card">
+        <h3>{{ f.title }}</h3>
+        <p class="muted">{{ f.body|keys }}</p>
+        {% if f.detail %}<p class="mono muted" style="font-size:0.85rem">{{ f.detail|keys }}</p>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endfor %}
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Rated and unrated</div>
+    <h2>Two halves, and only one of them is a score</h2>
+    <div class="grid two" style="margin-top:1.6rem">
+      <div class="card">
+        <h3>Unrated labs, banks and journals</h3>
+        <p class="muted">Public, offline, complete. The faults, the checks and the reference
+          solution are in the repository; reading them is allowed and often the point. No account,
+          no server, no clock unless you ask for one. This is the larger half, and it is what the
+          catalogue on this site lists today.</p>
+      </div>
+      <div class="card">
+        <h3>Rated labs and rated theory</h3>
+        <p class="muted">Graded by the server against your account, and the only work that moves a
+          rating. Their answers are not published: the material lives in a private repository
+          attached here as the <span class="mono">rated/</span> submodule, the verdict is computed
+          away from your machine, and what reaches the guest never lands in
+          <span class="mono">~/.norboten</span>.</p>
+      </div>
+    </div>
+    <p class="muted prose" style="margin-top:1.2rem">
+      Why it is split that way, how a rated attempt is graded from signed machine state, and the
+      honest limit of doing it at all:
+      <a href="{{ root }}docs/rated-labs/index.html">Rated and unrated labs</a>.
+    </p>
+  </div>
+</section>
+
+{% if captures %}
+<section class="section no-line">
+  <div class="wrap">
+    <div class="kicker">The interface</div>
+    <h2>Every screen, as it actually renders</h2>
+    <p class="prose muted">
+      Not mock-ups: Textual renders the running app to SVG, so these are the real widget tree at
+      the real size. Ratings and profiles show generated sample accounts.
+      <span class="mono">make captures</span> regenerates them.
+    </p>
+    <div class="grid two capture-grid">
+      {% for c in captures %}
+      <figure class="capture">
+        <img src="{{ root }}captures/{{ c.slug }}.svg" alt="{{ c.title }}" loading="lazy">
+        <figcaption><strong>{{ c.title }}</strong> <span class="muted">{{ c.blurb|keys }}</span></figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

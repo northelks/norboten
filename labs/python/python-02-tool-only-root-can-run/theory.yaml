@@ -1,0 +1,105 @@
+schema_version: 1
+topic: python-02-tool-only-root-can-run
+topics: [python, users-permissions]
+title: "Theory: installing Python tools for everyone"
+description: Virtual environments, editable installs, offline wheels and permissions.
+questions:
+  - id: py2-001
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      import subprocess, sys, tempfile, os
+      venv = os.path.join(tempfile.mkdtemp(), "v")
+      subprocess.run([sys.executable, "-m", "venv", "--without-pip", venv], check=True)
+      out = subprocess.run([f"{venv}/bin/python", "-c", "import sys; print(sys.prefix == sys.base_prefix)"],
+                           capture_output=True, text=True).stdout.strip()
+      print(out, os.path.exists(f"{venv}/pyvenv.cfg"))
+    code_lang: python
+    choices:
+      - {id: a, text: "True True"}
+      - {id: b, text: "False False"}
+      - {id: c, text: "False True"}
+      - {id: d, text: "True False"}
+    answer: [c]
+    explanation: >-
+      Running the venv's interpreter directly, without activating anything, already puts Python in
+      the environment: sys.prefix points at the venv while sys.base_prefix is the system Python.
+      pyvenv.cfg next to bin/ is what tells the interpreter so.
+    references: ["https://docs.python.org/3/library/venv.html#how-venvs-work"]
+    tags: [venv]
+    verify:
+      runtime: python
+      code: |
+        import subprocess, sys, tempfile, os
+        venv = os.path.join(tempfile.mkdtemp(), "v")
+        subprocess.run([sys.executable, "-m", "venv", "--without-pip", venv], check=True)
+        out = subprocess.run([f"{venv}/bin/python", "-c", "import sys; print(sys.prefix == sys.base_prefix)"],
+                             capture_output=True, text=True).stdout.strip()
+        print(out, os.path.exists(f"{venv}/pyvenv.cfg"))
+  - id: py2-002
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      import os, subprocess, sys, tempfile
+      site = tempfile.mkdtemp(); src = tempfile.mkdtemp()
+      os.makedirs(f"{src}/pkgdemo"); open(f"{src}/pkgdemo/__init__.py", "w").close()
+      open(f"{site}/demo.pth", "w").write(src + "\n")
+      code = f"import site; site.addsitedir({site!r}); import pkgdemo; print(pkgdemo.__file__.startswith({src!r}))"
+      print(subprocess.run([sys.executable, "-c", code], capture_output=True, text=True).stdout.strip())
+    code_lang: python
+    choices:
+      - {id: a, text: "an empty line"}
+      - {id: b, text: "True"}
+      - {id: c, text: "False"}
+      - {id: d, text: "ModuleNotFoundError"}
+    answer: [b]
+    explanation: >-
+      A .pth file in a site directory adds each of its lines to sys.path when that directory is
+      processed. That is how an editable install works: the package is imported from the source
+      tree the line names, not from site-packages — and it disappears for anyone who cannot read
+      that tree.
+    references: ["https://docs.python.org/3/library/site.html"]
+    tags: [editable, imports]
+    verify:
+      runtime: python
+      code: |
+        import os, subprocess, sys, tempfile
+        site = tempfile.mkdtemp(); src = tempfile.mkdtemp()
+        os.makedirs(f"{src}/pkgdemo"); open(f"{src}/pkgdemo/__init__.py", "w").close()
+        open(f"{site}/demo.pth", "w").write(src + "\n")
+        code = f"import site; site.addsitedir({site!r}); import pkgdemo; print(pkgdemo.__file__.startswith({src!r}))"
+        print(subprocess.run([sys.executable, "-c", code], capture_output=True, text=True).stdout.strip())
+  - id: py2-003
+    type: single
+    difficulty: 2
+    prompt: An ordinary user runs /opt/tool/venv/bin/tool and gets exit status 126, "Permission denied". The file is mode 755. What is the most likely cause?
+    choices:
+      - {id: a, text: "A directory on the way, such as the venv itself, lacks search (x) permission for that user"}
+      - {id: b, text: "/opt/tool/venv/bin is not on the user's PATH"}
+      - {id: c, text: "The package is missing from site-packages"}
+      - {id: d, text: "The venv was not activated"}
+    answer: [a]
+    explanation: >-
+      Executing a file requires search permission on every directory in its path. A missing package
+      would start the interpreter and raise ModuleNotFoundError; a PATH problem gives 127 "command not
+      found"; activation is never required to run a venv's program by its full path.
+    references: ["man 7 path_resolution"]
+    tags: [permissions]
+  - id: py2-004
+    type: single
+    difficulty: 2
+    prompt: Which command installs a local project into a venv on a machine with no internet access, using wheels in /opt/wheels?
+    choices:
+      - {id: a, text: "venv/bin/pip install -e ./project --target /opt/wheels"}
+      - {id: b, text: "sudo pip install --break-system-packages ./project"}
+      - {id: c, text: "venv/bin/pip install --no-index --find-links /opt/wheels ./project"}
+      - {id: d, text: "venv/bin/pip install --offline ./project"}
+    answer: [c]
+    explanation: >-
+      --no-index stops pip contacting PyPI and --find-links supplies both the build backend and the
+      dependencies from local wheels. pip has no --offline flag, --target changes where packages are
+      installed, and --break-system-packages writes into the distribution's Python.
+    references: ["https://pip.pypa.io/en/stable/cli/pip_install/"]
+    tags: [packaging, offline]

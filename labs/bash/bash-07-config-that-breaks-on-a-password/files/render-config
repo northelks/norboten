@@ -1,0 +1,10 @@
+#!/bin/bash
+# render-config — fill the application's configuration template from its values
+
+TEMPLATE=${RENDER_TEMPLATE:-/etc/myapp/app.conf.tmpl}
+VALUES=${RENDER_VALUES:-/etc/myapp/secrets.env}
+OUT=${RENDER_OUT:-/etc/myapp/app.conf}
+
+. "$VALUES"
+sed -e "s/@DB_HOST@/$DB_HOST/" -e "s/@DB_PASSWORD@/$DB_PASSWORD/" "$TEMPLATE" > "$OUT"
+echo "rendered $OUT"

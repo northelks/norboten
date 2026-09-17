@@ -1,0 +1,41 @@
+checks:
+  01_progress_appears_while_it_runs:
+    level_1: "The ledger grows and the reader of the worker's output hears nothing until it ends."
+    level_2: "A program's output stream is buffered differently when it writes to a terminal and when
+              it writes to a pipe."
+    level_3: "Run the worker with its output piped to cat, and again with it attached to your
+              terminal, and compare when each line appears."
+    level_4: "On a pipe, stdout is block-buffered: about 8 KiB of progress lines sit in the program
+              before anything is written."
+    refs:
+      2: ["https://docs.python.org/3/library/sys.html#sys.stdout"]
+      3: ["journal:python-04-worker-that-goes-silent#where-the-buffering-comes-from"]
+  02_a_stop_leaves_no_half_row:
+    level_1: "Stopping the worker in the middle of a file leaves a row without its amount."
+    level_2: "SIGTERM ends a Python program where it stands unless the program says what to do."
+    level_3: "Look at how a row is written — how many writes, and what happens between them — and at
+              how the state file is replaced."
+    level_4: "The row is written in two parts with the slow work between them, the state file is
+              truncated and rewritten in place, and nothing handles the signal."
+    refs:
+      2: ["https://docs.python.org/3/library/signal.html", "man 5 systemd.kill"]
+      3: ["journal:python-04-worker-that-goes-silent#what-sigterm-does-to-python", "journal:python-04-worker-that-goes-silent#one-record-one-write"]
+  03_nothing_is_ingested_twice:
+    level_1: "After a stop and a restart, a file is ingested a second time."
+    level_2: "What a restarting worker skips depends entirely on what the last run recorded, and when."
+    level_3: "Follow the order of the three steps for one file: the ledger row, the state file, the
+              progress line."
+    level_4: "A file is added to the state only after the row is written, which is right — but the row
+              and the state have to survive a stop between them, so neither may be half written."
+    refs:
+      2: ["https://docs.python.org/3/library/os.html#os.replace"]
+      3: ["journal:python-04-worker-that-goes-silent#the-order-of-the-three-steps"]
+  04_the_service_reports_progress:
+    level_1: "journalctl -fu ingest shows nothing, whatever the worker is doing."
+    level_2: "The journal reads the service's standard output through a pipe."
+    level_3: "Drop a file into the queue and watch both the ledger and journalctl -fu ingest."
+    level_4: "It is the same buffering as in the first check; a unit can also set PYTHONUNBUFFERED,
+              but the program should not depend on its caller for this."
+    refs:
+      2: ["man 1 journalctl", "man 5 systemd.exec"]
+      3: ["journal:python-04-worker-that-goes-silent#where-the-buffering-comes-from"]

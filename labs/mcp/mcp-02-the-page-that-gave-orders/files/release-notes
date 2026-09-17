@@ -1,0 +1,7 @@
+#!/bin/sh
+# Summarise what changed on the docs site's changelog into ~/release/NOTES.md.
+cd "$HOME/release" || exit 1
+claude -p "Read https://docs.example/changelog and write a short summary of this week's changes to NOTES.md." \
+    --permission-mode bypassPermissions \
+    --max-turns 8 \
+    --output-format json > "$HOME/release-notes.json" 2>&1

@@ -1,0 +1,40 @@
+checks:
+  01_the_notes_are_read_only:
+    level_1: "The model can change the notes it was only meant to read."
+    level_2: "What a server lets a model do is the list of tools it offers. Ask the server for that
+              list yourself, and read what its settings say about writing."
+    level_3: "Pipe initialize and tools/list into the server's command and look for write_file; then
+              read /etc/mcp-files/config.json."
+    level_4: "The server is set read_only false, so it offers write_file. Make it read-only."
+    refs:
+      2: ["https://modelcontextprotocol.io/specification/2026-07-28/server/tools", "journal:mcp#what-a-server-exposes-is-the-servers-decision"]
+      3: ["journal:mcp-01-the-file-server-that-shows-everything#read-only-is-a-tool-list", "journal:mcp-01-the-file-server-that-shows-everything#a-server-runs-as-someone"]
+  02_nothing_outside_the_notes:
+    level_1: "The model can read files that have nothing to do with the notes."
+    level_2: "A stdio server can open anything its user can open. The boundary is the one the server
+              sets itself: find where this one reads its limits from."
+    level_3: "The server checks every path against the roots in /etc/mcp-files/config.json."
+    level_4: "The only root is /, so every path is inside it. The root should be the notes folder."
+    refs:
+      2: ["https://modelcontextprotocol.io/specification/2026-07-28/basic/security_best_practices", "journal:mcp#what-a-server-exposes-is-the-servers-decision"]
+      3: ["journal:mcp-01-the-file-server-that-shows-everything#roots-and-the-path-as-written", "journal:mcp-01-the-file-server-that-shows-everything#a-server-runs-as-someone"]
+  03_links_do_not_lead_out:
+    level_1: "A path that starts inside the notes can end somewhere else."
+    level_2: "A symbolic link inside a folder can point anywhere. Compare a path as it is written with
+              where it really leads."
+    level_3: "ls -la ~/notes shows a link; realpath shows where it goes. The server has a setting for
+              which of the two it checks."
+    level_4: "With follow_symlinks true the server checks the path as written, so a link inside the
+              root opens files outside it. Check where paths lead instead."
+    refs:
+      2: ["man 7 symlink", "man 1 realpath", "journal:mcp#what-a-server-exposes-is-the-servers-decision"]
+      3: ["journal:mcp-01-the-file-server-that-shows-everything#links-where-a-path-really-leads"]
+  04_hidden_files_stay_hidden:
+    level_1: "Files most people never see in the folder are the ones the model found."
+    level_2: "Dotfiles are where programs keep configuration and credentials. Check whether the
+              server lists and reads them."
+    level_3: "list_directory on ~/notes shows names starting with a dot; the settings decide that."
+    level_4: "show_hidden is true. A notes server has no reason to show dotfiles."
+    refs:
+      2: ["https://modelcontextprotocol.io/specification/2026-07-28/basic/security_best_practices", "journal:mcp#what-a-server-exposes-is-the-servers-decision"]
+      3: ["journal:mcp-01-the-file-server-that-shows-everything#hidden-files"]

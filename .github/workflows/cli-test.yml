@@ -1,0 +1,64 @@
+name: cli
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: cli-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --frozen
+      - name: Lint
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+      - name: Lab and question specs
+        run: |
+          uv run python -m norboten.labs.lint labs
+          uv run python -m norboten.schema docs/schema
+          uv run python -m norboten_api.reference > docs/api-reference.md
+          git diff --exit-code docs/schema docs/api-reference.md || {
+            echo "::error::docs/schema or docs/api-reference.md is out of date — run make schema"; exit 1; }
+      - name: Tests
+        run: uv run python -m pytest -m "not docker"
+      - name: Container labs, start to pass, in Docker
+        if: matrix.os == 'ubuntu-latest'
+        run: uv run python -m pytest -m docker cli/tests/test_containers.py
+      - name: Terminal player
+        if: matrix.os == 'ubuntu-latest'
+        run: node site/tests/term.test.mjs && node site/tests/ask.test.mjs
+      - name: The installer
+        if: matrix.os == 'ubuntu-latest'
+        run: shellcheck -s sh site/static/install.sh
+      - name: Doctor on a clean host
+        run: uv run norboten dev doctor || true   # reports, never gates: runners have no KVM by default
+
+  api-image:
+    # deploy.yml builds this image only on main; a Dockerfile that no longer matches what the
+    # packages need (a new force-include, say) should fail on the pull request instead
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: api/Dockerfile
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

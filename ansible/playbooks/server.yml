@@ -1,0 +1,14 @@
+---
+# The Norboten server: one machine running the compose project in deploy/.
+#
+#   ansible-playbook -i inventory/production.yml playbooks/server.yml --ask-vault-pass \
+#     -e norboten_api_tag=<commit>
+#
+# bootstrap.yml prepares a new machine once; this makes it a Norboten server; the deploy workflow reruns
+# only deploy.sh for a new API image and rsyncs the site.
+- name: Norboten server
+  hosts: all
+  become: true
+  roles:
+    - role: server_base
+    - role: norboten_stack

@@ -1,0 +1,38 @@
+name: announce-content
+
+# Every push to main: the labs, journals and question banks that push added, posted once to the
+# Discord channel. No model, no API — the push's own diff is the whole input.
+# automation/jobs/announce_content.py; rehearsed by `make jobs-rehearsal`.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "labs/**"
+      - "journals/**"
+      - "quizzes/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: announce-content
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      NORBOTEN_SITE: https://${{ vars.NORBOTEN_DOMAIN || 'norboten.org' }}
+    steps:
+      - name: Skip without a webhook
+        if: env.DISCORD_WEBHOOK == ''
+        run: echo "::notice::DISCORD_WEBHOOK is not set; nothing announced"
+      - uses: actions/checkout@v5
+        if: env.DISCORD_WEBHOOK != '' && github.event.before != '0000000000000000000000000000000000000000'
+        with:
+          fetch-depth: 0
+      - name: Post what this push added
+        if: env.DISCORD_WEBHOOK != '' && github.event.before != '0000000000000000000000000000000000000000'
+        run: python3 -m automation.jobs.announce_content "${{ github.event.before }}" "${{ github.sha }}"

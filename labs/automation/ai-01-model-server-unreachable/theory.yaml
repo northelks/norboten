@@ -1,0 +1,69 @@
+schema_version: 1
+topic: ai-01-model-server-unreachable
+topics: [ollama, ai-services, networking]
+title: "Theory: a model server behind a proxy"
+description: Ollama's service account and model directory, and nginx timeouts and buffering for streamed answers.
+questions:
+  - id: ai1-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      Short prompts work through nginx; long answers requested with "stream": false end in a 504 after
+      exactly 5 seconds. Which directive is responsible?
+    choices:
+      - {id: a, text: "client_max_body_size"}
+      - {id: b, text: "proxy_connect_timeout"}
+      - {id: c, text: "proxy_buffering on"}
+      - {id: d, text: "proxy_read_timeout, the longest gap allowed between two reads from the backend"}
+    answer: [d]
+    explanation: >-
+      proxy_read_timeout limits the time between two successive reads from the upstream, not the total
+      response. A non-streamed answer sends nothing until generation ends, so the whole generation is one
+      gap. The connection itself succeeded (not connect timeout), the request is small (not body size),
+      and buffering changes how data is forwarded, not when nginx gives up.
+    references: ["https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_read_timeout"]
+  - id: ai1-002
+    type: single
+    difficulty: 2
+    prompt: Why is `sudo -u ollama ollama list` not a test of whether the ollama account can read its models?
+    choices:
+      - {id: a, text: "ollama list is a client that asks the running server; it reads nothing from disk"}
+      - {id: b, text: "It is a valid test"}
+      - {id: c, text: "sudo -u drops the OLLAMA_MODELS variable"}
+      - {id: d, text: "ollama list only shows models pulled by the current user"}
+    answer: [a]
+    explanation: >-
+      The CLI talks HTTP to the server at OLLAMA_HOST. With the server down it cannot connect; with it up
+      it shows what the server sees, whoever runs the client. `sudo -u ollama ls /srv/models` tests the
+      account's permissions.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.md"]
+  - id: ai1-003
+    type: single
+    difficulty: 2
+    prompt: >-
+      nginx returns 502 and its error log says `connect() failed (111: Connection refused)`. What does
+      that mean?
+    choices:
+      - {id: a, text: "SELinux or AppArmor refused the connection"}
+      - {id: b, text: "Nothing is listening on the address and port nginx connected to"}
+      - {id: c, text: "The backend took too long to answer"}
+      - {id: d, text: "The client closed the connection early"}
+    answer: [b]
+    explanation: >-
+      errno 111 is a refused connection: a wrong port or a stopped backend (`ss -lntp` settles it). 110 is
+      a timeout; 13 is a permission refusal by a security policy; a client closing early is logged as 499.
+    references: ["man 3 errno", "https://nginx.org/en/docs/http/ngx_http_proxy_module.html"]
+  - id: ai1-004
+    type: single
+    difficulty: 1
+    prompt: Why keep Ollama bound to 127.0.0.1 and publish it only through a proxy?
+    choices:
+      - {id: a, text: "Ollama has no authentication; the proxy is where authentication, rate limits, TLS and logging live"}
+      - {id: b, text: "Binding loopback makes generation faster"}
+      - {id: c, text: "Models load only for local clients"}
+      - {id: d, text: "Ollama cannot answer on other addresses"}
+    answer: [a]
+    explanation: >-
+      Anyone who can reach an exposed Ollama port can run and pull models. Binding loopback leaves the
+      proxy as the only way in, so every control configured there applies.
+    references: ["https://github.com/ollama/ollama/blob/main/docs/faq.md"]

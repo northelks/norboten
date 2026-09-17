@@ -1,0 +1,27 @@
+---
+norboten_dir: /opt/norboten
+norboten_domain: norboten.org
+norboten_acme_email: ops@norboten.org
+norboten_api_image: ghcr.io/northelks/norboten-api
+norboten_api_tag: latest       # the deploy workflow passes the commit it built
+norboten_api_workers: 2
+norboten_ollama_model: qwen2.5:0.5b
+norboten_ollama_memory: 1g       # Ollama's container limit; past it only Ollama is killed
+norboten_backup_dir: /var/backups/norboten
+norboten_backup_keep_days: 14
+
+# From an Ansible Vault file (group_vars/all/vault.yml). Never a default in git.
+norboten_postgres_password: ""
+norboten_grafana_admin_password: ""
+norboten_mcp_state_key: ""     # the API workers' shared MCP state key
+norboten_backup_target: ""     # e.g. sftp:backup@storage.example.org:/norboten (restic)
+norboten_restic_password: ""
+norboten_telegram_bot_token: ""  # live sessions announced by the API; empty sends nothing
+norboten_telegram_chat: ""     # the announcement channel, e.g. @norboten or -100…
+norboten_stripe_secret_key: ""  # donations; empty turns the card path off, page and all
+norboten_github_client_id: ""  # the GitHub OAuth App everyone signs in with; empty: nobody can
+norboten_github_client_secret: ""
+norboten_discord_client_id: ""  # optional: linking Discord, and the weekly digest as a DM
+norboten_discord_client_secret: ""
+norboten_discord_bot_token: ""  # empty: no Discord card on the account page, no digest timer
+norboten_discord_guild_id: ""   # the Norboten server the join box adds a member to

@@ -1,0 +1,41 @@
+checks:
+  01_log_disk_has_space:
+    level_1: "The filesystem reports itself full even though the files you can see are small."
+    level_2: "Space can be taken by things a directory listing never shows. Compare what the
+              filesystem reports with what its visible files add up to."
+    level_3: "Compare df and du for /var/log/app, then look inside it for anything old."
+    level_4: "Most of the space is a deleted log still held open by ledger; the archive directory
+              holds the rest."
+    refs:
+      2: ["man 1 df", "man 1 du"]
+      3: ["journal:linux-01-disk-full#deleting-a-file-does-not-delete-a-file", "journal:linux-01-disk-full#the-other-reasons-a-filesystem-is-full"]
+  02_no_deleted_files_held_open:
+    level_1: "Space on the disk belongs to a file that has no name any more."
+    level_2: "A file's blocks are freed only when the last process holding it open lets go. Ask
+              which processes have deleted files open."
+    level_3: "lsof +L1 (or the fd links under /proc) shows open files with no remaining name."
+    level_4: "ledger still has the deleted ledger.log open. It has to reopen its log."
+    refs:
+      2: ["man 8 lsof", "man 5 proc"]
+      3: ["journal:linux-01-disk-full#finding-the-holder", "journal:linux-01-disk-full#getting-the-space-back"]
+  03_logrotate_covers_app:
+    level_1: "Nothing stops the ledger log from growing until the disk is full again."
+    level_2: "Log rotation is configured per service, and the rotated service must start writing
+              to the new file. Check what rotation rules exist."
+    level_3: "Look in /etc/logrotate.d for a rule that names /var/log/app. logrotate -d tests
+              one."
+    level_4: "There is no rotation rule for ledger.log. It needs a limit and a way for ledger to
+              write to the new file."
+    refs:
+      2: ["journal:linux-06-log-that-never-rotates#who-runs-logrotate-and-what-it-remembers", "man 8 logrotate"]
+      3: ["journal:linux-01-disk-full#logrotate-what-it-actually-does", "journal:linux-01-disk-full#copytruncate-versus-postrotate"]
+  04_ledger_still_running:
+    level_1: "The service the disk exists for is no longer doing its job."
+    level_2: "Check that the service is running, that it starts at boot, and that its log is
+              moving."
+    level_3: "Check ledger's status with the init system, and whether /var/log/app/ledger.log is
+              growing."
+    level_4: "ledger must be running, enabled at boot, and writing to a log file that exists."
+    refs:
+      2: ["journal:monitoring#is-active-is-about-the-process-not-the-service"]
+      3: ["journal:linux-01-disk-full#two-init-systems"]

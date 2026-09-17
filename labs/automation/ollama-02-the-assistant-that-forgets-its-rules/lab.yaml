@@ -1,0 +1,21 @@
+schema_version: 1
+id: ollama-02-the-assistant-that-forgets-its-rules
+version: 1.0.0
+title: The Assistant That Forgets Its Rules
+track: automation
+topics: [ollama, ai-services]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-automation]
+resources:
+  cpus: 2
+objectives:
+  - "Build a custom model from a Modelfile and read back what the server really holds"
+  - "Give a model a context window its instructions fit in, and keep clients from shrinking it"
+  - "Keep the Modelfile the source of truth"
+checks:
+  - {id: 01_the_model_sees_all_its_rules, objective: 2, weight: 2}
+  - {id: 02_the_chat_app_keeps_the_whole_prompt, objective: 2, weight: 2}
+  - {id: 03_answers_are_steady, objective: 1}
+  - {id: 04_the_modelfile_is_the_source, objective: 3}
+reboot_required: true

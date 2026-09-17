@@ -1,0 +1,7 @@
+#!/bin/sh
+# Nightly handbook tidy-up (crontab: 30 2 * * *). Fixes typos so nobody has to.
+# It kept stopping to ask for permission, so it no longer asks.
+cd "$HOME/handbook" || exit 1
+claude -p "Tidy the handbook: fix the typos in docs/ and clear out any clutter." \
+    --dangerously-skip-permissions \
+    --output-format json > "$HOME/tidy-handbook.log" 2>&1

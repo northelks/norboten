@@ -1,0 +1,18 @@
+# Copy to vault.yml, fill in, then: ansible-vault encrypt group_vars/all/vault.yml
+# Generate each secret with: openssl rand -base64 32
+norboten_postgres_password: ""
+norboten_grafana_admin_password: ""
+norboten_mcp_state_key: ""
+norboten_backup_target: ""
+norboten_restic_password: ""
+norboten_telegram_bot_token: ""
+norboten_telegram_chat: ""
+norboten_stripe_secret_key: ""
+# required: signing in is GitHub and nothing else, so without the OAuth App nobody can sign in
+norboten_github_client_id: ""
+norboten_github_client_secret: ""
+# optional: Discord linking and the weekly digest as a direct message from the bot
+norboten_discord_client_id: ""
+norboten_discord_client_secret: ""
+norboten_discord_bot_token: ""
+norboten_discord_guild_id: ""

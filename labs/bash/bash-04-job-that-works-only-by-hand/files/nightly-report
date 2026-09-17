@@ -1,0 +1,13 @@
+#!/bin/bash
+# nightly-report — disk use per project, for the morning mail
+
+. ${REPORT_CONF:-report.conf}
+out=${REPORT_OUT:-/var/lib/reports/latest.txt}
+
+{
+    echo "Disk use per project, $(date +%F)"
+    for project in $projects; do
+        du -sk "$project" | report-fmt
+    done
+} > "$out"
+echo "report written to $out"

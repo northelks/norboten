@@ -1,0 +1,66 @@
+# A laptop's copy of the server: `make stack-up` = compose.yaml + this file.
+#
+#   http://localhost:8080          the site, built from this checkout
+#   http://localhost:8000          the API, for the TUI: NORBOTEN_API=http://localhost:8000
+#   http://localhost:3000          Grafana (admin / the password in deploy/.env.local)
+#
+# Differences from the server, and nothing else: plain HTTP on localhost, the API image built from
+# this checkout, the sample population loaded, and the debug identity header accepted so the TUI
+# can be pointed at it without an account. On a Mac, Ollama in Docker runs on the CPU; set
+# OLLAMA_URL=http://host.docker.internal:11434 in .env.local to use the host's Ollama and Metal.
+services:
+  caddy:
+    ports: !override ["8080:8080"]
+    environment:
+      NORBOTEN_DOMAIN: localhost
+    volumes: !override
+      - ./Caddyfile.local:/etc/caddy/Caddyfile:ro
+      - ../site/dist:/srv/site:ro
+
+  api:
+    build:
+      context: ..
+      dockerfile: api/Dockerfile
+    image: norboten-api:local
+    ports: ["127.0.0.1:8000:8000"]
+    environment:
+      NORBOTEN_SITE_URL: http://localhost:8080
+      NORBOTEN_API_URL: http://localhost:8000
+      NORBOTEN_ALLOWED_ORIGINS: http://localhost:8080
+      NORBOTEN_REQUIRE_AUTH: "false"
+      NORBOTEN_OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      # a GitHub OAuth App has one callback, so the local stack needs its own ("Norboten (local)",
+      # callback http://localhost:8000/auth/github/callback) in deploy/.env.local; without one the
+      # TUI and the site still work through the debug identity below
+      NORBOTEN_GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      NORBOTEN_GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+    # a laptop mounts the submodule itself: empty unless this checkout has access to it
+    volumes: !override ["../rated:/app/rated:ro"]
+    command: ["uvicorn", "norboten_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  seed:
+    image: norboten-api:local
+    environment:
+      NORBOTEN_DATABASE_URL: postgresql://norboten:${POSTGRES_PASSWORD}@postgres:5432/norboten
+    volumes: ["../seed/accounts.json:/app/seed/accounts.json:ro"]
+    command: ["python", "-m", "norboten_api.seed", "/app/seed/accounts.json"]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: "no"
+
+  grafana:
+    ports: ["127.0.0.1:3000:3000"]
+    environment:
+      GF_SERVER_ROOT_URL: http://localhost:3000
+
+  node-exporter:
+    # Docker Desktop has no host root to read; a laptop's metrics are not the point
+    profiles: ["linux-host"]
+
+  # the Sunday digest, printed instead of sent:
+  #   docker compose … --profile jobs run --rm digest python -m norboten_api.digest --dry-run
+  digest:
+    image: norboten-api:local
+    environment:
+      NORBOTEN_SITE_URL: http://localhost:8080

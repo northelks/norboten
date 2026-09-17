@@ -1,0 +1,10 @@
+checks:
+  01_motd_world_readable:
+    level_1: "Only root can read the message. Everyone else is refused before the file is opened."
+    level_2: "Every file carries a set of permission bits for its owner, its group and everyone else.
+              Have you looked at them?"
+    level_3: "List the file with its permissions and compare the 'other' bits with what users need."
+    level_4: "The file has no read permission for others."
+    refs:
+      2: ["man 1 chmod"]
+      3: ["journal:hello#how-the-kernel-picks-a-triad"]

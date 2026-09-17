@@ -1,0 +1,16 @@
+#!/bin/bash
+# backup-docs — copy every document into today's backup directory
+
+DOCS_DIR=${DOCS_DIR:-/srv/docs}
+BACKUP_DIR=${BACKUP_DIR:-/var/backups/docs}
+dest=$BACKUP_DIR/$(date +%F)
+
+mkdir -p $dest
+count=0
+find $DOCS_DIR -type f | while read f; do
+    rel=${f#$DOCS_DIR/}
+    mkdir -p $dest/$(dirname $rel)
+    cp $f $dest/$rel
+    count=$((count + 1))
+done
+echo "backed up $count files"

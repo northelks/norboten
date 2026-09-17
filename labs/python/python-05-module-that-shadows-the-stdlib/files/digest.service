@@ -1,0 +1,10 @@
+[Unit]
+Description=One line about today's events, for the morning mail
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/digest
+ExecStart=/usr/bin/python3 /opt/digest/digest.py
+
+[Install]
+WantedBy=multi-user.target

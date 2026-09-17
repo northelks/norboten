@@ -1,0 +1,49 @@
+schema_version: 1
+topic: hello
+topics: [linux-basics, users-permissions]
+title: "Theory: permissions basics"
+description: The permission model behind the first lab.
+questions:
+  - id: hello-001
+    type: single
+    difficulty: 1
+    prompt: A file has mode 0600 and belongs to root. Who can read it?
+    choices:
+      - {id: a, text: "Everyone"}
+      - {id: b, text: "Nobody, not even root"}
+      - {id: c, text: "root and members of root's group"}
+      - {id: d, text: "Only root"}
+    answer: [d]
+    explanation: >-
+      0600 is rw for the owner and nothing for group and others. root can read it both as the
+      owner and because root bypasses permission checks; ordinary users cannot.
+    references: ["man 1 chmod"]
+  - id: hello-002
+    type: single
+    difficulty: 1
+    prompt: Which command adds read permission for "others" and leaves every other bit alone?
+    choices:
+      - {id: a, text: "chmod a=r file"}
+      - {id: b, text: "chown others file"}
+      - {id: c, text: "chmod 004 file"}
+      - {id: d, text: "chmod o+r file"}
+    answer: [d]
+    explanation: >-
+      Symbolic mode changes only the bits named. A numeric mode replaces all of them (004 would
+      remove the owner's access); a=r sets read-only for everyone; chown changes ownership.
+    references: ["man 1 chmod"]
+  - id: hello-003
+    type: multiple
+    difficulty: 2
+    prompt: As an ordinary user with sudo rights, which commands let you read a file only root can read?
+    choices:
+      - {id: a, text: "sudo cat /srv/hello/message.txt"}
+      - {id: b, text: "sudo echo < /srv/hello/message.txt"}
+      - {id: c, text: "sudo less /srv/hello/message.txt"}
+      - {id: d, text: "cat /srv/hello/message.txt | sudo tee /dev/null"}
+    answer: [a, c]
+    explanation: >-
+      With sudo the reading program itself runs as root. With cat piped into sudo tee, and with sudo
+      echo reading a redirection, your own shell opens the file — the unprivileged cat or the
+      redirection — before sudo is involved, so access is denied.
+    references: ["man 8 sudo"]

@@ -1,0 +1,7 @@
+[Unit]
+Description=Prepare inventory API config
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/config-sync

@@ -1,0 +1,20 @@
+// lab: hello
+// image: alpine
+// title: The first lab, start to finish
+// blurb: A message you are not allowed to read — found, fixed, and graded in under two minutes.
+// cols: 100
+// rows: 28
+cat /etc/norboten/base.json
+ls -l /srv/hello/
+cat /srv/hello/message.txt
+sudo cat /srv/hello/message.txt
+#wait 1.5
+stat -c '%A %U:%G %n' /srv/hello/message.txt
+sudo chmod o+r /srv/hello/message.txt
+ls -l /srv/hello/message.txt
+cat /srv/hello/message.txt
+#wait 1
+cat /srv/hello/message.txt | sed -n 's/^The secret word is: //p' > ~/reply.txt
+cat ~/reply.txt
+ls -l ~/reply.txt
+#wait 1

@@ -1,0 +1,18 @@
+---
+- name: Install the history profile snippet
+  ansible.builtin.copy:
+    src: norboten-history.sh
+    dest: /etc/profile.d/norboten-history.sh
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Source it from the system bashrc too (interactive non-login shells)
+  ansible.builtin.lineinfile:
+    path: "{{ item }}"
+    line: "[ -r /etc/profile.d/norboten-history.sh ] && . /etc/profile.d/norboten-history.sh"
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ ['/etc/bashrc'] if norboten_pkg == 'dnf' else (['/etc/bash.bashrc'] if norboten_pkg == 'apt' else ['/etc/bash/bashrc']) }}"

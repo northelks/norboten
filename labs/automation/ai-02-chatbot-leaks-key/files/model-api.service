@@ -1,0 +1,9 @@
+[Unit]
+Description=Model API (stand-in)
+
+[Service]
+ExecStart=/usr/local/bin/model-api
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

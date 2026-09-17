@@ -1,0 +1,60 @@
+#!/usr/bin/python3
+"""app-spooler — stand-in for a buggy app that deletes its spool file but keeps it open.
+
+The fault has to survive the extra boot a learner's machine gets after the break (the boot that
+meets the broken fstab), and it has to go away for good once someone restarts the service. So the
+state file remembers the boot the spool was taken in, and whether the service has since been
+started again within that same boot — which is what a restart is:
+
+* no state: take the spool (the break);
+* a later boot, never restarted: take it again (the boot after the break, or a reboot "fix");
+* started again in the boot it was taken in: that was a restart; release, and never take it again.
+"""
+
+import json
+import os
+import subprocess
+import time
+
+STATE = "/var/lib/app/.spool-state"
+SPOOL = "/var/lib/app/spool.tmp"
+
+
+def boot_id():
+    with open("/proc/sys/kernel/random/boot_id") as f:
+        return f.read().strip()
+
+
+def load():
+    try:
+        with open(STATE) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
+def save(state):
+    with open(STATE, "w") as f:
+        json.dump(state, f)
+
+
+state = load()
+now = boot_id()
+if state is None or (not state["released"] and state["boot"] != now):
+    take = True
+elif not state["released"]:  # started again in the same boot: a restart
+    state["released"] = True
+    save(state)
+    take = False
+else:
+    take = False
+
+held = None
+if take:
+    subprocess.run(["fallocate", "-l", "380M", SPOOL], check=True)
+    held = open(SPOOL, "rb")
+    os.unlink(SPOOL)
+    save({"boot": now, "released": False})
+
+while True:
+    time.sleep(3600)

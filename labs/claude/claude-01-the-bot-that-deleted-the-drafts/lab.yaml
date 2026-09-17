@@ -1,0 +1,22 @@
+schema_version: 1
+id: claude-01-the-bot-that-deleted-the-drafts
+version: 1.0.0
+title: The Bot That Deleted the Drafts
+track: claude
+topics: [claude-code, ai-agents]
+difficulty: 2
+estimated_minutes: 30
+base_images: [ubuntu-26.04-claude]
+runtime: container
+resources:
+  cpus: 1
+objectives:
+  - "Recover work an agent deleted from a git working tree"
+  - "Give a headless Claude Code job exactly the permissions its task needs"
+  - "Keep secrets in a repository out of what the model is sent"
+checks:
+  - {id: 01_the_drafts_are_back, objective: 1}
+  - {id: 02_the_job_fixes_typos_and_deletes_nothing, objective: 2, weight: 2}
+  - {id: 03_the_token_never_reaches_the_model, objective: 3, weight: 2}
+  - {id: 04_permissions_are_not_bypassed, objective: 2}
+reboot_required: false

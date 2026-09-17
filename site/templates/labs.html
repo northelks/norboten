@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% from "_question.html" import question %}
+{% block body %}
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Labs</div>
+    <h1>{{ labs|length }} machines, each broken on purpose</h1>
+    <p class="lede prose">
+      Every lab states its symptoms, never its causes. The faults are listed here for people
+      choosing what to learn next — inside the lab you only ever see what the machine shows you.
+    </p>
+    <p class="muted" style="font-size:0.9rem">
+      {% if any_rated %}
+      A lab marked <span class="tag rated">rated</span> is graded by the server and moves your
+      rating; everything else here is unrated — it runs on your machine, and its answers are in the
+      repository.
+      {% else %}
+      Every lab here is <strong class="accent">unrated</strong>: it runs on your own machine, needs no account,
+      and its faults, checks and reference solution are in the repository. <strong class="accent">Rated</strong> labs — the ones a
+      rating is made of — are graded by the server and their answers are not published.
+      {% endif %}
+      <a href="{{ root }}docs/rated-labs/index.html">What that means</a>.
+    </p>
+    {% set intro = tracks|selectattr('id', 'equalto', 'intro')|first %}
+    {% if intro %}
+    <div class="grid three" style="margin-top:1.8rem">
+      {% for lab in intro.labs %}
+      <a class="card lab-card first-lab" href="{{ root }}labs/{{ lab.id }}/index.html">
+        <div class="tags"><span class="tag track">start here</span><span class="tag">{{ lab.minutes }} min</span></div>
+        <h3>{{ lab.title }}</h3>
+        <p class="muted">{{ lab.first_objective }}</p>
+        <p class="meta">
+          <span class="diff">{{ lab.dots|safe }}</span>
+          <span class="mono muted">{{ lab.images|join(', ') }}</span>
+        </p>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% set practice = tracks|rejectattr('id', 'equalto', 'intro')|list %}
+    <nav class="switcher" aria-label="Practice or theory">
+      <a class="pill" href="#{{ practice[0].id }}" aria-current="true">Practice · {{ labs|length }} labs</a>
+      <a class="pill" href="#theory">Theory · {{ question_count }} questions</a>
+    </nav>
+  </div>
+</section>
+
+{% for track in tracks if track.id != 'intro' %}
+<section class="section" id="{{ track.id }}">
+  <div class="wrap">
+    <div class="kicker">{{ track.kicker }}</div>
+    <h2>{{ track.title }}</h2>
+    <p class="prose muted">{{ track.blurb|keys }}</p>
+    <div class="grid three" style="margin-top:1.5rem">
+      {% for lab in track.labs %}
+      <a class="card lab-card" href="{{ root }}labs/{{ lab.id }}/index.html">
+        <div class="tags"><span class="tag track">{{ lab.track }}</span><span class="tag">{{ lab.minutes }} min</span>{% if lab.rated %}<span class="tag rated">rated</span>{% endif %}</div>
+        <h3>{{ lab.title }}</h3>
+        <p class="muted">{{ lab.first_objective }}</p>
+        <p class="meta">
+          <span class="diff">{{ lab.dots|safe }}</span>
+          <span class="mono muted">{{ lab.images|join(', ') }}</span>
+        </p>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endfor %}
+
+<section class="section no-line" id="theory">
+  <div class="wrap">
+    <div class="kicker">Theory</div>
+    <h2>{{ question_count }} questions, each with a reference</h2>
+    <p class="prose muted">
+      These are the <strong class="accent">unrated</strong> banks: their answers and explanations are in the
+      repository, and the site draws the questions from it. Rated banks are served by the API, a
+      question at a time, and graded there.
+      Single answer or several; every one explains why the tempting wrong choices are wrong.
+      Questions about program output are executed in a sandbox before they are accepted — the
+      answer key has to match what the machine actually printed.
+    </p>
+    <div class="grid three" style="margin-top:1.5rem">
+      {% for t in topics %}
+      <div class="card">
+        <h3>{{ t.title }}</h3>
+        <p class="muted">{{ t.description }}</p>
+        <p class="mono muted" style="font-size:0.85rem">
+          {{ t.count }} questions{% if t.verified %} · {{ t.verified }} executable{% endif %}
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+    {% if sample %}
+    <h3 style="margin-top:2.5rem">One of them</h3>
+    <div class="quiz-grid one">{{ question(sample) }}</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ root }}quiz.js"></script>{% endblock %}

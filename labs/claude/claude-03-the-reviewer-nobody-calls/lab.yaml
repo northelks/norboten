@@ -1,0 +1,21 @@
+schema_version: 1
+id: claude-03-the-reviewer-nobody-calls
+version: 1.0.0
+title: The Reviewer Nobody Calls
+track: claude
+topics: [claude-code, ai-agents]
+difficulty: 2
+estimated_minutes: 25
+base_images: [ubuntu-26.04-claude]
+runtime: container
+resources:
+  cpus: 1
+objectives:
+  - "Define a project subagent Claude Code can find and delegate to"
+  - "Limit a subagent to the tools its job needs"
+  - "Choose the model a subagent runs on"
+checks:
+  - {id: 01_the_review_runs_in_the_reviewer, objective: 1, weight: 2}
+  - {id: 02_the_reviewer_can_only_read, objective: 2}
+  - {id: 03_the_reviewer_runs_on_haiku, objective: 3}
+reboot_required: false

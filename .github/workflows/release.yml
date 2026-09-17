@@ -1,0 +1,102 @@
+name: release
+
+# A tag v<version> publishes norboten: the two wheels to PyPI, and a GitHub release carrying the same
+# wheels and install.sh. Cut one with:
+#
+#   (bump the version in cli/pyproject.toml, runner/pyproject.toml, cli/src/norboten/__init__.py)
+#   make release-check && git tag v0.2.0 && git push origin v0.2.0
+#
+# Setup, once (docs/releasing.md): a PyPI trusted publisher for this workflow and the `pypi`
+# environment.
+# Optional: CLAUDE_CODE_OAUTH_TOKEN (release notes), DISCORD_WEBHOOK and TELEGRAM_BOT_TOKEN secrets
+# and the TELEGRAM_CHAT variable (announcements).
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v5
+      - id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+      - name: Build the wheels and test them outside the checkout
+        run: .github/scripts/release_check.sh "${{ steps.version.outputs.version }}"
+      - name: The installer, end to end, against these wheels
+        # no terminal here, so it neither asks to install QEMU nor opens the TUI
+        run: |
+          NORBOTEN_FIND_LINKS="$PWD/dist" NORBOTEN_VERSION="${{ steps.version.outputs.version }}" \
+            sh site/static/install.sh
+          "$(uv tool dir --bin)/norboten" --version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*.whl
+          if-no-files-found: error
+
+  pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write  # trusted publishing: no PyPI token is stored anywhere
+    steps:
+      - uses: actions/download-artifact@v4
+        with: {name: dist, path: dist}
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    needs: [build, pypi]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # the previous tag and the commits since it
+      - uses: actions/download-artifact@v4
+        with: {name: dist, path: dist}
+      - uses: ./.github/actions/claude-code
+        if: env.CLAUDE_CODE_OAUTH_TOKEN != ''
+      - name: Release notes — Claude Code (Haiku, no tools) summarises the commits; the list follows
+        # without a token, or if the run fails, the notes are the commit list alone
+        run: python3 -m automation.jobs.release notes "$GITHUB_REF_NAME" notes.md
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.whl site/static/install.sh \
+            --title "norboten ${{ needs.build.outputs.version }}" --notes-file notes.md --verify-tag
+
+  announce:
+    # Discord gets the release, Telegram each lab it adds (lab.yaml files new since the last tag).
+    # No model. automation/jobs/release.py announce
+    needs: github-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Announce
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT: ${{ vars.TELEGRAM_CHAT }}
+        run: python3 -m automation.jobs.release announce "$GITHUB_REF_NAME"
+

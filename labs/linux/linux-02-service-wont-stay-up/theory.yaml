@@ -1,0 +1,62 @@
+schema_version: 1
+topic: linux-02-service-wont-stay-up
+topics: [boot-systemd, firewall-selinux, networking]
+title: "Theory: service failures and AppArmor"
+description: Restart policies, port conflicts and mandatory access control on Ubuntu.
+questions:
+  - id: lx2-001
+    type: single
+    difficulty: 2
+    prompt: What does `Restart=on-failure` do?
+    choices:
+      - {id: a, text: "Restarts the service whenever it stops, including a clean stop"}
+      - {id: b, text: "Restarts the service when it exits with a failure status, is killed by a signal, or times out"}
+      - {id: c, text: "Reboots the machine if the service fails"}
+      - {id: d, text: "Retries the start once at boot"}
+    answer: [b]
+    explanation: >-
+      on-failure covers unclean exits; Restart=always also restarts after a clean exit. A manual
+      systemctl stop never triggers a restart.
+    references: ["man 5 systemd.service"]
+  - id: lx2-002
+    type: single
+    difficulty: 2
+    prompt: Why add Restart= in a drop-in instead of editing the unit in /usr/lib/systemd/system?
+    choices:
+      - {id: a, text: "Only drop-ins can set Restart="}
+      - {id: b, text: "Drop-ins are applied faster"}
+      - {id: c, text: "Package updates overwrite vendor unit files; drop-ins in /etc survive them"}
+      - {id: d, text: "Vendor unit files cannot be edited"}
+    answer: [c]
+    explanation: >-
+      /etc/systemd/system/<unit>.d/*.conf is read on top of the vendor file. systemctl edit
+      creates one.
+    references: ["man 5 systemd.unit (Drop-in)"]
+  - id: lx2-003
+    type: single
+    difficulty: 3
+    prompt: Where do you find AppArmor denials on an Ubuntu system?
+    choices:
+      - {id: a, text: "In /etc/apparmor.d"}
+      - {id: b, text: "In /var/log/apparmor.log only"}
+      - {id: c, text: "In the kernel log — lines containing apparmor=\"DENIED\""}
+      - {id: d, text: "In the application's own log"}
+    answer: [c]
+    explanation: >-
+      Denials are audit messages from the kernel: journalctl -k, dmesg, or the audit log when
+      auditd runs. /etc/apparmor.d holds the profiles, not the log.
+    references: ["https://ubuntu.com/server/docs/how-to/security/apparmor/", "man 7 apparmor"]
+  - id: lx2-004
+    type: single
+    difficulty: 2
+    prompt: What does `aa-complain` do to a profile?
+    choices:
+      - {id: a, text: "Reloads it after an edit"}
+      - {id: b, text: "Enforces it more strictly"}
+      - {id: c, text: "Stops enforcing it: violations are logged but allowed"}
+      - {id: d, text: "Removes the profile"}
+    answer: [c]
+    explanation: >-
+      Complain mode is for developing profiles. Leaving a service in it means AppArmor no longer
+      protects it — which is why the lab fails that "fix".
+    references: ["man 8 aa-complain"]

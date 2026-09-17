@@ -1,0 +1,23 @@
+schema_version: 1
+id: rhcsa-02-systemd-and-boot
+version: 1.0.0
+title: The API That Vanishes on Reboot
+track: rhcsa
+topics: [boot-systemd]
+difficulty: 2
+estimated_minutes: 30
+base_images: [rocky-10]
+resources:
+  cpus: 1
+  memory: 1536MiB
+objectives:                         # EX200 (RHEL 10) objectives, verbatim
+  - "Start and stop services; configure automatic startup"
+  - "Configure systems to boot into specific targets automatically"
+  - "Locate and interpret system log files and journals"
+checks:
+  - {id: 01_api_running_after_boot, objective: 1}
+  - {id: 02_default_target_multi_user, objective: 2}
+  - {id: 03_no_masked_units, objective: 1}
+  - {id: 04_config_sync_pulled_in, objective: 1}
+  - {id: 05_execstart_is_valid, objective: 3}
+reboot_required: true

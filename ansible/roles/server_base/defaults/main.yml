@@ -1,0 +1,6 @@
+---
+server_base_timezone: UTC
+server_base_ssh_port: 22
+server_base_allowed_tcp: [22, 80, 443]
+server_base_allowed_udp: [443]  # HTTP/3
+server_base_admin_user: deploy

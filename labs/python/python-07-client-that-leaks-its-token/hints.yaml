@@ -1,0 +1,42 @@
+checks:
+  01_the_sync_still_works:
+    level_1: "Keep the sync working: it must still fetch the orders after everything else is fixed."
+    level_2: "Whatever account and permissions you choose, the job has to be able to read what it
+              needs and write where it writes."
+    level_3: "Run the sync by hand and as the service, and compare the orders each wrote."
+    level_4: "The orders file holds the partner's two orders; a change that breaks reading the token
+              or writing the output fails here."
+    refs:
+      2: ["man 5 systemd.service"]
+      3: ["journal:python-07-client-that-leaks-its-token#an-account-for-the-job"]
+  02_the_journal_holds_no_token:
+    level_1: "The token is in the journal, in plain text."
+    level_2: "A credential leaks in more places than the obvious one: think about what is logged on
+              success, what is logged on failure, and what a request carries."
+    level_3: "Read every log call in the client, and the request it builds; then run it with
+              PARTNER_LOG_LEVEL=DEBUG and with a wrong token."
+    level_4: "The token is in an info line, in a debug line with the headers, in the URL that the
+              error repeats — and a token in a URL is logged by every proxy and server on the way."
+    refs:
+      2: ["https://docs.python.org/3/howto/logging.html"]
+      3: ["journal:python-07-client-that-leaks-its-token#a-log-is-a-copy-of-whatever-you-put-in-it", "journal:python-07-client-that-leaks-its-token#a-token-in-a-url-is-a-token-in-many-logs"]
+  03_the_token_file_is_private:
+    level_1: "Every account on the machine can read the token file."
+    level_2: "A secret's permissions and its owner have to match the account that needs it — and no
+              other."
+    level_3: "ls -l /etc/partner and its file, then try to read it as your own user."
+    level_4: "The file is 0644 and owned by root; it should be 0600 and owned by the account the
+              service runs as."
+    refs:
+      2: ["man 1 chmod", "man 1 chown"]
+      3: ["journal:python-07-client-that-leaks-its-token#the-file-the-owner-and-the-mode"]
+  04_the_service_is_not_root:
+    level_1: "The service runs as root although it only reads a file and fetches a URL."
+    level_2: "A service can run as an account of its own, created for the purpose."
+    level_3: "systemctl cat partner-sync shows what the unit does and does not say; man
+              systemd.exec has the setting."
+    level_4: "Create a system account with no home, no shell and no password, give it the token and
+              the output directory, and set User= in a drop-in for the unit."
+    refs:
+      2: ["man 8 useradd", "man 5 systemd.exec"]
+      3: ["journal:python-07-client-that-leaks-its-token#an-account-for-the-job"]

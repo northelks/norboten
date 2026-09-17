@@ -1,0 +1,8 @@
+[Unit]
+Description=ETL metrics report
+Wants=network-online.target
+After=network-online.target metrics-api.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/etl/report.py

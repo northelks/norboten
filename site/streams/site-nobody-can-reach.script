@@ -1,0 +1,97 @@
+// lab: rhcsa-04
+// image: rocky-10
+// title: The site nobody can reach
+// blurb: A web root with the wrong SELinux type, a port nginx may not bind, a boolean switched
+// blurb: off, the firewall opened on the wrong port, and network changes made by hand.
+// cols: 96
+// rows: 28
+export SYSTEMD_PAGER= PAGER=cat
+hostname
+hostnamectl
+ip -4 addr show dev eth0
+getenforce
+cat /etc/selinux/config | grep ^SELINUX=
+sestatus | head -6
+curl -s -m 3 http://127.0.0.1:8090/ || echo "no answer on 8090"
+systemctl is-active nginx
+systemctl status nginx --no-pager | head -14
+sudo journalctl -u nginx -n 12 --no-pager
+cat /etc/nginx/conf.d/status-site.conf
+ls -l /etc/nginx/conf.d/
+sudo ss -tlnp
+sudo nginx -t
+sudo systemctl start nginx; echo "exit $?"
+sudo journalctl -u nginx -n 5 --no-pager
+sudo ausearch -m avc -ts recent 2>/dev/null | tail -6
+sudo ausearch -m avc -ts recent 2>/dev/null | audit2why | head -20
+sudo semanage port -l | grep -w http_port_t
+sudo semanage port -l | grep -w 8090 || echo "8090 has no label"
+sudo semanage port -a -t http_port_t -p tcp 8090
+sudo semanage port -l | grep -w http_port_t
+sudo systemctl start nginx
+systemctl is-active nginx
+sudo ss -tlnp | grep -E ':8090|:9100'
+curl -si -m 3 http://127.0.0.1:8090/ | head -8
+ls -ldZ /srv/status
+ls -lZ /srv/status
+id -Z
+ps -eZ | grep nginx | head -3
+ls -ldZ /usr/share/nginx/html
+sudo ausearch -m avc -ts recent 2>/dev/null | grep index.html | tail -2
+matchpathcon /srv/status /srv/status/index.html
+sudo semanage fcontext -l | grep -E '^/srv' | head
+sudo semanage fcontext -a -t httpd_sys_content_t '/srv/status(/.*)?'
+sudo semanage fcontext -l -C
+matchpathcon /srv/status/index.html
+sudo restorecon -Rv /srv/status
+ls -lZ /srv/status
+curl -si -m 3 http://127.0.0.1:8090/ | head -8
+curl -s -m 3 http://127.0.0.1:8090/
+curl -si -m 3 http://127.0.0.1:8090/api/status | head -6
+systemctl is-active status-api
+systemctl cat status-api
+ls -lZ /usr/local/bin/status-api
+curl -s -m 3 http://127.0.0.1:9100/status
+sudo tail -3 /var/log/nginx/error.log
+sudo ausearch -m avc -ts recent 2>/dev/null | grep name_connect | tail -2
+getsebool -a | grep httpd_can_network
+sudo semanage boolean -l | grep httpd_can_network_connect
+sudo setsebool -P httpd_can_network_connect on
+getsebool httpd_can_network_connect
+curl -s -m 3 http://127.0.0.1:8090/api/status
+curl -si -m 3 http://127.0.0.1:8090/api/status | head -4
+sudo firewall-cmd --state
+sudo firewall-cmd --get-active-zones
+sudo firewall-cmd --list-all
+sudo firewall-cmd --list-services
+sudo firewall-cmd --permanent --list-ports
+sudo firewall-cmd --permanent --remove-port=8080/tcp
+sudo firewall-cmd --permanent --add-port=8090/tcp
+sudo firewall-cmd --reload
+sudo firewall-cmd --list-ports
+sudo firewall-cmd --permanent --list-ports
+hostname
+hostnamectl --static
+cat /etc/hostname
+sudo hostnamectl set-hostname web01.lab.example
+hostnamectl --static
+cat /etc/hostname
+nmcli device status
+nmcli connection show
+nmcli -g GENERAL.CONNECTION device show eth0
+CON=$(nmcli -g GENERAL.CONNECTION device show eth0); echo "$CON"
+nmcli -g ipv4.addresses,ipv4.method connection show "$CON"
+ip -4 addr show dev eth0
+sudo nmcli connection modify "$CON" +ipv4.addresses 192.168.5.50/24
+nmcli -g ipv4.addresses connection show "$CON"
+sudo nmcli device reapply eth0
+#wait 2
+ip -4 addr show dev eth0
+sudo grep -rl 192.168.5.50 /etc/NetworkManager/system-connections/ 2>/dev/null
+sestatus | grep -i 'current mode'
+sudo restorecon -Rnv /srv/status
+curl -s -m 3 http://127.0.0.1:8090/
+curl -s -m 3 http://127.0.0.1:8090/api/status
+systemctl is-enabled nginx status-api
+sudo ausearch -m avc -ts recent 2>/dev/null | tail -2
+echo "status site: labelled, bound, allowed out, opened, and web01.lab.example with 192.168.5.50 persistently"

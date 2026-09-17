@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      {% for group in tree %}
+      <div class="group">{{ group.title }}</div>
+      {% for item in group.pages %}
+      <a href="{{ root }}docs/{{ item.slug }}/index.html"
+         {% if item.slug == current %}aria-current="page"{% endif %}>{{ item.title }}</a>
+      {% endfor %}
+      {% endfor %}
+    </nav>
+    <article class="prose">
+      {{ content|safe }}
+    </article>
+    <div class="toc">
+      {% if toc %}<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>{% endif %}
+      {% for h in toc %}
+      <a class="{{ h.level }}" href="#{{ h.id }}">{{ h.text }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("{{ root }}search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+{% endblock %}

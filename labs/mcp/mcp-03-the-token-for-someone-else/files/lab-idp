@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+"""lab-idp — this machine's identity provider: it signs access tokens (JWT, HS256).
+
+    sudo lab-idp mint --audience URL [--subject NAME] [--ttl SECONDS]
+    lab-idp show TOKEN            decode a token's claims (no key needed)
+
+Every service here trusts tokens this issuer signs; a token's audience ("aud") says which service
+it was issued for. The signing key is /etc/lab-idp/signing.key, readable by root only.
+"""
+
+import argparse
+import base64
+import hashlib
+import hmac
+import json
+import sys
+import time
+
+ISSUER = "https://idp.lab"
+KEY = "/etc/lab-idp/signing.key"
+
+
+def b64(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+
+def unb64(part: str) -> bytes:
+    return base64.urlsafe_b64decode(part + "=" * (-len(part) % 4))
+
+
+def mint(audience: str, subject: str, ttl: int, now: float | None = None) -> str:
+    with open(KEY, "rb") as f:
+        key = f.read().strip()
+    now = int(now if now is not None else time.time())
+    header = {"alg": "HS256", "typ": "JWT"}
+    claims = {"iss": ISSUER, "aud": audience, "sub": subject, "iat": now, "exp": now + ttl}
+    signing_input = f"{b64(json.dumps(header).encode())}.{b64(json.dumps(claims).encode())}"
+    signature = hmac.new(key, signing_input.encode(), hashlib.sha256).digest()
+    return f"{signing_input}.{b64(signature)}"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(prog="lab-idp", description=__doc__.splitlines()[0])
+    sub = parser.add_subparsers(dest="command", required=True)
+    m = sub.add_parser("mint")
+    m.add_argument("--audience", required=True)
+    m.add_argument("--subject", default="inventory-report")
+    m.add_argument("--ttl", type=int, default=30 * 86400)
+    m.add_argument("--issued-at", type=float, default=None, help=argparse.SUPPRESS)
+    s = sub.add_parser("show")
+    s.add_argument("token")
+    args = parser.parse_args()
+    if args.command == "mint":
+        try:
+            print(mint(args.audience, args.subject, args.ttl, args.issued_at))
+        except PermissionError:
+            print("lab-idp: the signing key is root's: run it with sudo", file=sys.stderr)
+            return 1
+        return 0
+    try:
+        claims = json.loads(unb64(args.token.split(".")[1]))
+    except (IndexError, ValueError):
+        print("lab-idp: not a token", file=sys.stderr)
+        return 1
+    print(json.dumps(claims, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

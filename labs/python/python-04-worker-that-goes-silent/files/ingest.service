@@ -1,0 +1,10 @@
+[Unit]
+Description=Ingest the files dropped into the queue
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/ingest/worker.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

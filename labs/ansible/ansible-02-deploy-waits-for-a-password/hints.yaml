@@ -1,0 +1,45 @@
+checks:
+  01_deploy_runs_unattended:
+    level_1: "At boot, the deploy stops before it renders anything, and nobody is there to help it."
+    level_2: "Read the service's journal. What does ansible-playbook need to decrypt vault content,
+              and where can it get that without a terminal?"
+    level_3: "The project's ansible.cfg tells Ansible to prompt for the vault password; a service has
+              no terminal to prompt on."
+    level_4: "ask_vault_pass = true makes every run wait for input. Point Ansible at a vault password
+              file instead — in ansible.cfg, the unit's environment or its command line."
+    refs:
+      2: ["https://docs.ansible.com/ansible/latest/vault_guide/vault_managing_passwords.html"]
+      3: ["journal:ansible-02-deploy-waits-for-a-password#how-ansible-gets-the-vault-password"]
+  02_secrets_encrypted_at_rest:
+    level_1: "The database password can be read in plain text in the project."
+    level_2: "Encrypting a vault file protects nothing if a decrypted copy of it is lying around.
+              Search the project for the secret."
+    level_3: "List group_vars/app with its hidden and oddly named files, and look at what each one
+              contains."
+    level_4: "vault.yml.plain is a decrypted copy of the vault. Ansible ignores it because of its
+              extension, but anyone can read it. Delete it."
+    refs:
+      2: ["https://docs.ansible.com/ansible/latest/vault_guide/index.html"]
+      3: ["journal:ansible-02-deploy-waits-for-a-password#what-vault-is-and-what-it-is-not", "journal:ansible-02-deploy-waits-for-a-password#plaintext-copies-and-why-ansible-ignored-this-one"]
+  03_vault_password_file_protected:
+    level_1: "Whatever supplies the vault password is not limited to the account that runs the
+              deploy."
+    level_2: "A vault password file is a secret like any other: its owner and mode decide who can
+              decrypt everything."
+    level_3: "The only copy of the password is in root's file, which deploy cannot read. The deploy
+              account needs its own copy that nobody else can read."
+    level_4: "Give deploy a copy of the vault password in a file it owns, mode 0600 or 0400 and not
+              executable, and name it with vault_password_file (or the equivalent)."
+    refs:
+      2: ["journal:hello#how-the-kernel-picks-a-triad"]
+      3: ["journal:ansible-02-deploy-waits-for-a-password#who-may-read-the-password-file"]
+  04_no_secret_in_the_log:
+    level_1: "Once the deploy works, its log prints the database password."
+    level_2: "Everything a service writes to standard output ends up in the journal, readable by
+              administrators and often shipped elsewhere."
+    level_3: "One task in deploy.yml prints the password on purpose."
+    level_4: "The debug task interpolates db_password into its message. Remove it, or at least stop
+              it from printing the secret."
+    refs:
+      2: ["journal:logging-journald#everything-a-service-prints-becomes-a-journal-entry"]
+      3: ["journal:ansible-02-deploy-waits-for-a-password#secrets-in-logs", "journal:ansible-02-deploy-waits-for-a-password#reading-exactly-one-run"]

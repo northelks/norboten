@@ -1,0 +1,15 @@
+---
+# Applies the lab baseline to a freshly booted upstream cloud image.
+# Run by images/build.py; never against a machine you care about.
+- name: Golden lab image baseline
+  hosts: golden
+  become: true
+  gather_facts: true
+  vars_files:
+    - "../../images/base/{{ norboten_image_id }}/vars.yml"
+  roles:
+    - role: lab_baseline
+    - role: automation_stack
+      when: norboten_automation | default(false)
+    - role: devops_stack
+      when: norboten_devops | default(false)

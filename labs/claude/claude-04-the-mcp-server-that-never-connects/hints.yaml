@@ -1,0 +1,47 @@
+checks:
+  01_the_server_starts_for_the_job:
+    level_1: "Claude Code never offers the model a single tool from the tickets server."
+    level_2: "A project MCP server has to be both enabled and startable. Something can switch it
+              off per project, and its command has to exist on this machine."
+    level_3: "Run the job's claude command with --output-format stream-json --verbose: the init
+              event lists mcp_servers with a status. Try the server's command yourself. Read
+              every settings file for keys about .mcp.json servers."
+    level_4: "The local settings file disables the tickets server (disabledMcpjsonServers), and
+              .mcp.json starts it with python, which is not installed here; python3 is."
+    refs:
+      2: ["https://code.claude.com/docs/en/mcp"]
+      3: ["journal:claude-04-the-mcp-server-that-never-connects#declaring-a-server", "journal:claude-04-the-mcp-server-that-never-connects#did-it-connect"]
+  02_the_job_may_call_the_tool:
+    level_1: "Even when the server runs, the job refuses to let the model use it."
+    level_2: "In a strict permission mode a tool must be allowed by its exact name. Compare the
+              name the job allows with the names Claude Code gives MCP tools."
+    level_3: "MCP tools are named mcp__<server>__<tool>, with the server name from .mcp.json.
+              permission_denials in the job's result shows the name that was refused."
+    level_4: "The job allows mcp__ticket__list_tickets; the server is called tickets. Allow
+              mcp__tickets__list_tickets (or the whole server, mcp__tickets)."
+    refs:
+      2: ["https://code.claude.com/docs/en/permissions"]
+      3: ["journal:claude-04-the-mcp-server-that-never-connects#tool-names-and-permissions"]
+  03_the_tool_is_authorised:
+    level_1: "The server answers, and refuses: its token is wrong."
+    level_2: "The server reads its token from its environment. Find out what value it really
+              receives, and where that value is supposed to come from."
+    level_3: "The server logs refusals to stderr with the start of the value it got. In
+              .mcp.json, ${VAR} is expanded from Claude Code's environment, and a variable that is
+              not set is passed on literally."
+    level_4: "The env block passes ${TICKET_TOKEN}; the job exports TICKETS_TOKEN. The server gets
+              the literal text instead of the token."
+    refs:
+      2: ["https://code.claude.com/docs/en/mcp"]
+      3: ["journal:claude-04-the-mcp-server-that-never-connects#variables-in-the-configuration"]
+  04_no_token_in_the_repository:
+    level_1: "A secret has been committed."
+    level_2: "Look at everything the repository tracks, including files meant to stay on one
+              machine."
+    level_3: "git ls-files, then git grep for the token. A project's local settings file is
+              personal and is never meant to be committed."
+    level_4: "The committed .claude/settings.local.json holds TICKETS_TOKEN. Remove it from the
+              repository, ignore it, and commit; the job already provides the token."
+    refs:
+      2: ["https://git-scm.com/docs/gitignore"]
+      3: ["journal:claude-04-the-mcp-server-that-never-connects#where-secrets-end-up"]

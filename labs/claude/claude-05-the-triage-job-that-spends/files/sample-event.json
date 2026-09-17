@@ -1,0 +1,8 @@
+{
+  "action": "opened",
+  "issue": {
+    "number": 312,
+    "title": "Dark mode toggle does nothing on the docs pages",
+    "body": "Clicking the moon icon on /docs/ changes nothing. Works on the home page."
+  }
+}

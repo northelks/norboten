@@ -1,0 +1,11 @@
+#!/bin/sh
+# Answer a question from the team handbook, through the docs MCP server. Answer: ~/handbook.json.
+set -a
+. "$HOME/.config/handbook/env"
+set +a
+cd "$HOME/handbook-bot" || exit 1
+claude -p "${1:-How often do we rotate the database credentials, and who approves it?}" \
+    --permission-mode dontAsk \
+    --allowedTools "mcp__docs" \
+    --max-turns 4 \
+    --output-format json > "$HOME/handbook.json" 2>&1

@@ -1,0 +1,56 @@
+schema_version: 1
+topic: mcp-05-the-stream-that-stops
+topics: [mcp, networking]
+title: "Theory: a proxy in front of a Streamable HTTP server"
+description: Server-sent events through nginx — buffering, read timeouts, and keeping the proxy the only way in.
+questions:
+  - id: mc5-001
+    type: single
+    difficulty: 3
+    prompt: >-
+      A remote MCP server streams a progress event every 3 seconds during a 9-second tool call. nginx
+      in front has proxy_buffering on and proxy_read_timeout 300s. What does the client see?
+    choices:
+      - {id: a, text: "Nothing for 9 seconds, then every event and the result at once"}
+      - {id: b, text: "A 504 after 3 seconds"}
+      - {id: c, text: "Only the result, with the progress events dropped"}
+      - {id: d, text: "Each event as it happens"}
+    answer: [a]
+    explanation: >-
+      With buffering on, nginx collects the upstream's response and passes it on in large pieces — for
+      a short stream, when it ends. Nothing is lost, but the progress arrives too late to mean
+      anything. proxy_buffering off (or an X-Accel-Buffering: no header from the upstream) passes each
+      event on as it arrives.
+    references: ["https://nginx.org/en/docs/http/ngx_http_proxy_module.html"]
+  - id: mc5-002
+    type: single
+    difficulty: 3
+    prompt: What does nginx's proxy_read_timeout limit?
+    choices:
+      - {id: a, text: "The time to establish the upstream connection"}
+      - {id: b, text: "The time between two successive reads from the upstream, not the whole response"}
+      - {id: c, text: "How long a client may take to read the response"}
+      - {id: d, text: "The total time a response may take"}
+    answer: [b]
+    explanation: >-
+      The timeout is set between two read operations; if the upstream sends nothing in that time,
+      nginx closes the connection and logs "upstream timed out … while reading upstream". A long
+      stream with frequent events survives a short timeout; one silent longer than it does not.
+    references: ["https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_read_timeout"]
+  - id: mc5-003
+    type: single
+    difficulty: 2
+    prompt: >-
+      An MCP server sits behind nginx on the same machine, and ss -ltn shows it listening on
+      0.0.0.0:8931. Why is that a problem?
+    choices:
+      - {id: a, text: "nginx cannot connect to 0.0.0.0"}
+      - {id: b, text: "It is not a problem as long as nginx is running"}
+      - {id: c, text: "Clients can reach it directly and bypass the proxy's logging, limits and TLS"}
+      - {id: d, text: "It stops server-sent events working"}
+    answer: [c]
+    explanation: >-
+      0.0.0.0 means every address the machine has, so anything that can reach the machine reaches
+      the server without passing the proxy. Binding 127.0.0.1 leaves the proxy, on the same machine,
+      as the only way in.
+    references: ["man 8 ss"]

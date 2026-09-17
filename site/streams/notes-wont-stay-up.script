@@ -1,0 +1,103 @@
+// lab: linux-02
+// image: ubuntu-26.04
+// title: The service that won't stay up
+// blurb: A config only root can read, a retired unit squatting on the port, and an AppArmor
+// blurb: profile that still points at last year's data directory.
+// cols: 96
+// rows: 28
+export SYSTEMD_PAGER= PAGER=cat
+hostname
+uptime
+curl -s -m 3 localhost:8080/ | head -5
+curl -sI -m 3 localhost:8080/ | head -5
+systemctl is-active notes
+systemctl is-enabled notes
+systemctl status notes --no-pager | head -12
+sudo systemctl start notes
+#wait 2
+systemctl is-active notes
+systemctl status notes --no-pager | head -14
+journalctl -u notes -n 15 --no-pager
+systemctl cat notes
+ls -l /usr/local/bin/notes-app
+head -20 /usr/local/bin/notes-app
+id notes
+getent passwd notes
+ls -ld /etc/notes
+ls -l /etc/notes/
+sudo cat /etc/notes/notes.ini
+sudo -u notes cat /etc/notes/notes.ini
+sudo chown root:notes /etc/notes/notes.ini
+sudo chmod 0640 /etc/notes/notes.ini
+ls -l /etc/notes/notes.ini
+sudo -u notes cat /etc/notes/notes.ini
+sudo systemctl restart notes
+#wait 2
+systemctl is-active notes
+journalctl -u notes -n 10 --no-pager
+sudo ss -tlnp | grep 8080
+sudo ss -tlnp
+ps -o pid,user,cmd -p "$(sudo ss -tlnpH 'sport = :8080' | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2)"
+systemctl list-units --type=service --no-pager | grep -i notes
+systemctl status notes-legacy --no-pager | head -10
+systemctl cat notes-legacy
+ls -l /var/www/legacy-notes/
+cat /var/www/legacy-notes/index.html
+systemctl is-enabled notes-legacy
+sudo systemctl disable --now notes-legacy
+systemctl is-active notes-legacy
+sudo ss -tlnp | grep 8080 || echo "nothing on 8080"
+sudo systemctl restart notes
+#wait 2
+systemctl is-active notes
+sudo ss -tlnp | grep 8080
+curl -s -m 3 localhost:8080/
+curl -si -m 3 localhost:8080/ | head -6
+journalctl -u notes -n 10 --no-pager
+sudo ls -ld /srv/notes
+sudo ls -l /srv/notes
+sudo -u notes ls /srv/notes
+grep -n data /etc/notes/notes.ini || sudo grep -n data /etc/notes/notes.ini
+sudo aa-status | head -20
+sudo aa-status | grep -A2 -i notes
+ls -l /etc/apparmor.d/ | grep notes
+cat /etc/apparmor.d/usr.local.bin.notes-app
+sudo journalctl -k --no-pager | grep -i apparmor | tail -5
+sudo journalctl --no-pager -n 200 | grep -i 'apparmor="DENIED"' | tail -3
+sudo cp /etc/apparmor.d/usr.local.bin.notes-app /root/usr.local.bin.notes-app.bak
+sudo sed -i 's#/var/lib/notes/#/srv/notes/#' /etc/apparmor.d/usr.local.bin.notes-app
+grep -n notes /etc/apparmor.d/usr.local.bin.notes-app
+sudo apparmor_parser -r /etc/apparmor.d/usr.local.bin.notes-app
+sudo aa-status | grep -i notes
+sudo systemctl restart notes
+#wait 2
+curl -s -m 3 localhost:8080/
+sudo journalctl --no-pager -n 50 | grep -c 'apparmor="DENIED"' || true
+systemctl show notes -p Restart
+systemctl show notes -p UnitFileState
+sudo mkdir -p /etc/systemd/system/notes.service.d
+printf '[Service]\nRestart=on-failure\nRestartSec=2\n' | sudo tee /etc/systemd/system/notes.service.d/restart.conf
+sudo systemctl daemon-reload
+systemctl cat notes
+systemctl show notes -p Restart -p RestartUSec
+sudo systemctl enable --now notes
+systemctl is-enabled notes
+systemctl is-active notes
+MAINPID=$(systemctl show notes -p MainPID --value); echo "$MAINPID"
+sudo kill -9 "$MAINPID"
+#wait 1
+systemctl is-active notes
+#wait 3
+systemctl is-active notes
+systemctl show notes -p MainPID -p NRestarts
+journalctl -u notes -n 8 --no-pager
+curl -s -m 3 localhost:8080/
+sudo ss -tlnp | grep 8080
+systemctl list-unit-files --no-pager | grep notes
+systemctl is-enabled notes-legacy
+sudo aa-status | grep -i notes
+ls -l /etc/notes/notes.ini
+cat /etc/systemd/system/notes.service.d/restart.conf
+curl -si -m 3 localhost:8080/ | grep -i x-notes
+systemctl --failed --no-pager
+echo "notes: running, enabled, restarts on failure; legacy disabled; profile enforcing"

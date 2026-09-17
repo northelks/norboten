@@ -1,0 +1,12 @@
+[Unit]
+Description=Support inbox agent
+After=network-online.target
+
+[Service]
+EnvironmentFile=/etc/inbox-agent/agent.env
+ExecStart=/usr/bin/python3 /opt/inbox-agent/agent.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

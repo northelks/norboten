@@ -1,0 +1,5 @@
+[
+  {"text": "Looking at the notes.", "tool": "mcp__files__list_directory", "input": {"path": "/home/learner/notes"}},
+  {"tool": "mcp__files__read_file", "input": {"path": "/home/learner/notes/runbook.md"}},
+  {"text": "The runbook is in ~/notes/runbook.md."}
+]

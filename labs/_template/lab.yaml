@@ -1,0 +1,19 @@
+# Copy this directory to labs/<track>/<your-lab-id>/ and rename the id below to match.
+# Every field is explained in docs/lab-spec.md section 2.
+schema_version: 1
+id: linux-00-template
+version: 0.1.0
+title: The Welcome Message Nobody Can Read
+track: linux
+topics: [linux-basics]
+difficulty: 1
+estimated_minutes: 10
+base_images: [ubuntu-26.04, alpine]
+runtime: vm
+resources:
+  cpus: 1
+objectives:
+  - "Read and set file permissions"
+checks:
+  - {id: 01_motd_world_readable, objective: 1}
+reboot_required: true

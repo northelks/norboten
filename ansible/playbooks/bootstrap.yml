@@ -1,0 +1,48 @@
+---
+# A new server's first login, once, as root: the deploy user with your key and sudo, and Python and
+# rsync for Ansible. netcup installs Ubuntu 26.04 LTS with the SSH key given in the Server Control
+# Panel; after this, server.yml logs in as deploy and turns root and password logins off.
+# deploy/install-server.py runs this same playbook on the server itself.
+#
+#   ansible-playbook -i inventory/production.yml playbooks/bootstrap.yml \
+#     -e ansible_user=root -e deploy_public_key="$(cat ~/.ssh/id_ed25519.pub)"
+- name: Bootstrap a fresh Ubuntu server
+  hosts: all
+  gather_facts: false
+  vars:
+    deploy_user: "{{ server_base_admin_user | default('deploy') }}"
+  pre_tasks:
+    - name: Python for Ansible
+      ansible.builtin.raw: test -e /usr/bin/python3 || (apt-get update -qq && apt-get install -y -qq python3)
+      changed_when: false
+
+    - name: The public key is given
+      ansible.builtin.assert:
+        that: deploy_public_key is defined and deploy_public_key | length > 0
+        fail_msg: pass -e deploy_public_key="$(cat ~/.ssh/id_ed25519.pub)"
+  tasks:
+    - name: Packages Ansible needs
+      ansible.builtin.apt:
+        name: [rsync, sudo]
+        state: present
+        update_cache: true
+
+    - name: The deploy user
+      ansible.builtin.user:
+        name: "{{ deploy_user }}"
+        groups: [sudo]
+        append: true
+        shell: /bin/bash
+
+    - name: Its key
+      ansible.posix.authorized_key:
+        user: "{{ deploy_user }}"
+        key: "{{ deploy_public_key }}"
+        exclusive: true
+
+    - name: Sudo without a password, as the playbooks and the deploy workflow expect
+      ansible.builtin.copy:
+        dest: "/etc/sudoers.d/90-{{ deploy_user }}"
+        content: "{{ deploy_user }} ALL=(ALL) NOPASSWD:ALL\n"
+        mode: "0440"
+        validate: /usr/sbin/visudo -cf %s

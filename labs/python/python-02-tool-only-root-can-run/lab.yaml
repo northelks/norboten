@@ -1,0 +1,19 @@
+schema_version: 1
+id: python-02-tool-only-root-can-run
+version: 1.0.0
+title: The Tool Only Root Can Run
+track: python
+topics: [python, users-permissions]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Install a Python application into its own virtual environment for every user of the machine"
+  - "Tell an editable development install from a real one, and know what each depends on"
+checks:
+  - {id: 01_every_user_can_run_it, objective: 1, weight: 2}
+  - {id: 02_checks_targets_as_a_user, objective: 1}
+  - {id: 03_installed_copy_stands_alone, objective: 2, weight: 2}
+reboot_required: true

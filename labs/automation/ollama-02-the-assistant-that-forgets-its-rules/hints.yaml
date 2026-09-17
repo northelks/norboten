@@ -1,0 +1,43 @@
+checks:
+  01_the_model_sees_all_its_rules:
+    level_1: "The assistant is sent its rules and never reads most of them."
+    level_2: "Ollama reports how many prompt tokens it evaluated for every answer. Compare that with
+              how long the rules are."
+    level_3: "Ask support-bot directly through the API and read prompt_eval_count, then read what
+              ollama show support-bot --modelfile says about its parameters. A prompt longer than the
+              context window is cut to fit."
+    level_4: "The Modelfile sets num_ctx 256; the rules alone are several hundred tokens. Give it a
+              context window they fit in, and rebuild the model."
+    refs:
+      2: ["journal:ollama#context-windows"]
+      3: ["journal:ollama-02-the-assistant-that-forgets-its-rules#tokens-windows-and-truncation", "journal:ollama-02-the-assistant-that-forgets-its-rules#a-modelfile-builds-a-model-once"]
+  02_the_chat_app_keeps_the_whole_prompt:
+    level_1: "Even a correct model is starved when customers ask through the chat."
+    level_2: "A request can carry its own options, and they take precedence over the model's."
+    level_3: "Read the body /opt/support-chat/ask sends to /api/chat, and the prompt_eval_count it
+              prints."
+    level_4: "ask sends options.num_ctx 512, which overrides the model's context window. Stop sending
+              it."
+    refs:
+      2: ["https://docs.ollama.com/api"]
+      3: ["journal:ollama-02-the-assistant-that-forgets-its-rules#who-decides-the-window-request-model-server"]
+  03_answers_are_steady:
+    level_1: "The same question gets a different story every time."
+    level_2: "How a model chooses each next token is a parameter of the model."
+    level_3: "PARAMETER temperature in the Modelfile; ollama show support-bot --parameters shows what
+              the server holds."
+    level_4: "support-bot samples at temperature 1.2. Set it to 0.3 or lower."
+    refs:
+      2: ["https://docs.ollama.com/modelfile"]
+      3: ["journal:ollama-02-the-assistant-that-forgets-its-rules#temperature"]
+  04_the_modelfile_is_the_source:
+    level_1: "The model on the server and the file it is supposed to come from must not drift apart."
+    level_2: "A model is built from its file once; editing the file changes nothing until it is built
+              again, and changing the server does not change the file."
+    level_3: "ollama create reads the Modelfile; ollama show --modelfile prints what the server holds.
+              Compare their PARAMETER lines."
+    level_4: "Make the changes in /srv/support-bot/Modelfile and run ollama create support-bot -f with
+              it, so the file and the model match."
+    refs:
+      2: ["https://docs.ollama.com/modelfile"]
+      3: ["journal:ollama-02-the-assistant-that-forgets-its-rules#a-modelfile-builds-a-model-once"]

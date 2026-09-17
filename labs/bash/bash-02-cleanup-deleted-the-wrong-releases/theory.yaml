@@ -1,0 +1,102 @@
+schema_version: 1
+topic: bash-02-cleanup-deleted-the-wrong-releases
+topics: [bash, boot-systemd]
+title: "Theory: deleting the right files"
+description: Selecting by name, splitting-safe iteration, guarded cd, and timers.
+questions:
+  - id: bs2-001
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      cd "$(mktemp -d)"
+      mkdir "a b" b
+      echo "a b" | xargs printf '[%s]'; echo
+    code_lang: bash
+    choices:
+      - {id: a, text: "[b]"}
+      - {id: b, text: "[a][b]"}
+      - {id: c, text: "[a b][b]"}
+      - {id: d, text: "[a b]"}
+    answer: [b]
+    explanation: >-
+      xargs splits its input at blanks, so one name becomes two arguments. Had the command been rm
+      -rf, it would have deleted the unrelated directory b and left "a b" alone. NUL-separated input
+      (xargs -0) or a glob keeps each name whole.
+    references: ["man 1 xargs"]
+    tags: [xargs, quoting]
+    verify:
+      runtime: bash
+      code: |
+        cd "$(mktemp -d)"
+        mkdir "a b" b
+        echo "a b" | xargs printf '[%s]'; echo
+  - id: bs2-002
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      cd "$(mktemp -d)"
+      mkdir 20260102-0900 20260101-0900 "20260103-0900 hotfix"
+      for d in [0-9]*; do printf '%s|' "$d"; done; echo
+    code_lang: bash
+    choices:
+      - {id: a, text: "20260102-0900|20260101-0900|20260103-0900 hotfix|"}
+      - {id: b, text: "20260101-0900|20260102-0900|20260103-0900|hotfix|"}
+      - {id: c, text: "[0-9]*|"}
+      - {id: d, text: "20260101-0900|20260102-0900|20260103-0900 hotfix|"}
+    answer: [d]
+    explanation: >-
+      Pathname expansion returns matches sorted by name, and each match is one word however many
+      spaces it contains. Timestamped names that start with year, month and day therefore come back
+      in chronological order, regardless of creation order or mtime.
+    references: ["man 1 bash (Pathname Expansion)"]
+    tags: [globbing]
+    verify:
+      runtime: bash
+      code: |
+        cd "$(mktemp -d)"
+        mkdir 20260102-0900 20260101-0900 "20260103-0900 hotfix"
+        for d in [0-9]*; do printf '%s|' "$d"; done; echo
+  - id: bs2-003
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      cd "$(mktemp -d)"
+      mkdir real && ln -s real link
+      [ -d link ] && echo dir; [ -L link ] && echo link
+    code_lang: bash
+    choices:
+      - {id: a, text: "dir"}
+      - {id: b, text: "link"}
+      - {id: c, text: "dir link"}
+      - {id: d, text: "nothing"}
+    answer: [c]
+    explanation: >-
+      test -d follows symlinks, so a link to a directory is a directory to it; -L is the only test
+      that looks at the link itself. A cleanup that must not remove the current link has to exclude
+      it with ! -L. The two lines are joined by a space in the answer.
+    references: ["man 1 test"]
+    tags: [symlinks]
+    verify:
+      runtime: bash
+      code: |
+        out=$(cd "$(mktemp -d)"; mkdir real && ln -s real link; [ -d link ] && echo dir; [ -L link ] && echo link)
+        echo $out
+  - id: bs2-004
+    type: single
+    difficulty: 2
+    prompt: A systemd timer file exists and `systemctl enable name.timer` succeeded an hour ago, without a reboot since. Why has its job not run on schedule?
+    choices:
+      - {id: a, text: "Timers only run after systemd-analyze calendar has checked them"}
+      - {id: b, text: "enable only links the timer into timers.target for the next boot; it was never started"}
+      - {id: c, text: "The service must be enabled instead of the timer"}
+      - {id: d, text: "OnCalendar timers need Persistent=true to run at all"}
+    answer: [b]
+    explanation: >-
+      A timer runs only while it is active. enable creates the boot-time link; start (or enable
+      --now) activates it now. The service it triggers does not need to be enabled, and Persistent=
+      only decides whether a missed run is made up at boot.
+    references: ["man 5 systemd.timer", "man 1 systemctl"]
+    tags: [systemd, timers]

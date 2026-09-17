@@ -1,0 +1,20 @@
+schema_version: 1
+id: mcp-05-the-stream-that-stops
+version: 1.0.0
+title: The Stream That Stops
+track: mcp
+topics: [mcp, networking]
+difficulty: 3
+estimated_minutes: 35
+base_images: [ubuntu-26.04-claude]
+runtime: container
+resources:
+  cpus: 1
+objectives:
+  - "Proxy a remote MCP server's event stream without holding it back or cutting it off"
+  - "Keep a proxied MCP server reachable through its proxy only"
+checks:
+  - {id: 01_the_report_arrives, objective: 1}
+  - {id: 02_progress_streams_through_the_proxy, objective: 1, weight: 2}
+  - {id: 03_the_server_answers_only_the_proxy, objective: 2}
+reboot_required: false

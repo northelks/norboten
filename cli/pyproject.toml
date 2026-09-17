@@ -1,0 +1,48 @@
+[project]
+name = "norboten"
+version = "0.2.0"
+description = "Learn Linux by fixing it — real broken VMs, graded by machine state."
+license = "Apache-2.0"
+requires-python = ">=3.12"
+authors = [{ name = "Ihar Petushkou" }]
+dependencies = [
+    "httpx>=0.28.1",
+    "norboten-runner",
+    "pydantic>=2.9",
+    "pyte>=0.8.2",
+    "pyyaml>=6.0",
+    "rich>=15.0.0",
+    "textual>=8.2.8",
+    "typer>=0.27.2",
+]
+
+[project.optional-dependencies]
+pdf = ["weasyprint>=62", "markdown-it-py>=3.0", "pygments>=2.17"]
+
+[tool.uv.sources]
+norboten-runner = { workspace = true }
+
+[project.scripts]
+norboten = "norboten.cli:main"
+
+[project.urls]
+Homepage = "https://norboten.org"
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/norboten"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"../images/registry.yaml" = "norboten/data/registry.yaml"
+"../site/static/print.css" = "norboten/data/print.css"
+# the content, so an installed norboten has its labs, theory, journals and recordings offline
+"../labs" = "norboten/data/content/labs"
+"../quizzes" = "norboten/data/content/quizzes"
+"../journals" = "norboten/data/content/journals"
+"../site/streams" = "norboten/data/content/site/streams"
+# container base images are built on the learner's machine from these (images/registry.yaml)
+"../images/base/ubuntu-26.04-container" = "norboten/data/content/images/base/ubuntu-26.04-container"
+"../images/base/ubuntu-26.04-claude" = "norboten/data/content/images/base/ubuntu-26.04-claude"

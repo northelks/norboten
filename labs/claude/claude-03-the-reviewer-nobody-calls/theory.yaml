@@ -1,0 +1,82 @@
+schema_version: 1
+topic: claude-03-the-reviewer-nobody-calls
+topics: [claude-code, ai-agents]
+title: "Theory: subagents Claude Code can find"
+description: Where subagents live, the required frontmatter, tool lists, and a subagent's model.
+questions:
+  - id: cc3-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      A team writes its reviewer subagent to `.claude/agent/reviewer.md` with valid frontmatter. The
+      model asks for subagent_type "reviewer". What does Claude Code answer?
+    choices:
+      - {id: a, text: "It asks the user whether to load the file"}
+      - {id: b, text: "It runs a general-purpose agent with the reviewer's name"}
+      - {id: c, text: "That the agent type is not found, listing the agents it does know"}
+      - {id: d, text: "It runs the reviewer: any Markdown file under .claude/ with frontmatter is an agent"}
+    answer: [c]
+    explanation: >-
+      Project subagents are read from `.claude/agents/` (scanned recursively), user subagents from
+      `~/.claude/agents/`; `.claude/agent/` is not a location Claude Code reads. The Agent tool
+      returns "Agent type 'reviewer' not found. Available agents: …", and the main agent carries on
+      without it. Nothing is substituted and nobody is asked.
+    references:
+      - "https://code.claude.com/docs/en/sub-agents"
+  - id: cc3-002
+    type: single
+    difficulty: 2
+    prompt: >-
+      A subagent's frontmatter has `name`, `model` and `desc:` with a good explanation, but no
+      `description:` key. What happens?
+    choices:
+      - {id: a, text: "It loads, and Claude Code falls back to the body as its description"}
+      - {id: b, text: "It loads but is never chosen automatically; asking for it by name still works"}
+      - {id: c, text: "desc is accepted as an alias of description"}
+      - {id: d, text: "The subagent is not loaded at all: name and description are both required"}
+    answer: [d]
+    explanation: >-
+      `name` and `description` are the two required fields; the description is how Claude decides
+      when to delegate. Without it the file is not a subagent, so even an explicit request by name
+      returns "not found" (verified with Claude Code 2.1.270). Unknown keys such as `desc` are not
+      aliases.
+    references:
+      - "https://code.claude.com/docs/en/sub-agents"
+  - id: cc3-003
+    type: single
+    difficulty: 2
+    prompt: >-
+      A subagent meant only to review code has no `tools:` line in its frontmatter. Which tools does
+      it get?
+    choices:
+      - {id: a, text: "It inherits the tools of the session that starts it, Bash, Edit and Write included"}
+      - {id: b, text: "None: a subagent without a tools line can only answer in text"}
+      - {id: c, text: "Whatever its description implies it needs"}
+      - {id: d, text: "Only Read, Grep and Glob, the read-only default for subagents"}
+    answer: [a]
+    explanation: >-
+      Omitting `tools` means inheriting every tool the main thread has, MCP tools included. There
+      is no read-only default and the description does not grant anything. A reviewer should say
+      `tools: Read, Grep, Glob` (or use `disallowedTools`). The session's permission mode still
+      applies to what it runs.
+    references:
+      - "https://code.claude.com/docs/en/sub-agents"
+  - id: cc3-004
+    type: single
+    difficulty: 3
+    prompt: >-
+      A subagent says `tools: read, grep`. The model asks for it, and the tool result says the agent
+      launched successfully. What actually happens?
+    choices:
+      - {id: a, text: "It runs with no tools and answers in text"}
+      - {id: b, text: "It runs with every tool, because an invalid list is ignored"}
+      - {id: c, text: "It runs with Read and Grep, because tool names are case-insensitive in frontmatter"}
+      - {id: d, text: "The subagent never makes a model request: no listed tool name resolves, so it does not run"}
+    answer: [d]
+    explanation: >-
+      Tool names are case-sensitive (Read, Grep). The documentation says a list where no entry
+      resolves to a tool fails to launch. In Claude Code 2.1.270 the background launch is still
+      reported as successful to the main agent, but the subagent sends no request at all — which is
+      why "launched" is not evidence that a review happened.
+    references:
+      - "https://code.claude.com/docs/en/sub-agents"

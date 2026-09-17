@@ -1,0 +1,9 @@
+[Unit]
+Description=Back up the shared documents after boot and every night
+
+[Timer]
+OnBootSec=15s
+OnCalendar=*-*-* 02:30:00
+
+[Install]
+WantedBy=timers.target

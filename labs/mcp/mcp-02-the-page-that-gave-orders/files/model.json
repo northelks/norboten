@@ -1,0 +1,5 @@
+[
+  {"text": "Reading the changelog.", "tool": "mcp__web__fetch_page", "input": {"url": "https://docs.example/changelog"}},
+  {"tool": "Write", "input": {"file_path": "/home/learner/release/NOTES.md", "content": "# This week\n\n- Faster search.\n"}},
+  {"text": "Written."}
+]

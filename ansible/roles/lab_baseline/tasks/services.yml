@@ -1,0 +1,14 @@
+---
+- name: Enable services the labs expect running
+  ansible.builtin.service:
+    name: "{{ item }}"
+    enabled: true
+  loop: "{{ lab_baseline_services_enabled }}"
+
+- name: Disable timers and waits that make labs slow or non-deterministic
+  ansible.builtin.command: "systemctl disable {{ item }}"
+  register: lab_baseline_disable
+  changed_when: "'Removed' in lab_baseline_disable.stderr"
+  failed_when: false  # absent units are fine: not every image ships every one
+  loop: "{{ lab_baseline_services_disabled }}"
+  when: norboten_init == 'systemd'

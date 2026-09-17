@@ -1,0 +1,34 @@
+// lab: rhcsa-02
+// image: rocky-10
+// title: The API that vanishes on reboot
+// blurb: A masked helper, a drop-in that overrides the wrong thing, and a default target nobody
+// blurb: noticed had changed.
+// cols: 100
+// rows: 30
+curl -sS localhost:8081/health
+systemctl status inventory-api --no-pager | head -10
+#wait 1.5
+sudo systemctl start inventory-api
+journalctl -u inventory-api -n 8 --no-pager
+#wait 2
+systemctl list-dependencies inventory-api --no-pager | head -8
+systemctl cat inventory-api --no-pager
+#wait 2.5
+systemctl is-enabled config-sync
+sudo systemctl unmask config-sync
+#wait 1
+ls -l /etc/systemd/system/inventory-api.service.d/
+cat /etc/systemd/system/inventory-api.service.d/override.conf
+#wait 2
+sudo rm -f /etc/systemd/system/inventory-api.service.d/override.conf
+sudo mkdir -p /etc/systemd/system/inventory-api.service.d
+printf '[Unit]\nWants=config-sync.service\n' | sudo tee /etc/systemd/system/inventory-api.service.d/deps.conf
+sudo systemctl daemon-reload
+#wait 1
+systemctl get-default
+sudo systemctl set-default multi-user.target
+#wait 1
+sudo systemctl enable --now inventory-api
+systemctl is-active inventory-api config-sync
+curl -sS localhost:8081/health
+#wait 1.5

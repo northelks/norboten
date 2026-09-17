@@ -1,0 +1,98 @@
+schema_version: 1
+topic: bash-04-job-that-works-only-by-hand
+topics: [bash, boot-systemd]
+title: "Theory: scripts that run unattended"
+description: What a script inherits from a shell, a timer and env -i, and how to depend on none of it.
+questions:
+  - id: bs4-001
+    type: single
+    difficulty: 2
+    prompt: >-
+      A line `export PATH="$PATH:/opt/tools/bin"` is appended to the end of root's Ubuntu-default
+      `~/.bashrc`. In which of these does a command from `/opt/tools/bin` resolve?
+    choices:
+      - {id: a, text: "a systemd service running as root"}
+      - {id: b, text: "a root cron job"}
+      - {id: c, text: "sudo bash -c 'tool'"}
+      - {id: d, text: "an interactive shell after sudo -i"}
+    answer: [d]
+    explanation: >-
+      Only an interactive shell reads ~/.bashrc (a login shell reaches it through ~/.profile), and
+      Ubuntu's .bashrc returns straight away in a non-interactive shell, before the appended line.
+      systemd, cron and bash -c start without an interactive shell, so they never see it.
+    references: ["man 1 bash (INVOCATION)"]
+    tags: [startup-files]
+  - id: bs4-002
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      mkdir -p /tmp/a /tmp/b
+      echo 'echo from-a' > /tmp/a/conf
+      echo 'echo from-b' > /tmp/b/conf
+      cd /tmp/b
+      PATH=/tmp/a:$PATH bash -c '. conf'
+    code_lang: bash
+    choices:
+      - {id: a, text: "from-a from-b"}
+      - {id: b, text: "from-b"}
+      - {id: c, text: "conf: No such file or directory"}
+      - {id: d, text: "from-a"}
+    answer: [d]
+    explanation: >-
+      For a name without a slash, the . builtin searches the directories in PATH before the current
+      directory, so /tmp/a/conf is found first even though the shell is in /tmp/b. Sourcing a
+      configuration by a bare name therefore depends on both PATH and the working directory; an
+      absolute path depends on neither.
+    references: ["man 1 bash (SHELL BUILTIN COMMANDS: . filename)"]
+    tags: [source]
+    verify:
+      runtime: bash
+      code: |
+        mkdir -p /tmp/a /tmp/b
+        echo 'echo from-a' > /tmp/a/conf
+        echo 'echo from-b' > /tmp/b/conf
+        cd /tmp/b
+        PATH=/tmp/a:$PATH bash -c '. conf'
+  - id: bs4-003
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      echo old > /tmp/report.txt
+      { echo new; false; } > /tmp/report.txt || true
+      cat /tmp/report.txt
+    code_lang: bash
+    choices:
+      - {id: a, text: "old new"}
+      - {id: b, text: "new"}
+      - {id: c, text: "old"}
+      - {id: d, text: "nothing"}
+    answer: [b]
+    explanation: >-
+      The redirection opens and truncates /tmp/report.txt before the group runs, so the old content is
+      gone whatever happens next; the group writes new and then fails. Write to a temporary file and
+      rename it over the report only on success to keep the previous version.
+    references: ["man 1 bash (REDIRECTION)"]
+    tags: [redirection]
+    verify:
+      runtime: bash
+      code: |
+        echo old > /tmp/report.txt
+        { echo new; false; } > /tmp/report.txt || true
+        cat /tmp/report.txt
+  - id: bs4-004
+    type: single
+    difficulty: 1
+    prompt: What is the working directory of a systemd service that does not set `WorkingDirectory=`?
+    choices:
+      - {id: a, text: "the home directory of the service's user"}
+      - {id: b, text: "the directory the unit file is in"}
+      - {id: c, text: "/"}
+      - {id: d, text: "the directory of the program it starts"}
+    answer: [c]
+    explanation: >-
+      Without WorkingDirectory= the process starts in the root directory. Relative paths in a script
+      that a service runs are therefore resolved from /, not from where the script lives.
+    references: ["man 5 systemd.exec (WorkingDirectory=)"]
+    tags: [systemd]

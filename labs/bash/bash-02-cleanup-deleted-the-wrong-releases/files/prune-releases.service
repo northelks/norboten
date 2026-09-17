@@ -1,0 +1,6 @@
+[Unit]
+Description=Delete old application releases
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/prune-releases

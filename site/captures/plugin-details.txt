@@ -1,0 +1,28 @@
+2.1.273 (Claude Code)
+Norboten author (norboten-author) 0.2.0
+  Description: Turn an idea into a Norboten lab, theory questions or a journal: it asks what the specs need, shows a plan, then drafts, lints and proves it — in your session or in a subagent.
+  Source: norboten-author@norboten
+
+Component inventory
+  Skills (5)  captures, idea, new-journal, new-lab, new-questions
+  Agents (3)  question-author, journal-author, lab-author
+  Hooks (1)  PostToolUse  (harness-only — no model context cost)
+  MCP servers (1)  norboten  (tool schemas resolved at runtime; not counted)
+  LSP servers (0)
+
+Projected token cost
+  Always-on:   ~536 tok   added to every session
+
+Per-component (rounded)
+  component        always-on  on-invoke
+  captures               ~60       ~450
+  new-journal            ~80       ~860
+  new-lab                ~60      ~1.4k
+  idea                   ~90      ~1.2k
+  new-questions          ~70       ~890
+  question-author        ~60       ~400
+  journal-author         ~70       ~460
+  lab-author             ~50       ~840
+
+  On-invoke cost is paid each time a skill or agent fires.
+  Token counts are estimates and may differ from actual usage.

@@ -1,0 +1,15 @@
+#!/bin/bash
+# export-orders — the day's order files as one compressed CSV for the warehouse
+
+SRC=${EXPORT_SRC:-/srv/orders}
+DEST=${EXPORT_DEST:-/srv/exports}
+name=orders-$(date +%F).csv.gz
+tmp=/tmp/export.tmp
+
+echo "id,sku,qty" > $tmp
+for f in "$SRC"/*.csv; do
+    tail -n +2 "$f" >> $tmp
+done
+gzip -c $tmp > "$DEST/$name"
+rm $tmp
+echo "exported to $DEST/$name"

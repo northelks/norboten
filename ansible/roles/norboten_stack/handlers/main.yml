@@ -1,0 +1,12 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
+- name: Restart the stack
+  ansible.builtin.command:
+    cmd: docker compose --env-file .env up -d --remove-orphans
+    chdir: "{{ norboten_dir }}"
+  changed_when: true
+  # deploy.sh has just brought it up; a run that skips it has no API image loaded yet
+  when: not (norboten_skip_deploy | default(false))

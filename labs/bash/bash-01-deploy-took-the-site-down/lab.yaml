@@ -1,0 +1,21 @@
+schema_version: 1
+id: bash-01-deploy-took-the-site-down
+version: 1.0.0
+title: The Deploy That Took the Site Down
+track: bash
+topics: [bash, linux-basics]
+difficulty: 2
+estimated_minutes: 30
+base_images: [ubuntu-26.04-devops]
+resources:
+  cpus: 1
+objectives:
+  - "Stop a script at the first failure and report it with a non-zero exit status"
+  - "Quote paths so that a directory with spaces works"
+  - "Switch a release atomically, and keep every release in its own directory"
+checks:
+  - {id: 01_good_release_goes_live, objective: 2, weight: 2}
+  - {id: 02_bad_release_changes_nothing, objective: 1, weight: 2}
+  - {id: 03_no_argument_changes_nothing, objective: 1}
+  - {id: 04_two_deploys_in_a_row, objective: 3}
+reboot_required: true

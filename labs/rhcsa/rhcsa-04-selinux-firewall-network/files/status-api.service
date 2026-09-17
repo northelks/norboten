@@ -1,0 +1,10 @@
+[Unit]
+Description=status API backend
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/status-api
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

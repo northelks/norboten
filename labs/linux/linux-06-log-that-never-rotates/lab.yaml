@@ -1,0 +1,24 @@
+schema_version: 1
+id: linux-06-log-that-never-rotates
+version: 1.0.0
+title: The Log That Never Rotates
+track: linux
+topics: [logging-journald, users-permissions]
+difficulty: 3
+estimated_minutes: 30
+base_images: [ubuntu-26.04-container]
+runtime: container
+resources:
+  cpus: 1
+objectives:
+  - "Find out why logrotate ignores or skips a configuration"
+  - "Rotate a log without locking out the program that writes it"
+  - "Keep a bounded, compressed history"
+  - "Rotate the oversized log now"
+checks:
+  - {id: 01_the_config_is_not_ignored, objective: 1}
+  - {id: 02_rotation_is_allowed_there, objective: 1}
+  - {id: 03_the_app_writes_after_rotation, objective: 2, weight: 2}
+  - {id: 04_a_week_of_compressed_history, objective: 3}
+  - {id: 05_the_big_log_is_rotated, objective: 4}
+reboot_required: false

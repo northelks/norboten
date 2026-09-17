@@ -1,0 +1,91 @@
+schema_version: 1
+topic: bash-01-deploy-took-the-site-down
+topics: [bash, linux-basics]
+title: "Theory: scripts that behave like transactions"
+description: Exit status, argument checks, unique directories and atomic symlink switches.
+questions:
+  - id: bs1-001
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      f() { false; echo "after"; }
+      f
+      echo "status=$?"
+    code_lang: bash
+    choices:
+      - {id: a, text: "after status=1"}
+      - {id: b, text: "status=0"}
+      - {id: c, text: "after status=0"}
+      - {id: d, text: "status=1"}
+    answer: [c]
+    explanation: >-
+      Without set -e, a failing command does not stop a function, and a function's status is that
+      of its last command — echo, which succeeds. The two lines are joined by a space in the answer.
+      A caller cannot learn about the failure unless the function returns it.
+    references: ["man 1 bash (FUNCTIONS; EXIT STATUS)"]
+    tags: [exit-status]
+    verify:
+      runtime: bash
+      code: |
+        out=$(f() { false; echo "after"; }; f; echo "status=$?")
+        echo $out
+  - id: bs1-002
+    type: single
+    difficulty: 3
+    prompt: A symlink `current` points to the directory `releases/a`. What does `ln -sf releases/b current` do?
+    choices:
+      - {id: a, text: "Makes current point to releases/b"}
+      - {id: b, text: "Fails with File exists"}
+      - {id: c, text: "Creates a link named b inside releases/a and leaves current unchanged"}
+      - {id: d, text: "Deletes releases/a"}
+    answer: [c]
+    explanation: >-
+      ln follows a link to a directory when it is the last argument and creates the new link
+      inside that directory. -n (--no-dereference) treats current as a file to replace, which is
+      what a deploy switch needs.
+    references: ["man 1 ln"]
+    tags: [symlinks]
+  - id: bs1-003
+    type: single
+    difficulty: 3
+    prompt: Why is `ln -sfn new .tmp && mv -Tf .tmp current` preferred to `rm current && ln -s new current` for a live switch?
+    choices:
+      - {id: a, text: "rm cannot delete symlinks"}
+      - {id: b, text: "ln -s is slower than mv"}
+      - {id: c, text: "mv copies the release, so the old one stays intact"}
+      - {id: d, text: "rename(2) replaces current in one step, so there is never a moment with no link"}
+    answer: [d]
+    explanation: >-
+      rm followed by ln leaves a gap during which requests find no content, and if ln fails the
+      gap is permanent. A rename within one filesystem is atomic; -T stops mv from moving the new
+      link into the directory current points to.
+    references: ["man 2 rename", "man 1 mv"]
+    tags: [symlinks, atomicity]
+  - id: bs1-004
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      set -- 
+      echo "$#"
+      d=$(mktemp -d /tmp/rel.XXXXXX); stat -c %a "$d"
+    code_lang: bash
+    choices:
+      - {id: a, text: "0 700"}
+      - {id: b, text: "1 700"}
+      - {id: c, text: "0 755"}
+      - {id: d, text: "0 777"}
+    answer: [a]
+    explanation: >-
+      $# counts positional parameters, and set -- with nothing after it clears them. mktemp -d
+      creates its directory with mode 0700 regardless of the umask, which is why a release directory
+      made with it needs chmod 755 before a web server can read it. The two lines are joined by a
+      space in the answer.
+    references: ["man 1 mktemp", "man 1 bash (Special Parameters)"]
+    tags: [arguments, files]
+    verify:
+      runtime: bash
+      code: |
+        out=$(set --; echo "$#"; d=$(mktemp -d /tmp/rel.XXXXXX); stat -c %a "$d")
+        echo $out

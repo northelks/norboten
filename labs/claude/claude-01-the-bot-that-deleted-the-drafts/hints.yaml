@@ -1,0 +1,50 @@
+checks:
+  01_the_drafts_are_back:
+    level_1: "Work that was never published is missing from the handbook."
+    level_2: "The files were deleted from the working tree, not from history. Ask version control
+              what it thinks has changed since the last commit."
+    level_3: "git status and git log in ~/handbook. Nothing has been committed since the drafts
+              were deleted, so the last commit still holds them."
+    level_4: "The drafts directory is deleted in the working tree but present in HEAD. Restore
+              it from HEAD, index and working tree both."
+    refs:
+      2: ["https://git-scm.com/docs/git-restore"]
+      3: ["journal:claude-01-the-bot-that-deleted-the-drafts#every-tool-call-passes-one-decision"]
+  02_the_job_fixes_typos_and_deletes_nothing:
+    level_1: "Whatever the model decides is clutter, the job must not be able to remove it."
+    level_2: "A permission mode decides what happens to a tool call no rule mentions. Look at
+              which mode the job runs in, and at every place a mode can be set."
+    level_3: "Read the job's command line and ~/.claude/settings.json. A deny rule for rm alone
+              is not a boundary: the model can call /bin/rm, find -delete, python, git rm or the
+              Write tool."
+    level_4: "The job skips permission checks, and the user settings skip them again. Run it in
+              a mode where anything not allowed is refused, offer the model only the tools a typo
+              fix needs, and allow edits under docs/ somewhere a headless run honours: allow rules
+              in an untrusted project's .claude/settings.json are ignored by claude -p."
+    refs:
+      2: ["journal:claude-code#what-the-model-may-do", "https://code.claude.com/docs/en/permissions"]
+      3: ["journal:claude-01-the-bot-that-deleted-the-drafts#every-tool-call-passes-one-decision", "journal:claude-01-the-bot-that-deleted-the-drafts#removing-a-tool-is-not-the-same-as-refusing-a-call"]
+  03_the_token_never_reaches_the_model:
+    level_1: "A secret in the repository ended up in the conversation with the model."
+    level_2: "Whatever a tool returns is sent to the model. Think about every tool that can read
+              a file, not only the one the model used last night."
+    level_3: "A Read deny rule stops the Read tool, keeps the file out of Grep, and stops a
+              shell command that names the file (cat .env). It does not stop grep -r over the
+              directory: read-only commands run without asking. A token in the job's environment
+              is another way in."
+    level_4: "Nothing denies reading .env. Deny it to every reading tool, keep Bash away from
+              the job, and keep the token out of the job's environment."
+    refs:
+      2: ["journal:claude-code#guards-helpers-and-outside-data"]
+      3: ["journal:claude-01-the-bot-that-deleted-the-drafts#what-a-tool-returns-goes-to-the-model"]
+  04_permissions_are_not_bypassed:
+    level_1: "Something still tells Claude Code not to check permissions."
+    level_2: "A permission mode can come from the command line or from any settings level:
+              managed, local project, shared project, user."
+    level_3: "grep for dangerously and bypassPermissions in the job and in every settings file
+              under ~/.claude and ~/handbook/.claude."
+    level_4: "The job passes --dangerously-skip-permissions and the user settings set
+              defaultMode to bypassPermissions. Both have to go."
+    refs:
+      2: ["journal:claude-code#what-a-session-loads", "https://code.claude.com/docs/en/settings"]
+      3: ["journal:claude-01-the-bot-that-deleted-the-drafts#settings-come-from-five-places", "journal:claude-01-the-bot-that-deleted-the-drafts#an-untrusted-project-cannot-grant-itself-permissions"]

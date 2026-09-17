@@ -1,0 +1,46 @@
+---
+norboten_image_id: rocky-10
+norboten_distro: Rocky Linux 10.2
+norboten_init: systemd
+norboten_pkg: dnf
+norboten_mac: selinux
+# Every package any rhcsa or intro lab needs. Labs never install at runtime.
+lab_baseline_packages:
+  - acl
+  - audit
+  - bash-completion
+  - bind-utils
+  - cronie
+  - curl
+  - dnf-plugins-core
+  - e2fsprogs
+  - firewalld
+  - git
+  - less
+  - logrotate
+  - lsof
+  - lvm2
+  - man-db
+  - man-pages
+  - nano
+  - nginx
+  - policycoreutils-python-utils
+  - psmisc
+  - rsync
+  - setools-console
+  - sudo
+  - tar
+  - tuned
+  - vim-enhanced
+  - xfsprogs
+# Not installed; served from /opt/repos/local for the repository exercises.
+lab_baseline_local_repo_packages:
+  - tree
+  - zsh
+lab_baseline_services_enabled:
+  - firewalld
+  - auditd
+lab_baseline_services_disabled:
+  - kdump.service           # crashkernel on a 1.5 GiB lab VM fails and shows as a red herring
+  - dnf-makecache.timer
+  - NetworkManager-wait-online.service

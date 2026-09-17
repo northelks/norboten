@@ -1,0 +1,42 @@
+checks:
+  01_any_password_survives:
+    level_1: "Ordinary values render; a value with punctuation breaks the render or comes out different."
+    level_2: "In a sed s command, which characters of the replacement are not taken literally — and what
+              does the shell do to the command before sed sees it?"
+    level_3: "Put the rotated password into the sed expression by hand, the way the script builds it,
+              and read what sed receives."
+    level_4: "The value is pasted into sed's program: / ends the replacement, & means the match, \\1
+              a group. A value has to be substituted without becoming code."
+    refs:
+      2: ["man 1 sed"]
+      3: ["journal:bash-07-config-that-breaks-on-a-password#what-is-special-in-a-s-command", "journal:bash-07-config-that-breaks-on-a-password#substituting-without-a-language-in-between"]
+  02_the_config_stays_private:
+    level_1: "The rendered configuration, password and all, can be read by every account."
+    level_2: "A new file's permissions come from the process's umask; a redirection does not change them."
+    level_3: "Check the mode of /etc/myapp/app.conf and the umask the script runs with, then think about
+              the moment between creating the file and restricting it."
+    level_4: "The redirect creates the file 0644 under the default umask; set a strict umask before the
+              file exists (and set the mode), rather than chmod after the secret is written."
+    refs:
+      2: ["man 2 umask", "man 1 chmod"]
+      3: ["journal:bash-07-config-that-breaks-on-a-password#a-secret-is-private-from-its-first-byte"]
+  03_a_missing_value_fails:
+    level_1: "A values file without a host renders a configuration with an empty host, and exits 0."
+    level_2: "An unset variable expands to nothing unless the shell is told to treat it as an error."
+    level_3: "Follow the script with DB_HOST missing: what does sed insert, and what happens to the old
+              app.conf?"
+    level_4: "Nothing checks that each value is set, and the output is truncated before anything is
+              written; name the missing value on stderr and replace the file only when all is well."
+    refs:
+      2: ["man 1 bash"]
+      3: ["journal:bash-07-config-that-breaks-on-a-password#failing-on-a-missing-value"]
+  04_the_service_logs_in:
+    level_1: "myapp.service fails to start since the password rotation, and a hand-edited app.conf does
+              not survive a restart."
+    level_2: "Which command does the unit run before the application itself, every time it starts?"
+    level_3: "Read `systemctl status myapp` and the journal: the failure is in ExecStartPre."
+    level_4: "The service re-renders app.conf on every start, so the fix belongs in render-config; after
+              that a restart — or a reboot — logs in with the password as it is."
+    refs:
+      2: ["man 5 systemd.service"]
+      3: ["journal:bash-07-config-that-breaks-on-a-password#a-unit-that-renders-before-it-starts"]

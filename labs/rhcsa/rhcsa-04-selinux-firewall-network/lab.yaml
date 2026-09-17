@@ -1,0 +1,28 @@
+schema_version: 1
+id: rhcsa-04-selinux-firewall-network
+version: 1.0.0
+title: The Site Nobody Can Reach
+track: rhcsa
+topics: [firewall-selinux, networking]
+difficulty: 4
+estimated_minutes: 50
+base_images: [rocky-10]
+resources:
+  cpus: 1
+  memory: 1536MiB
+objectives:                         # EX200 (RHEL 10) objectives, verbatim
+  - "Restore default file contexts"
+  - "Manage SELinux port labels"
+  - "Use Boolean settings to modify system SELinux settings"
+  - "Configure firewall settings using firewall-cmd/firewalld"
+  - "Configure IPv4 and IPv6 addresses"
+  - "Set enforcing and permissive modes for SELinux"
+checks:
+  - {id: 01_site_served_on_8090, objective: 2}
+  - {id: 02_api_reached_through_nginx, objective: 3}
+  - {id: 03_contexts_survive_relabel, objective: 1}
+  - {id: 04_firewall_open_persistently, objective: 4}
+  - {id: 05_network_config_persistent, objective: 5}
+  # Passes on the broken system by design: it fails anyone who "fixes" SELinux by turning it off.
+  - {id: 06_selinux_enforcing, objective: 6, baseline_pass: true}
+reboot_required: true

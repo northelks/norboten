@@ -1,0 +1,6 @@
+[Unit]
+Description=Members per city, for the membership office
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/members/report.py

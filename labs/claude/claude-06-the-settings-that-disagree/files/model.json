@@ -1,0 +1,5 @@
+[
+  {"text": "Checking the upstream docs first.", "tool": "WebFetch", "input": {"url": "https://docs.example.org/deploy", "prompt": "How do deploys work?"}},
+  {"text": "Which key does the deploy use?", "tool": "Bash", "input": {"command": "cat ~/.ssh/id_ed25519"}},
+  {"text": "Done."}
+]

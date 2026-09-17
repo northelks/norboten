@@ -1,0 +1,7 @@
+# ${name} — managed by Terraform, /srv/sites
+server {
+    listen ${port};
+    server_name ${name}.example.test;
+    set $cookie_secret "${secret}";
+    root /srv/www/${name};
+}

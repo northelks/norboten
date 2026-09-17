@@ -1,0 +1,38 @@
+checks:
+  01_archives_names_with_spaces:
+    level_1: "Some files never reach the archive, and nothing reports it."
+    level_2: "The shell splits unquoted words on spaces. Follow what happens to a file name with
+              a space in it on its way to tar."
+    level_3: "Run the script with bash -x against a test directory that has a file with a space
+              in its name."
+    level_4: "The list of files is built in an unquoted variable, so names are split. tar can take
+              a directory itself."
+    refs:
+      2: ["man 1 bash"]
+      3: ["journal:linux-03-backup-script-lies#word-splitting-in-the-order-it-happens", "journal:linux-03-backup-script-lies#handing-a-list-of-files-to-a-program"]
+  02_fails_when_destination_unwritable:
+    level_1: "The script reports success when the archive was never written."
+    level_2: "A script continues after a failed command unless told not to. Look at what decides
+              the exit status and the final message."
+    level_3: "tar's errors are thrown away, and the last lines run whatever happened before them."
+    level_4: "Nothing checks tar's result; the script always logs 'backup OK' and exits 0."
+    refs:
+      2: ["journal:monitoring#a-check-is-an-exit-status"]
+      3: ["journal:linux-03-backup-script-lies#failing-loudly", "journal:linux-03-backup-script-lies#set--euo-pipefail-and-what-it-does-not-do"]
+  03_fails_when_source_missing:
+    level_1: "With no source directory, the script still reports success."
+    level_2: "A failed cd leaves the script where it was. What does it archive then?"
+    level_3: "Test with BACKUP_SRC pointing at a directory that does not exist, under bash -x."
+    level_4: "The cd is unchecked. The script must stop with an error when the source is missing."
+    refs:
+      2: ["journal:monitoring#a-check-is-an-exit-status"]
+      3: ["journal:linux-03-backup-script-lies#the-lie-itself", "journal:linux-03-backup-script-lies#set--euo-pipefail-and-what-it-does-not-do"]
+  04_cron_can_run_it:
+    level_1: "The nightly job has not produced an archive in days."
+    level_2: "Jobs run by cron do not get your login environment. Consider what the job's command
+              line can find."
+    level_3: "Compare cron's default PATH with where the script lives; look at the crontab entry."
+    level_4: "The entry calls backup-data by name, but /usr/local/bin is not in cron's PATH."
+    refs:
+      2: ["man 5 crontab"]
+      3: ["journal:linux-03-backup-script-lies#crons-environment-is-not-yours"]

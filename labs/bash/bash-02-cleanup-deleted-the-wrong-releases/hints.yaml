@@ -1,0 +1,45 @@
+checks:
+  01_keeps_the_five_newest:
+    level_1: "After releases were restored from a backup, the cleanup keeps old ones and deletes new
+              ones."
+    level_2: "What does the script sort by, and is that the same thing the release names encode?"
+    level_3: "ls -t orders by modification time, which a restore resets. The names already sort
+              chronologically. Also look at what else in the directory is being counted."
+    level_4: "prune-releases keeps the five most recently modified entries — including the current
+              symlink and any file — instead of the five release directories with the highest names."
+    refs:
+      2: ["man 1 ls", "man 1 sort"]
+      3: ["journal:bash-02-cleanup-deleted-the-wrong-releases#what-ls--t-actually-sorts-by", "journal:bash-02-cleanup-deleted-the-wrong-releases#choosing-only-what-may-be-deleted", "journal:bash-02-cleanup-deleted-the-wrong-releases#slicing-the-list"]
+  02_names_with_spaces:
+    level_1: "A release whose name contains a space is never deleted, and the script mentions names
+              that do not exist."
+    level_2: "Passing a list of names from one command to another through a pipe splits them where?"
+    level_3: "xargs splits its input on blanks, so '20260830-090000 rollback' reaches rm as two
+              arguments."
+    level_4: "The pipeline ls | tail | xargs rm splits names on spaces. Iterate over the names
+              without word splitting — a glob or find, and quoted expansions."
+    refs:
+      2: ["journal:linux-03-backup-script-lies#handing-a-list-of-files-to-a-program", "man 1 xargs"]
+      3: ["journal:bash-02-cleanup-deleted-the-wrong-releases#why-ls--xargs-rm-splits-names"]
+  03_missing_directory_deletes_nothing:
+    level_1: "When the releases directory is not where the script expects, it deletes files somewhere
+              else."
+    level_2: "What happens to the rest of a script when a cd fails?"
+    level_3: "In prune-releases, the cd has no error check and the script has no set -e, so the
+              deletion runs in whatever directory it started in."
+    level_4: "cd $RELEASES_DIR fails, execution continues in the current directory, and ls | xargs rm
+              -rf empties it. Stop when cd fails, and quote the variable."
+    refs:
+      2: ["journal:linux-03-backup-script-lies#set--euo-pipefail-and-what-it-does-not-do"]
+      3: ["journal:bash-02-cleanup-deleted-the-wrong-releases#the-unchecked-cd", "journal:bash-02-cleanup-deleted-the-wrong-releases#testing-a-destructive-script"]
+  04_runs_every_night:
+    level_1: "The nightly cleanup is never scheduled."
+    level_2: "A systemd timer only fires once it is started, only survives a reboot once enabled, and
+              only works if its service can start its program."
+    level_3: "Compare the program path in the service unit with where the script actually is, then
+              look at whether the timer is enabled."
+    level_4: "The service runs /usr/local/sbin/prune-releases, but the script is in /usr/local/bin,
+              and prune-releases.timer is neither enabled nor started."
+    refs:
+      2: ["man 5 systemd.timer"]
+      3: ["journal:bash-02-cleanup-deleted-the-wrong-releases#scheduling-a-timer-is-two-units"]

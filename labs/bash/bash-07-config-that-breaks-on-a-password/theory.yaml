@@ -1,0 +1,103 @@
+schema_version: 1
+topic: bash-07-config-that-breaks-on-a-password
+topics: [bash, users-permissions]
+title: "Theory: templates, values and file modes"
+description: What sed does with a replacement, how bash substitutes literally, and umask on secrets.
+questions:
+  - id: bs7-001
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      p='a&b'
+      printf 'x = @P@\n' | sed -e "s/@P@/$p/"
+    code_lang: bash
+    choices:
+      - {id: a, text: "sed: unknown option to `s'"}
+      - {id: b, text: "x = a&b"}
+      - {id: c, text: "x = a@P@b"}
+      - {id: d, text: "x = ab"}
+    answer: [c]
+    explanation: >-
+      In sed's replacement text an unescaped & stands for the whole text that matched, so it is
+      replaced by @P@ and the placeholder reappears in the output. This is the dangerous case: the
+      command succeeds and the result is silently wrong.
+    references: ["man 1 sed (The s Command)"]
+    tags: [sed, templating]
+    verify:
+      runtime: bash
+      code: |
+        p='a&b'
+        printf 'x = @P@\n' | sed -e "s/@P@/$p/"
+  - id: bs7-002
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      t='x = @P@'
+      p='k3y/&Pa$$\1-vault'
+      echo "${t//@P@/"$p"}"
+    code_lang: bash
+    choices:
+      - {id: a, text: "x = k3y/&Pa$$\\1-vault"}
+      - {id: b, text: "x = k3y/x = @P@Pa$$-vault"}
+      - {id: c, text: "k3y/&Pa$$\\1-vault"}
+      - {id: d, text: "x = k3y/&Pa\\1-vault"}
+    answer: [a]
+    explanation: >-
+      The replacement side of ${var//pattern/replacement} is not a pattern, and quoting the expansion
+      makes even a backslash literal, so the value is inserted exactly as it is — slash, ampersand,
+      dollars and backslash included. The prefix "x = " of the template is kept, because only the
+      placeholder is replaced.
+    references: ["man 1 bash (Parameter Expansion)"]
+    tags: [parameter-expansion, templating]
+    verify:
+      runtime: bash
+      code: |
+        t='x = @P@'
+        p='k3y/&Pa$$\1-vault'
+        echo "${t//@P@/"$p"}"
+  - id: bs7-003
+    type: single
+    difficulty: 2
+    prompt: >-
+      A script running with umask 022 creates a configuration file with `echo "$text" > /etc/app.conf`
+      and then runs `chmod 600 /etc/app.conf`. What are the file's permissions in between, and why does
+      it matter?
+    choices:
+      - {id: a, text: "0600 — the redirection applies the final mode straight away"}
+      - {id: b, text: "0022 — the umask is the mode"}
+      - {id: c, text: "0666 — umask applies only to directories"}
+      - {id: d, text: "0644 — the secret is world-readable while it is written"}
+    answer: [d]
+    explanation: >-
+      A new file is created with 0666 & ~umask, so 0644 here, and it holds the secret from its first
+      byte until the chmod. Anyone who opens it in that window can read it, and keeps the open
+      descriptor afterwards. umask 077 before creating the file closes the window.
+    references: ["man 2 umask"]
+    tags: [umask, permissions]
+  - id: bs7-004
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      out=$(bash -c 'set -e; : "${MISSING:?not set}"; echo reached' 2>&1)
+      echo "$out status=$?"
+    code_lang: bash
+    choices:
+      - {id: a, text: "reached status=0"}
+      - {id: b, text: "bash: line 1: MISSING: not set reached status=0"}
+      - {id: c, text: "status=1"}
+      - {id: d, text: "bash: line 1: MISSING: not set status=1"}
+    answer: [d]
+    explanation: >-
+      ${var:?word} writes "var: word" to standard error and exits a non-interactive shell when the
+      variable is unset or empty, so the echo never runs. It is the one-line way to insist on a value
+      before anything is written; set -u alone would only fail at the point of use.
+    references: ["man 1 bash (Parameter Expansion)"]
+    tags: [parameter-expansion, error-handling]
+    verify:
+      runtime: bash
+      code: |
+        out=$(bash -c 'set -e; : "${MISSING:?not set}"; echo reached' 2>&1)
+        echo "$out status=$?"

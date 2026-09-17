@@ -1,0 +1,49 @@
+checks:
+  01_contractor_in_devops:
+    level_1: "The account exists, but the system does not consider it part of the team."
+    level_2: "Every account has a primary group and a list of supplementary groups. Compare what
+              kmorris has with what the briefing asks for."
+    level_3: "Look at the output of id for kmorris. Which teams appear, and which one is missing?"
+    level_4: "kmorris is in developers instead of devops. The supplementary group list is wrong."
+    refs:
+      2: ["man 1 id", "man 8 usermod"]
+      3: ["journal:rhcsa-01-users-and-permissions#identity-is-a-snapshot-not-a-lookup", "journal:rhcsa-01-users-and-permissions#-g-replaces--ag-appends"]
+  02_project_dir_shared:
+    level_1: "The team can look at the shared directory but cannot add anything to it."
+    level_2: "A directory's permission bits decide who may create files in it, and one special bit
+              decides which group new files get. Look at all of them."
+    level_3: "List /srv/project itself (not its contents) with its mode and group."
+    level_4: "The group has no write permission on /srv/project, and the setgid bit is not set."
+    refs:
+      2: ["journal:linux-05-shared-folder-locks-people-out#directories-read-lists-write-changes-execute-enters", "man 1 chmod"]
+      3: ["journal:rhcsa-01-users-and-permissions#the-bits-on-a-directory-mean-something-different"]
+  03_new_files_get_team_group:
+    level_1: "When kmorris tries to create a file in the shared directory, it fails or ends up
+              with the wrong group."
+    level_2: "Two things must be true at once: kmorris may write there, and the directory hands
+              its group to new files. Test it yourself as kmorris."
+    level_3: "Become kmorris (su - kmorris), create a file in /srv/project, and look at its group."
+    level_4: "This passes once kmorris is in devops and /srv/project is group-writable with
+              setgid."
+    refs:
+      2: ["journal:linux-05-shared-folder-locks-people-out#what-decides-a-new-files-mode"]
+      3: ["journal:rhcsa-01-users-and-permissions#the-bits-on-a-directory-mean-something-different"]
+  04_umask_allows_team_edits:
+    level_1: "Files kmorris creates come out readable by kmorris alone."
+    level_2: "The permissions of a new file come from a mask the shell applies at creation time.
+              Something sets it when kmorris logs in."
+    level_3: "Log in as kmorris and look at the mask. Then look at the files the login shell reads
+              from kmorris's home."
+    level_4: "kmorris's ~/.bash_profile sets umask 077, which strips all group and other bits."
+    refs:
+      2: ["man 8 pam_umask"]
+      3: ["journal:rhcsa-01-users-and-permissions#umask-decides-what-new-means"]
+  05_sudo_restart_nginx:
+    level_1: "sudo refuses kmorris, even though the team was promised this one command."
+    level_2: "sudo rules can grant commands to a group. Ask sudo what it would allow kmorris."
+    level_3: "sudo -l -U kmorris shows the rules that apply. Then read the drop-in files under
+              /etc/sudoers.d."
+    level_4: "The rule for restarting nginx grants it to the ops group, not to devops."
+    refs:
+      2: ["man 5 sudoers", "man 8 sudo"]
+      3: ["journal:rhcsa-01-users-and-permissions#sudo-grants-commands-not-trust", "journal:rhcsa-01-users-and-permissions#which-of-these-survives-a-reboot"]

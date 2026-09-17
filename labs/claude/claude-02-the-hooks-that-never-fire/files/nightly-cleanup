@@ -1,0 +1,8 @@
+#!/bin/sh
+# Nightly clean-up of ~/billing. The hooks in .claude/settings.json are its guard rails.
+cd "$HOME/billing" || exit 1
+claude -p "Tidy up the billing code and commit what you change." \
+    --permission-mode acceptEdits \
+    --allowedTools "Bash(git *)" \
+    --max-turns 20 \
+    --output-format json > "$HOME/nightly-cleanup.log" 2>&1

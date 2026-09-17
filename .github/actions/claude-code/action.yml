@@ -1,0 +1,18 @@
+name: Claude Code
+description: >-
+  Install one pinned Claude Code version with the native installer (no Node.js), with background
+  updates off, so every run of a job uses the version its rehearsal used.
+inputs:
+  version:
+    description: The Claude Code version; automation/rehearse.py was last run against this one
+    default: "2.1.270"
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        curl -fsSL https://claude.ai/install.sh | bash -s "${{ inputs.version }}"
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        echo "DISABLE_AUTOUPDATER=1" >> "$GITHUB_ENV"
+        echo "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1" >> "$GITHUB_ENV"
+        "$HOME/.local/bin/claude" --version

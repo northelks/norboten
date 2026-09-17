@@ -1,0 +1,137 @@
+checks:
+  01_root_password_set:
+    level_1: "Nobody can become root: the password is unknown and your sudo is gone."
+    level_2: "When you cannot log in as root, you can stop the boot before the system takes over
+              and change the password from there. The bootloader is where you start."
+    level_3: "At the GRUB menu, edit the kernel line and add rd.break; remount /sysroot
+              read-write, chroot into it, and set the password."
+    level_4: "Use rd.break (or init=/bin/bash) from the bootloader console to reset root's
+              password to the one in the task."
+    refs:
+      2: ["man 7 dracut.cmdline"]
+      3: ["journal:rhcsa-05-exam-simulation#getting-in-interrupt-the-boot"]
+  02_shadow_context_correct:
+    level_1: "Changing a password that way can leave the account files unreadable to the login
+              programs."
+    level_2: "Files written before the security policy is loaded get no proper label. The system
+              can be told to relabel on the next boot."
+    level_3: "Before leaving the chroot, create the marker file that triggers a full relabel;
+              restorecon fixes individual files."
+    level_4: "/etc/shadow was written with no SELinux label. touch /.autorelabel in the chroot, or
+              restorecon it."
+    refs:
+      2: ["journal:rhcsa-04-selinux-firewall-network#everything-has-a-label"]
+      3: ["journal:rhcsa-05-exam-simulation#the-trap-autorelabel"]
+  03_boots_with_data_mounted:
+    level_1: "The boot stops waiting for a filesystem."
+    level_2: "When a mount in the boot sequence cannot be satisfied, systemd says which one.
+              Compare its device reference with what exists."
+    level_3: "blkid /dev/vdb shows the real identifier; compare with the /data line in /etc/fstab."
+    level_4: "The /data entry uses a UUID that does not exist. Use the UUID of /dev/vdb."
+    refs:
+      2: ["journal:rhcsa-03-storage-and-lvm#fstab-and-what-systemd-does-with-it", "man 5 fstab"]
+      3: ["journal:rhcsa-03-storage-and-lvm#the-maintenance-prompt"]
+  04_repo_uses_local_mirror:
+    level_1: "dnf cannot reach any repository."
+    level_2: "Repository definitions are plain files. Look at where the enabled one points."
+    level_3: "The files under /etc/yum.repos.d; dnf repolist shows what is enabled."
+    level_4: "lab-local points at http://mirror.lab.invalid; it must use file:///opt/repos/local."
+    refs:
+      2: ["man 5 dnf.conf"]
+      3: ["journal:rhcsa-05-exam-simulation#repositories-and-packages"]
+  05_tree_installed:
+    level_1: "A package the task needs is not installed."
+    level_2: "Once a working repository is configured, the package manager can install it."
+    level_3: "dnf install, from the repository you fixed."
+    level_4: "Install the tree package."
+    refs:
+      2: ["man 8 dnf"]
+      3: ["journal:rhcsa-05-exam-simulation#repositories-and-packages"]
+  06_sysreport_timer_every_15m:
+    level_1: "The timer exists, but nothing ever runs."
+    level_2: "systemd ignores settings it does not recognise, with a warning. Read the timer's
+              definition and what systemd made of it."
+    level_3: "systemd-analyze verify /etc/systemd/system/sysreport.timer names what it rejects."
+    level_4: "The timer says OnCalender= (misspelled), so it has no schedule — and it is not
+              enabled."
+    refs:
+      2: ["man 5 systemd.timer", "man 7 systemd.time"]
+      3: ["journal:rhcsa-05-exam-simulation#timers-that-actually-fire"]
+  07_auditors_group_and_members:
+    level_1: "The group and users the task describes do not exist yet."
+    level_2: "Groups and users can be created with specific numeric ids and memberships."
+    level_3: "groupadd -g, useradd -u -G."
+    level_4: "Create auditors with GID 5000, maria with UID 5001 and sam with UID 5002, both in
+              auditors."
+    refs:
+      2: ["man 8 groupadd", "man 8 useradd"]
+      3: ["journal:rhcsa-05-exam-simulation#accounts-with-specified-numbers-and-two-ways-to-say-no-login"]
+  08_maria_password_aging:
+    level_1: "maria's password never has to change."
+    level_2: "Password aging is stored per account, next to the password hash."
+    level_3: "chage -l maria shows it; chage changes it."
+    level_4: "Set maria's maximum password age to 90 days."
+    refs:
+      2: ["man 1 chage", "man 5 shadow"]
+      3: ["journal:rhcsa-05-exam-simulation#accounts-with-specified-numbers-and-two-ways-to-say-no-login"]
+  09_sam_cannot_log_in:
+    level_1: "sam can open a shell, and should not."
+    level_2: "An account's login shell decides whether it can log in interactively."
+    level_3: "Look at sam's entry in /etc/passwd; usermod can change the shell."
+    level_4: "Give sam /sbin/nologin as the shell."
+    refs:
+      2: ["man 5 passwd"]
+      3: ["journal:rhcsa-05-exam-simulation#accounts-with-specified-numbers-and-two-ways-to-say-no-login"]
+  10_sysreport_script:
+    level_1: "The report script does not exist or does not do what the task says."
+    level_2: "The script needs three facts, an option to write to a file, and an error path.
+              Build and test each against the specification."
+    level_3: "hostname -s, uname -r, df for / ; a case statement or getopts for -o; exit 2 on
+              anything else."
+    level_4: "Write /usr/local/bin/sysreport as described, make it executable, and test all three
+              behaviours."
+    refs:
+      2: ["journal:linux-04-write-the-report#options-getopts", "man 1 bash"]
+      3: ["journal:rhcsa-05-exam-simulation#script-arguments"]
+  11_chrony_uses_lab_server:
+    level_1: "The time service does not use the server the task names."
+    level_2: "The time client's sources are listed in its configuration file."
+    level_3: "/etc/chrony.conf: its server and pool lines; restart chronyd afterwards."
+    level_4: "Remove the pool lines and add server 192.168.5.2 iburst."
+    refs:
+      2: ["man 5 chrony.conf"]
+      3: ["journal:rhcsa-05-exam-simulation#time-journal-keys"]
+  12_journal_persistent:
+    level_1: "Logs from the previous boot are gone."
+    level_2: "journald keeps logs in memory or on disk depending on its configuration and on a
+              directory existing."
+    level_3: "Look at /etc/systemd/journald.conf and its drop-in directory, and /var/log/journal."
+    level_4: "A drop-in that sorts after the image's own sets Storage=volatile; the last one wins."
+    refs:
+      2: ["journal:logging-journald#where-the-journal-lives-and-how-big-it-gets", "man 5 journald.conf"]
+      3: ["journal:rhcsa-05-exam-simulation#time-journal-keys"]
+  13_maria_ssh_key_login:
+    level_1: "maria cannot log in over SSH without typing a password."
+    level_2: "Key authentication needs a key pair and the public key listed for the account."
+    level_3: "ssh-keygen as maria, then add the public key to her authorized_keys."
+    level_4: "Create a key for maria and put its public half in ~maria/.ssh/authorized_keys."
+    refs:
+      2: ["man 1 ssh-keygen", "man 8 sshd"]
+      3: ["journal:rhcsa-05-exam-simulation#time-journal-keys"]
+  14_audit_dir_shared:
+    level_1: "The shared directory is missing or not shared the way the task describes."
+    level_2: "Ownership, group permissions and one special bit together make a shared directory."
+    level_3: "chgrp, chmod, and the setgid bit on /srv/audit."
+    level_4: "/srv/audit must be group auditors, mode 2770."
+    refs:
+      2: ["journal:rhcsa-01-users-and-permissions#the-bits-on-a-directory-mean-something-different"]
+      3: ["journal:rhcsa-05-exam-simulation#the-last-two-a-shared-directory-and-your-own-sudo"]
+  15_you_are_an_admin_again:
+    level_1: "Your account cannot use sudo."
+    level_2: "On this distribution, sudo already trusts one group. Membership is the standard
+              way to become an administrator."
+    level_3: "Look for %wheel in /etc/sudoers."
+    level_4: "Add your account to the wheel group."
+    refs:
+      2: ["man 5 sudoers"]
+      3: ["journal:rhcsa-05-exam-simulation#you-have-no-sudo-su--", "journal:rhcsa-05-exam-simulation#the-last-two-a-shared-directory-and-your-own-sudo"]

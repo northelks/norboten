@@ -1,0 +1,29 @@
+schema_version: 1
+id: rhcsa-03-storage-and-lvm
+version: 1.0.0
+title: The Volume That Filled Overnight
+track: rhcsa
+topics: [storage-lvm, boot-systemd]
+difficulty: 3
+estimated_minutes: 45
+base_images: [rocky-10]
+resources:
+  cpus: 2
+  memory: 1536MiB
+  disks: [{size: 2GiB}, {size: 2GiB}]     # /dev/vdb holds the volume group, /dev/vdc is spare
+objectives:                               # EX200 (RHEL 10) objectives, verbatim
+  - "Configure systems to mount file systems at boot by UUID or label"
+  - "Extend existing logical volumes"
+  - "Add new partitions, logical volumes, and swap non-destructively"
+  - "Diagnose and correct file permission problems"
+checks:
+  - {id: 01_boots_clean, objective: 1}
+  - {id: 02_app_volume_has_headroom, objective: 2, weight: 2}
+  - {id: 03_swap_active_after_reboot, objective: 3}
+  - {id: 04_fstab_uses_uuid, objective: 1}
+  # maintenance_pass: the break boot stops in emergency mode, where /var/lib/app is not mounted and
+  # app-spooler is not running, so nothing can hold a deleted file yet. The spooler takes its spool
+  # again on the first boot that completes (files/app-spooler), which is when the learner meets it.
+  - {id: 05_held_space_released, objective: 4, maintenance_pass: true}
+reboot_required: true
+boot_after_break: true

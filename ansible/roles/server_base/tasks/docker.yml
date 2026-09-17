@@ -1,0 +1,17 @@
+---
+# Docker Engine and the compose plugin from Ubuntu's own archive: no third-party repository to trust,
+# and packages that exist on the day an Ubuntu release comes out.
+- name: Docker packages
+  ansible.builtin.apt:
+    name:
+      - docker.io
+      - docker-compose-v2
+      - docker-buildx
+    state: present
+    update_cache: true
+
+- name: Docker runs at boot
+  ansible.builtin.systemd_service:
+    name: docker
+    enabled: true
+    state: started

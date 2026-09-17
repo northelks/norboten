@@ -1,0 +1,23 @@
+schema_version: 1
+id: ai-02-chatbot-leaks-key
+version: 1.0.0
+title: The Chatbot That Leaks Its Key
+track: automation
+topics: [ai-services, users-permissions, logging-journald]
+difficulty: 3
+estimated_minutes: 40
+base_images: [ubuntu-26.04-automation]
+resources:
+  cpus: 2
+objectives:
+  - "Keep an upstream API key out of unit files and out of other accounts' reach"
+  - "Require authentication on an internal AI gateway"
+  - "Rate-limit an expensive endpoint at the proxy"
+  - "Keep secrets out of the logs"
+checks:
+  - {id: 01_key_not_in_the_unit, objective: 1, weight: 2}
+  - {id: 02_key_file_private, objective: 1}
+  - {id: 03_gateway_requires_a_token, objective: 2, weight: 2}
+  - {id: 04_bursts_are_rate_limited, objective: 3}
+  - {id: 05_logs_have_no_secrets, objective: 4}
+reboot_required: true

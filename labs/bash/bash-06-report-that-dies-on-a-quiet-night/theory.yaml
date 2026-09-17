@@ -1,0 +1,98 @@
+schema_version: 1
+topic: bash-06-report-that-dies-on-a-quiet-night
+topics: [bash, logging-journald]
+title: "Theory: empty results, pipefail and counting"
+description: grep's three statuses, what set -e does to a pipeline, and counting with sort and uniq.
+questions:
+  - id: bs6-001
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      grep nosuchuser /etc/passwd
+      echo "status=$?"
+    code_lang: bash
+    choices:
+      - {id: a, text: "status=2"}
+      - {id: b, text: "status=1"}
+      - {id: c, text: "status=127"}
+      - {id: d, text: "status=0"}
+    answer: [b]
+    explanation: >-
+      grep exits 1 when no line matched, 0 when at least one did, and 2 when it could not do its job
+      (an unreadable file, a bad pattern). "Nothing matched" is an answer, which is why if grep -q
+      works; under set -e with pipefail that same 1 stops a script.
+    references: ["man 1 grep (EXIT STATUS)"]
+    tags: [exit-status]
+    verify:
+      runtime: bash
+      code: |
+        grep nosuchuser /etc/passwd
+        echo "status=$?"
+  - id: bs6-002
+    type: single
+    difficulty: 3
+    prompt: What does this print?
+    code: |
+      out=$(bash -c 'set -euo pipefail; grep zz /etc/hostname | wc -l; echo next')
+      echo "$out status=$?"
+    code_lang: bash
+    choices:
+      - {id: a, text: "status=1"}
+      - {id: b, text: "0 status=0"}
+      - {id: c, text: "0 status=1"}
+      - {id: d, text: "0 next status=0"}
+    answer: [c]
+    explanation: >-
+      wc -l runs and prints 0, so the pipeline's last command succeeds; pipefail makes the pipeline's
+      status grep's 1, and set -e ends the script before echo next. Without pipefail the pipeline
+      would have been successful and next would have been printed.
+    references: ["man 1 bash (set -e, pipefail)"]
+    tags: [pipefail, exit-status]
+    verify:
+      runtime: bash
+      code: |
+        out=$(bash -c 'set -euo pipefail; grep zz /etc/hostname | wc -l; echo next')
+        echo "$out status=$?"
+  - id: bs6-003
+    type: single
+    difficulty: 2
+    prompt: What does this print?
+    code: |
+      printf 'b\na\nb\n' | uniq -c | awk '{ printf "%s %s ", $1, $2 }'
+    code_lang: bash
+    choices:
+      - {id: a, text: "1 b 1 a 1 b"}
+      - {id: b, text: "3 b"}
+      - {id: c, text: "2 b 1 a"}
+      - {id: d, text: "1 a 2 b"}
+    answer: [a]
+    explanation: >-
+      uniq compares each line only with the one before it, so the two b lines are never adjacent and
+      are counted separately. Sorting first — sort | uniq -c — is what turns this into occurrence
+      counts. (The awk is only there to put the three pairs on one line.)
+    references: ["man 1 uniq", "man 1 sort"]
+    tags: [uniq, counting]
+    verify:
+      runtime: bash
+      code: |
+        printf 'b\na\nb\n' | uniq -c | awk '{ printf "%s %s ", $1, $2 }'
+  - id: bs6-004
+    type: multiple
+    difficulty: 3
+    prompt: >-
+      A script under `set -euo pipefail` must report matching lines, treat "none matched" as a normal
+      result, and still fail when the log cannot be read. Which changes achieve that? Select all that
+      apply.
+    choices:
+      - {id: a, text: "append || true to the pipeline"}
+      - {id: b, text: "turn off pipefail for the whole script"}
+      - {id: c, text: "test the log with [ -r \"$LOG\" ] and exit non-zero with a message if it fails"}
+      - {id: d, text: "select the lines with awk instead of grep"}
+    answer: [c, d]
+    explanation: >-
+      awk exits 0 whether or not a line matched, and non-zero when it cannot read the file, so the
+      pipeline's status still means something; an explicit readability test reports the missing log
+      loudly. Both || true and dropping pipefail hide real failures as well as the empty result.
+    references: ["man 1 awk", "man 1 bash (set)"]
+    tags: [pipefail, error-handling]

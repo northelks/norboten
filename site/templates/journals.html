@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journals</div>
+    <h1>The reading that goes with the machines</h1>
+    <p class="lede prose">
+      A journal is a study document, not a manual page: the mechanism, one failure walked through
+      end to end, the wrong turns people actually take, a cheat sheet, and questions you should be
+      able to answer a week later without looking. Lab journals accompany a lab, where the same
+      machine is waiting to be broken, and end with where its hints lead; topic journals cover a
+      subject end to end, with a table of symptoms and their causes, exercises and sources. Notes
+      are different: how something in Norboten itself was built and why, written for someone
+      building their own.
+    </p>
+    {% set by_topic = journals | selectattr("kind", "equalto", "topic") | list %}
+    {% set by_lab = journals | selectattr("kind", "equalto", "lab") | list %}
+    {% set notes = journals | selectattr("kind", "equalto", "note") | list %}
+    <nav class="switcher" aria-label="By topic, by lab, or notes">
+      <a class="pill" href="#by-topic" aria-current="true">By topic · {{ by_topic|length }}</a>
+      <a class="pill" href="#by-lab">By lab · {{ by_lab|length }}</a>
+      {% if notes %}<a class="pill" href="#by-note">Notes · {{ notes|length }}</a>{% endif %}
+    </nav>
+  </div>
+</section>
+
+{% for kind, heading in [("topic", "By topic"), ("lab", "By lab"), ("note", "Notes")] %}
+{% set group = journals | selectattr("kind", "equalto", kind) | list %}
+{% if group %}
+<section class="section" id="by-{{ kind }}">
+  <div class="wrap">
+    <h2>{{ heading }}</h2>
+    <div class="grid two" style="gap:2rem">
+      {% for j in group %}
+      <a class="card lab-card" href="{{ root }}journals/{{ j.id }}/index.html">
+        <div class="tags"><span class="tag">{{ j.minutes }} min</span>
+          {% for t in j.topic_titles %}<span class="tag">{{ t }}</span>{% endfor %}</div>
+        <h3>{{ j.title }}</h3>
+        <div class="map-wrap small">{{ j.card_map|safe }}</div>
+        <p class="muted">{{ j.opening }}</p>
+        {% if j.covers %}<p class="muted" style="font-size:0.85rem"><strong>Covers</strong> {{ j.covers }}</p>{% endif %}
+        <p class="mono muted" style="font-size:0.82rem">
+          {{ j.words }} words{% if j.kind != "note" %} · {{ j.review_count }} review questions{% endif %}
+        </p>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endfor %}
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>On paper</h2>
+    <p class="prose muted">
+      <kbd>e</kbd> on a journal in the TUI exports it as a PDF —
+      light ground, green accents, running header and page numbers, made for printing and
+      annotating. The screen version stays dark, because that is where the terminal is.
+    </p>
+  </div>
+</section>
+{% endblock %}

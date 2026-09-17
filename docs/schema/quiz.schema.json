@@ -1,0 +1,247 @@
+{
+  "$defs": {
+    "Choice": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "enum": [
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "f"
+          ],
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "Choice",
+      "type": "object"
+    },
+    "Question": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9]+-\\d{3}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "single",
+            "multiple"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "difficulty": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Difficulty",
+          "type": "integer"
+        },
+        "prompt": {
+          "maxLength": 600,
+          "minLength": 10,
+          "title": "Prompt",
+          "type": "string"
+        },
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Code"
+        },
+        "code_lang": {
+          "default": "text",
+          "enum": [
+            "bash",
+            "python",
+            "hcl",
+            "yaml",
+            "json",
+            "text"
+          ],
+          "title": "Code Lang",
+          "type": "string"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/Choice"
+          },
+          "maxItems": 6,
+          "minItems": 3,
+          "title": "Choices",
+          "type": "array"
+        },
+        "answer": {
+          "items": {
+            "enum": [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Answer",
+          "type": "array"
+        },
+        "explanation": {
+          "minLength": 30,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "References",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "topics": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Topics",
+          "type": "array"
+        },
+        "verify": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Verify"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "difficulty",
+        "prompt",
+        "choices",
+        "answer",
+        "explanation",
+        "references"
+      ],
+      "title": "Question",
+      "type": "object"
+    },
+    "Verify": {
+      "additionalProperties": false,
+      "properties": {
+        "runtime": {
+          "enum": [
+            "bash",
+            "python"
+          ],
+          "title": "Runtime",
+          "type": "string"
+        },
+        "code": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "expect": {
+          "const": "output_is_answer",
+          "default": "output_is_answer",
+          "title": "Expect",
+          "type": "string"
+        }
+      },
+      "required": [
+        "runtime",
+        "code"
+      ],
+      "title": "Verify",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "topic": {
+      "maxLength": 63,
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "title": "Topic",
+      "type": "string"
+    },
+    "topics": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 5,
+      "minItems": 1,
+      "title": "Topics",
+      "type": "array"
+    },
+    "title": {
+      "maxLength": 60,
+      "minLength": 2,
+      "title": "Title",
+      "type": "string"
+    },
+    "description": {
+      "maxLength": 300,
+      "minLength": 10,
+      "title": "Description",
+      "type": "string"
+    },
+    "questions": {
+      "items": {
+        "$ref": "#/$defs/Question"
+      },
+      "minItems": 1,
+      "title": "Questions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "topic",
+    "topics",
+    "title",
+    "description",
+    "questions"
+  ],
+  "title": "QuestionBank",
+  "type": "object"
+}

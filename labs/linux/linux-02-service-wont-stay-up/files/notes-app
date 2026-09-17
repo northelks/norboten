@@ -1,0 +1,47 @@
+#!/usr/bin/python3
+"""notes — a small internal notes service (stand-in for a real app)."""
+import configparser
+import http.server
+import os
+import sys
+import threading
+import time
+
+CONF = "/etc/notes/notes.ini"
+
+cfg = configparser.ConfigParser()
+with open(CONF) as f:  # raises PermissionError if the service user cannot read it
+    cfg.read_file(f)
+PORT = cfg.getint("notes", "port")
+DATA = cfg.get("notes", "data")
+
+
+class Handler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        try:
+            names = sorted(n for n in os.listdir(DATA) if n.endswith(".txt"))
+            body = "notes:\n" + "".join(open(os.path.join(DATA, n)).read() for n in names)
+            status = 200
+        except OSError as e:
+            body, status = f"notes: cannot read {DATA}: {e}\n", 500
+            print(f"error: {e}", file=sys.stderr, flush=True)
+        self.send_response(status)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("X-Notes-Service", "1")
+        self.end_headers()
+        self.wfile.write(body.encode())
+
+    def log_message(self, fmt, *args):
+        print(fmt % args, flush=True)
+
+
+def recycle():
+    # The real app leaks connections and dies after a while; systemd is expected to restart it.
+    time.sleep(180)
+    print("fatal: connection pool exhausted", file=sys.stderr, flush=True)
+    os._exit(1)
+
+
+threading.Thread(target=recycle, daemon=True).start()
+print(f"notes listening on :{PORT}, data in {DATA}", flush=True)
+http.server.ThreadingHTTPServer(("", PORT), Handler).serve_forever()

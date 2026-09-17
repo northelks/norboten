@@ -1,0 +1,50 @@
+checks:
+  01_ollama_service_runs:
+    level_1: "The model server is not running, and would not start after a reboot either."
+    level_2: "Start it and read what the init system reports; a service that exits immediately
+              always says why."
+    level_3: "systemctl status ollama and sudo journalctl -u ollama show the failure and the account
+              it runs as."
+    level_4: "The unit is disabled, and when it starts it cannot read where its models were
+              moved."
+    refs:
+      2: ["journal:ollama#the-service", "man 1 journalctl"]
+      3: ["journal:ai-01-model-server-unreachable#the-service-its-account-and-where-the-models-live"]
+  02_models_readable_by_ollama:
+    level_1: "The service account cannot open the model files."
+    level_2: "After files are moved by root, their ownership does not change by itself. Compare
+              the owner with the account the unit uses."
+    level_3: "Look at the owner and mode of the directory named in the unit's OLLAMA_MODELS."
+    level_4: "The moved model directory still belongs to root and is mode 0700."
+    refs:
+      2: ["journal:ollama#models-on-disk", "man 1 chown"]
+      3: ["journal:ai-01-model-server-unreachable#the-service-its-account-and-where-the-models-live"]
+  03_tags_through_the_proxy:
+    level_1: "Port 8080 answers, but never with the model server's own answer."
+    level_2: "A reverse proxy forwards to an address and a port. Check what the model server
+              actually listens on, and what the proxy sends to."
+    level_3: "ss -tlnp shows the listening port; the site file under /etc/nginx holds the
+              proxy_pass line."
+    level_4: "The proxy forwards to port 11435; the model server listens on 11434."
+    refs:
+      2: ["journal:networking#listening-on-loopback-or-on-everything", "man 8 ss"]
+      3: ["journal:ai-01-model-server-unreachable#which-port-is-it-really-on", "journal:ai-01-model-server-unreachable#the-block-and-its-neighbours"]
+  04_generate_through_the_proxy:
+    level_1: "Generating text through the proxy does not produce an answer."
+    level_2: "Try the same request directly against the model server, then through the proxy:
+              the difference tells you which side to fix."
+    level_3: "curl against 127.0.0.1:11434 and then 127.0.0.1:8080, and read nginx's error log."
+    level_4: "Once the proxy points at the right port, generation works — but long answers still
+              need the timeout raised."
+    refs:
+      2: ["journal:ollama#what-a-request-costs-load-prompt-generation"]
+      3: ["journal:ai-01-model-server-unreachable#proxy_read_timeout-the-gap-not-the-total", "journal:ai-01-model-server-unreachable#reading-the-proxys-own-log"]
+  05_proxy_ready_for_streaming:
+    level_1: "Long answers stop in the middle, and the proxy is allowed to hold streams back."
+    level_2: "Two proxy settings decide that: one gives up when the upstream is silent for too
+              long, the other lets the proxy keep the response in its own buffers."
+    level_3: "proxy_buffering and proxy_read_timeout in the site's location block."
+    level_4: "Turn buffering off and raise the read timeout well above a minute."
+    refs:
+      2: ["https://nginx.org/en/docs/http/ngx_http_proxy_module.html"]
+      3: ["journal:ai-01-model-server-unreachable#proxy_buffering-what-it-does-measured", "journal:ai-01-model-server-unreachable#proxy_read_timeout-the-gap-not-the-total"]

@@ -1,0 +1,33 @@
+checks:
+  01_blog_retired:
+    level_1: "The blog's virtual host is still live."
+    level_2: "Nothing has been applied yet: the configuration and the real files disagree."
+    level_3: "Once the other two sites are safe, applying the configuration is what removes the
+              blog's resources."
+    level_4: "blog.conf and the blog's cookie secret still exist in the state and on disk. Apply a
+              configuration without the blog, after making sure it touches only the blog."
+    refs:
+      2: ["journal:terraform#saved-plans-and-what-stale-protects"]
+      3: ["journal:terraform-02-site-removed-from-the-middle#reading-the-plan", "journal:terraform-02-site-removed-from-the-middle#checking-a-change-before-applying-it"]
+  02_shop_and_docs_untouched:
+    level_1: "Removing one site from the list changes a site that should not change."
+    level_2: "With count, Terraform names instances by their position in the list. What happens to
+              the positions after an element in the middle is removed?"
+    level_3: "In the plan, docs moves from index 2 to index 1: it inherits the blog's port, the blog's
+              secret, and its old address is destroyed."
+    level_4: "The ports come from count.index and the secrets from random_id by index. Give each site
+              an explicit port, key both resources by site name, and declare where the existing shop
+              and docs instances moved, so only the blog's instances are destroyed."
+    refs:
+      2: ["journal:terraform#count-gives-instances-numbers-and-numbers-shift"]
+      3: ["journal:terraform-02-site-removed-from-the-middle#how-count-addresses-instances"]
+  03_keyed_by_name:
+    level_1: "The site resources are addressed as [0], [1], [2]."
+    level_2: "Terraform has a meta-argument that creates one instance per key of a map or set."
+    level_3: "Replace count with for_each in main.tf for both resources, and use each.key and
+              each.value."
+    level_4: "for_each over the sites (a map with each site's port), plus moved blocks from
+              [0] to [\"shop\"] and from [2] to [\"docs\"] for both resources."
+    refs:
+      2: ["journal:terraform#for_each-gives-instances-names"]
+      3: ["journal:terraform-02-site-removed-from-the-middle#how-for_each-addresses-instances", "journal:terraform-02-site-removed-from-the-middle#converting-without-replacing-moved-blocks"]

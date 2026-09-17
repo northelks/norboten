@@ -1,0 +1,38 @@
+name: triage
+
+# A new issue gets one label, chosen by Claude Code (Haiku, no tools, a JSON-schema answer), and a
+# pointer when an open issue has the same title. automation/jobs/triage.py; rehearsed by
+# `make jobs-rehearsal`. Needs the secret CLAUDE_CODE_OAUTH_TOKEN (`claude setup-token`); without
+# it the run says so and stops.
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: triage-${{ github.event.issue.number }}
+
+jobs:
+  triage:
+    if: github.event.issue.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Skip without a Claude token
+        if: env.CLAUDE_CODE_OAUTH_TOKEN == ''
+        run: echo "::notice::CLAUDE_CODE_OAUTH_TOKEN is not set; the issue was not triaged"
+      - uses: actions/checkout@v5
+        if: env.CLAUDE_CODE_OAUTH_TOKEN != ''
+        with:
+          sparse-checkout: automation
+      - uses: ./.github/actions/claude-code
+        if: env.CLAUDE_CODE_OAUTH_TOKEN != ''
+      - name: Label, and point at a duplicate
+        if: env.CLAUDE_CODE_OAUTH_TOKEN != ''
+        run: python3 -m automation.jobs.triage

@@ -1,0 +1,9 @@
+#!/bin/bash
+# errors-report — server errors per endpoint, for the morning stand-up
+set -euo pipefail
+
+LOG=${LOG:-/var/log/shop/access.log}
+REPORT=${REPORT:-/var/lib/shop/errors.txt}
+
+grep '" 5[0-9][0-9] ' "$LOG" | awk '{ print $7 }' | uniq -c | sort -rn > "$REPORT"
+echo "total $(grep -c '" 5[0-9][0-9] ' "$LOG")" >> "$REPORT"

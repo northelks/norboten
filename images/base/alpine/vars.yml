@@ -1,0 +1,26 @@
+---
+norboten_image_id: alpine
+norboten_distro: Alpine Linux 3.23
+norboten_init: openrc
+norboten_pkg: apk
+norboten_mac: none
+lab_baseline_packages:
+  - acl
+  - bash
+  - bash-completion
+  - coreutils
+  - curl
+  - findmnt
+  - git
+  - less
+  - logrotate
+  - lsof
+  - nano
+  - procps
+  - psmisc
+  - rsync
+  - shadow
+  - sudo
+  - util-linux
+lab_baseline_services_enabled: []
+lab_baseline_services_disabled: []

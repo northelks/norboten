@@ -1,0 +1,39 @@
+name: stuck-points
+
+# Mondays: the checks learners fail most (the API's /telemetry/stuck-points), summarised by Claude
+# Code (Haiku, no tools) on Discord, and the worst one as a `hints` issue unless one is open.
+# automation/jobs/stuck_points.py; rehearsed by `make jobs-rehearsal`.
+
+on:
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+concurrency:
+  group: stuck-points
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      NORBOTEN_API: ${{ vars.NORBOTEN_API || 'https://api.norboten.org' }}
+    steps:
+      - name: Skip without a Claude token
+        if: env.CLAUDE_CODE_OAUTH_TOKEN == ''
+        run: echo "::notice::CLAUDE_CODE_OAUTH_TOKEN is not set; no digest this week"
+      - uses: actions/checkout@v5
+        if: env.CLAUDE_CODE_OAUTH_TOKEN != ''
+        with:
+          sparse-checkout: automation
+      - uses: ./.github/actions/claude-code
+        if: env.CLAUDE_CODE_OAUTH_TOKEN != ''
+      - name: Summarise, post, file the worst
+        if: env.CLAUDE_CODE_OAUTH_TOKEN != ''
+        run: python3 -m automation.jobs.stuck_points

@@ -1,0 +1,51 @@
+schema_version: 1
+id: rhcsa-05-exam-simulation
+version: 1.0.0
+title: The Server You Inherited
+track: rhcsa
+topics: [users-permissions, boot-systemd, storage-lvm, networking, linux-basics]
+difficulty: 5
+estimated_minutes: 90
+base_images: [rocky-10]
+resources:
+  cpus: 2
+  memory: 1536MiB
+  disks: [{size: 1GiB}]
+objectives:                         # EX200 (RHEL 10) objectives, verbatim — one per task
+  - "Interrupt the boot process to gain system access"
+  - "Restore default file contexts"
+  - "Configure systems to mount file systems at boot by UUID or label"
+  - "Configure access to RPM repositories"
+  - "Install and remove RPM software packages"
+  - "Schedule tasks using at, cron, and systemd timer units"
+  - "Create, delete, and modify local groups and memberships"
+  - "Change passwords and adjust password aging"
+  - "Create, delete, and modify local user accounts"
+  - "Process script inputs ($1, $2, etc.)"
+  - "Configure time service clients"
+  - "Preserve system journals"
+  - "Configure key-based authentication for SSH"
+  - "Diagnose and correct file permission problems"
+  - "Configure privileged access"
+checks:
+  - {id: 01_root_password_set, objective: 1}
+  # Correct on the broken system: the trap is sprung by the learner's own rd.break password
+  # change without /.autorelabel. The gate cannot fail it first; the grading reboot tests it.
+  - {id: 02_shadow_context_correct, objective: 2, baseline_pass: true}
+  - {id: 03_boots_with_data_mounted, objective: 3}
+  - {id: 04_repo_uses_local_mirror, objective: 4}
+  - {id: 05_tree_installed, objective: 5}
+  - {id: 06_sysreport_timer_every_15m, objective: 6}
+  - {id: 07_auditors_group_and_members, objective: 7}
+  - {id: 08_maria_password_aging, objective: 8}
+  - {id: 09_sam_cannot_log_in, objective: 9}
+  - {id: 10_sysreport_script, objective: 10}
+  - {id: 11_chrony_uses_lab_server, objective: 11}
+  - {id: 12_journal_persistent, objective: 12}
+  - {id: 13_maria_ssh_key_login, objective: 13}
+  - {id: 14_audit_dir_shared, objective: 14}
+  - {id: 15_you_are_an_admin_again, objective: 15}
+reboot_required: true
+boot_after_break: true
+time_limit_minutes: 90
+pass_percent: 70
