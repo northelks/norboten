@@ -20,7 +20,8 @@ Mondays ───────► stuck-points (Claude Code, Haiku, no tools) ─
 
 ## `cli-test.yml` — on every push and pull request
 
-Matrix: Ubuntu and macOS — the two platforms the labs run on.
+Ubuntu only: macOS and Windows are not run here (macOS is what development happens on, and
+Windows is unsupported — see `docs/faq.md`).
 
 1. `uv sync --all-packages --frozen` — the lockfile must be current.
 2. `ruff check` and `ruff format --check`.
