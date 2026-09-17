@@ -10,7 +10,7 @@ on:
         description: Which base image to build
         required: true
         type: choice
-        options: [rocky-10, ubuntu-26.04, ubuntu-26.04-automation, alpine]
+        options: [rocky-10, ubuntu-26.04, ubuntu-26.04-automation, ubuntu-26.04-devops, alpine]
 
 permissions:
   contents: write
