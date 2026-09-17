@@ -2,5 +2,8 @@
 :8080 {
 	encode zstd gzip
 	root * /srv/site
+	# the same collapse as production, so an address here is the address there
+	@index path_regexp idx ^(.*)/index\.html$
+	redir @index {re.idx.1}/ permanent
 	file_server
 }

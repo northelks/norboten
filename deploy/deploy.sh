@@ -13,6 +13,18 @@ compose="docker compose --env-file .env"
 
 set_tag() { sed -i.bak "s/^API_TAG=.*/API_TAG=$1/" .env && rm -f .env.bak; }
 
+# A changed Caddyfile is a file inside a bind mount: compose compares services, not file contents,
+# so `up -d` leaves the container running and the new configuration is never read. Validate it in
+# the container that will serve it, then reload — graceful, no dropped connection.
+reload_caddy() {
+    if ! $compose exec -T caddy caddy validate --adapter caddyfile --config /etc/caddy/Caddyfile \
+        >/dev/null 2>&1; then
+        echo "the Caddyfile on the server does not validate — the running config stays" >&2
+        return 1
+    fi
+    $compose exec -T caddy caddy reload --adapter caddyfile --config /etc/caddy/Caddyfile
+}
+
 ready() {
     for _ in $(seq 1 60); do
         if $compose exec -T api python -c \
@@ -37,6 +49,7 @@ if ready; then
     echo "$previous" > .deployed.previous
     echo "$tag" > .deployed
     docker image prune -f >/dev/null
+    reload_caddy || exit 1
     echo "api:$tag is ready"
     exit 0
 fi
