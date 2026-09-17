@@ -46,16 +46,36 @@ jobs:
           path: dist/*.whl
           if-no-files-found: error
 
-  pypi:
+  # One upload per project, each from its own environment: PyPI refuses two pending publishers that
+  # differ only by project name, so norboten-runner gets `pypi-runner` and norboten gets `pypi`.
+  # The runner goes first — the other wheel depends on it.
+  pypi-runner:
     needs: build
     runs-on: ubuntu-latest
-    environment: pypi
+    environment: pypi-runner
     permissions:
       id-token: write  # trusted publishing: no PyPI token is stored anywhere
     steps:
       - uses: actions/download-artifact@v4
         with: {name: dist, path: dist}
+      - name: Only the runner's wheel
+        run: mkdir -p upload && mv dist/norboten_runner-*.whl upload/
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with: {packages-dir: upload}
+
+  pypi:
+    needs: [build, pypi-runner]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with: {name: dist, path: dist}
+      - name: Only norboten's own wheel
+        run: mkdir -p upload && mv dist/norboten-*.whl upload/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with: {packages-dir: upload}
 
   github-release:
     needs: [build, pypi]

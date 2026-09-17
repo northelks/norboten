@@ -4,10 +4,10 @@ A release is a tag. Pushing `v<version>` runs `.github/workflows/release.yml`, w
 same two wheels two ways:
 
 ```
-tag v0.2.0 ──► build ─────────────► pypi ────────► github-release
-               release_check.sh     trusted         wheels + install.sh
-               install.sh, end      publishing      as release assets
-               to end
+tag v0.2.0 ──► build ─────────────► pypi-runner ──► pypi ──► github-release
+               release_check.sh     trusted           trusted    wheels + install.sh
+               install.sh, end      publishing,       publishing as release assets
+               to end                norboten-runner   norboten
 ```
 
 The same tag also runs `lab-publish.yml`, which pushes every lab to GHCR as a signed OCI artifact.
@@ -49,7 +49,7 @@ opens the TUI — and runs the installed `norboten --version`. Nothing is publis
 | Job | Does | Needs |
 |---|---|---|
 | `build` | `release_check.sh <version>`, the installer end to end, uploads `dist/*.whl` | — |
-| `pypi` | `pypa/gh-action-pypi-publish` with trusted publishing: no token is stored | the `pypi` environment; a trusted publisher on PyPI for both projects |
+| `pypi-runner`, `pypi` | `pypa/gh-action-pypi-publish` with trusted publishing, one project each: no token is stored | the `pypi-runner` and `pypi` environments, and a trusted publisher on PyPI for each project |
 | `github-release` | `gh release create v<version>` with both wheels and `install.sh`, notes generated from the commits | `contents: write` |
 
 The release is created only after PyPI accepted the wheels, so the GitHub release never offers a
@@ -57,10 +57,12 @@ version PyPI lacks.
 
 ## Setup, once
 
-**PyPI.** Create the projects `norboten` and `norboten-runner` (or let the first publish create
-them) and add a *trusted publisher* to each: this repository, workflow `release.yml`, environment
-`pypi`. In GitHub, create the environment `pypi`; add required reviewers to it if a person should
-approve every upload.
+**PyPI.** Add a *pending* trusted publisher for each project — this repository, workflow
+`release.yml` — with **a different environment per project**: `norboten-runner` with environment
+`pypi-runner`, and `norboten` with environment `pypi`. PyPI refuses a second pending publisher whose
+owner, repository, workflow and environment all match the first, which is why the release has one
+upload job per project. In GitHub, create both environments; add required reviewers to them if a
+person should approve every upload.
 
 ## Trying the installer
 
