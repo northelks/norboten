@@ -1,0 +1,172 @@
+{
+  "uid": "norboten-service",
+  "title": "Service",
+  "description": "The API, the host and the database, as Prometheus sees them. Provisioned from deploy/grafana: edits in the UI are not kept.",
+  "tags": ["norboten"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "refresh": "1m",
+  "time": {"from": "now-24h", "to": "now"},
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "API",
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"refId": "A", "expr": "up{job=\"api\"}", "instant": true}],
+      "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [{"type": "value", "options": {"0": {"text": "down", "color": "red"}, "1": {"text": "up", "color": "green"}}}],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Requests per second",
+      "gridPos": {"h": 4, "w": 5, "x": 4, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"refId": "A", "expr": "sum(rate(norboten_http_requests_total[5m]))"}],
+      "options": {"graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"unit": "reqps", "decimals": 2}, "overrides": []}
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Answers that failed (5xx)",
+      "description": "The share of responses the API itself broke on, over five minutes.",
+      "gridPos": {"h": 4, "w": 5, "x": 9, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{
+        "refId": "A",
+        "expr": "100 * sum(rate(norboten_http_requests_total{status=~\"5..\"}[5m])) / clamp_min(sum(rate(norboten_http_requests_total[5m])), 0.0001)"
+      }],
+      "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}, {"color": "red", "value": 5}]}
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Free on /",
+      "description": "The disk filled to 99% once, while the server was building its own image. This is the panel to look at first.",
+      "gridPos": {"h": 4, "w": 5, "x": 14, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"refId": "A", "expr": "node_filesystem_avail_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay\"}"}],
+      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 1500000000}, {"color": "green", "value": 3000000000}]}
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Answered within",
+      "description": "The 95th percentile over five minutes: nineteen requests in twenty were faster than this.",
+      "gridPos": {"h": 4, "w": 5, "x": 19, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{
+        "refId": "A",
+        "expr": "histogram_quantile(0.95, sum by (le) (rate(norboten_http_request_seconds_bucket[5m])))"
+      }],
+      "options": {"graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"unit": "s", "decimals": 3}, "overrides": []}
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Requests by status",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{
+        "refId": "A",
+        "expr": "sum by (status) (rate(norboten_http_requests_total[5m]))",
+        "legendFormat": "{{status}}"
+      }],
+      "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"fillOpacity": 20, "stacking": {"mode": "normal"}}}, "overrides": []}
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Time to the first byte",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"refId": "A", "expr": "histogram_quantile(0.50, sum by (le) (rate(norboten_http_request_seconds_bucket[5m])))", "legendFormat": "median"},
+        {"refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(norboten_http_request_seconds_bucket[5m])))", "legendFormat": "p95"},
+        {"refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(norboten_http_request_seconds_bucket[5m])))", "legendFormat": "p99"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "s", "custom": {"fillOpacity": 0}}, "overrides": []}
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "The five slowest routes (p95 over 15 minutes)",
+      "description": "Route templates, never raw paths — a scrape must not grow a series per learner.",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{
+        "refId": "A",
+        "format": "table",
+        "instant": true,
+        "expr": "topk(5, histogram_quantile(0.95, sum by (le, route, method) (rate(norboten_http_request_seconds_bucket[15m]))))"
+      }],
+      "transformations": [{"id": "organize", "options": {"excludeByName": {"Time": true, "__name__": true, "job": true, "instance": true}}}],
+      "fieldConfig": {"defaults": {"unit": "s", "decimals": 3}, "overrides": []}
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "What Prometheus can reach",
+      "description": "Every scrape target from deploy/prometheus.yml. A line that drops to zero is a container that stopped answering.",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"refId": "A", "expr": "up", "legendFormat": "{{job}}"}],
+      "fieldConfig": {"defaults": {"min": 0, "max": 1, "custom": {"fillOpacity": 10, "lineInterpolation": "stepAfter"}}, "overrides": []}
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Host: processors and memory",
+      "description": "1,642 MB of usable memory on one core — both are worth watching together.",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"refId": "A", "expr": "100 - 100 * avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m]))", "legendFormat": "cpu busy"},
+        {"refId": "B", "expr": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)", "legendFormat": "memory used"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "custom": {"fillOpacity": 10}}, "overrides": []}
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Database: connections and size",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"refId": "A", "expr": "sum(pg_stat_database_numbackends{datname=\"norboten\"})", "legendFormat": "connections"},
+        {"refId": "B", "expr": "pg_database_size_bytes{datname=\"norboten\"}", "legendFormat": "size"}
+      ],
+      "fieldConfig": {
+        "defaults": {"custom": {"fillOpacity": 0}},
+        "overrides": [{"matcher": {"id": "byName", "options": "size"}, "properties": [{"id": "unit", "value": "bytes"}, {"id": "custom.axisPlacement", "value": "right"}]}]
+      }
+    }
+  ]
+}

@@ -270,8 +270,17 @@ certificates are re-issued if the disk is lost.
 | send the learner digest now | `sudo systemctl start norboten-digest` (Sundays at 18:00 otherwise; only with `norboten_discord_bot_token` set). `sudo docker compose --profile jobs run --rm digest python -m norboten_api.digest --dry-run` prints it instead |
 
 Grafana (`status.<domain>`, user `admin`) has Prometheus and the Norboten database provisioned as
-data sources. Streams keep working through an API restart: viewers' browsers reconnect and replay
-from the recording.
+data sources, and two dashboards in the folder **Norboten**, both provisioned from
+`deploy/grafana/provisioning/dashboards` — they come back as they are on every restart, so edits
+made in the browser are not kept:
+
+| Dashboard | Datasource | What it answers |
+|---|---|---|
+| **Service** | Prometheus | Is the API up and how fast is it (rate by status, median/p95/p99, the five slowest route templates), can Prometheus reach every target, how the host is doing — and how much room is left on `/`, which is the first thing to fail on a 20 GB server |
+| **Norboten** | Postgres | What learners did: accounts, attempts by day passed against failed, the labs being worked on, the events the API wrote down, ratings by topic. The sample population is excluded everywhere (`users.seed`), so these are real accounts only |
+
+Streams keep working through an API restart: viewers' browsers reconnect and replay from the
+recording.
 
 ## Everything on a laptop
 

@@ -3,6 +3,10 @@
 Labels are the route template (`/profile/{nick}`), never the raw path, so a scrape does not grow a
 series per learner. `/metrics` itself is not exposed by Caddy: only Prometheus, on the compose
 network, reads it.
+
+Requests and their timing are all that belongs here. What happened — an attempt reported, a
+question asked of the consultant, a stuck point — is written to the `events` table instead, where
+it keeps its payload; the Norboten dashboard reads it from there over the Postgres datasource.
 """
 
 from __future__ import annotations
@@ -21,7 +25,6 @@ LATENCY = Histogram(
     ["method", "route"],
     buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30),
 )
-EVENTS = Counter("norboten_events_total", "Things worth counting", ["kind"])
 
 
 def install(app: FastAPI) -> None:

@@ -1,0 +1,167 @@
+{
+  "uid": "norboten-product",
+  "title": "Norboten",
+  "description": "What learners actually did, straight from the database. The sample population is excluded everywhere: these are real accounts only. Provisioned from deploy/grafana: edits in the UI are not kept.",
+  "tags": ["norboten"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "refresh": "5m",
+  "time": {"from": "now-90d", "to": "now"},
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Accounts",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "norboten-postgres"},
+      "targets": [{
+        "refId": "A",
+        "format": "table",
+        "rawQuery": true,
+        "editorMode": "code",
+        "rawSql": "SELECT count(*) AS accounts FROM users WHERE NOT seed"
+      }],
+      "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "/.*/"}},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Attempts in the last 24 hours",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "norboten-postgres"},
+      "targets": [{
+        "refId": "A",
+        "format": "table",
+        "rawQuery": true,
+        "editorMode": "code",
+        "rawSql": "SELECT count(*) AS attempts FROM attempts a JOIN users u USING (user_id) WHERE NOT u.seed AND a.started_at > now() - interval '24 hours'"
+      }],
+      "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "/.*/"}},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Passed, last 30 days",
+      "description": "A lab counts as passed when every check was green after the reboot.",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "norboten-postgres"},
+      "targets": [{
+        "refId": "A",
+        "format": "table",
+        "rawQuery": true,
+        "editorMode": "code",
+        "rawSql": "SELECT round(100.0 * count(*) FILTER (WHERE a.passed) / greatest(count(*), 1), 1) AS passed FROM attempts a JOIN users u USING (user_id) WHERE NOT u.seed AND a.started_at > now() - interval '30 days'"
+      }],
+      "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "/.*/"}},
+      "fieldConfig": {"defaults": {"unit": "percent", "decimals": 1}, "overrides": []}
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Rated attempts open now",
+      "description": "A rated attempt the server is still holding: it either gets judged or expires.",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "norboten-postgres"},
+      "targets": [{
+        "refId": "A",
+        "format": "table",
+        "rawQuery": true,
+        "editorMode": "code",
+        "rawSql": "SELECT count(*) AS open FROM rated_attempts WHERE open"
+      }],
+      "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "/.*/"}},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "New accounts by day",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "norboten-postgres"},
+      "targets": [{
+        "refId": "A",
+        "format": "time_series",
+        "rawQuery": true,
+        "editorMode": "code",
+        "rawSql": "SELECT date_trunc('day', created_at) AS time, count(*) AS accounts FROM users WHERE NOT seed AND $__timeFilter(created_at) GROUP BY 1 ORDER BY 1"
+      }],
+      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "bars", "fillOpacity": 60}}, "overrides": []}
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Attempts by day",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "norboten-postgres"},
+      "targets": [{
+        "refId": "A",
+        "format": "time_series",
+        "rawQuery": true,
+        "editorMode": "code",
+        "rawSql": "SELECT date_trunc('day', a.started_at) AS time, count(*) FILTER (WHERE a.passed) AS passed, count(*) FILTER (WHERE NOT a.passed) AS failed FROM attempts a JOIN users u USING (user_id) WHERE NOT u.seed AND $__timeFilter(a.started_at) GROUP BY 1 ORDER BY 1"
+      }],
+      "fieldConfig": {
+        "defaults": {"unit": "short", "custom": {"drawStyle": "bars", "fillOpacity": 70, "stacking": {"mode": "normal"}}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "passed"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]},
+          {"matcher": {"id": "byName", "options": "failed"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]}
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Labs people are working on",
+      "description": "The ten labs with the most attempts in the range, and how they went.",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 12},
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "norboten-postgres"},
+      "targets": [{
+        "refId": "A",
+        "format": "table",
+        "rawQuery": true,
+        "editorMode": "code",
+        "rawSql": "SELECT a.lab_id AS lab, count(*) AS attempts, round(100.0 * count(*) FILTER (WHERE a.passed) / count(*), 0) AS passed_percent, round(avg(a.duration_seconds) / 60.0, 1) AS minutes_avg FROM attempts a JOIN users u USING (user_id) WHERE NOT u.seed AND $__timeFilter(a.started_at) GROUP BY 1 ORDER BY attempts DESC LIMIT 10"
+      }],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [{"matcher": {"id": "byName", "options": "passed_percent"}, "properties": [{"id": "unit", "value": "percent"}]}]
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Events by kind",
+      "description": "What the API wrote down: progress an attempt reported, a question to the consultant, a stuck point the TUI saw.",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 12},
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "norboten-postgres"},
+      "targets": [{
+        "refId": "A",
+        "format": "time_series",
+        "rawQuery": true,
+        "editorMode": "code",
+        "rawSql": "SELECT date_trunc('day', created_at) AS time, kind AS metric, count(*) AS events FROM events WHERE $__timeFilter(created_at) GROUP BY 1, 2 ORDER BY 1"
+      }],
+      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "bars", "fillOpacity": 60, "stacking": {"mode": "normal"}}}, "overrides": []}
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Ratings by topic",
+      "description": "Only topics somebody has actually played: r is the rating, rd how sure the server is of it.",
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 21},
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "norboten-postgres"},
+      "targets": [{
+        "refId": "A",
+        "format": "table",
+        "rawQuery": true,
+        "editorMode": "code",
+        "rawSql": "SELECT r.topic, count(*) AS players, round(avg(r.r)::numeric, 0) AS rating_avg, round(max(r.r)::numeric, 0) AS rating_top, round(avg(r.rd)::numeric, 0) AS rd_avg, sum(r.games) AS games FROM ratings r JOIN users u USING (user_id) WHERE NOT u.seed GROUP BY 1 ORDER BY players DESC, rating_top DESC"
+      }],
+      "fieldConfig": {"defaults": {}, "overrides": []}
+    }
+  ]
+}
