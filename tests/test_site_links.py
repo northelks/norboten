@@ -36,6 +36,14 @@ def test_a_link_that_names_index_html_is_a_fault(tmp_path):
     assert len(faults) == 1 and "link to the directory" in faults[0]
 
 
+def test_an_absolute_link_is_resolved_from_the_root_of_the_site(tmp_path):
+    """404.html is served at whatever address was asked for, so its links cannot be relative."""
+    page(tmp_path, "404.html", '<a href="/labs/">Labs</a><a href="/nowhere/">Nowhere</a>')
+    page(tmp_path, "labs/index.html", "Labs")
+    faults = build.broken_links(tmp_path)
+    assert len(faults) == 1 and "/nowhere/" in faults[0]
+
+
 def test_anchors_queries_and_other_sites_are_left_alone(tmp_path):
     page(
         tmp_path,

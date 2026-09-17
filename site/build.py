@@ -1532,7 +1532,9 @@ def broken_links(out: Path) -> list[str]:
             if path.endswith("index.html"):
                 faults.append(f"{where}: {link} — link to the directory, not to index.html")
                 continue
-            target = (page.parent / path).resolve()
+            # 404.html is served at whatever address was asked for, so its links are absolute
+            base = out if path.startswith("/") else page.parent
+            target = (base / path.lstrip("/")).resolve()
             if target.is_dir():
                 target = target / "index.html"
             if not target.is_file():
@@ -1975,7 +1977,7 @@ def main() -> int:
     )
     (out / "404.html").write_text(
         build.env.get_template("base.html")
-        .render(root="", page_title="Not found", **common)
+        .render(root="/", page_title="Not found", **common)
         .replace("{% block body %}{% endblock %}", "")
     )
     if faults := broken_links(out):
