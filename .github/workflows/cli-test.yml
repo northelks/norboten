@@ -14,7 +14,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # Windows is not a supported platform (docs/faq.md: Lima's Windows driver has neither
+        # snapshots nor a serial console), and its only unique signal was a false one: the
+        # generated-file diff fails there on line endings alone.
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
