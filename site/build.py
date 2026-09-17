@@ -46,7 +46,8 @@ GA_ID = os.environ.get("NORBOTEN_SITE_GA_ID", "")
 # The About page's "More about me" button and the Community page's "Join the Discord" button: each
 # is hidden while its link is empty.
 PERSONAL_SITE = os.environ.get("NORBOTEN_SITE_PERSONAL_URL", "")  # a preview may point it anywhere
-DISCORD_INVITE = ""
+# The invite is public by nature; a self-hosted build points it at its own server, or empties it.
+DISCORD_INVITE = os.environ.get("NORBOTEN_SITE_DISCORD_INVITE", "https://discord.gg/2zF4UuZaJB")
 # Moves whenever the privacy policy says something new (site/templates/privacy.html).
 PRIVACY_UPDATED = "17 September 2026"
 

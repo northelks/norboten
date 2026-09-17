@@ -23,6 +23,13 @@
   function $(id) { return document.getElementById(id); }
   function show(id, on) { var el = $(id); if (el) el.hidden = !on; }
 
+  /* base.html sets the same word from the token before the page paints; this keeps it right when
+   * signing in or out happens on this page, without a reload. */
+  function paintNav(signedIn) {
+    var links = document.querySelectorAll(".nav-account");
+    for (var i = 0; i < links.length; i++) links[i].textContent = signedIn ? "Account" : "Sign in";
+  }
+
   /* A remembered browser keeps the token until it expires; an unremembered one keeps it only as
    * long as the tab. Both can throw in a private window, where the sign-in lasts one page. */
   function token() {
@@ -136,6 +143,7 @@
     show("acct-signed-in", false);
     show("acct-authorize", false);
     show("acct-signin", true);
+    paintNav(false);
   }
 
   /* ------------------------------------------------------------ signed in */
@@ -232,6 +240,9 @@
   }
 
   function loadTokens() {
+    /* The card holds the sign-out button, so it is there for anyone signed in — an empty or
+     * unreachable list must not take the only way out with it. */
+    show("acct-tokens", true);
     return call("GET", "/auth/tokens").then(function (res) {
       if (res.status !== 200) return;
       var list = $("token-list");
@@ -242,7 +253,6 @@
           " — until " + when(t.expires_at);
         list.appendChild(li);
       });
-      show("acct-tokens", res.data.length > 0);
     });
   }
 
@@ -281,6 +291,7 @@
 
   function afterSignIn() {
     show("acct-signin", false);
+    paintNav(true);
     if (page === "authorize") { authorizeStep(); return; }
     loadIdentity().then(function (ok) { if (ok) return loadProfile().then(loadTokens); });
   }
