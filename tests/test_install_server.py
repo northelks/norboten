@@ -105,6 +105,24 @@ def test_a_dry_run_prints_every_step_and_touches_nothing(capsys, monkeypatch):
     assert "DNS: every name points at this server" in out
 
 
+def test_a_dry_run_never_asks_about_the_ci_key(tmp_path, monkeypatch, capsys):
+    """Only root can read /root: asking whether the key is there is itself an error off a server."""
+    locked = tmp_path / "norboten-ci"
+    locked.mkdir(mode=0o000)
+    monkeypatch.setattr(install, "CI_KEY", locked / "deploy_ed25519")
+    monkeypatch.setattr(install, "STATE", tmp_path / "install.json")
+    monkeypatch.setattr(install, "local_addresses", lambda: {"203.0.113.10"})
+    monkeypatch.setattr(install, "resolve", lambda name: {"203.0.113.10"})
+    try:
+        code = install.main(
+            ["--dry-run", "--domain", "norboten.org", "--email", "a@b.org", "--yes"]
+        )
+    finally:
+        locked.chmod(0o700)
+    assert code == 0
+    assert "ssh-keygen" not in capsys.readouterr().out
+
+
 def test_without_a_github_app_it_says_nobody_can_sign_in(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(install, "STATE", tmp_path / "install.json")
     monkeypatch.setattr(install, "local_addresses", lambda: {"203.0.113.10"})

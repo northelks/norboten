@@ -390,7 +390,9 @@ def main(argv: list[str] | None = None) -> int:
             "no SSH public key found for root. Hardening turns password and root logins off, so "
             "you would be locked out. Put your key in /root/.ssh/authorized_keys and run it again."
         )
-    if not CI_KEY.exists() and not args.dry_run:
+    # Not root, and /root is unreadable: exists() raises rather than answering, so a dry run has to
+    # short-circuit before it asks (a real run is root, and this is the key GitHub Actions gets).
+    if not args.dry_run and not CI_KEY.exists():
         CI_KEY.parent.mkdir(mode=0o700, exist_ok=True)
         comment = "github-actions@norboten"
         run(["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-C", comment, "-f", str(CI_KEY)])
