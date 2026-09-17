@@ -180,7 +180,7 @@ def test_quiz_me_asks_the_user_and_grades_the_answer(api):
 
     async def answer(ctx, params):
         asked.append(params.message)
-        question = _find_question(params.message)
+        question = _find_question("networking", params.message)
         return ElicitResult(action="accept", content={"answer": ",".join(question.answer)})
 
     result = _data(
@@ -203,14 +203,19 @@ def test_quiz_me_without_elicitation_hands_the_question_to_the_model(api):
     assert graded["correct"] is False and graded["correct_answer"]
 
 
-def _find_question(message: str):
+def _find_question(topic: str, message: str):
+    """The question behind an elicitation, looked up in the bank the quiz was asked of.
+
+    Searching every bank is not enough to name one question: `What does this print?` is the prompt
+    of net-038 and of a hundred others, so the first match was often from another topic and the
+    answer sent back was the wrong one — a failure in about one run in forty, since quiz_me picks
+    at random. One bank, and exactly one match in it.
+    """
     from norboten.quiz import bank
 
-    for loaded in bank.all_banks():
-        for q in loaded.bank.questions:
-            if q.prompt in message:
-                return q
-    raise AssertionError("the question shown is not in a bank")
+    found = [q for q in bank.find_topic(topic).bank.questions if q.prompt in message]
+    assert len(found) == 1, f"{len(found)} questions in {topic} match what was shown"
+    return found[0]
 
 
 def test_journals_are_resources_without_their_walkthrough(api):
