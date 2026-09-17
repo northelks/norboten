@@ -34,6 +34,7 @@ class AccountStore(Protocol):
     async def put_ratings(self, ratings: list[TopicRating]) -> None: ...
     async def all_ratings(self, topic: str | None = None) -> list[TopicRating]: ...
     async def users(self, user_ids: list[str]) -> dict[str, User]: ...
+    async def forget(self, user_id: str) -> None: ...
     async def close(self) -> None: ...
 
 
@@ -83,6 +84,14 @@ class MemoryAccountStore:
 
     async def users(self, user_ids: list[str]) -> dict[str, User]:
         return {uid: self._users[uid] for uid in user_ids if uid in self._users}
+
+    async def forget(self, user_id: str) -> None:
+        user = self._users.pop(user_id, None)
+        if user is not None:
+            self._nicks.pop(user.nick, None)
+        self._attempts.pop(user_id, None)
+        for key in [k for k in self._ratings if k[0] == user_id]:
+            del self._ratings[key]
 
     async def close(self) -> None:
         return None
@@ -204,6 +213,11 @@ class PostgresAccountStore:
         else:
             rows = await self.db.fetch(self._RATING)
         return [self._rating(row) for row in rows]
+
+    async def forget(self, user_id: str) -> None:
+        """The work, then the profile. Nothing here references users, so the order is ours."""
+        for table in ("attempts", "ratings", "users"):
+            await self.db.execute(f"DELETE FROM {table} WHERE user_id = :u", u=user_id)
 
     async def close(self) -> None:
         await self.db.close()

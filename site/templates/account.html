@@ -101,6 +101,26 @@
         <ul class="token-list" id="token-list"></ul>
         <button class="btn" type="button" id="acct-signout">Sign out on this browser</button>
       </div>
+      <div class="card acct-card danger" id="acct-delete" hidden>
+        <h3>Delete this account</h3>
+        <p class="muted small">Everything goes at once: the profile and its nick, every attempt and
+          rating, the recordings your Play sessions left, and the GitHub and Discord links. Nothing
+          is kept, nothing can be restored, and the nick becomes free for someone else. The labs on
+          your own machine are untouched — they never needed an account.
+          <a href="{{ root }}privacy/index.html#delete">How long backups keep a copy</a>.</p>
+        <div id="delete-start">
+          <button class="btn" type="button" id="acct-delete-go">Delete this account</button>
+        </div>
+        <form id="delete-form" hidden>
+          <label>Type your nick to confirm
+            <input type="text" id="delete-nick" autocomplete="off" placeholder="your nick" required>
+          </label>
+          <p class="cta">
+            <button class="btn solid danger" type="submit">Delete it for good</button>
+            <button class="btn" type="button" id="delete-cancel">Keep my account</button>
+          </p>
+        </form>
+      </div>
     </div>
   </div>
 </section>

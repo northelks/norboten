@@ -201,3 +201,52 @@ def test_without_a_table_the_guess_is_empty(client, monkeypatch):
     geo.table.cache_clear()
     assert client.get("/geo/country").json() == {"country": ""}
     geo.table.cache_clear()
+
+
+def test_deleting_the_account_takes_the_work_and_frees_the_nick(client, signed_up):
+    client.post(
+        "/attempts",
+        json={
+            "lab_id": "hello",
+            "started_at": time.time() - 300,
+            "duration_seconds": 300,
+            "score_percent": 100,
+            "passed": True,
+        },
+        headers=HEAD,
+    )
+    assert client.get("/me", headers=HEAD).json()["attempts"] == 1
+    assert client.get("/profile/ihar").status_code == 200
+
+    assert client.request("DELETE", "/me", headers=HEAD).status_code == 204
+
+    assert client.get("/me", headers=HEAD).status_code == 404  # no profile, no attempts, no rating
+    assert client.get("/profile/ihar").status_code == 404  # gone from the board too
+    # and the nick is free: someone else may take it
+    taken_again = client.post("/me", json={"nick": "ihar", "country": "CA"}, headers=OTHER)
+    assert taken_again.status_code == 201, taken_again.text
+
+
+def test_deleting_ends_the_session_that_asked(client, sign_in):
+    body = sign_in("tux")
+    headers = {"Authorization": f"Bearer {body['token']}"}
+    client.post("/me", json={"nick": "tux", "country": "PL"}, headers=headers)
+    assert client.request("DELETE", "/me", headers=headers).status_code == 204
+    # the token went with the account: the same request is now a stranger's
+    assert client.get("/me", headers=headers).status_code == 401
+    assert client.request("DELETE", "/me", headers=headers).status_code == 401
+
+
+def test_an_account_without_a_nick_can_still_be_deleted(client):
+    assert client.get("/me", headers=HEAD).status_code == 404
+    assert client.request("DELETE", "/me", headers=HEAD).status_code == 204
+
+
+def test_deleting_needs_a_caller(client):
+    from norboten_api.settings import settings
+
+    settings().require_auth = True
+    try:
+        assert client.request("DELETE", "/me").status_code == 401
+    finally:
+        settings().require_auth = False

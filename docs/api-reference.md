@@ -344,6 +344,12 @@ Body — `SignUp`:
 
 The signed-in account's profile: nick, country, overall and per-topic ratings, a year of contributions and recent attempts. 404 until a nick is chosen.
 
+### `DELETE /me`
+
+*token*
+
+Delete this account and everything on it: the profile and its nick, every attempt and rating, open rated attempts and theory runs, the Play recordings it made, the GitHub and Discord links, and every token — so the call ends the session that made it. Nothing is kept and nothing can be restored; the nick becomes free for someone else. Backups age out on their own schedule (the privacy policy says how long). The account need not have a nick yet.
+
 ### `GET /geo/country`
 
 *public*

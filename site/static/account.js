@@ -19,6 +19,7 @@
   var STATE = "norboten.signin.state";
   var NICK = /^[a-z0-9][a-z0-9_-]{1,18}[a-z0-9]$/;
   var identity = null;
+  var nick = "";
 
   function $(id) { return document.getElementById(id); }
   function show(id, on) { var el = $(id); if (el) el.hidden = !on; }
@@ -143,6 +144,7 @@
     show("acct-signed-in", false);
     show("acct-authorize", false);
     show("acct-signin", true);
+    show("acct-delete", false);
     paintNav(false);
   }
 
@@ -209,6 +211,7 @@
       show("acct-signin", false);
       show("acct-signed-in", true);
       if (res.status === 404) {
+        nick = "";
         show("acct-claim", true);
         show("acct-profile", false);
         show("acct-country", false);
@@ -222,6 +225,7 @@
         return;
       }
       show("acct-claim", false);
+      nick = res.data.user.nick;
       $("country-form").country.value = res.data.user.country;
       show("acct-country", true);
       var p = res.data, card = $("acct-profile");
@@ -243,6 +247,7 @@
     /* The card holds the sign-out button, so it is there for anyone signed in — an empty or
      * unreachable list must not take the only way out with it. */
     show("acct-tokens", true);
+    show("acct-delete", true);
     return call("GET", "/auth/tokens").then(function (res) {
       if (res.status !== 200) return;
       var list = $("token-list");
@@ -353,6 +358,43 @@
           identity.digest = wanted;
           message(wanted ? "The weekly digest is on." : "The weekly digest is off.", false);
         }).catch(function () { digest.checked = !wanted; show("acct-offline", true); });
+      });
+    }
+
+    /* Deleting is two steps and typed by hand: the nick, or "delete" for an account that never
+     * chose one. A single misplaced click must not be able to end an account. */
+    var deleteGo = $("acct-delete-go");
+    if (deleteGo) {
+      var form = $("delete-form"), start = $("delete-start"), field = $("delete-nick");
+      deleteGo.addEventListener("click", function () {
+        start.hidden = true;
+        form.hidden = false;
+        field.placeholder = nick || "delete";
+        field.value = "";
+        field.focus();
+      });
+      $("delete-cancel").addEventListener("click", function () {
+        form.hidden = true;
+        start.hidden = false;
+        message("", false);
+      });
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var wanted = nick || "delete";
+        if (field.value.trim().toLowerCase() !== wanted) {
+          message("That is not " + wanted + ". The account is untouched.", true);
+          return;
+        }
+        call("DELETE", "/me").then(function (res) {
+          if (res.status !== 204) { message(detail(res, "The account was not deleted."), true); return; }
+          keep("", false);
+          identity = null;
+          nick = "";
+          form.hidden = true;
+          start.hidden = false;
+          signedOut();
+          message("The account is deleted. Nothing about it is kept.", false);
+        });
       });
     }
 

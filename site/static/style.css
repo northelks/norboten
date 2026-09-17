@@ -1412,3 +1412,12 @@ figure.chart img { width: 100%; height: auto; display: block; }
 .spaced > li { margin-bottom: 0.9rem; }
 .server-post + .server-post { border-top: 1px solid var(--line); padding-top: 1rem; margin-top: 0.4rem; }
 .server-main > p.small { margin-top: 1.2rem; }
+
+/* deleting an account: the one card on the site that is meant to look like a stop sign */
+.acct-card.danger { border-color: #5a2626; }
+.acct-card.danger h3 { color: var(--red); }
+.acct-card.danger .btn { border-color: #7a3434; color: var(--red); }
+.acct-card.danger .btn:hover { background: rgba(248, 113, 113, 0.08); }
+.acct-card.danger .btn.solid { background: var(--red); border-color: var(--red); color: #1a0606; }
+.acct-card.danger .btn.solid:hover { background: #fa8f8f; }
+.acct-card.danger #delete-nick { margin-top: 0.3rem; }

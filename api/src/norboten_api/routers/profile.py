@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import time
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field
 
 from norboten_api import accounts as acc
@@ -17,7 +17,14 @@ from norboten_api import geo
 from norboten_api.account_store import AccountStore, NickTaken
 from norboten_api.auth import Caller, caller, current_user, get_accounts, get_credentials
 from norboten_api.credentials import CredentialStore
-from norboten_api.deps import client_key, get_bus, lab_or_none
+from norboten_api.deps import (
+    client_key,
+    get_bus,
+    get_play,
+    get_rated,
+    get_rated_quiz,
+    lab_or_none,
+)
 from norboten_api.live import Bus
 
 BOARD_CACHE_SECONDS = 30
@@ -110,6 +117,30 @@ async def me(
     contributions and recent attempts. 404 until a nick is chosen.
     """
     return await _profile(user, accounts, credentials)
+
+
+@router.delete("/me", status_code=204)
+async def forget_me(
+    who: Caller = Depends(caller),
+    accounts: AccountStore = Depends(get_accounts),
+    credentials: CredentialStore = Depends(get_credentials),
+    play=Depends(get_play),
+    rated=Depends(get_rated),
+    rated_quiz=Depends(get_rated_quiz),
+) -> Response:
+    """Delete this account and everything on it: the profile and its nick, every attempt and
+    rating, open rated attempts and theory runs, the Play recordings it made, the GitHub and
+    Discord links, and every token — so the call ends the session that made it. Nothing is kept
+    and nothing can be restored; the nick becomes free for someone else. Backups age out on their
+    own schedule (the privacy policy says how long). The account need not have a nick yet.
+    """
+    await rated.forget(who.user_id)
+    await rated_quiz.forget(who.user_id)
+    await play.forget(who.user_id)
+    await accounts.forget(who.user_id)
+    # last: it holds the tokens, and this request is authenticated by one of them
+    await credentials.forget(who.user_id)
+    return Response(status_code=204)
 
 
 @router.get("/profile/{nick}")

@@ -87,6 +87,7 @@ class PlayStore(Protocol):
     async def live(self, limit: int = 20) -> list[PlaySession]: ...
     async def recent(self, limit: int = 20) -> list[PlaySession]: ...
     async def purge(self) -> int: ...
+    async def forget(self, user_id: str) -> None: ...
     async def close(self) -> None: ...
 
 
@@ -147,6 +148,11 @@ class MemoryPlayStore:
             self._sessions.pop(sid, None)
             self._batches.pop(sid, None)
         return len(old)
+
+    async def forget(self, user_id: str) -> None:
+        for sid in [sid for sid, s in self._sessions.items() if s.user_id == user_id]:
+            self._sessions.pop(sid, None)
+            self._batches.pop(sid, None)
 
     async def close(self) -> None:
         return None
@@ -274,6 +280,10 @@ class PostgresPlayStore:
 
     async def purge(self) -> int:
         return await self.db.execute("DELETE FROM play_sessions WHERE expires_at < now()")
+
+    async def forget(self, user_id: str) -> None:
+        """Recordings and their frames: `play_batches.session_id` cascades."""
+        await self.db.execute("DELETE FROM play_sessions WHERE user_id = :u", u=user_id)
 
     async def close(self) -> None:
         await self.db.close()

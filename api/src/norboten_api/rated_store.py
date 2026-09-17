@@ -94,6 +94,7 @@ class RatedStore[Row: (RatedAttempt, RatedQuizSession)](Protocol):
     async def get(self, attempt_id: str) -> Row | None: ...
     async def open_for(self, user_id: str) -> list[Row]: ...
     async def expired(self, now: float) -> list[Row]: ...
+    async def forget(self, user_id: str) -> None: ...
     async def close(self) -> None: ...
 
 
@@ -121,6 +122,10 @@ class MemoryRatedStore[Row: (RatedAttempt, RatedQuizSession)]:
         return [
             a.model_copy(deep=True) for a in self._rows.values() if a.open and a.expires_at < now
         ]
+
+    async def forget(self, user_id: str) -> None:
+        for attempt_id in [k for k, a in self._rows.items() if a.user_id == user_id]:
+            del self._rows[attempt_id]
 
     async def close(self) -> None:
         return None
@@ -174,6 +179,9 @@ class PostgresRatedStore[Row: (RatedAttempt, RatedQuizSession)]:
             now=now,
         )
         return [self._load(r) for r in rows]
+
+    async def forget(self, user_id: str) -> None:
+        await self.db.execute(f"DELETE FROM {self.table} WHERE user_id = :u", u=user_id)
 
     async def close(self) -> None:
         await self.db.close()

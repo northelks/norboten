@@ -90,6 +90,7 @@ class CredentialStore(Protocol):
     async def set_digest(self, user_id: str, on: bool) -> None: ...
     async def set_discord_error(self, user_id: str, error: str) -> None: ...
     async def digest_subscribers(self) -> list[Subscriber]: ...
+    async def forget(self, user_id: str) -> None: ...
     async def close(self) -> None: ...
 
 
@@ -170,6 +171,11 @@ class MemoryCredentialStore:
             for a in self._accounts.values()
             if a.digest and a.discord_id
         ]
+
+    async def forget(self, user_id: str) -> None:
+        self._accounts.pop(user_id, None)
+        for h in [h for h, row in self._tokens.items() if row["user_id"] == user_id]:
+            del self._tokens[h]
 
     async def close(self) -> None:
         return None
@@ -304,6 +310,10 @@ class PostgresCredentialStore:
             "WHERE digest AND discord_id IS NOT NULL ORDER BY created_at"
         )
         return [Subscriber(r["user_id"], r["discord_id"]) for r in rows]
+
+    async def forget(self, user_id: str) -> None:
+        """The row and every token on it: `tokens.user_id` cascades from `credentials`."""
+        await self.db.execute("DELETE FROM credentials WHERE user_id = :u", u=user_id)
 
     async def close(self) -> None:
         await self.db.close()

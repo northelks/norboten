@@ -19,6 +19,18 @@ def get_bus(request: Request):
     return request.app.state.bus
 
 
+def get_play(request: Request):
+    return request.app.state.play
+
+
+def get_rated(request: Request):
+    return request.app.state.rated
+
+
+def get_rated_quiz(request: Request):
+    return request.app.state.rated_quiz
+
+
 def client_key(request: Request) -> str:
     """Who a rate limit counts: the address Caddy saw, not Caddy's own."""
     forwarded = request.headers.get("x-forwarded-for", "")
