@@ -124,7 +124,10 @@ jobs:
         with: {name: site, path: site/dist}
       - name: The compose project and the site
         run: |
-          rsync -az --exclude '.env*' --exclude 'compose.local.yaml' --exclude 'Caddyfile.local' \
+          # /opt/norboten is root's (the stack's .env holds the database password); only site/ is
+          # the deploy user's, which is why just this half goes through sudo.
+          rsync -az --rsync-path="sudo rsync" \
+            --exclude '.env*' --exclude 'compose.local.yaml' --exclude 'Caddyfile.local' \
             deploy/ "deploy@$HOST:/opt/norboten/"
           if [ -d site/dist ]; then
             rsync -az --delete site/dist/ "deploy@$HOST:/opt/norboten/site/"
