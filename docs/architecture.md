@@ -33,7 +33,7 @@ the learner's machine                                   one server (Docker Compo
 ## The client
 
 `cli/src/norboten`. `norboten` with no arguments opens the TUI; see the
-[TUI reference](../tui-reference/index.html).
+[TUI reference](../tui-reference/).
 
 | Module | Responsibility |
 |---|---|
@@ -109,18 +109,18 @@ subagent with misspelled tools that "launches" and never runs — are recorded i
 |---|---|
 | **caddy** | TLS from Let's Encrypt, renewed by itself; serves the static site; proxies `api.` and `status.`; passes server-sent events unbuffered; hides `/metrics` |
 | **api** | FastAPI under uvicorn, two workers. Stateless: everything it keeps is in PostgreSQL or Redis, so a restart or a second worker loses nothing |
-| **postgres** | the one database (`norboten`). Schema in [Data model](../data-model/index.html) |
+| **postgres** | the one database (`norboten`). Schema in [Data model](../data-model/) |
 | **redis** | pub/sub for live frames, rate limits, a 30 s leaderboard cache. No persistence |
 | **ollama** | a small local model (`qwen2.5:0.5b` by default, pulled by the one-shot `ollama-pull`) that answers the consultant; see [Local models](#local-models-ollama) |
 | **prometheus**, exporters, **grafana** | request rates and latencies by route, host and database metrics, and dashboards behind a login |
 | **analytics** (job) | nightly: redraws the Analytics page from the database |
 
 `deploy.sh` rolls the API to a tag and back if `/readyz` does not answer; `backup.sh` dumps the
-database nightly and proves the dump restores. See [Deploying the server](../deploy/index.html).
+database nightly and proves the dump restores. See [Deploying the server](../deploy/).
 
 ## The API
 
-`api/src/norboten_api`. Every endpoint is in the generated [API reference](../api-reference/index.html).
+`api/src/norboten_api`. Every endpoint is in the generated [API reference](../api-reference/).
 
 | Module | Responsibility |
 |---|---|
@@ -307,7 +307,7 @@ site's widget ranks the same passages in the browser.
 
 ## The MCP server
 
-The API is also an MCP server, at `/mcp` ([The MCP server](../mcp/index.html)): the docs search,
+The API is also an MCP server, at `/mcp` ([The MCP server](../mcp/)): the docs search,
 the catalogue, a lab's briefing and first two hints, journals without walkthroughs, a quiz that asks
 the user through the protocol's multi round-trip requests, the boards — and, with a token, the
 account's own progress. It runs stateless on the 2026-07-28 revision, in the same process, so it
@@ -349,7 +349,7 @@ How labs, topics, question banks and journals relate is computed, not curated: T
 text, cosine similarity, and a graph of declared topics plus the strongest textual neighbours
 (scikit-learn, networkx). Deterministic and explainable, and a vector store would add nothing yet;
 pgvector in the same PostgreSQL remains the next step if semantic similarity is ever needed. The
-Analytics page is built from the attempts the same way — see [Pipelines](../pipelines/index.html).
+Analytics page is built from the attempts the same way — see [Pipelines](../pipelines/).
 
 ## Distribution
 
@@ -362,7 +362,7 @@ published, or nothing.
 
 One netcup VPS, ordered by hand; `ansible/` bootstraps it, hardens it (ufw, fail2ban, keys-only
 SSH) and installs the compose project. `.github/workflows/deploy.yml` tests,
-builds, and rolls out on every push to main. See [CI/CD](../ci-cd/index.html). There is no
+builds, and rolls out on every push to main. See [CI/CD](../ci-cd/). There is no
 Kubernetes and no hosted lab mode: running learners' VMs on the server would need `/dev/kvm`,
 which a cloud VPS does not offer.
 
@@ -408,7 +408,7 @@ checks the workflows statically (caps, token, pin, no `--bare`). The digest is r
 
 What each model call may see and do, what it costs and how that is kept down — for these jobs,
 the product's own agents and the content skills — is in
-[How Norboten uses Claude](../claude-code-in-norboten/index.html).
+[How Norboten uses Claude](../claude-code-in-norboten/).
 
 The API has no private endpoints for any of this: the digest reads the database from inside the
 server, the lab author works in a checkout, and a release's catalogue is the image that release

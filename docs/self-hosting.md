@@ -6,7 +6,7 @@ Three ways to run the server side yourself, from least to most:
 |---|---|---|
 | **The API alone** | `uv run python -m uvicorn norboten_api.main:app --reload` | the API on :8000 with everything in memory — fine for developing the TUI or the API |
 | **The whole stack on a laptop** | `make stack-up` | the production compose project with a local override: site :8080, API :8000, Grafana :3000, sample data loaded |
-| **A real server** | [Deploying the server](../deploy/index.html) | the same compose project on an Ubuntu machine with TLS, backups and deploy-on-push |
+| **A real server** | [Deploying the server](../deploy/) | the same compose project on an Ubuntu machine with TLS, backups and deploy-on-push |
 
 Then point the TUI at it:
 

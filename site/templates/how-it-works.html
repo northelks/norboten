@@ -419,7 +419,7 @@
       <figcaption>
         Costs are Claude Code's list-price estimates from real runs on 2026-09-14; the jobs run on a
         subscription token. Lab health, announcements, the learner digest and duplicate detection use no
-        model. Details: <a href="{{ root }}docs/claude-code-in-norboten/index.html">How Norboten uses Claude</a>.
+        model. Details: <a href="{{ root }}docs/claude-code-in-norboten/">How Norboten uses Claude</a>.
       </figcaption>
     </figure>
   </div>
@@ -505,7 +505,7 @@
       <figcaption>
         Why one machine: learners' VMs run on learners' machines, so the server carries accounts,
         text and a small model. A cloud VPS cannot run lab VMs anyway — there is no <code>/dev/kvm</code>.
-        Full steps: <a href="{{ root }}docs/deploy/index.html">Deploying the server</a>.
+        Full steps: <a href="{{ root }}docs/deploy/">Deploying the server</a>.
       </figcaption>
     </figure>
   </div>
@@ -534,7 +534,7 @@
         The honest limit: whatever is delivered into a VM you control can, with effort, be read out
         of it. This raises the cost of cheating a long way; it does not make it impossible.
         Today every lab in the catalogue is unrated.
-        <a href="{{ root }}docs/rated-labs/index.html">The full write-up</a>.
+        <a href="{{ root }}docs/rated-labs/">The full write-up</a>.
       </p>
     </div>
     <figure class="diagram">
@@ -665,7 +665,7 @@
       <figcaption>
         Not drawn: <span class="mono">rated_attempts</span> and <span class="mono">rated_quiz_sessions</span>,
         a rated attempt while it is open. Every column, index and key:
-        <a href="{{ root }}docs/data-model/index.html">Data model</a>.
+        <a href="{{ root }}docs/data-model/">Data model</a>.
         The stores have a memory and a PostgreSQL implementation each, and the same tests run
         against both.
       </figcaption>
@@ -1061,7 +1061,7 @@
       <figcaption>
         What Claude Code reports about the plugin — a real run of <code>claude plugin details</code>
         after installing it from this checkout (<code>site/capture_plugin.py</code>). More in
-        <a href="{{ root }}docs/claude-code-plugin/index.html">The Claude Code plugin</a>.
+        <a href="{{ root }}docs/claude-code-plugin/">The Claude Code plugin</a>.
       </figcaption>
     </figure>
   </div>
@@ -1072,7 +1072,7 @@
     <h2 id="analytics">Analytics and relations</h2>
     <div class="prose">
       <p>
-        The <a href="{{ root }}analytics/index.html">Analytics</a> page is drawn from the attempts
+        The <a href="{{ root }}analytics/">Analytics</a> page is drawn from the attempts
         table: nightly on the server, from the sample population when the site is built. How labs,
         topics, banks and journals relate is computed rather than curated — deterministic,
         explainable, and needing nothing a relational database and scikit-learn do not already do.
@@ -1178,7 +1178,7 @@
         <text class="svg-label-sm" x="576" y="354">golden image on KVM → oras push → PR with the digest</text>
       </svg>
       <figcaption>
-        Every workflow and its secrets: <a href="{{ root }}docs/ci-cd/index.html">CI/CD</a>.
+        Every workflow and its secrets: <a href="{{ root }}docs/ci-cd/">CI/CD</a>.
         Locally, <code>make server-rehearsal</code> runs the production playbook and
         <code>deploy.sh</code> against an Ubuntu VM on the laptop.
       </figcaption>

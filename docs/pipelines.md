@@ -134,6 +134,6 @@ the server, where Caddy serves it.
 
 ## 8. The server
 
-See [CI/CD](../ci-cd/index.html) for the workflow and [Deploying the server](../deploy/index.html)
+See [CI/CD](../ci-cd/) for the workflow and [Deploying the server](../deploy/)
 for the machine. In one line: push to main → tests → API image → site → rsync → `deploy.sh`, which
 waits for `/readyz` and rolls back by itself.

@@ -8,7 +8,7 @@
       {% for group in tree %}
       <div class="group">{{ group.title }}</div>
       {% for item in group.pages %}
-      <a href="{{ root }}docs/{{ item.slug }}/index.html"
+      <a href="{{ root }}docs/{{ item.slug }}/"
          {% if item.slug == current %}aria-current="page"{% endif %}>{{ item.title }}</a>
       {% endfor %}
       {% endfor %}

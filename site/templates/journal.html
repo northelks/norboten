@@ -29,11 +29,11 @@
     <div class="map-wrap">{{ j.map|safe }}</div>
     <div class="cta">
       {% if j.lab %}
-      <a class="btn solid" href="{{ root }}labs/{{ j.lab }}/index.html">Do the lab</a>
+      <a class="btn solid" href="{{ root }}labs/{{ j.lab }}/">Do the lab</a>
       {% endif %}
       <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
       {% if j.kind != "note" %}<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>{% endif %}
-      <a class="btn" href="{{ root }}journals/index.html">All journals</a>
+      <a class="btn" href="{{ root }}journals/">All journals</a>
     </div>
   </div>
 </section>

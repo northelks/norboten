@@ -32,7 +32,7 @@
     <h2>{{ heading }}</h2>
     <div class="grid two" style="gap:2rem">
       {% for j in group %}
-      <a class="card lab-card" href="{{ root }}journals/{{ j.id }}/index.html">
+      <a class="card lab-card" href="{{ root }}journals/{{ j.id }}/">
         <div class="tags"><span class="tag">{{ j.minutes }} min</span>
           {% for t in j.topic_titles %}<span class="tag">{{ t }}</span>{% endfor %}</div>
         <h3>{{ j.title }}</h3>

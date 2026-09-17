@@ -3,7 +3,7 @@
 A lab is a directory. If you can break a machine on purpose and describe how to tell that it is
 fixed, you can write one — and CI will tell you the truth about it before a reviewer has to.
 
-Start from `labs/_template/` and read [the specification](../lab-spec/index.html) when a detail
+Start from `labs/_template/` and read [the specification](../lab-spec/) when a detail
 matters. This page is the workflow.
 
 ## 1. Pick a failure you have actually seen

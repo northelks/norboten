@@ -21,7 +21,7 @@ The two URLs are one server behind two doors. `/mcp` lets anyone in and asks for
 a personal tool is called. `/mcp/account` asks on every request, which is how most clients know to
 sign in as they connect: `claude mcp list` shows it as *Needs authentication*, and `/mcp` inside
 Claude Code starts the sign-in. The `norboten-author` plugin
-([The Claude Code plugin](../claude-code-plugin/index.html)) adds the public one for you.
+([The Claude Code plugin](../claude-code-plugin/)) adds the public one for you.
 
 In Claude Desktop or as a claude.ai connector, add a remote server with either URL.
 

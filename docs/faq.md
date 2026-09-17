@@ -52,7 +52,7 @@ topic journals cover subjects end to end. Read them with `4` in the TUI, on the 
 Each lab has check scripts. On `c` they are copied into the VM and run as a separate grading account;
 the machine reboots; they run again. A check passes only if it passed both times, the score is the
 weight of passing checks over the total, and the lab is passed at its pass line (100% for most labs,
-70% for the exam simulation). See [Lab specification](../lab-spec/index.html), section 5.
+70% for the exam simulation). See [Lab specification](../lab-spec/), section 5.
 
 ### What is the reboot check, and why does it matter?
 
@@ -80,7 +80,7 @@ seconds on a laptop after the download. Later starts and resets are faster.
 `briefing.md` (symptoms only), `break/` (scripts that apply the faults), `check/` (scripts that
 decide what fixed means), `hints.yaml` (four levels per check), `solution/solution.sh` (the reference
 fix, used by CI), and usually `journal.md` and `theory.yaml`. See
-[Writing a lab](../writing-a-lab/index.html).
+[Writing a lab](../writing-a-lab/).
 
 ### How does the solvability gate work?
 
@@ -88,7 +88,7 @@ For every lab and every base image it supports, CI starts a clean VM, applies th
 every check to fail — a check that passes on a broken machine tests nothing. Then it runs the
 reference solution and requires every check to pass, before and after a reboot. Labs whose learners
 meet the fault only after a reboot get a second phase: faults, that reboot, and every check must still
-fail. See [Lab specification](../lab-spec/index.html), section 9.
+fail. See [Lab specification](../lab-spec/), section 9.
 
 ### What stops a lab from being unsolvable?
 
@@ -249,7 +249,7 @@ the snippet: CI runs it in a container with no network, and its output must equa
 A question a model generated is checked further: at least two other models that never saw the key
 must answer it identically, it must survive a critic, and a maintainer reads it before it goes into
 a bank. See
-[Theory question spec](../quiz-spec/index.html).
+[Theory question spec](../quiz-spec/).
 
 ### What does 'verified by two models' mean?
 
@@ -376,7 +376,7 @@ revoking one — from your account page, or by signing out — deletes a row.
 Your GitHub user id and login, your nick and country, your tokens (hashed), your Discord user id
 if you linked Discord, and — only when you are
 signed in — graded lab attempts and rated theory runs with their scores, durations and rating changes.
-Live sessions you start with `P` are stored for a week. Your local recordings are never sent. [Data model](../data-model/index.html) lists every table.
+Live sessions you start with `P` are stored for a week. Your local recordings are never sent. [Data model](../data-model/) lists every table.
 
 ### Where does my data go?
 
@@ -408,7 +408,7 @@ is no private streaming mode.
 
 ### Can I be told when something happens?
 
-Two things, both off until you ask. On [your account](../../account/index.html), link Discord and
+Two things, both off until you ask. On [your account](../../account/), link Discord and
 turn on the **weekly digest**: a direct message from the Norboten bot on Sunday evening about your
 own week — what you attempted, what your ratings did, and the topic the numbers know least about —
 and nothing in a week you did nothing. The bot can only message you if you share a server with it,
@@ -450,7 +450,7 @@ one's. Ask the chat for "a cheat sheet for …" and it links the right one.
 
 Yes — that is the point of the format. A lab is a directory of scripts, a hint ladder and a reference
 solution; `norboten dev lint` checks it without a VM and `norboten dev validate` runs the gate. CI
-proves it is solvable before it merges. See [Writing a lab](../writing-a-lab/index.html).
+proves it is solvable before it merges. See [Writing a lab](../writing-a-lab/).
 
 ### What does the hosted side cost to run?
 
@@ -463,9 +463,9 @@ server does not grow with them.
 ### Can I self-host all of it?
 
 Yes, on your own server or a laptop. `make stack-up` starts the whole backend — the same Docker
-Compose project production runs — on a laptop, and [Deploying the server](../deploy/index.html) takes
+Compose project production runs — on a laptop, and [Deploying the server](../deploy/) takes
 it to an Ubuntu machine with TLS, backups and deploy-on-push. The TUI uses it with `NORBOTEN_API=…`.
-See [Self-hosting](../self-hosting/index.html).
+See [Self-hosting](../self-hosting/).
 
 ### How do I report a lab that stopped working?
 

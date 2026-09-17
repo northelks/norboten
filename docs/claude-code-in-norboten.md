@@ -33,7 +33,7 @@ answered into a Pydantic schema. The server's config allows Ollama alone. On a l
 | **tutor** (`t` on a lab) | objectives, check results, the hint ladder up to the level asked for, a read-only fact bundle from the guest | hand over the fix | the request model has **no field** for the solution; `guards.py` compares the reply with the solution and the hint level before the TUI shows it and logs every block |
 | **review** (`m` after a pass or a surrender) | the attempt, the commands from its recordings (timed) and the VM's shell history (untimed), the solution | write a script to paste | the TUI runs it only once the attempt is over; the prompt asks for observations, not commands |
 | **consultant** (the chat on every page) | BM25 passages from docs, journals without their walkthroughs, briefings, question explanations | answer with a lab's fix | no solution file or level 3–4 hint is indexed; the same guard; 20 questions a minute per client; Ollama (`qwen2.5:0.5b`) |
-| **question pipeline** (a maintainer's or learner's machine, never the server) | a topic | keep a wrong question | generate → schema → **blind solve** by two other models → critic → the snippet run in Docker → dedup; kept with provenance ([Theory question spec](../quiz-spec/index.html) §5) |
+| **question pipeline** (a maintainer's or learner's machine, never the server) | a topic | keep a wrong question | generate → schema → **blind solve** by two other models → critic → the snippet run in Docker → dedup; kept with provenance ([Theory question spec](../quiz-spec/) §5) |
 
 Every agent is optional. With no model on the learner's machine the tutor falls back to the hint
 ladder and the review says what would enable it; without Ollama on the server the consultant falls
@@ -42,7 +42,7 @@ back to the browser-side ranking.
 ## 2. Claude Code in CI
 
 Four jobs run `claude -p` — the table and the workflows are in
-[Architecture → Automation](../architecture/index.html#automation). What they share:
+[Architecture → Automation](../architecture/#automation). What they share:
 
 - **The model only reads.** Triage, the stuck-point summary and release notes run with
   `--tools ""` in an empty directory: no shell, no files, no project hooks or MCP servers. The job's
@@ -68,7 +68,7 @@ Norboten's content — labs, theory, journals, screenshots — has a bar that a 
 meet: a lab must pass the gate, a question must survive a blind solve, a journal's walkthrough must
 have run on a real machine. Claude Code works inside that bar through the `norboten-author`
 plugin, which this repository publishes as its own marketplace and enables for its checkout
-([The Claude Code plugin](../claude-code-plugin/index.html)). Its skills are started by a person
+([The Claude Code plugin](../claude-code-plugin/)). Its skills are started by a person
 (`disable-model-invocation`); `/norboten-author:idea` is the way in — it asks what the specs need,
 plans, and hands over to one of these, in the session or to a subagent:
 

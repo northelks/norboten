@@ -184,7 +184,7 @@ journalctl -u unit -b -o cat
 - `man 1 bash`, *SHELL BUILTIN COMMANDS: set*, for the exact rule `-e` follows and where it does not
   apply.
 - `man 1 sort` (`-k`, `-n`, `-r`, `-u`) and `man 1 uniq`.
-- The logging journal, [the log lines that were never written down](../../journals/logging-journald/index.html),
+- The logging journal, [the log lines that were never written down](../../journals/logging-journald/),
   for where an access log comes from in the first place.
 
 ## Review

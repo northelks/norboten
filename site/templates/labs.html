@@ -19,13 +19,13 @@
       and its faults, checks and reference solution are in the repository. <strong class="accent">Rated</strong> labs — the ones a
       rating is made of — are graded by the server and their answers are not published.
       {% endif %}
-      <a href="{{ root }}docs/rated-labs/index.html">What that means</a>.
+      <a href="{{ root }}docs/rated-labs/">What that means</a>.
     </p>
     {% set intro = tracks|selectattr('id', 'equalto', 'intro')|first %}
     {% if intro %}
     <div class="grid three" style="margin-top:1.8rem">
       {% for lab in intro.labs %}
-      <a class="card lab-card first-lab" href="{{ root }}labs/{{ lab.id }}/index.html">
+      <a class="card lab-card first-lab" href="{{ root }}labs/{{ lab.id }}/">
         <div class="tags"><span class="tag track">start here</span><span class="tag">{{ lab.minutes }} min</span></div>
         <h3>{{ lab.title }}</h3>
         <p class="muted">{{ lab.first_objective }}</p>
@@ -53,7 +53,7 @@
     <p class="prose muted">{{ track.blurb|keys }}</p>
     <div class="grid three" style="margin-top:1.5rem">
       {% for lab in track.labs %}
-      <a class="card lab-card" href="{{ root }}labs/{{ lab.id }}/index.html">
+      <a class="card lab-card" href="{{ root }}labs/{{ lab.id }}/">
         <div class="tags"><span class="tag track">{{ lab.track }}</span><span class="tag">{{ lab.minutes }} min</span>{% if lab.rated %}<span class="tag rated">rated</span>{% endif %}</div>
         <h3>{{ lab.title }}</h3>
         <p class="muted">{{ lab.first_objective }}</p>

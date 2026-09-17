@@ -214,7 +214,7 @@ In a unit, when it has to: `Environment=`, `EnvironmentFile=`, `WorkingDirectory
 - `man 1 bash`, *INVOCATION*, for exactly which files each kind of shell reads.
 - `man 5 systemd.exec`, *Environment variables in spawned processes* and `WorkingDirectory=`.
 - `man 1 env` and `man 1 systemd-run`, for reproducing an unattended environment by hand.
-- The monitoring journal, [a check is an exit status](../../journals/monitoring/index.html#a-check-is-an-exit-status).
+- The monitoring journal, [a check is an exit status](../../journals/monitoring/#a-check-is-an-exit-status).
 
 ## Review
 

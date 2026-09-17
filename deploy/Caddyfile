@@ -25,6 +25,10 @@
 	root * /srv/site
 	@www host www.{$NORBOTEN_DOMAIN}
 	redir @www https://{$NORBOTEN_DOMAIN}{uri} permanent
+	# one page, one address: a page is /journals/, never /journals/index.html, whatever an old
+	# link or a bookmark says. The file on disk keeps its name; only the address is collapsed.
+	@index path_regexp idx ^(.*)/index\.html$
+	redir @index {re.idx.1}/ permanent
 	header /static/* Cache-Control "public, max-age=3600"
 	file_server
 	handle_errors {

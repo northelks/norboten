@@ -17,9 +17,9 @@
           <button type="button" data-copy="#installcmd">copy</button>
         </div>
         <div class="cta">
-          <a class="btn solid" href="{{ root }}install/index.html">Install</a>
-          <a class="btn" href="{{ root }}labs/index.html">See the labs</a>
-          <a class="btn" href="{{ root }}how-it-works/index.html">How it works</a>
+          <a class="btn solid" href="{{ root }}install/">Install</a>
+          <a class="btn" href="{{ root }}labs/">See the labs</a>
+          <a class="btn" href="{{ root }}how-it-works/">How it works</a>
         </div>
       </div>
       <figure class="capture hero-capture">
@@ -46,14 +46,14 @@
         reboot — the way the RHCSA exam does it, and the way production does it.
       </p>
       <p>
-        Most of the catalogue is <a class="accent" href="{{ root }}docs/rated-labs/index.html"><strong>unrated</strong></a>: those labs run entirely
+        Most of the catalogue is <a class="accent" href="{{ root }}docs/rated-labs/"><strong>unrated</strong></a>: those labs run entirely
         on your machine, need no account, and their faults, checks and reference solutions are in
         the repository for you to read — for learning, the solution is often the clearest
-        explanation a lab has. <a class="accent" href="{{ root }}docs/rated-labs/index.html"><strong>Rated</strong></a> labs are the other half: they
+        explanation a lab has. <a class="accent" href="{{ root }}docs/rated-labs/"><strong>Rated</strong></a> labs are the other half: they
         are graded by the server, their answers are not published, and they are what the boards
         are made of. The first ones are still being
         written, so today every lab is unrated.
-        <a href="{{ root }}docs/rated-labs/index.html">How that works</a>.
+        <a href="{{ root }}docs/rated-labs/">How that works</a>.
       </p>
     </div>
   </div>
@@ -76,7 +76,7 @@
       </figure>
       {% endfor %}
     </div>
-    <p style="margin-top:2rem"><a class="btn" href="{{ root }}features/index.html">Every screen, on the features page</a></p>
+    <p style="margin-top:2rem"><a class="btn" href="{{ root }}features/">Every screen, on the features page</a></p>
   </div>
 </section>
 
@@ -94,8 +94,8 @@
           question pipeline says so, not when the files look right.
         </p>
         <p>
-          <a class="btn" href="{{ root }}docs/claude-code-plugin/index.html">The plugin</a>
-          <a class="btn" href="{{ root }}how-it-works/index.html#plugin">How it fits</a>
+          <a class="btn" href="{{ root }}docs/claude-code-plugin/">The plugin</a>
+          <a class="btn" href="{{ root }}how-it-works/#plugin">How it fits</a>
         </p>
       </div>
       <div>
@@ -140,12 +140,12 @@
     <div class="grid two" style="margin-top:1.5rem">
       {% for track in tracks %}
       <div class="card track-card">
-        <h3><a href="{{ root }}labs/index.html#{{ track.id }}">{{ track.title }}</a></h3>
+        <h3><a href="{{ root }}labs/#{{ track.id }}">{{ track.title }}</a></h3>
         <p class="muted">{{ track.blurb|keys }}</p>
         <ul class="lablist">
           {% for lab in track.labs %}
           <li>
-            <a href="{{ root }}labs/{{ lab.id }}/index.html"><span class="mono">{{ lab.short_id }}</span> {{ lab.title }}</a>
+            <a href="{{ root }}labs/{{ lab.id }}/"><span class="mono">{{ lab.short_id }}</span> {{ lab.title }}</a>
             <span class="diff">{{ lab.dots|safe }}</span>
           </li>
           {% endfor %}
@@ -177,13 +177,13 @@
     </div>
     <div class="grid three" style="margin-top:1.2rem">
       {% for t in topics %}
-      <a class="card" href="{{ root }}labs/index.html#theory">
+      <a class="card" href="{{ root }}labs/#theory">
         <h3>{{ t.title }}</h3>
         <p class="muted">{{ t.description }}</p>
         <p class="mono muted" style="font-size:0.85rem">{{ t.count }} questions{% if t.verified %} · {{ t.verified }} executed{% endif %}</p>
       </a>
       {% endfor %}
-      <a class="card" href="{{ root }}journals/index.html">
+      <a class="card" href="{{ root }}journals/">
         <h3>Journals</h3>
         <p class="muted">The mechanism, one failure walked through, the wrong turns people take, a
           cheat sheet and review questions.</p>
@@ -253,7 +253,7 @@
       </p>
     </div>
     <div class="cta">
-      <a class="btn solid" href="{{ root }}install/index.html">Install Norboten</a>
+      <a class="btn solid" href="{{ root }}install/">Install Norboten</a>
       <a class="btn" href="{{ github }}" rel="noopener">GitHub</a>
     </div>
   </div>

@@ -131,4 +131,4 @@ The catalogue (`2`) shows each lab's briefing beside the list, and `f` narrows i
 Start with `hello`, then `rhcsa-01` if you are heading for the RHCSA exam, or `linux-01` if you
 want general troubleshooting on a lighter image. The `bash`, `python`, `ansible`, `docker` and
 `terraform` tracks each have two labs on `ubuntu-26.04-devops`, an image with those tools and everything
-they need already on it — no lab downloads anything while you work. Every key is in the [TUI reference](../tui-reference/index.html).
+they need already on it — no lab downloads anything while you work. Every key is in the [TUI reference](../tui-reference/).

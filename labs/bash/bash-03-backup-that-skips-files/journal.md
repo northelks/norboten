@@ -209,7 +209,7 @@ systemctl show unit -p Result -p ExecMainStatus
 - `man 1 bash`, *Word Splitting*, *Pathname Expansion* and the `read` builtin, for the three
   transformations this lab turns off.
 - `man 1 find`, `-print0`, and `man 1 xargs`, `-0`, for passing names between programs.
-- The monitoring journal, [a check is an exit status](../../journals/monitoring/index.html#a-check-is-an-exit-status),
+- The monitoring journal, [a check is an exit status](../../journals/monitoring/#a-check-is-an-exit-status),
   for why a script that exits 0 is a script that reports success.
 - David A. Wheeler, *Filenames and Pathnames in Shell: How to do it Correctly*, for the long list of
   cases this lab only samples.

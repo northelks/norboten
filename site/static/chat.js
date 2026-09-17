@@ -41,7 +41,7 @@
   }
 
   function href(url) {
-    return root + url.replace(/^\//, "") + (/\/$/.test(url) ? "index.html" : "");
+    return root + url.replace(/^\//, "");
   }
 
   function bubble(kind, text) {

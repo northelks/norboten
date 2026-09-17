@@ -1352,7 +1352,7 @@ def reading(lab) -> list[dict]:
             out.append(
                 {
                     "label": f"{found.title.split(' — ')[0]} › {heading}",
-                    "href": f"journals/{found.id}/index.html#{ref.anchor}",
+                    "href": f"journals/{found.id}/#{ref.anchor}",
                 }
             )
         elif ref.kind == "man":
@@ -1506,6 +1506,38 @@ def write_ask_index(out: Path) -> None:
     (out / "ask-index.json").write_text(
         json.dumps({"passages": passages, "faq": faq, "synonyms": synonyms}, separators=(",", ":"))
     )
+
+
+#: what a link may start with and still not point at a file of ours
+ELSEWHERE = ("http://", "https://", "//", "mailto:", "data:", "javascript:", "#")
+
+
+def broken_links(out: Path) -> list[str]:
+    """Every relative link in the built site, resolved against the page that carries it.
+
+    A page is addressed as a directory — `/journals/`, never `/journals/index.html` — so its own
+    file keeps the name and the address loses it. The two only agree while every link points at a
+    directory that really holds an index.html, and a missing trailing slash or a page that was
+    never written is invisible until somebody clicks it. This is what the build refuses to pass.
+    """
+    faults = []
+    for page in sorted(out.rglob("*.html")):
+        where = page.relative_to(out)
+        for link in re.findall(r'(?:href|src)="([^"]*)"', page.read_text()):
+            if not link or link.startswith(ELSEWHERE):
+                continue
+            path = link.split("#")[0].split("?")[0]
+            if not path:
+                continue
+            if path.endswith("index.html"):
+                faults.append(f"{where}: {link} — link to the directory, not to index.html")
+                continue
+            target = (page.parent / path).resolve()
+            if target.is_dir():
+                target = target / "index.html"
+            if not target.is_file():
+                faults.append(f"{where}: {link} — no such page")
+    return faults
 
 
 def main() -> int:
@@ -1893,14 +1925,14 @@ def main() -> int:
             search_index.append(
                 {
                     "title": title,
-                    "url": f"../../docs/{slug}/index.html",
+                    "url": f"../../docs/{slug}/",
                     "text": re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html))[:12000],
                 }
             )
     first = DOC_TREE[0][1][0][0]
     build.write(
         "docs/index.html",
-        f'<!doctype html><meta http-equiv="refresh" content="0; url=./{first}/index.html">',
+        f'<!doctype html><meta http-equiv="refresh" content="0; url=./{first}/">',
     )
     (out / "search-index.json").write_text(json.dumps(search_index))
     write_ask_index(out)
@@ -1946,6 +1978,10 @@ def main() -> int:
         .render(root="", page_title="Not found", **common)
         .replace("{% block body %}{% endblock %}", "")
     )
+    if faults := broken_links(out):
+        for fault in faults:
+            print(f"broken link: {fault}", file=sys.stderr)
+        return 1
     print(f"{len(pages)} pages -> {out}")
     return 0
 

@@ -145,10 +145,10 @@ made knowingly, and the documentation says so rather than rounding it up to "che
 ## Sources
 
 - Norboten's lab specification, section 13 — the collector and judge format and the attempt protocol:
-  [docs/lab-spec.md](../../docs/lab-spec/index.html#13-rated-labs)
-- Rated and unrated labs, and the honest limit: [docs/rated-labs.md](../../docs/rated-labs/index.html)
+  [docs/lab-spec.md](../../docs/lab-spec/#13-rated-labs)
+- Rated and unrated labs, and the honest limit: [docs/rated-labs.md](../../docs/rated-labs/)
 - The architecture chapter, with the flow and the table of defences:
-  [docs/architecture.md](../../docs/architecture/index.html#rated-labs-keeping-the-answer-off-the-learners-machine)
+  [docs/architecture.md](../../docs/architecture/#rated-labs-keeping-the-answer-off-the-learners-machine)
 - H. Krawczyk, M. Bellare, R. Canetti, *HMAC: Keyed-Hashing for Message Authentication*, RFC 2104
   (1997): https://www.rfc-editor.org/rfc/rfc2104
 - Git submodules, in the Git book: https://git-scm.com/book/en/v2/Git-Tools-Submodules

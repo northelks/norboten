@@ -22,7 +22,7 @@ It is for people writing content for Norboten or a fork of it. Learners never ne
 | agent | `norboten-author:question-author` | runs the question pipeline from an agreed plan and reports survivors and rejections |
 | agent | `norboten-author:journal-author` | drafts a journal into `journals/_drafts/`, every walkthrough step it could not run marked `TODO` |
 | hook | after `Edit` and `Write` | formats Python with ruff and runs `norboten dev lint` on the lab a file belongs to; a failing lint goes back to Claude |
-| MCP server | `norboten` | Norboten's public MCP server, `https://api.norboten.org/mcp` — docs search, labs, journals, a quiz ([The MCP server](../mcp/index.html)) |
+| MCP server | `norboten` | Norboten's public MCP server, `https://api.norboten.org/mcp` — docs search, labs, journals, a quiz ([The MCP server](../mcp/)) |
 
 Every skill is started by a person (`disable-model-invocation`): each one boots machines, spends
 subscription usage or rewrites committed files. Measured with `claude plugin details` (Claude Code

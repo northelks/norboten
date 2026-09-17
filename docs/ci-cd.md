@@ -81,7 +81,7 @@ Builds the `norboten` and `norboten-runner` wheels, installs them into a clean e
 the checkout and checks the installed package finds its labs, banks and journals, runs `install.sh`
 end to end against them, then publishes to PyPI (trusted publishing), creates the GitHub release
 with the wheels and `install.sh`. See
-[Releasing](../releasing/index.html).
+[Releasing](../releasing/).
 
 The release notes are drafted by Claude Code (Haiku, no tools) from the commits since the previous
 tag, with the full commit list appended; without `CLAUDE_CODE_OAUTH_TOKEN` they are the list alone.
@@ -96,7 +96,7 @@ ever names anything under `rated/`.
 Each installs one pinned Claude Code (`.github/actions/claude-code`), authenticates with the
 `CLAUDE_CODE_OAUTH_TOKEN` secret, has a timeout and a concurrency group, and skips with a notice
 when the secret is not set. What each may do, and why, is in
-[Architecture](../architecture/index.html#automation).
+[Architecture](../architecture/#automation).
 
 | Workflow | Trigger | Secrets and variables |
 |---|---|---|

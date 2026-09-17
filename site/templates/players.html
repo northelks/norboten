@@ -15,7 +15,7 @@
       server against your account. An unrated attempt is still recorded — it shows on your profile
       with its score and its time. No rated lab has been published yet, so today the board is empty
       of real players; the sample accounts are marked.
-      <a href="{{ root }}docs/rated-labs/index.html">Why the catalogue is split</a>.
+      <a href="{{ root }}docs/rated-labs/">Why the catalogue is split</a>.
     </p>
     <p class="note">
       <strong>Sample data.</strong> Nobody here is real. These {{ players|length }} accounts are
@@ -32,7 +32,7 @@
         <h2 style="margin-top:0">The board</h2>
         <p class="muted">Every learner, their overall rating and what they are best at.</p>
       </div>
-      <a class="btn analytics-link" href="{{ root }}analytics/index.html">
+      <a class="btn analytics-link" href="{{ root }}analytics/">
         <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M2 13h12M4 11V6m4 5V3m4 8V8"
           fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
         What the attempts say
@@ -71,7 +71,7 @@
         <td class="muted num rank">{{ loop.index }}</td>
         <td class="avatar">{{ p.avatar|safe }}</td>
         <td>
-          <a href="{{ root }}players/{{ p.nick }}/index.html">{{ p.nick }}</a>
+          <a href="{{ root }}players/{{ p.nick }}/">{{ p.nick }}</a>
           <span title="{{ p.country }}">{{ p.flag }}</span>
         </td>
         <td class="mono">
