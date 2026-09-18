@@ -10,7 +10,7 @@ from norboten.lima import template
 from norboten.lima.instance import Instance
 from norboten.models import Arch
 from norboten.oci import Client, OciError, split_ref
-from norboten.session.state import InvalidTransition, Session, State, all_sessions
+from norboten.session.state import Attempt, InvalidTransition, Session, State, all_sessions
 
 
 @pytest.fixture(autouse=True)
@@ -93,6 +93,20 @@ def test_session_roundtrip():
     assert loaded is not None
     assert loaded.state is State.BOOTED
     assert loaded.hint_levels == {"01_x": 2}
+
+
+def test_a_session_from_a_newer_norboten_still_loads():
+    s = _session()
+    s.attempts.append(Attempt(at=1.0, score_percent=50, passed=False))
+    s.save()
+    path = Session.path_for("hello")
+    data = json.loads(path.read_text())
+    data["from_the_future"] = {"x": 1}
+    data["attempts"][0]["from_the_future"] = True
+    path.write_text(json.dumps(data))
+    loaded = Session.load("hello")
+    assert loaded is not None
+    assert loaded.attempts == [Attempt(at=1.0, score_percent=50, passed=False)]
 
 
 def test_the_last_grade_report_is_not_listed_as_a_session():
