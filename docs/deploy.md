@@ -27,7 +27,7 @@ acceleration; the server only holds accounts, ratings, recordings and the site.
 | api | `ghcr.io/<owner>/norboten-api:<commit>` | FastAPI, 2 uvicorn workers | `api.<domain>` |
 | postgres | `postgres:17-alpine` | the database `norboten` (every table, `api/src/norboten_api/db.py`) | compose network only |
 | redis | `redis:7.4-alpine` | live frames, rate limits, the board cache; no persistence | compose network only |
-| ollama | `ollama/ollama:0.34.0` | the consultant's local model, capped at 1 GB, one request and one model at a time, and the first process killed when memory runs out; `ollama-pull` fetches it once | compose network only |
+| ollama | `norboten-ollama:v0.34.0-cpu`, built on the server by `ollama/Dockerfile`: the official release without its GPU libraries, under 200 MB on disk instead of 9 GB | the consultant's local model, capped at 1 GB, one request and one model at a time, and the first process killed when memory runs out; `ollama-pull` fetches it once | compose network only |
 | prometheus | `prom/prometheus:v3.5.0` | scrapes the API, the host and Postgres; 30 days | compose network only |
 | node-exporter, postgres-exporter | | host and database metrics | compose network only |
 | grafana | `grafana/grafana:12.1.0` | dashboards over Prometheus and Postgres, behind a login | `status.<domain>` |

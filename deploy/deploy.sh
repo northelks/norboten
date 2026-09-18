@@ -27,11 +27,14 @@ reload_caddy() {
 
 # Every deploy leaves its API image behind under its own tag, and `image prune` (dangling images
 # only) never takes a tagged one: on a 20 GB disk the fourth one filled it, and PostgreSQL could
-# not write its pid file. Keep the image going out and the one a rollback needs, nothing else —
-# before the pull as well, so the new image has room.
-prune_api_images() {
+# not write its pid file. The same goes for any image a changed compose file stopped using. Keep
+# the API image going out and the one a rollback needs; for the rest, `docker rmi` refuses an
+# image a container still runs from, which leaves exactly the unused ones to go. Done before the
+# pull as well, so the new images have room.
+prune_images() {
     image=$(grep '^API_IMAGE=' .env | cut -d= -f2)
-    docker image ls --format '{{.Repository}}:{{.Tag}}' "$image" \
+    docker image ls --format '{{.Repository}}:{{.Tag}}' \
+        | grep -v ':<none>$' \
         | grep -vxF -e "$image:$tag" -e "$image:$previous" \
         | xargs -r docker rmi >/dev/null 2>&1 || true
     docker image prune -f >/dev/null
@@ -51,17 +54,18 @@ ready() {
 
 echo "deploying api:$tag (previous: $previous)"
 set_tag "$tag"
-prune_api_images
+prune_images
 # every image, but one failed pull must not abort the others: the rehearsal VM's API image is
-# loaded by hand rather than pulled, and that is fine as long as it is there
-$compose pull --ignore-pull-failures
+# loaded by hand rather than pulled, and that is fine as long as it is there. Ollama's is built
+# here (ollama/Dockerfile), by `up` below when its tag is new.
+$compose pull --ignore-buildable --ignore-pull-failures
 docker image inspect "$(grep '^API_IMAGE=' .env | cut -d= -f2):$tag" >/dev/null \
     || { echo "api image $tag is neither pullable nor present" >&2; exit 1; }
 $compose up -d --remove-orphans
 if ready; then
     echo "$previous" > .deployed.previous
     echo "$tag" > .deployed
-    prune_api_images
+    prune_images
     reload_caddy || exit 1
     echo "api:$tag is ready"
     exit 0
