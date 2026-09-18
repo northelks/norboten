@@ -14,6 +14,22 @@
     update_cache: true
     cache_valid_time: 3600
 
+# A virtual machine has no GPU, Wi-Fi or physical NIC to load firmware into, and linux-firmware is
+# 700 MB of it on a 20 GB disk. linux-generic depends on it; linux-virtual is the same kernel
+# without that, and has to be in first so that kernel updates keep coming.
+- name: The kernel metapackage for a virtual machine
+  ansible.builtin.apt:
+    name: linux-virtual
+    state: present
+  when: ansible_virtualization_role == 'guest'
+
+- name: No firmware for hardware a virtual machine does not have
+  ansible.builtin.apt:
+    name: [linux-generic, linux-image-generic, firmware-sof-signed, "linux-firmware*"]
+    state: absent
+    purge: true
+  when: ansible_virtualization_role == 'guest'
+
 - name: Timezone
   community.general.timezone:
     name: "{{ server_base_timezone }}"
