@@ -61,8 +61,9 @@ prune_images
 $compose pull --ignore-buildable --ignore-pull-failures
 docker image inspect "$(grep '^API_IMAGE=' .env | cut -d= -f2):$tag" >/dev/null \
     || { echo "api image $tag is neither pullable nor present" >&2; exit 1; }
-$compose up -d --remove-orphans
-if ready; then
+# `up` itself can fail (a build, a container that will not start): that is rolled back too, rather
+# than leaving .env naming a tag that never ran
+if $compose up -d --remove-orphans && ready; then
     echo "$previous" > .deployed.previous
     echo "$tag" > .deployed
     prune_images
@@ -71,7 +72,7 @@ if ready; then
     exit 0
 fi
 
-echo "api:$tag did not become ready — rolling back to api:$previous" >&2
+echo "api:$tag did not come up — rolling back to api:$previous" >&2
 $compose logs --tail 50 api >&2 || true
 set_tag "$previous"
 $compose up -d api

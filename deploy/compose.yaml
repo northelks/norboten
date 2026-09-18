@@ -19,9 +19,6 @@ x-restart: &restart
 # OLLAMA_VERSION is a release tag of github.com/ollama/ollama; a new one builds a new image
 x-ollama-image: &ollama-image
   image: norboten-ollama:${OLLAMA_VERSION:-v0.34.0}-cpu
-  build:
-    context: ollama
-    args: {OLLAMA_VERSION: "${OLLAMA_VERSION:-v0.34.0}"}
 
 # When the whole machine runs out of memory, the kernel kills the process with the highest
 # oom_score_adj first: Ollama (1000) goes, and restarts, long before PostgreSQL (-900), Caddy (-800),
@@ -133,6 +130,9 @@ services:
   # server does not have; ollama/Dockerfile keeps the CPU backend and comes to under 200 MB.
   ollama:
     <<: [*restart, *ollama-image]
+    build:
+      context: ollama
+      args: {OLLAMA_VERSION: "${OLLAMA_VERSION:-v0.34.0}"}
     mem_limit: ${OLLAMA_MEMORY:-1g}
     memswap_limit: ${OLLAMA_MEMORY:-1g}
     oom_score_adj: 1000
@@ -147,6 +147,9 @@ services:
   # one-shot: make sure the consultant's model is on disk; a no-op when it already is
   ollama-pull:
     <<: *ollama-image
+    # the image `ollama` builds: given a build of its own, compose builds the same tag twice at
+    # once, and on the containerd image store the second one fails with "already exists"
+    pull_policy: never
     environment:
       OLLAMA_HOST: http://ollama:11434
     entrypoint: ["sh", "-c", "sleep 3 && ollama pull ${OLLAMA_MODEL:-qwen2.5:0.5b}"]
