@@ -25,6 +25,18 @@ reload_caddy() {
     $compose exec -T caddy caddy reload --adapter caddyfile --config /etc/caddy/Caddyfile
 }
 
+# Every deploy leaves its API image behind under its own tag, and `image prune` (dangling images
+# only) never takes a tagged one: on a 20 GB disk the fourth one filled it, and PostgreSQL could
+# not write its pid file. Keep the image going out and the one a rollback needs, nothing else —
+# before the pull as well, so the new image has room.
+prune_api_images() {
+    image=$(grep '^API_IMAGE=' .env | cut -d= -f2)
+    docker image ls --format '{{.Repository}}:{{.Tag}}' "$image" \
+        | grep -vxF -e "$image:$tag" -e "$image:$previous" \
+        | xargs -r docker rmi >/dev/null 2>&1 || true
+    docker image prune -f >/dev/null
+}
+
 ready() {
     for _ in $(seq 1 60); do
         if $compose exec -T api python -c \
@@ -39,6 +51,7 @@ ready() {
 
 echo "deploying api:$tag (previous: $previous)"
 set_tag "$tag"
+prune_api_images
 # every image, but one failed pull must not abort the others: the rehearsal VM's API image is
 # loaded by hand rather than pulled, and that is fine as long as it is there
 $compose pull --ignore-pull-failures
@@ -48,7 +61,7 @@ $compose up -d --remove-orphans
 if ready; then
     echo "$previous" > .deployed.previous
     echo "$tag" > .deployed
-    docker image prune -f >/dev/null
+    prune_api_images
     reload_caddy || exit 1
     echo "api:$tag is ready"
     exit 0
