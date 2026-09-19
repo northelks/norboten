@@ -63,7 +63,7 @@ jobs:
       - run: uv sync --all-packages --frozen
       - name: Solvability gate — ${{ matrix.lab }} on ${{ matrix.image }}
         run: |
-          sudo -E env "PATH=$PATH" -u SUDO_USER \
+          sudo -E env -u SUDO_USER "PATH=$PATH" \
             uv run norboten dev validate "${{ matrix.lab }}" --image "${{ matrix.image }}"
       - name: Console and journal from the failed VM
         if: failure()
