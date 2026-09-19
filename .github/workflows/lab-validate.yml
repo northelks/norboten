@@ -77,11 +77,12 @@ jobs:
           done
 
   report:
-    # the weekly run only: an issue per lab × image that failed, unless one is open — or one issue
-    # for the gate itself when more than half the gates failed. No model —
-    # a failed gate job is already the verdict. automation/jobs/lab_health.py
+    # a full run only (weekly, or by hand with `all`): an issue per lab × image that failed, unless
+    # one is open — or one issue for the gate itself when more than half the gates failed — and the
+    # open ones this run disproved are closed. No model — a gate job is already the verdict.
+    # automation/jobs/lab_health.py
     needs: gate
-    if: always() && github.event_name == 'schedule'
+    if: always() && (github.event_name == 'schedule' || inputs.all)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -91,7 +92,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           sparse-checkout: automation
-      - name: File the labs that stopped solving
+      - name: File the labs that stopped solving, close the ones that solve again
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m automation.jobs.lab_health
