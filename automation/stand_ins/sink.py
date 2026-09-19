@@ -87,10 +87,20 @@ def make_handler(state: State):
             if path == "/github/search/issues":
                 wanted = re.search(r'in:title "(.*)"', query.get("q", ""))
                 title = (wanted.group(1) if wanted else "").lower()
-                items = [i for i in data["issues"] if title in i["title"].lower()]
+                items = [
+                    i
+                    for i in data["issues"]
+                    if title in i["title"].lower() and i.get("state") != "closed"
+                ]
                 return self._send({"total_count": len(items), "items": items})
             if m := re.match(r"^/github/repos/[^/]+/[^/]+/(.*)$", path):
                 rest = m.group(1)
+                if rest == "issues" and method == "GET":
+                    return self._send([i for i in data["issues"] if i.get("state") != "closed"])
+                if (m := re.match(r"^issues/(\d+)$", rest)) and method == "PATCH":
+                    issue = next(i for i in data["issues"] if i["number"] == int(m.group(1)))
+                    issue.update(body)
+                    return self._send(issue)
                 if rest == "issues" and method == "POST":
                     state.next_number += 1
                     issue = {**body, "number": state.next_number, "state": "open"}
@@ -119,6 +129,9 @@ def make_handler(state: State):
 
         def do_PUT(self) -> None:
             self._handle("PUT")
+
+        def do_PATCH(self) -> None:
+            self._handle("PATCH")
 
     return Handler
 

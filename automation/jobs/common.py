@@ -95,6 +95,20 @@ class GitHub:
             "POST", "/repos/{repo}/issues", {"title": title, "body": body, "labels": labels}
         )
 
+    def open_issues(self) -> list[dict]:
+        """Every open issue of the repository (pull requests left out)."""
+        issues, page = [], 1
+        while True:
+            batch = self.call("GET", "/repos/{repo}/issues", state="open", per_page=100, page=page)
+            issues += [i for i in batch if "pull_request" not in i]
+            if len(batch) < 100:
+                return issues
+            page += 1
+
+    def close_issue(self, number: int, comment: str) -> None:
+        self.call("POST", f"/repos/{{repo}}/issues/{number}/comments", {"body": comment})
+        self.call("PATCH", f"/repos/{{repo}}/issues/{number}", {"state": "closed"})
+
 
 def post_discord(text: str) -> bool:
     """Tell the maintainer. Without `DISCORD_WEBHOOK` the message is only logged."""

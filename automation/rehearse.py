@@ -199,9 +199,16 @@ def stuck_points(stage: Stage) -> str:
     return "a Discord summary, one hints issue, none the second week"
 
 
+def is_new_issue(request: dict) -> bool:
+    return request["method"] == "POST" and request["path"].endswith("/issues")
+
+
 def lab_health(stage: Stage) -> str:
     stage.state.data["issues"] = [
-        {"number": 9, "title": "lab linux-06 no longer solves on ubuntu-26.04"}
+        {"number": 9, "title": "lab linux-06 no longer solves on ubuntu-26.04"},
+        {"number": 10, "title": "lab bash-01 no longer solves on ubuntu-26.04-devops"},
+        {"number": 11, "title": "the solvability gate is broken"},
+        {"number": 12, "title": "lab bash-02 no longer solves on alpine"},
     ]
     stage.state.data["jobs"] = [
         {"name": "matrix", "conclusion": "success"},
@@ -212,15 +219,26 @@ def lab_health(stage: Stage) -> str:
             "html_url": "https://j/2",
         },
         {"name": "gate (hello, alpine)", "conclusion": "cancelled", "html_url": "https://j/3"},
-        {"name": "gate (bash-01, ubuntu-26.04-devops)", "conclusion": "success"},
+        {
+            "name": "gate (bash-01, ubuntu-26.04-devops)",
+            "conclusion": "success",
+            "html_url": "https://j/4",
+        },
         {"name": "gate (bash-02, ubuntu-26.04-devops)", "conclusion": "success"},
     ]
     done = stage.run("automation.jobs.lab_health")
     expect(done.returncode == 0, f"lab_health failed: {done.stdout}{done.stderr}")
-    created = [r["body"] for r in stage.requests("/github/repos") if r["method"] == "POST"]
+    created = [r["body"] for r in stage.requests("/github/repos") if is_new_issue(r)]
     expect(len(created) == 1, f"only the lab without an open issue: {created}")
     expect(created[0]["title"] == "lab rhcsa-03 no longer solves on rocky-10", created[0]["title"])
     expect("https://j/1" in created[0]["body"] and created[0]["labels"] == ["broken-lab"], "body")
+    # two of four failed: the gate works, and bash-01 solves again; linux-06 and bash-02 on alpine
+    # (not judged) stay open
+    patched = [r for r in stage.requests("/github/repos") if r["method"] == "PATCH"]
+    closed = {r["path"].rsplit("/", 1)[1] for r in patched}
+    expect(closed == {"10", "11"}, f"closed the disproved issues only: {closed}")
+    comments = [r for r in stage.requests("/github/repos") if r["path"].endswith("/comments")]
+    expect(any("https://j/4" in r["body"]["body"] for r in comments), f"links the pass: {comments}")
 
     # three of four failed: the gate broke, not the labs — one issue, none per lab
     stage.state.requests.clear()
@@ -228,12 +246,14 @@ def lab_health(stage: Stage) -> str:
     stage.state.data["jobs"][-1]["html_url"] = "https://j/5"
     broken = stage.run("automation.jobs.lab_health")
     expect(broken.returncode == 0, f"lab_health failed: {broken.stdout}{broken.stderr}")
-    created = [r["body"] for r in stage.requests("/github/repos") if r["method"] == "POST"]
+    created = [r["body"] for r in stage.requests("/github/repos") if is_new_issue(r)]
     expect(len(created) == 1, f"one issue for the gate: {created}")
     expect(created[0]["title"] == "the solvability gate is broken", created[0]["title"])
     expect("3 of 4" in created[0]["body"] and "https://j/5" in created[0]["body"], "body")
     expect(not stage.script.requests, "no model")
-    return "one broken-lab issue; the open one and the cancelled job left alone; one gate issue"
+    patched = [r for r in stage.state.requests if r["method"] == "PATCH"]
+    expect(not patched, f"nothing left to close: {patched}")
+    return "one broken-lab issue, two disproved ones closed, the rest left alone; one gate issue"
 
 
 def release(stage: Stage) -> str:
