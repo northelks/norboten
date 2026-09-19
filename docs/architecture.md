@@ -379,7 +379,7 @@ plain code, because a failed gate job, a new `lab.yaml` or a learner's attempts 
 | stuck points (`stuck-points.yml`) | Mondays 08:00 | Claude Code, Haiku, no tools | the API's ranking of the most-failed checks summarised on Discord; the worst becomes a `hints` issue, from the data, once |
 | lab author (`lab-author.yml`) | an issue labelled `lab-request` | Claude Code as the project subagent `.claude/agents/lab-author.md`, Sonnet, Read/Glob/Grep/Write, writes only under `labs/_drafts/`, `dontAsk`, 20 turns, $1 | one draft file; the script checks nothing else changed, then branches, pushes and opens a **draft** pull request |
 | release notes (`release.yml`) | a `v*` tag | Claude Code, Haiku, no tools | a grouped summary of the commits since the last tag, with the full commit list appended by the script |
-| lab health (`lab-validate.yml`, `report`) | nightly 02:00 | none | the gate on every lab × image; an issue per failed `gate (<lab>, <image>)` job unless one is open |
+| lab health (`lab-validate.yml`, `report`) | Mondays 02:00 | none | the gate on every lab × image; an issue per failed `gate (<lab>, <image>)` job unless one is open |
 | announcements (`release.yml`, `announce`) | after the release | none | Discord gets the release; Telegram one message per `lab.yaml` new since the last tag |
 | live sessions (`api/…/announce.py`) | a real session starts | none | Telegram: "<nick> is working on <lab> right now", sent by the API after it answers |
 | learner digest (`api/…/digest.py`) | Sundays 18:00, `norboten-digest.timer` | none | to each learner who linked Discord, opted in and did something that week: their attempts, rating and least certain topic, from a template, as a Discord direct message |

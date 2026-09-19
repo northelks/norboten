@@ -1,4 +1,4 @@
-"""After the nightly gate: an issue for every lab × image that stopped solving. No model.
+"""After the weekly gate: an issue for every lab × image that stopped solving. No model.
 
 `lab-validate.yml` runs every lab on every image on a schedule; this runs as its last job and reads
 the run's own jobs back. Gate jobs are named `gate (<lab>, <image>)` by the matrix. A cancelled or
@@ -43,7 +43,7 @@ def main() -> None:
             notice(f"already open: {title}")
             continue
         body = (
-            f"The nightly solvability gate failed: the reference solution no longer solves "
+            f"The weekly solvability gate failed: the reference solution no longer solves "
             f"{f['lab']} on {f['image']}.\n\nThe job, with the console and journal of the failed "
             f"VM: {f['url']}"
         )

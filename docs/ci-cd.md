@@ -12,7 +12,7 @@ tag v* ────────► release: wheels (tested outside the checkout)
 tag v* ────────► publish labs (OCI + cosign)
 manual ────────► publish base images (KVM runner) ──► PR with the new digests
 manual ────────► deploy with api_tag = an older commit  (rollback)
-nightly ───────► labs --all ──► report (an issue per lab that stopped solving)
+Mondays ───────► labs --all ──► report (an issue per lab that stopped solving)
 issue opened ──► triage (Claude Code, Haiku, no tools)
 issue labelled lab-request ──► lab-author (Claude Code subagent) ──► draft pull request
 Mondays ───────► stuck-points (Claude Code, Haiku, no tools) ──► Discord, a hints issue
@@ -47,8 +47,8 @@ maintenance prompt (docs/lab-spec.md §9, Q18). On failure it prints the serial 
 VM. 22–77 s per job on an M-series laptop (about 100 s for the two `boot_after_break` labs); longer on
 a runner.
 
-Nightly at 02:00 the same workflow runs on a schedule with every lab on every image, changed or not
-— upstream distributions change under labs that did not — and a last job, `report`, reads the run's
+Mondays at 02:00 the same workflow runs on a schedule with every lab on every image, changed or not
+— what the labs build on moves under labs that did not — and a last job, `report`, reads the run's
 own jobs back and opens a `broken-lab` issue for each failed `gate (<lab>, <image>)` unless one is
 open (`automation/jobs/lab_health.py`).
 
@@ -127,4 +127,4 @@ into `images/registry.yaml` — which runs the gate for every lab before it can 
 | `make infra-validate` | both playbooks' syntax, both compose files and the Caddyfile |
 | `make server-rehearsal` | the `rollout` job, against a local VM instead of the server |
 | `make release-check` | the `build` job of `release.yml` |
-| `make jobs-rehearsal` | triage, stuck-points, lab-author, the nightly report and the release jobs, with a real `claude` and a scripted model |
+| `make jobs-rehearsal` | triage, stuck-points, lab-author, the weekly report and the release jobs, with a real `claude` and a scripted model |

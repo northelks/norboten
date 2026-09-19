@@ -6,7 +6,7 @@
 
 A change under labs/<lab>/ validates that lab. A change to the runner, the CLI's guest-facing
 code, the baseline role or the image registry validates everything — those touch every lab.
-`--all` validates everything regardless: the nightly scheduled run.
+`--all` validates everything regardless: the weekly scheduled run.
 """
 
 from __future__ import annotations

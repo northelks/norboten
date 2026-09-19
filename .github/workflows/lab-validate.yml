@@ -6,9 +6,10 @@ on:
     branches: [main]
   pull_request:
   schedule:
-    # every night, every lab on every image, changed or not, because upstream distributions change
-    # under labs that did not; the `report` job files an issue per lab that stopped solving
-    - cron: "0 2 * * *"
+    # every Monday, every lab on every image, changed or not, because what the labs build on moves
+    # under labs that did not (container labs build FROM ubuntu:26.04 and apt-get at build time;
+    # a few fetch from the network; the runner and qemu change); the `report` job files the failures
+    - cron: "0 2 * * 1"
   workflow_dispatch:
     inputs:
       all:
@@ -38,7 +39,7 @@ jobs:
           ${{ (inputs.all || github.event_name == 'schedule') && '--all' || format('origin/{0}', github.base_ref || 'main') }}
 
   gate:
-    # the nightly report reads failures back by this name: keep it "gate (<lab>, <image>)"
+    # the weekly report reads failures back by this name: keep it "gate (<lab>, <image>)"
     name: gate (${{ matrix.lab }}, ${{ matrix.image }})
     needs: matrix
     if: needs.matrix.outputs.any == 'true'
@@ -76,7 +77,7 @@ jobs:
           done
 
   report:
-    # the nightly run only: an issue per lab × image that failed, unless one is open. No model —
+    # the weekly run only: an issue per lab × image that failed, unless one is open. No model —
     # a failed gate job is already the verdict. automation/jobs/lab_health.py
     needs: gate
     if: always() && github.event_name == 'schedule'
