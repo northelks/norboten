@@ -77,7 +77,8 @@ jobs:
           done
 
   report:
-    # the weekly run only: an issue per lab × image that failed, unless one is open. No model —
+    # the weekly run only: an issue per lab × image that failed, unless one is open — or one issue
+    # for the gate itself when more than half the gates failed. No model —
     # a failed gate job is already the verdict. automation/jobs/lab_health.py
     needs: gate
     if: always() && github.event_name == 'schedule'

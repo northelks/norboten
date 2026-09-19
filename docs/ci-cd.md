@@ -12,7 +12,7 @@ tag v* ────────► release: wheels (tested outside the checkout)
 tag v* ────────► publish labs (OCI + cosign)
 manual ────────► publish base images (KVM runner) ──► PR with the new digests
 manual ────────► deploy with api_tag = an older commit  (rollback)
-Mondays ───────► labs --all ──► report (an issue per lab that stopped solving)
+Mondays ───────► labs --all ──► report (an issue per lab that stopped solving, or one for the gate)
 issue opened ──► triage (Claude Code, Haiku, no tools)
 issue labelled lab-request ──► lab-author (Claude Code subagent) ──► draft pull request
 Mondays ───────► stuck-points (Claude Code, Haiku, no tools) ──► Discord, a hints issue
@@ -50,7 +50,9 @@ a runner.
 Mondays at 02:00 the same workflow runs on a schedule with every lab on every image, changed or not
 — what the labs build on moves under labs that did not — and a last job, `report`, reads the run's
 own jobs back and opens a `broken-lab` issue for each failed `gate (<lab>, <image>)` unless one is
-open (`automation/jobs/lab_health.py`).
+open (`automation/jobs/lab_health.py`). When more than half the gates failed, the gate itself broke
+— a workflow step, the runner, an image — and it opens one issue, "the solvability gate is broken",
+instead.
 
 ## `quiz-verify.yml`
 

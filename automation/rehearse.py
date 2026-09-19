@@ -213,6 +213,7 @@ def lab_health(stage: Stage) -> str:
         },
         {"name": "gate (hello, alpine)", "conclusion": "cancelled", "html_url": "https://j/3"},
         {"name": "gate (bash-01, ubuntu-26.04-devops)", "conclusion": "success"},
+        {"name": "gate (bash-02, ubuntu-26.04-devops)", "conclusion": "success"},
     ]
     done = stage.run("automation.jobs.lab_health")
     expect(done.returncode == 0, f"lab_health failed: {done.stdout}{done.stderr}")
@@ -220,8 +221,19 @@ def lab_health(stage: Stage) -> str:
     expect(len(created) == 1, f"only the lab without an open issue: {created}")
     expect(created[0]["title"] == "lab rhcsa-03 no longer solves on rocky-10", created[0]["title"])
     expect("https://j/1" in created[0]["body"] and created[0]["labels"] == ["broken-lab"], "body")
+
+    # three of four failed: the gate broke, not the labs — one issue, none per lab
+    stage.state.requests.clear()
+    stage.state.data["jobs"][-1]["conclusion"] = "failure"
+    stage.state.data["jobs"][-1]["html_url"] = "https://j/5"
+    broken = stage.run("automation.jobs.lab_health")
+    expect(broken.returncode == 0, f"lab_health failed: {broken.stdout}{broken.stderr}")
+    created = [r["body"] for r in stage.requests("/github/repos") if r["method"] == "POST"]
+    expect(len(created) == 1, f"one issue for the gate: {created}")
+    expect(created[0]["title"] == "the solvability gate is broken", created[0]["title"])
+    expect("3 of 4" in created[0]["body"] and "https://j/5" in created[0]["body"], "body")
     expect(not stage.script.requests, "no model")
-    return "one broken-lab issue; the open one and the cancelled job left alone"
+    return "one broken-lab issue; the open one and the cancelled job left alone; one gate issue"
 
 
 def release(stage: Stage) -> str:
