@@ -83,7 +83,11 @@ images:
         digest: sha256:00e2d9f09373125eb9040952ae3b8d5553fe3df8f5004c08838473a1f61b74bf
     golden:
       ref: ghcr.io/northelks/norboten-base/ubuntu-26.04-automation
-      tag: null
+      tag: "2026.09.19"
+      arch:
+        x86_64:
+          digest: sha256:996bd60dcbe759bc4b6c70884c77a1d142ab069eb7d719dbebb0526db7f78e7b
+          size_bytes: 1157431296
 
   ubuntu-26.04-devops:
     distro: Ubuntu 26.04 LTS + Docker, Terraform, Ansible, Python tooling
