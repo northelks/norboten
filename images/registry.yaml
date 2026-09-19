@@ -104,8 +104,8 @@ images:
       tag: "2026.09.19"
       arch:
         x86_64:
-          digest: sha256:3f4f2cfa00cff7e8a057dac27d05e02daabc4f5b0cb2ad9a4469001bc5117e49
-          size_bytes: 950433280
+          digest: sha256:8b1de6d2d817cd95eec1f54f3e6edd624fcb8f3a177da6459301cbb7599da969
+          size_bytes: 951320576
 
   alpine:
     distro: Alpine Linux 3.23
