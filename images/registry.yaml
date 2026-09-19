@@ -65,7 +65,11 @@ images:
         digest: sha256:00e2d9f09373125eb9040952ae3b8d5553fe3df8f5004c08838473a1f61b74bf
     golden:
       ref: ghcr.io/northelks/norboten-base/ubuntu-26.04
-      tag: null
+      tag: "2026.09.19"
+      arch:
+        x86_64:
+          digest: sha256:ae5021a659a9f815a6b8253a3e7e5544a9cf7410a513c226de1078e22106444d
+          size_bytes: 653524992
 
   ubuntu-26.04-automation:
     distro: Ubuntu 26.04 LTS + Python, Ollama, Postgres/pgvector
