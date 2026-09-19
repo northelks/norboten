@@ -47,7 +47,11 @@ images:
         digest: sha256:457c8375e19496f43a25c4a6169fa11237536c53cef6f85a20ea3c5a751aa0f5
     golden:
       ref: ghcr.io/northelks/norboten-base/rocky-10
-      tag: null
+      tag: "2026.09.19"
+      arch:
+        x86_64:
+          digest: sha256:b1180620f7abbfe8002bd3ca0d178d5588086fd8ca3879ed56812d0b1c7217fe
+          size_bytes: 1003094016
 
   ubuntu-26.04:
     distro: Ubuntu 26.04 LTS (Resolute Raccoon)
