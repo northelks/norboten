@@ -6,7 +6,8 @@
 
 A change under labs/<lab>/ validates that lab. A change to the runner, the CLI's guest-facing
 code, the baseline role or the image registry validates everything — those touch every lab.
-`--all` validates everything regardless: the weekly scheduled run.
+`--all` validates everything regardless: the weekly scheduled run. So does a base this checkout
+does not have — the gate errs towards running.
 """
 
 from __future__ import annotations
@@ -28,6 +29,16 @@ EVERYTHING = (
 )
 
 
+def known(ref: str) -> bool:
+    """A push's `before` is unknown after a force push, and all zeros for a new branch."""
+    probe = subprocess.run(
+        ["git", "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"],
+        capture_output=True,
+        cwd=ROOT,
+    )
+    return probe.returncode == 0
+
+
 def changed_files(base: str) -> list[str]:
     out = subprocess.run(
         ["git", "diff", "--name-only", f"{base}...HEAD"],
@@ -45,9 +56,10 @@ def main() -> int:
 
     base = sys.argv[1] if len(sys.argv) > 1 else "origin/main"
     labs = {lab.id: lab for lab in discover(ROOT / "labs")}
-    files = [] if base == "--all" else changed_files(base)
+    everything = base == "--all" or not known(base)
+    files = [] if everything else changed_files(base)
 
-    if base == "--all" or any(f.startswith(EVERYTHING) for f in files):
+    if everything or any(f.startswith(EVERYTHING) for f in files):
         selected = set(labs)
     else:
         selected = {

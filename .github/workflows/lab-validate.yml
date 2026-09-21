@@ -33,10 +33,11 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --all-packages --frozen
+      # a push compares with what main was before it: origin/main is the pushed commit itself
       - id: pick
         run: >-
           uv run python .github/scripts/changed_labs.py
-          ${{ (inputs.all || github.event_name == 'schedule') && '--all' || format('origin/{0}', github.base_ref || 'main') }}
+          ${{ (inputs.all || github.event_name == 'schedule') && '--all' || github.event_name == 'push' && github.event.before || format('origin/{0}', github.base_ref || 'main') }}
 
   gate:
     # the weekly report reads failures back by this name: keep it "gate (<lab>, <image>)"
