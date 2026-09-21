@@ -132,7 +132,23 @@ def _fake_build(dir: Path, image_id: str, arch: Arch, payload: bytes, digest: st
     (dir / f"{image_id}-{arch.value}.json").write_text(json.dumps(meta))
 
 
-def test_pull_from_directory_mirror(tmp_path, monkeypatch):
+@pytest.fixture
+def unpublished(monkeypatch):
+    """The registry as before any golden image was published: these tests must not depend on
+    which images images/registry.yaml has published for the host's arch, nor download one."""
+    registry = store.default_registry()
+    images = {
+        image_id: img.model_copy(update={"golden": img.golden.model_copy(update={"tag": None})})
+        if img.golden
+        else img
+        for image_id, img in registry.images.items()
+    }
+    monkeypatch.setattr(
+        store, "default_registry", lambda: registry.model_copy(update={"images": images})
+    )
+
+
+def test_pull_from_directory_mirror(tmp_path, monkeypatch, unpublished):
     arch = store.host_arch()
     _fake_build(tmp_path / "mirror", "alpine", arch, b"qcow2 bytes")
     monkeypatch.setenv("NORBOTEN_IMAGE_MIRROR", str(tmp_path / "mirror"))
@@ -144,7 +160,7 @@ def test_pull_from_directory_mirror(tmp_path, monkeypatch):
     assert store.cached("alpine") is None
 
 
-def test_pull_rejects_a_tampered_mirror(tmp_path, monkeypatch):
+def test_pull_rejects_a_tampered_mirror(tmp_path, monkeypatch, unpublished):
     arch = store.host_arch()
     _fake_build(tmp_path / "mirror", "alpine", arch, b"evil", digest="sha256:" + "0" * 64)
     monkeypatch.setenv("NORBOTEN_IMAGE_MIRROR", str(tmp_path / "mirror"))
@@ -153,7 +169,7 @@ def test_pull_rejects_a_tampered_mirror(tmp_path, monkeypatch):
     assert store.cached("alpine") is None
 
 
-def test_unpublished_image_without_mirror_explains_itself():
+def test_unpublished_image_without_mirror_explains_itself(unpublished):
     with pytest.raises(store.ImageError, match="has not been published yet"):
         store.pull("ubuntu-26.04")
 
