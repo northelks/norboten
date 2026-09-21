@@ -270,6 +270,8 @@ def open_debug_shell(inst: Instance) -> bool:
                 inst,
                 "mkdir -p /etc/systemd/system/debug-shell.service.d && "
                 "cat > /etc/systemd/system/debug-shell.service.d/norboten-gate.conf && "
+                # a virtio console gets a getty of its own, which would read the same port
+                f"systemctl mask serial-getty@{tty.rsplit('/', 1)[-1]}.service && "
                 "systemctl daemon-reload && systemctl enable debug-shell.service",
                 input=dropin,
                 timeout=30,

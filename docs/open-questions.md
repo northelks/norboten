@@ -179,8 +179,9 @@ systemd-tmpfiles at boot (fixed: `99-retention.conf`).
 the normal gate passes, a fresh VM gets the faults, boots once more exactly as a learner's does, and
 every check must still fail. The checks run over SSH when the broken machine has a network. When the
 boot stops at a maintenance prompt they run over a serial port: before that boot the gate enables
-systemd's `debug-shell.service` on Lima's spare PCI serial port (found by writing a marker to each
-guest tty and seeing which one reaches `serialp.log`), which gives a root shell in emergency mode
+systemd's `debug-shell.service` on a serial port the guest does not use — Lima's PCI serial port on
+aarch64, its virtio console on x86_64, which has no PCI one (found by writing a marker to each guest
+tty and seeing which one reaches that port's log) — which gives a root shell in emergency mode
 without any password — rhcsa-05 changes the root password, so sulogin with the image's password is
 only the fallback. The runner and the checks cross in acknowledged base64 chunks
 (`cli/src/norboten/lima/serial_shell.py`).

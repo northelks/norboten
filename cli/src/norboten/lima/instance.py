@@ -18,7 +18,9 @@ from pathlib import Path
 
 import yaml
 
+from norboten.host import host_arch
 from norboten.lima import install
+from norboten.models import Arch
 
 # macOS limits a UNIX socket path to 104 bytes, Linux to 108. Lima appends a 16-char suffix to
 # ssh.sock while starting, so check the longest path it will create.
@@ -112,12 +114,18 @@ class Instance:
 
     @property
     def spare_serial_socket(self) -> Path:
-        """Lima's PCI serial port, unused in the guest; the gate puts a debug shell on it."""
-        return self.dir / "serialp.sock"
+        """A serial port the guest does not use; the gate puts a debug shell on it. Lima gives
+        aarch64 a PCI serial port, and x86_64 none (pkg/driver/qemu/qemu.go, "ARM only"); there
+        the virtio console is the spare one, since the kernel console is ttyS0."""
+        return self.dir / f"{self._spare_serial}.sock"
 
     @property
     def spare_serial_log(self) -> Path:
-        return self.dir / "serialp.log"
+        return self.dir / f"{self._spare_serial}.log"
+
+    @property
+    def _spare_serial(self) -> str:
+        return "serialp" if host_arch() is Arch.AARCH64 else "serialv"
 
     @property
     def boot_console_socket(self) -> Path:
