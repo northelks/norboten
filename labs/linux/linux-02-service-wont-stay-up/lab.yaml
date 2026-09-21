@@ -1,6 +1,6 @@
 schema_version: 1
 id: linux-02-service-wont-stay-up
-version: 1.0.0
+version: 1.0.1
 title: The Service That Won't Stay Up
 track: linux
 topics: [boot-systemd, firewall-selinux, networking]
