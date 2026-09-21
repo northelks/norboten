@@ -59,14 +59,17 @@ jobs:
         if: matrix.runtime == 'vm'  # a container lab needs only the runner's Docker
         run: |
           test -e /dev/kvm || { echo "::error::this runner has no /dev/kvm; the gate needs it"; exit 1; }
+          # the gate runs as the runner user, not root: limactl refuses root. The runner user is
+          # not in the kvm group, and joining it takes a new login, so the device is opened up
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
           sudo apt-get update -qq
           sudo apt-get install -y -qq qemu-system-arm qemu-system-x86 qemu-utils
-          sudo usermod -aG kvm "$USER"
       - run: uv sync --all-packages --frozen
       - name: Solvability gate — ${{ matrix.lab }} on ${{ matrix.image }}
-        run: |
-          sudo -E env -u SUDO_USER "PATH=$PATH" \
-            uv run norboten dev validate "${{ matrix.lab }}" --image "${{ matrix.image }}"
+        run: uv run norboten dev validate "${{ matrix.lab }}" --image "${{ matrix.image }}"
       - name: Console and journal from the failed VM
         if: failure()
         run: |
