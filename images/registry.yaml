@@ -123,7 +123,11 @@ images:
         digest: sha512:737b0eb365944ffcf6da477c059c105bbde222942fd5a8380c07db088365b18dbc60a0f2824ea9a3904d57e194e0d05a7074302c3ebc104d0aecb6ddc6ffd91c
     golden:
       ref: ghcr.io/northelks/norboten-base/alpine
-      tag: null
+      tag: "2026.09.21"
+      arch:
+        x86_64:
+          digest: sha256:05149271a0a4a1b9817ec61c3ed7569c8919e8145e4dd257090d3313e2e8a93f
+          size_bytes: 116523008
 
   ubuntu-26.04-container:
     distro: Ubuntu 26.04 LTS, container
