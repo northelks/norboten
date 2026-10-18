@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Journals · Norboten</title>
+<meta name="description" content="Study documents for the labs: the mechanism, a failure walked through, and the wrong turns.">
+<link rel="canonical" href="https://norboten.org/journals/"><meta property="og:title" content="Journals · Norboten">
+<meta property="og:description" content="Study documents for the labs: the mechanism, a failure walked through, and the wrong turns.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Journals · Norboten">
+<meta name="twitter:description" content="Study documents for the labs: the mechanism, a failure walked through, and the wrong turns.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../features/" >Features</a>
+      <a href="../labs/" >Labs</a>
+      <a href="../how-it-works/" >How it works</a>
+      <a href="../journals/" aria-current="page">Journals</a>
+      <a href="../docs/" >Docs</a>
+      <a class="group" href="../players/" >Ratings</a>
+      <a class="live" href="../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journals</div>
+    <h1>The reading that goes with the machines</h1>
+    <p class="lede prose">
+      A journal is a study document, not a manual page: the mechanism, one failure walked through
+      end to end, the wrong turns people actually take, a cheat sheet, and questions you should be
+      able to answer a week later without looking. Lab journals accompany a lab, where the same
+      machine is waiting to be broken, and end with where its hints lead; topic journals cover a
+      subject end to end, with a table of symptoms and their causes, exercises and sources. Notes
+      are different: how something in Norboten itself was built and why, written for someone
+      building their own.
+    </p>
+    <nav class="switcher" aria-label="By topic, by lab, or notes">
+      <a class="pill" href="#by-topic" aria-current="true">By topic · 10</a>
+      <a class="pill" href="#by-lab">By lab · 51</a>
+<a class="pill" href="#by-note">Notes · 1</a>    </nav>
+  </div>
+</section>
+
+<section class="section" id="by-topic">
+  <div class="wrap">
+    <h2>By topic</h2>
+    <div class="grid two" style="gap:2rem">
+      <a class="card lab-card" href="../journals/ansible/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Ansible</span></div>
+        <h3>A green run is not a correct machine</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 112 words</title><rect x="0.0" y="0" width="16.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1418 words</title><rect x="19.3" y="0" width="206.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 695 words</title><rect x="229.2" y="0" width="101.4" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 312 words</title><rect x="333.5" y="0" width="45.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Symptoms and causes — 199 words</title><rect x="382.0" y="0" width="29.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 239 words</title><rect x="414.0" y="0" width="34.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Exercises — 117 words</title><rect x="451.9" y="0" width="17.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Sources — 34 words</title><rect x="472.0" y="0" width="6.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 549 words</title><rect x="481.0" y="0" width="80.1" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Ansible&#39;s whole promise is a sentence: describe the state you want, and running the playbook again changes nothing. Every useful property follows from it — you can re-run after a failure, run against a fleet where half t</p>
+<p class="muted" style="font-size:0.85rem"><strong>Covers</strong> idempotence per module; command/shell with creates and changed_when; lineinfile regexp; handlers and --force-handlers; check mode and diff; variable precedence; vault passwords without a terminal</p>        <p class="mono muted" style="font-size:0.82rem">
+          3091 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/claude-code/">
+        <div class="tags"><span class="tag">45 min</span>
+<span class="tag">Claude Code</span><span class="tag">AI Services</span><span class="tag">AI Agents</span></div>
+        <h3>Claude Code in a job — what it loads, what it may do, and what it costs</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 113 words</title><rect x="0.0" y="0" width="22.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 809 words</title><rect x="25.5" y="0" width="161.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 634 words</title><rect x="189.9" y="0" width="126.4" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 202 words</title><rect x="319.3" y="0" width="40.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Symptoms and causes — 182 words</title><rect x="362.6" y="0" width="36.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 179 words</title><rect x="401.8" y="0" width="35.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Exercises — 107 words</title><rect x="440.5" y="0" width="21.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Sources — 23 words</title><rect x="464.9" y="0" width="6.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 439 words</title><rect x="473.9" y="0" width="87.5" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Claude Code is usually met as an interactive assistant in a terminal. This journal is about the other way it runs: as a program started by a script, a cron job or a CI workflow, with nobody watching. In that role it is a</p>
+<p class="muted" style="font-size:0.85rem"><strong>Covers</strong> headless claude -p runs; the five settings levels and workspace trust; permission modes, allow and deny rules; hooks&#39; matchers and exit statuses; subagents; turns, budgets and model choice</p>        <p class="mono muted" style="font-size:0.82rem">
+          2476 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/containers/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Containers</span></div>
+        <h3>The container that ran fine until the machine rebooted</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 110 words</title><rect x="0.0" y="0" width="17.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1289 words</title><rect x="20.4" y="0" width="204.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 578 words</title><rect x="227.4" y="0" width="91.5" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 323 words</title><rect x="321.9" y="0" width="51.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Symptoms and causes — 180 words</title><rect x="376.0" y="0" width="28.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 220 words</title><rect x="407.5" y="0" width="34.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Exercises — 95 words</title><rect x="445.3" y="0" width="15.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Sources — 40 words</title><rect x="463.3" y="0" width="6.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 552 words</title><rect x="472.6" y="0" width="87.4" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">The task sounds like one command: run a small web server in a container, as an unprivileged account, serving files from the host, and have it come back after a reboot. It is one command to get it running. Getting it righ</p>
+<p class="muted" style="font-size:0.85rem"><strong>Covers</strong> rootless Podman: /etc/subuid and subgid, lingering sessions, SELinux labels on bind mounts (:Z), unprivileged ports, Quadlet units, volumes versus the writable layer</p>        <p class="mono muted" style="font-size:0.82rem">
+          2678 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/kernel-performance/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Kernel and performance</span></div>
+        <h3>The limits nobody set, and the numbers everybody misreads</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 108 words</title><rect x="0.0" y="0" width="17.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1503 words</title><rect x="20.8" y="0" width="247.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 335 words</title><rect x="271.5" y="0" width="55.2" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 269 words</title><rect x="329.7" y="0" width="44.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Symptoms and causes — 193 words</title><rect x="377.1" y="0" width="31.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 203 words</title><rect x="411.9" y="0" width="33.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Exercises — 93 words</title><rect x="448.3" y="0" width="15.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Sources — 43 words</title><rect x="466.7" y="0" width="7.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 505 words</title><rect x="476.8" y="0" width="83.2" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A service falls over under load with Too many open files. Somebody raises the limit in /etc/security/limits.conf, logs in, runs ulimit -n, sees the new number, and closes the ticket. The next busy afternoon it falls over</p>
+<p class="muted" style="font-size:0.85rem"><strong>Covers</strong> RLIMIT_* inherited from units, shells and pam_limits; /proc/PID/limits; free&#39;s available column; the machine&#39;s and a cgroup&#39;s OOM killer (memory.max, memory.events); load average and D state; sysctl -w, sysctl.d and tuned</p>        <p class="mono muted" style="font-size:0.82rem">
+          2729 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/logging-journald/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Logging and journald</span></div>
+        <h3>The log lines that were never written down</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 80 words</title><rect x="0.0" y="0" width="15.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1126 words</title><rect x="18.2" y="0" width="214.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 377 words</title><rect x="235.2" y="0" width="71.7" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 258 words</title><rect x="309.9" y="0" width="49.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Symptoms and causes — 176 words</title><rect x="361.9" y="0" width="33.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 209 words</title><rect x="398.4" y="0" width="39.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Exercises — 113 words</title><rect x="441.1" y="0" width="21.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Sources — 42 words</title><rect x="465.6" y="0" width="8.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 439 words</title><rect x="476.6" y="0" width="83.4" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">After an incident, the logs are the only witness, and everyone assumes the witness saw everything. It did not. A logging pipeline makes decisions of its own: it drops messages from a service that logs too fast, it files </p>
+<p class="muted" style="font-size:0.85rem"><strong>Covers</strong> stdout and stderr into the journal; per-unit rate limits (RateLimitIntervalSec/Burst); rsyslog&#39;s second copy; Storage=, SystemMaxUse=, vacuuming; journalctl by unit, boot, field and priority</p>        <p class="mono muted" style="font-size:0.82rem">
+          2479 words · 7 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/mcp/">
+        <div class="tags"><span class="tag">45 min</span>
+<span class="tag">Model Context Protocol</span></div>
+        <h3>The Model Context Protocol — servers, clients, and the boundaries between them</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 96 words</title><rect x="0.0" y="0" width="24.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 725 words</title><rect x="27.6" y="0" width="186.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 377 words</title><rect x="216.8" y="0" width="96.8" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 145 words</title><rect x="316.5" y="0" width="37.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>Symptoms and causes — 230 words</title><rect x="356.8" y="0" width="59.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 80 words</title><rect x="418.8" y="0" width="20.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Exercises — 104 words</title><rect x="442.3" y="0" width="26.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Sources — 48 words</title><rect x="472.0" y="0" width="12.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 283 words</title><rect x="487.4" y="0" width="72.6" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">The Model Context Protocol (MCP) is how an AI client — Claude Code, Claude Desktop, a claude.ai connector — reaches tools and data it was not built with. A server offers tools (functions a model can call), resources (thi</p>
+<p class="muted" style="font-size:0.85rem"><strong>Covers</strong> stdio and Streamable HTTP; the 2026-07-28 stateless revision (_meta envelope, Mcp-Method/Mcp-Name, input_required, ttlMs); server-side boundaries; tool results as untrusted input; OAuth 2.1 with RFC 9728, PKCE, CIMD, RFC 9207 and audiences; Claude Code&#39;s MCP scopes</p>        <p class="mono muted" style="font-size:0.82rem">
+          2053 words · 6 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/monitoring/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Monitoring</span></div>
+        <h3>Active, green, and not working</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 102 words</title><rect x="0.0" y="0" width="18.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1246 words</title><rect x="21.0" y="0" width="220.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 421 words</title><rect x="244.2" y="0" width="74.4" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 236 words</title><rect x="321.6" y="0" width="41.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Symptoms and causes — 194 words</title><rect x="366.3" y="0" width="34.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 203 words</title><rect x="403.6" y="0" width="35.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Exercises — 126 words</title><rect x="442.5" y="0" width="22.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Sources — 47 words</title><rect x="467.8" y="0" width="8.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 458 words</title><rect x="479.1" y="0" width="80.9" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Every monitoring failure that matters has the same shape: the check said the service was fine, and a user said it was not. Nobody writes a check intending it to lie. It lies because it measures something adjacent to what</p>
+<p class="muted" style="font-size:0.85rem"><strong>Covers</strong> checks as exit statuses with deadlines (timeout, 124); is-active versus a real request; OnFailure= alerts; WatchdogSec= and sd_notify; NRestarts and crash loops a sampler misses; where the probe runs</p>        <p class="mono muted" style="font-size:0.82rem">
+          2617 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/networking/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Networking</span></div>
+        <h3>Resolves here, listens there, routes until Tuesday</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 91 words</title><rect x="0.0" y="0" width="17.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1044 words</title><rect x="20.1" y="0" width="196.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 374 words</title><rect x="219.4" y="0" width="70.3" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 240 words</title><rect x="292.7" y="0" width="45.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Symptoms and causes — 230 words</title><rect x="340.8" y="0" width="43.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 215 words</title><rect x="387.1" y="0" width="40.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Exercises — 153 words</title><rect x="430.5" y="0" width="28.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Sources — 69 words</title><rect x="462.2" y="0" width="13.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 435 words</title><rect x="478.2" y="0" width="81.8" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Most &amp;quot;network problems&amp;quot; on a server are not packets lost on a wire. They are questions answered by the wrong tool: a name that one program resolves and another says does not exist, a service that answers every </p>
+<p class="muted" style="font-size:0.85rem"><strong>Covers</strong> NSS and getaddrinfo against dig; who writes /etc/resolv.conf (NetworkManager, systemd-resolved); ss -ltnp and bind addresses; ip route get, metrics and persistent routes in nmcli profiles; refused versus timed out</p>        <p class="mono muted" style="font-size:0.82rem">
+          2436 words · 7 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/ollama/">
+        <div class="tags"><span class="tag">45 min</span>
+<span class="tag">Ollama</span><span class="tag">AI Services</span></div>
+        <h3>Ollama on a server — a model is a service, a file, a cache and a timer</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 90 words</title><rect x="0.0" y="0" width="20.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 651 words</title><rect x="23.9" y="0" width="151.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 584 words</title><rect x="178.0" y="0" width="135.6" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 174 words</title><rect x="316.6" y="0" width="40.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Symptoms and causes — 167 words</title><rect x="360.0" y="0" width="38.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 179 words</title><rect x="401.7" y="0" width="41.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Exercises — 98 words</title><rect x="446.3" y="0" width="22.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Sources — 26 words</title><rect x="472.0" y="0" width="6.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 340 words</title><rect x="481.1" y="0" width="78.9" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Ollama makes running a language model on your own hardware look like running any other daemon: install one binary, start ollama serve, and an HTTP API on port 11434 lists models, generates text, chats and computes embedd</p>
+<p class="muted" style="font-size:0.85rem"><strong>Covers</strong> the ollama service account and OLLAMA_* environment; model storage; load, prompt and generation timings; num_ctx truncation; KV-cache memory times parallelism under MemoryMax=; embeddings; binding and origins</p>        <p class="mono muted" style="font-size:0.82rem">
+          2067 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/terraform/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Terraform</span></div>
+        <h3>The plan says three to destroy, and you only removed one</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 110 words</title><rect x="0.0" y="0" width="17.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1349 words</title><rect x="20.9" y="0" width="219.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 513 words</title><rect x="243.8" y="0" width="83.6" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 294 words</title><rect x="330.5" y="0" width="47.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Symptoms and causes — 171 words</title><rect x="381.4" y="0" width="27.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 224 words</title><rect x="412.3" y="0" width="36.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Exercises — 87 words</title><rect x="451.8" y="0" width="14.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>Sources — 25 words</title><rect x="469.0" y="0" width="6.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 515 words</title><rect x="478.0" y="0" width="84.0" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Terraform&#39;s contract is simple to state: you describe what should exist, it compares that with what its state file says exists, and a plan tells you the difference before anything happens. The whole safety of the tool re</p>
+<p class="muted" style="font-size:0.85rem"><strong>Covers</strong> state as address-to-object map; count versus for_each addressing; moved blocks; prevent_destroy&#39;s gap; sensitive values in state; saved plans and staleness; refresh-only drift</p>        <p class="mono muted" style="font-size:0.82rem">
+          2507 words · 8 review questions        </p>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="section" id="by-lab">
+  <div class="wrap">
+    <h2>By lab</h2>
+    <div class="grid two" style="gap:2rem">
+      <a class="card lab-card" href="../journals/ansible-01-playbook-changes-everything/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Ansible</span><span class="tag">Boot and systemd</span></div>
+        <h3>A playbook describes a state, not a sequence of commands</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 113 words</title><rect x="0.0" y="0" width="20.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1026 words</title><rect x="23.0" y="0" width="181.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 1018 words</title><rect x="207.4" y="0" width="180.0" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 254 words</title><rect x="390.4" y="0" width="44.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 153 words</title><rect x="438.3" y="0" width="27.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 167 words</title><rect x="468.4" y="0" width="29.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 334 words</title><rect x="500.9" y="0" width="59.1" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">The playbook in /srv/ansible runs without errors. That is the problem with it: it runs without errors every single time, reports six changes every single time, restarts the application every single time, and grows a conf</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2280 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/ansible-02-deploy-waits-for-a-password/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Ansible</span><span class="tag">Users and permissions</span></div>
+        <h3>Automation that needs a person is not automation</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 122 words</title><rect x="0.0" y="0" width="21.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1082 words</title><rect x="24.7" y="0" width="192.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 960 words</title><rect x="220.0" y="0" width="170.7" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 284 words</title><rect x="393.7" y="0" width="50.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 154 words</title><rect x="447.2" y="0" width="27.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 105 words</title><rect x="477.5" y="0" width="18.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 342 words</title><rect x="499.2" y="0" width="60.8" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">deploy.service runs a playbook at every boot to render the application&#39;s database settings. The password comes from an Ansible Vault file, and the project&#39;s ansible.cfg says ask_vault_pass = true. That works perfectly wh</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2518 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/ai-01-model-server-unreachable/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Ollama</span><span class="tag">AI Services</span><span class="tag">Networking</span></div>
+        <h3>A proxy in front of a model is not a proxy in front of a web page</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 124 words</title><rect x="0.0" y="0" width="15.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1661 words</title><rect x="18.0" y="0" width="201.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 971 words</title><rect x="222.0" y="0" width="117.5" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 603 words</title><rect x="342.6" y="0" width="73.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 323 words</title><rect x="418.6" y="0" width="39.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 138 words</title><rect x="460.7" y="0" width="16.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 658 words</title><rect x="480.4" y="0" width="79.6" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Four faults, and only one of them is exotic. The models were moved and left owned by root, so the service account cannot read them. The service was never enabled. The proxy points at a port nothing listens on. And then t</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          3479 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/ai-02-chatbot-leaks-key/">
+        <div class="tags"><span class="tag">45 min</span>
+<span class="tag">AI Services</span><span class="tag">Users and permissions</span><span class="tag">Logging and journald</span></div>
+        <h3>Every place a secret can leak from</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 124 words</title><rect x="0.0" y="0" width="13.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 2336 words</title><rect x="16.8" y="0" width="260.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 843 words</title><rect x="280.3" y="0" width="94.0" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 511 words</title><rect x="377.3" y="0" width="57.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 339 words</title><rect x="437.3" y="0" width="37.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 108 words</title><rect x="478.1" y="0" width="12.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 600 words</title><rect x="493.1" y="0" width="66.9" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">The security review found four things wrong with the chat gateway, and none of them is a bug in the usual sense. The code does what it was told. The upstream API key is simply everywhere: in a world-readable file and in </p>
+        <p class="mono muted" style="font-size:0.82rem">
+          4050 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/ai-03-the-agent-that-never-stops/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">AI Agents</span><span class="tag">Boot and systemd</span><span class="tag">Users and permissions</span></div>
+        <h3>An agent is a loop with tools, and systemd decides how often it runs</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 83 words</title><rect x="0.0" y="0" width="22.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 560 words</title><rect x="25.0" y="0" width="148.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 537 words</title><rect x="176.4" y="0" width="142.3" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 244 words</title><rect x="321.7" y="0" width="64.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 139 words</title><rect x="389.4" y="0" width="36.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 74 words</title><rect x="429.3" y="0" width="19.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 408 words</title><rect x="451.9" y="0" width="108.1" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Strip the vocabulary away and an AI agent is a small program: ask a model what to do, do it, tell the model what happened, repeat until it stops asking. Everything dangerous about agents lives in three parts of that sent</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1735 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/ollama-01-the-model-server-anyone-can-use/">
+        <div class="tags"><span class="tag">30 min</span>
+<span class="tag">Ollama</span><span class="tag">Networking</span><span class="tag">Users and permissions</span></div>
+        <h3>A model server has no passwords, so the network and the proxy are its only locks</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 65 words</title><rect x="0.0" y="0" width="20.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 548 words</title><rect x="23.1" y="0" width="169.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 391 words</title><rect x="196.0" y="0" width="121.2" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 185 words</title><rect x="320.1" y="0" width="57.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 135 words</title><rect x="380.5" y="0" width="41.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 101 words</title><rect x="425.3" y="0" width="31.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 324 words</title><rect x="459.6" y="0" width="100.4" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Ollama is a program that loads language models and serves them over HTTP on port 11434. Its API is small and powerful: list models, generate text, chat, embed, and also pull new models from the internet and delete existi</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1493 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/ollama-02-the-assistant-that-forgets-its-rules/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Ollama</span><span class="tag">AI Services</span></div>
+        <h3>A model follows only the instructions that fit in its context window</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 64 words</title><rect x="0.0" y="0" width="20.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 503 words</title><rect x="23.0" y="0" width="157.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 455 words</title><rect x="183.2" y="0" width="142.2" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 168 words</title><rect x="328.4" y="0" width="52.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 101 words</title><rect x="384.0" y="0" width="31.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 75 words</title><rect x="418.5" y="0" width="23.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 368 words</title><rect x="445.0" y="0" width="115.0" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A language model does not remember its instructions. Each request sends them again — the system prompt, then the conversation, then the new question — and the model reads that whole text as one sequence of tokens, up to </p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1523 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/ollama-03-the-model-that-will-not-load/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Ollama</span><span class="tag">Kernel and performance</span><span class="tag">Boot and systemd</span></div>
+        <h3>A loaded model costs its weights plus a cache for every token it may hold</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 60 words</title><rect x="0.0" y="0" width="18.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 448 words</title><rect x="21.7" y="0" width="139.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 409 words</title><rect x="164.0" y="0" width="127.2" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 192 words</title><rect x="294.1" y="0" width="59.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 154 words</title><rect x="356.9" y="0" width="47.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 115 words</title><rect x="407.7" y="0" width="35.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 365 words</title><rect x="446.5" y="0" width="113.5" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">&amp;quot;The model is 400 MB&amp;quot; is true of the file and says little about the server. To answer, the runtime loads the weights, adds its own working memory, and reserves a key-value cache: for every token of context, in </p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1492 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/py-01-works-on-my-machine/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Python</span><span class="tag">Boot and systemd</span></div>
+        <h3>Your shell is not the environment</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 99 words</title><rect x="0.0" y="0" width="14.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1609 words</title><rect x="17.2" y="0" width="231.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 800 words</title><rect x="251.5" y="0" width="115.0" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 467 words</title><rect x="369.5" y="0" width="67.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 245 words</title><rect x="439.6" y="0" width="35.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 61 words</title><rect x="477.8" y="0" width="8.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 490 words</title><rect x="489.6" y="0" width="70.4" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">The author is telling the truth: the job works on their machine. They cd /opt/etl, they source .venv/bin/activate, they run python report.py, and a report appears. What they are actually describing is a job that depends </p>
+        <p class="mono muted" style="font-size:0.82rem">
+          3012 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/bash-01-deploy-took-the-site-down/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Bash</span><span class="tag">Linux basics</span></div>
+        <h3>A deploy script is a transaction, or it is a hazard</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 133 words</title><rect x="0.0" y="0" width="20.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1329 words</title><rect x="23.3" y="0" width="202.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 1039 words</title><rect x="228.9" y="0" width="158.4" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 328 words</title><rect x="390.3" y="0" width="50.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 238 words</title><rect x="443.3" y="0" width="36.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 80 words</title><rect x="482.6" y="0" width="12.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 408 words</title><rect x="497.8" y="0" width="62.2" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">deploy-site is eight lines long and does what every deploy script does: make a directory, unpack a release into it, point the live link at it, say so. On a good day it works, and it worked on every good day for months. T</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2714 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/bash-02-cleanup-deleted-the-wrong-releases/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Bash</span><span class="tag">Boot and systemd</span></div>
+        <h3>Deleting files is the one thing a script must get exactly right</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 104 words</title><rect x="0.0" y="0" width="18.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 990 words</title><rect x="21.2" y="0" width="173.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 1057 words</title><rect x="197.8" y="0" width="185.3" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 278 words</title><rect x="386.1" y="0" width="48.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 231 words</title><rect x="437.8" y="0" width="40.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 93 words</title><rect x="481.3" y="0" width="16.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 339 words</title><rect x="500.6" y="0" width="59.4" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Most scripts that go wrong produce the wrong output. A cleanup script that goes wrong produces the wrong absence, and absence is hard to notice and impossible to undo. prune-releases is one line of real work — ls -t | ta</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2264 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/bash-03-backup-that-skips-files/">
+        <div class="tags"><span class="tag">30 min</span>
+<span class="tag">Bash</span><span class="tag">Linux basics</span></div>
+        <h3>A file name is any byte but slash and NUL — a backup has to believe it</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 128 words</title><rect x="0.0" y="0" width="39.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 611 words</title><rect x="42.0" y="0" width="186.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 392 words</title><rect x="231.0" y="0" width="119.4" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 189 words</title><rect x="353.4" y="0" width="57.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 126 words</title><rect x="413.9" y="0" width="38.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 82 words</title><rect x="455.3" y="0" width="25.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 252 words</title><rect x="483.3" y="0" width="76.7" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">backup-docs looks like the most boring script on the machine: find every file, make its directory in the backup, copy it, count it, say how many. It ran every night for months and systemd marked every run as a success. I</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1593 words · 6 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/bash-04-job-that-works-only-by-hand/">
+        <div class="tags"><span class="tag">30 min</span>
+<span class="tag">Bash</span><span class="tag">Boot and systemd</span></div>
+        <h3>A script run by a timer inherits nothing you set up for yourself</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 105 words</title><rect x="0.0" y="0" width="34.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 555 words</title><rect x="37.0" y="0" width="179.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 460 words</title><rect x="219.9" y="0" width="149.1" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 205 words</title><rect x="372.1" y="0" width="66.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 104 words</title><rect x="441.5" y="0" width="33.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 50 words</title><rect x="478.2" y="0" width="16.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 193 words</title><rect x="497.4" y="0" width="62.6" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">&amp;quot;It works when I run it&amp;quot; is the most expensive sentence in operations, because it is true. The person saying it is logged in, in an interactive shell that has read a start-up file, sitting in a directory they c</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1474 words · 6 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/bash-05-export-that-leaves-its-mess/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Bash</span><span class="tag">Linux basics</span></div>
+        <h3>Publish when complete, clean up however it ends</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 97 words</title><rect x="0.0" y="0" width="26.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 660 words</title><rect x="29.6" y="0" width="180.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 617 words</title><rect x="213.5" y="0" width="169.2" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 209 words</title><rect x="385.7" y="0" width="57.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 80 words</title><rect x="446.0" y="0" width="21.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 46 words</title><rect x="470.9" y="0" width="12.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 268 words</title><rect x="486.5" y="0" width="73.5" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">An export is read by someone else. That one fact changes what &amp;quot;done&amp;quot; means for the script that writes it: the warehouse importer does not wait for the script to finish, it takes whatever file has the right name</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1694 words · 6 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/bash-06-report-that-dies-on-a-quiet-night/">
+        <div class="tags"><span class="tag">30 min</span>
+<span class="tag">Bash</span><span class="tag">Logging and journald</span></div>
+        <h3>Nothing matched is an answer, not a failure</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 90 words</title><rect x="0.0" y="0" width="32.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 455 words</title><rect x="35.3" y="0" width="163.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 382 words</title><rect x="201.9" y="0" width="137.3" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 152 words</title><rect x="342.2" y="0" width="54.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 140 words</title><rect x="399.8" y="0" width="50.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 65 words</title><rect x="453.1" y="0" width="23.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 224 words</title><rect x="479.5" y="0" width="80.5" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">set -euo pipefail is good advice, and the review that asked for it was right. What the review did not say is that set -e acts on a single signal — a non-zero exit status — and that several perfectly ordinary commands use</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1304 words · 6 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/bash-07-config-that-breaks-on-a-password/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Bash</span><span class="tag">Users and permissions</span></div>
+        <h3>A value is data; sed&#39;s replacement is code</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 98 words</title><rect x="0.0" y="0" width="31.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 621 words</title><rect x="34.3" y="0" width="198.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 435 words</title><rect x="235.4" y="0" width="138.8" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 165 words</title><rect x="377.1" y="0" width="52.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 97 words</title><rect x="432.8" y="0" width="30.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 39 words</title><rect x="466.7" y="0" width="12.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 244 words</title><rect x="482.2" y="0" width="77.8" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Filling placeholders in a template is the second thing every ops script learns to do, and sed s/@PLACEHOLDER@/$value/ is how almost everyone writes it. It works for a year, because the values are host names and port numb</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1507 words · 6 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/claude-01-the-bot-that-deleted-the-drafts/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Claude Code</span><span class="tag">AI Agents</span></div>
+        <h3>A headless agent gets the permissions you write down, and nothing asks twice</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 129 words</title><rect x="0.0" y="0" width="26.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 851 words</title><rect x="29.1" y="0" width="172.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 613 words</title><rect x="204.3" y="0" width="124.0" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 253 words</title><rect x="331.3" y="0" width="51.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 216 words</title><rect x="385.5" y="0" width="43.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 111 words</title><rect x="432.2" y="0" width="22.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 506 words</title><rect x="457.6" y="0" width="102.4" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A nightly job asks Claude Code to fix typos. It &amp;quot;kept stopping to ask for permission&amp;quot;, so someone added --dangerously-skip-permissions, and for weeks nothing bad happened. Then the model decided that a director</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2378 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/claude-02-the-hooks-that-never-fire/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Claude Code</span><span class="tag">Bash</span></div>
+        <h3>A hook is a policy only if it fires, reads its input and exits 2</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 100 words</title><rect x="0.0" y="0" width="21.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 640 words</title><rect x="24.7" y="0" width="139.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 765 words</title><rect x="166.8" y="0" width="166.3" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 243 words</title><rect x="336.1" y="0" width="52.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 178 words</title><rect x="391.9" y="0" width="38.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 80 words</title><rect x="433.6" y="0" width="17.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 488 words</title><rect x="453.9" y="0" width="106.1" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Hooks are the part of Claude Code that turns a team&#39;s rules into code that runs every time: format what the agent writes, refuse a push, keep it out of files that must not change. They are also the part that fails most q</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2049 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/claude-03-the-reviewer-nobody-calls/">
+        <div class="tags"><span class="tag">30 min</span>
+<span class="tag">Claude Code</span><span class="tag">AI Agents</span></div>
+        <h3>A subagent exists only where Claude Code looks, with the keys it requires</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 84 words</title><rect x="0.0" y="0" width="23.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 648 words</title><rect x="26.9" y="0" width="184.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 386 words</title><rect x="213.9" y="0" width="109.6" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 189 words</title><rect x="326.6" y="0" width="53.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 134 words</title><rect x="383.3" y="0" width="38.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 92 words</title><rect x="424.3" y="0" width="26.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 375 words</title><rect x="453.5" y="0" width="106.5" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A subagent is a Markdown file: a few lines of YAML frontmatter and a system prompt. Teams put real effort into the prompt — the payments team&#39;s security reviewer lists exactly what to look for and how to report it — and </p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1594 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/claude-04-the-mcp-server-that-never-connects/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Claude Code</span><span class="tag">AI Agents</span></div>
+        <h3>An MCP server has to be enabled, startable, allowed and given its secret</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 85 words</title><rect x="0.0" y="0" width="23.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 573 words</title><rect x="26.3" y="0" width="156.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 552 words</title><rect x="186.1" y="0" width="151.1" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 182 words</title><rect x="340.2" y="0" width="49.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 168 words</title><rect x="393.0" y="0" width="46.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 67 words</title><rect x="442.0" y="0" width="18.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 353 words</title><rect x="463.4" y="0" width="96.6" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">The Model Context Protocol lets Claude Code use tools that live outside it: a ticket queue, a database, an internal API. A project declares its servers in .mcp.json, Claude Code starts each one when a session starts, ask</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1652 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/claude-05-the-triage-job-that-spends/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Claude Code</span><span class="tag">AI Agents</span></div>
+        <h3>A CI agent costs what its trigger, turn cap, model and tools allow</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 93 words</title><rect x="0.0" y="0" width="24.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 736 words</title><rect x="27.6" y="0" width="194.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 394 words</title><rect x="225.1" y="0" width="104.1" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 216 words</title><rect x="332.2" y="0" width="57.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 153 words</title><rect x="392.3" y="0" width="40.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 83 words</title><rect x="435.7" y="0" width="21.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 376 words</title><rect x="460.6" y="0" width="99.4" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A job that asks Claude Code to label an issue should cost a fraction of a cent and take seconds. The same job, written the way this lab&#39;s was, can cost as much as the model is willing to think about: it starts on every i</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1866 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/claude-06-the-settings-that-disagree/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Claude Code</span><span class="tag">Linux basics</span></div>
+        <h3>Five settings levels, one winner per key, and a policy only if it can be read</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 76 words</title><rect x="0.0" y="0" width="19.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 711 words</title><rect x="22.2" y="0" width="179.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 544 words</title><rect x="204.8" y="0" width="137.4" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 195 words</title><rect x="345.2" y="0" width="49.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 150 words</title><rect x="397.4" y="0" width="37.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 81 words</title><rect x="438.3" y="0" width="20.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 389 words</title><rect x="461.8" y="0" width="98.2" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Claude Code reads its configuration from up to five places, and on a shared machine each belongs to someone different: the security team owns the managed policy, whoever runs a session owns the command line, a developer </p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1834 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/docker-01-queue-forgets-every-reboot/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Containers</span><span class="tag">Boot and systemd</span></div>
+        <h3>A container is disposable; its data must not be</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 102 words</title><rect x="0.0" y="0" width="20.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 901 words</title><rect x="23.5" y="0" width="180.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 828 words</title><rect x="207.3" y="0" width="166.2" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 301 words</title><rect x="376.6" y="0" width="60.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 151 words</title><rect x="440.0" y="0" width="30.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 103 words</title><rect x="473.3" y="0" width="20.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 314 words</title><rect x="497.0" y="0" width="63.0" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">The job queue is Redis in a container, and every reboot empties it. Nothing crashes. Redis starts, answers PONG, accepts jobs, and on the next restart it starts again, empty, exactly as configured. The unit that runs it </p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2228 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/docker-02-stack-cannot-find-its-api/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Containers</span><span class="tag">Networking</span></div>
+        <h3>Inside a container, localhost is the container</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 88 words</title><rect x="0.0" y="0" width="17.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 905 words</title><rect x="20.3" y="0" width="178.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 932 words</title><rect x="201.6" y="0" width="183.6" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 234 words</title><rect x="388.1" y="0" width="46.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 158 words</title><rect x="437.2" y="0" width="31.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 95 words</title><rect x="471.3" y="0" width="18.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 340 words</title><rect x="493.0" y="0" width="67.0" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">The shop is two nginx containers in one Compose project: web, the public front, and api, which serves a status document. The front&#39;s configuration passes /api/ to http://localhost:8089/, and port 8089 is where the API is</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2199 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/hello/">
+        <div class="tags"><span class="tag">20 min</span>
+<span class="tag">Linux basics</span><span class="tag">Users and permissions</span></div>
+        <h3>Nine letters and a refusal</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 99 words</title><rect x="0.0" y="0" width="21.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1143 words</title><rect x="24.9" y="0" width="253.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 307 words</title><rect x="281.1" y="0" width="68.0" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 226 words</title><rect x="352.1" y="0" width="50.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 285 words</title><rect x="405.2" y="0" width="63.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 45 words</title><rect x="471.3" y="0" width="10.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 342 words</title><rect x="484.2" y="0" width="75.8" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">The first lab is five minutes long and has two tasks: make a file readable, and write a word into another file. It is small on purpose. It is also, in miniature, every lab that follows: something is refused, the system w</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1920 words · 6 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/linux-01-disk-full/">
+        <div class="tags"><span class="tag">30 min</span>
+<span class="tag">Storage and LVM</span><span class="tag">Logging and journald</span></div>
+        <h3>The space that belongs to a file with no name</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 122 words</title><rect x="0.0" y="0" width="13.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 2296 words</title><rect x="16.6" y="0" width="255.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 842 words</title><rect x="275.1" y="0" width="93.7" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 498 words</title><rect x="371.7" y="0" width="55.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 380 words</title><rect x="430.2" y="0" width="42.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 123 words</title><rect x="475.4" y="0" width="13.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 610 words</title><rect x="492.1" y="0" width="67.9" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A colleague saw a full disk, deleted the biggest file on it, and went home. df still says the filesystem is nearly full; du says it is nearly empty. Nothing about that is a contradiction, and nothing about it is unusual </p>
+        <p class="mono muted" style="font-size:0.82rem">
+          3727 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/linux-02-service-wont-stay-up/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Boot and systemd</span><span class="tag">Firewall and SELinux</span><span class="tag">Networking</span></div>
+        <h3>Four reasons a service will not stay up</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 118 words</title><rect x="0.0" y="0" width="14.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 2056 words</title><rect x="17.0" y="0" width="243.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 824 words</title><rect x="263.9" y="0" width="97.8" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 525 words</title><rect x="364.7" y="0" width="62.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 341 words</title><rect x="430.0" y="0" width="40.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 116 words</title><rect x="473.5" y="0" width="13.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 588 words</title><rect x="490.2" y="0" width="69.8" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">&amp;quot;It sometimes comes up, and a few minutes later it is gone. After a reboot it never comes back, and colleagues see an old page saying the service was retired.&amp;quot; That is three different sentences about three diff</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          3421 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/linux-03-backup-script-lies/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Bash</span><span class="tag">Linux basics</span></div>
+        <h3>A script that cannot fail is not a backup</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 126 words</title><rect x="0.0" y="0" width="15.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1766 words</title><rect x="18.3" y="0" width="214.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 959 words</title><rect x="236.2" y="0" width="116.7" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 497 words</title><rect x="355.9" y="0" width="60.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 407 words</title><rect x="419.4" y="0" width="49.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 58 words</title><rect x="471.9" y="0" width="7.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 641 words</title><rect x="482.0" y="0" width="78.0" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">The script has written &amp;quot;backup OK&amp;quot; every night for a year. It is not lying on purpose: it ends with echo &amp;quot;backup OK&amp;quot; and exit 0, unconditionally, so there is no state of the world in which it says any</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          3292 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/linux-04-write-the-report/">
+        <div class="tags"><span class="tag">45 min</span>
+<span class="tag">Bash</span><span class="tag">Linux basics</span></div>
+        <h3>Counting things, and the specification is the test</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 131 words</title><rect x="0.0" y="0" width="15.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1904 words</title><rect x="18.8" y="0" width="229.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 801 words</title><rect x="251.1" y="0" width="96.5" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 556 words</title><rect x="350.6" y="0" width="67.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 448 words</title><rect x="420.5" y="0" width="54.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 54 words</title><rect x="477.5" y="0" width="6.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 606 words</title><rect x="487.0" y="0" width="73.0" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">This lab does not break a machine. It hands you a specification — eleven lines of it — and grades your script against logs you have not seen. That is a different skill from repair, and it is the one most of the small too</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          3471 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/linux-05-shared-folder-locks-people-out/">
+        <div class="tags"><span class="tag">30 min</span>
+<span class="tag">Users and permissions</span><span class="tag">Linux basics</span></div>
+        <h3>A folder is shared by its group, not by its permissions alone</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 153 words</title><rect x="0.0" y="0" width="29.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 861 words</title><rect x="32.8" y="0" width="167.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 716 words</title><rect x="203.7" y="0" width="139.6" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 285 words</title><rect x="346.3" y="0" width="55.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 237 words</title><rect x="404.9" y="0" width="46.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 67 words</title><rect x="454.1" y="0" width="13.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 461 words</title><rect x="470.1" y="0" width="89.9" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Three people share a folder and none of them can work in it. It is tempting to see one fault — &amp;quot;the permissions are wrong&amp;quot; — and one fix, chmod -R 777. There are really four separate questions, and each has its</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2312 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/linux-06-log-that-never-rotates/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Logging and journald</span><span class="tag">Users and permissions</span></div>
+        <h3>logrotate does exactly what it is told, and refuses what it cannot trust</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 122 words</title><rect x="0.0" y="0" width="23.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 820 words</title><rect x="26.9" y="0" width="160.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 650 words</title><rect x="190.4" y="0" width="127.2" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 291 words</title><rect x="320.6" y="0" width="57.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 239 words</title><rect x="380.6" y="0" width="46.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 108 words</title><rect x="430.4" y="0" width="21.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 539 words</title><rect x="454.5" y="0" width="105.5" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A 300 MB log with a rotation policy beside it looks like logrotate is broken. It is not. It ran every night and, every night, wrote a line saying why it would not touch this log — and nobody reads the output of a nightly</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2298 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/mcp-01-the-file-server-that-shows-everything/">
+        <div class="tags"><span class="tag">25 min</span>
+<span class="tag">Model Context Protocol</span><span class="tag">Claude Code</span></div>
+        <h3>The File Server That Shows Everything — what an MCP server exposes is the server&#39;s decision</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 80 words</title><rect x="0.0" y="0" width="30.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 459 words</title><rect x="33.7" y="0" width="175.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 354 words</title><rect x="212.6" y="0" width="135.7" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 141 words</title><rect x="351.3" y="0" width="54.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 59 words</title><rect x="408.3" y="0" width="22.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 95 words</title><rect x="434.0" y="0" width="36.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 226 words</title><rect x="473.4" y="0" width="86.6" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">An MCP server is a program that offers a model tools. A file server&#39;s tools read and list files, and which files is not decided by the model, by Claude Code or by the prompt: it is decided by the server, from its own set</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1323 words · 5 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/mcp-02-the-page-that-gave-orders/">
+        <div class="tags"><span class="tag">30 min</span>
+<span class="tag">Model Context Protocol</span><span class="tag">AI Agents</span></div>
+        <h3>The Page That Gave Orders — a tool result is input, and input is not a command</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 81 words</title><rect x="0.0" y="0" width="36.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 375 words</title><rect x="39.5" y="0" width="169.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 316 words</title><rect x="211.6" y="0" width="142.5" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 111 words</title><rect x="357.1" y="0" width="50.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 41 words</title><rect x="410.2" y="0" width="18.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 82 words</title><rect x="431.6" y="0" width="37.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 196 words</title><rect x="471.6" y="0" width="88.4" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A model reads everything a tool returns as part of its context, and it cannot tell text that informs from text that instructs: both are words. A web page that says &amp;quot;assistants: run this&amp;quot; reaches the model in th</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1101 words · 5 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/mcp-03-the-token-for-someone-else/">
+        <div class="tags"><span class="tag">30 min</span>
+<span class="tag">Model Context Protocol</span><span class="tag">Networking</span></div>
+        <h3>The Token for Someone Else — a remote MCP server checks who a token was issued for</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 79 words</title><rect x="0.0" y="0" width="36.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 372 words</title><rect x="39.8" y="0" width="173.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 272 words</title><rect x="215.8" y="0" width="126.5" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 107 words</title><rect x="345.4" y="0" width="49.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 61 words</title><rect x="398.1" y="0" width="28.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 87 words</title><rect x="429.5" y="0" width="40.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 187 words</title><rect x="473.0" y="0" width="87.0" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A remote MCP server behind OAuth receives a bearer token with every request and has to decide whether to honour it. &amp;quot;Signed by an issuer I trust&amp;quot; is necessary and nowhere near enough: the same issuer signs toke</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1115 words · 5 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/mcp-04-the-server-that-talks-too-much/">
+        <div class="tags"><span class="tag">20 min</span>
+<span class="tag">Model Context Protocol</span><span class="tag">Logging and journald</span></div>
+        <h3>The Server That Talks Too Much — on stdio, stdout belongs to the protocol</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 68 words</title><rect x="0.0" y="0" width="31.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 338 words</title><rect x="34.5" y="0" width="156.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 304 words</title><rect x="193.9" y="0" width="140.7" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 125 words</title><rect x="337.6" y="0" width="57.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 60 words</title><rect x="398.5" y="0" width="27.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 86 words</title><rect x="429.3" y="0" width="39.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 190 words</title><rect x="472.1" y="0" width="87.9" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A stdio MCP server has two output streams and they are not interchangeable. The client reads stdout as the protocol — newline-delimited JSON-RPC, one message per line — and nothing else may appear there. stderr is the se</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1026 words · 5 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/mcp-05-the-stream-that-stops/">
+        <div class="tags"><span class="tag">30 min</span>
+<span class="tag">Model Context Protocol</span><span class="tag">Networking</span></div>
+        <h3>The Stream That Stops — a proxy in front of a remote MCP server</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 78 words</title><rect x="0.0" y="0" width="34.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 389 words</title><rect x="37.0" y="0" width="169.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 341 words</title><rect x="209.8" y="0" width="148.8" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 78 words</title><rect x="361.6" y="0" width="34.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 72 words</title><rect x="398.6" y="0" width="31.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 87 words</title><rect x="433.1" y="0" width="38.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 197 words</title><rect x="474.0" y="0" width="86.0" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A remote MCP server speaks Streamable HTTP: every message is a POST, and the answer is either one JSON body or, for anything that takes a while, a stream of server-sent events — progress notifications as the work goes, t</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1092 words · 5 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/mcp-06-the-answers-from-last-year/">
+        <div class="tags"><span class="tag">25 min</span>
+<span class="tag">Model Context Protocol</span><span class="tag">Claude Code</span></div>
+        <h3>The Answers From Last Year — Claude Code&#39;s MCP scopes, and which one wins</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 77 words</title><rect x="0.0" y="0" width="34.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 369 words</title><rect x="37.3" y="0" width="164.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 366 words</title><rect x="205.0" y="0" width="163.3" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 89 words</title><rect x="371.2" y="0" width="39.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 60 words</title><rect x="413.9" y="0" width="26.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 81 words</title><rect x="443.7" y="0" width="36.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 173 words</title><rect x="482.8" y="0" width="77.2" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Claude Code reads MCP server definitions from three places, and the same name can appear in more than one. The repository&#39;s .mcp.json is the one everybody reviews; the others live in ~/.claude.json, outside any repositor</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1026 words · 5 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/python-01-sync-that-says-it-worked/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Python</span><span class="tag">Boot and systemd</span></div>
+        <h3>A job that cannot fail cannot be trusted</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 104 words</title><rect x="0.0" y="0" width="18.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1122 words</title><rect x="21.1" y="0" width="195.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 1030 words</title><rect x="219.8" y="0" width="179.6" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 256 words</title><rect x="402.4" y="0" width="44.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 178 words</title><rect x="450.1" y="0" width="31.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 94 words</title><rect x="484.1" y="0" width="16.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 324 words</title><rect x="503.5" y="0" width="56.5" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">sync.py is twenty lines of perfectly readable Python. It fetches a list from an HTTP API and writes it to a file. The dashboards that read the file showed zero machines for an hour, and during that hour systemd reported </p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2437 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/python-02-tool-only-root-can-run/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Python</span><span class="tag">Users and permissions</span></div>
+        <h3>A development install is not an installation</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 111 words</title><rect x="0.0" y="0" width="23.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 916 words</title><rect x="26.6" y="0" width="194.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 731 words</title><rect x="224.3" y="0" width="155.4" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 244 words</title><rect x="382.7" y="0" width="51.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 190 words</title><rect x="437.5" y="0" width="40.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 39 words</title><rect x="480.9" y="0" width="8.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 319 words</title><rect x="492.2" y="0" width="67.8" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">netprobe works. It works for the colleague who installed it, it works when they run it with sudo, and it has worked on their laptop for months. On this machine every other user gets command not found, and when they call </p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2191 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/python-03-report-that-crashes-on-one-name/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Python</span><span class="tag">Linux basics</span></div>
+        <h3>Text is bytes plus an encoding, and nobody else knows which one</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 95 words</title><rect x="0.0" y="0" width="31.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 549 words</title><rect x="34.5" y="0" width="181.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 433 words</title><rect x="219.2" y="0" width="143.4" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 148 words</title><rect x="365.6" y="0" width="49.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 94 words</title><rect x="417.6" y="0" width="31.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 55 words</title><rect x="451.7" y="0" width="18.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 263 words</title><rect x="472.9" y="0" width="87.1" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A file on disk is bytes. &amp;quot;Text&amp;quot; is what you get when bytes are decoded with an encoding, and the file does not carry that encoding anywhere: not in its bytes, not in its name, not in its metadata. Somebody has </p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1460 words · 6 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/python-04-worker-that-goes-silent/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Python</span><span class="tag">Logging and journald</span></div>
+        <h3>A service that nobody can hear, and a stop that lands in the middle</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 89 words</title><rect x="0.0" y="0" width="27.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 649 words</title><rect x="30.0" y="0" width="196.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 438 words</title><rect x="229.8" y="0" width="132.8" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 193 words</title><rect x="365.7" y="0" width="58.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 102 words</title><rect x="427.2" y="0" width="30.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 47 words</title><rect x="461.2" y="0" width="14.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 269 words</title><rect x="478.4" y="0" width="81.6" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Two properties of a long-running program matter more than its speed: you can see what it is doing, and you can stop it without breaking anything. This worker has neither, and both failures come from defaults that are rig</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1524 words · 6 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/python-05-module-that-shadows-the-stdlib/">
+        <div class="tags"><span class="tag">30 min</span>
+<span class="tag">Python</span><span class="tag">Linux basics</span></div>
+        <h3>Where Python looks for a module, and who gets there first</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 87 words</title><rect x="0.0" y="0" width="32.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 538 words</title><rect x="35.7" y="0" width="201.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 340 words</title><rect x="240.6" y="0" width="127.6" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 135 words</title><rect x="371.2" y="0" width="50.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 101 words</title><rect x="424.9" y="0" width="37.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 44 words</title><rect x="465.8" y="0" width="16.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 199 words</title><rect x="485.3" y="0" width="74.7" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">AttributeError: module &#39;calendar&#39; has no attribute &#39;monthrange&#39; is a strange thing to read. The standard library&#39;s calendar module has had monthrange since the 1990s, so the sentence can only mean one thing: the calendar</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1224 words · 6 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/python-06-job-that-runs-twice/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Python</span><span class="tag">Boot and systemd</span></div>
+        <h3>One writer at a time, and a file that is only ever whole</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 74 words</title><rect x="0.0" y="0" width="24.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 578 words</title><rect x="27.7" y="0" width="192.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 371 words</title><rect x="223.6" y="0" width="123.8" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 200 words</title><rect x="350.4" y="0" width="66.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 92 words</title><rect x="420.2" y="0" width="30.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 59 words</title><rect x="453.9" y="0" width="19.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 250 words</title><rect x="476.6" y="0" width="83.4" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A timer that starts a job every minute is a promise about how often the job starts, not about how long it takes. The day the catalogue grows past a minute&#39;s work, two rebuilds run at once, and they are both writing the s</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1387 words · 6 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/python-07-client-that-leaks-its-token/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Python</span><span class="tag">Users and permissions</span></div>
+        <h3>A secret has three addresses: the log, the file and the process</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 97 words</title><rect x="0.0" y="0" width="29.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 626 words</title><rect x="32.4" y="0" width="189.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 455 words</title><rect x="224.9" y="0" width="137.8" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 218 words</title><rect x="365.7" y="0" width="66.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 96 words</title><rect x="434.7" y="0" width="29.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 54 words</title><rect x="466.8" y="0" width="16.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 244 words</title><rect x="486.1" y="0" width="73.9" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">&amp;quot;Where is the token?&amp;quot; has more answers than people expect. It is in a file, which has an owner and a mode. It is in a process, which runs as some account. And it is in everything that process says about itself </p>
+        <p class="mono muted" style="font-size:0.82rem">
+          1585 words · 6 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/rhcsa-01-users-and-permissions/">
+        <div class="tags"><span class="tag">35 min</span>
+<span class="tag">Users and permissions</span></div>
+        <h3>The account that was almost on the team</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 140 words</title><rect x="0.0" y="0" width="19.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1752 words</title><rect x="22.8" y="0" width="247.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 536 words</title><rect x="273.6" y="0" width="75.8" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 407 words</title><rect x="352.4" y="0" width="57.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 315 words</title><rect x="413.0" y="0" width="44.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 101 words</title><rect x="460.5" y="0" width="14.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 581 words</title><rect x="477.8" y="0" width="82.2" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Nothing in this lab is broken in an interesting way. An account was created, a directory was made, a sudo rule was written, a umask was set during onboarding — and every one of those five ordinary acts was done one chara</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          3093 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/rhcsa-02-systemd-and-boot/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Boot and systemd</span></div>
+        <h3>Enabled, masked, wanted — and none of them the same thing</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 123 words</title><rect x="0.0" y="0" width="15.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 1917 words</title><rect x="18.2" y="0" width="237.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 994 words</title><rect x="258.2" y="0" width="122.9" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 450 words</title><rect x="384.1" y="0" width="55.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 293 words</title><rect x="442.7" y="0" width="36.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 61 words</title><rect x="482.0" y="0" width="7.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 546 words</title><rect x="492.5" y="0" width="67.5" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">An admin starts the inventory API by hand and it works. The machine reboots and the API is gone, and now systemctl start fails too. Somewhere in the middle of that story is the sentence that explains the whole lab: the h</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          3592 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/rhcsa-03-storage-and-lvm/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Storage and LVM</span><span class="tag">Boot and systemd</span></div>
+        <h3>The volume that filled overnight</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 124 words</title><rect x="0.0" y="0" width="15.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 2016 words</title><rect x="18.9" y="0" width="257.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 948 words</title><rect x="279.6" y="0" width="121.2" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 402 words</title><rect x="403.8" y="0" width="51.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 261 words</title><rect x="458.2" y="0" width="33.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 77 words</title><rect x="494.6" y="0" width="9.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 411 words</title><rect x="507.4" y="0" width="52.6" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A full filesystem is the most ordinary emergency there is, and the machine in this lab is what happens when somebody fixes one at three in the morning. The volume filled. They freed some space, edited /etc/fstab, reboote</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2984 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/rhcsa-04-selinux-firewall-network/">
+        <div class="tags"><span class="tag">55 min</span>
+<span class="tag">Firewall and SELinux</span><span class="tag">Networking</span></div>
+        <h3>Three layers of &#34;permission denied&#34;</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 158 words</title><rect x="0.0" y="0" width="15.1" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 2494 words</title><rect x="18.1" y="0" width="238.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 1304 words</title><rect x="259.2" y="0" width="124.5" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 623 words</title><rect x="386.8" y="0" width="59.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 383 words</title><rect x="449.2" y="0" width="36.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 94 words</title><rect x="488.8" y="0" width="9.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 620 words</title><rect x="500.8" y="0" width="59.2" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A web server that will not start. A page that answers 403. A proxy that answers 502. An address and a hostname that were correct until the machine rebooted. Every symptom in this lab has a plausible wrong explanation — t</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          4252 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/rhcsa-05-exam-simulation/">
+        <div class="tags"><span class="tag">70 min</span>
+<span class="tag">Users and permissions</span><span class="tag">Boot and systemd</span><span class="tag">Storage and LVM</span><span class="tag">Networking</span><span class="tag">Linux basics</span></div>
+        <h3>Ninety minutes on a machine that will not boot</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 147 words</title><rect x="0.0" y="0" width="11.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 3407 words</title><rect x="14.5" y="0" width="266.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 1213 words</title><rect x="284.2" y="0" width="95.0" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 863 words</title><rect x="382.2" y="0" width="67.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 441 words</title><rect x="452.8" y="0" width="34.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 217 words</title><rect x="490.3" y="0" width="17.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 635 words</title><rect x="510.3" y="0" width="49.7" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Fifteen tasks, ninety minutes, and a pass line of seventy per cent — eleven tasks. You do not know the root password, your own sudo is gone, and the machine does not finish booting, so the first thing to earn is a shell.</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          5181 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/terraform-01-rename-that-wants-to-destroy/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Terraform</span><span class="tag">Users and permissions</span></div>
+        <h3>Terraform knows your resources by their address</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 93 words</title><rect x="0.0" y="0" width="19.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 702 words</title><rect x="22.5" y="0" width="147.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 873 words</title><rect x="172.8" y="0" width="183.1" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 223 words</title><rect x="358.9" y="0" width="46.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 200 words</title><rect x="408.6" y="0" width="42.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 146 words</title><rect x="453.6" y="0" width="30.6" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 347 words</title><rect x="487.2" y="0" width="72.8" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">A pull request renamed two resources in /srv/infra — random_password.key became random_password.session_key, local_file.env became local_file.app_env — because the new names say what the things are. Nothing about the obj</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2105 words · 8 review questions        </p>
+      </a>
+      <a class="card lab-card" href="../journals/terraform-02-site-removed-from-the-middle/">
+        <div class="tags"><span class="tag">40 min</span>
+<span class="tag">Terraform</span><span class="tag">Networking</span></div>
+        <h3>count numbers things; for_each names them</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>What you should be able to do after this — 114 words</title><rect x="0.0" y="0" width="23.2" height="30" rx="4" fill="#1d2a23"/></g><g><title>The mechanism — 837 words</title><rect x="26.2" y="0" width="170.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>A failure, walked through — 854 words</title><rect x="199.6" y="0" width="173.8" height="30" rx="4" fill="#4ade80"/></g><g><title>Common wrong turns — 242 words</title><rect x="376.4" y="0" width="49.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Cheat sheet — 140 words</title><rect x="428.6" y="0" width="28.5" height="30" rx="4" fill="#1d2a23"/></g><g><title>Going deeper — 139 words</title><rect x="460.1" y="0" width="28.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>Review — 337 words</title><rect x="491.4" y="0" width="68.6" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Three virtual hosts, one list: sites = [&amp;quot;shop&amp;quot;, &amp;quot;blog&amp;quot;, &amp;quot;docs&amp;quot;]. Terraform creates a configuration file and a cookie secret for each, and derives each site&#39;s port from its position — 8100, 8</p>
+        <p class="mono muted" style="font-size:0.82rem">
+          2008 words · 8 review questions        </p>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="section" id="by-note">
+  <div class="wrap">
+    <h2>Notes</h2>
+    <div class="grid two" style="gap:2rem">
+      <a class="card lab-card" href="../journals/rated-labs/">
+        <div class="tags"><span class="tag">15 min</span>
+</div>
+        <h3>Grading on a machine you do not control — how Norboten&#39;s rated labs keep their answers</h3>
+        <div class="map-wrap small"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 30" class="journal-map" role="img" aria-label="the journal by section"><g><title>The problem — 202 words</title><rect x="0.0" y="0" width="71.9" height="30" rx="4" fill="#1d2a23"/></g><g><title>Why not encrypt it — 133 words</title><rect x="74.9" y="0" width="47.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Split the catalogue, not the product — 162 words</title><rect x="125.3" y="0" width="57.7" height="30" rx="4" fill="#1d2a23"/></g><g><title>Keep the answer out of every artefact — 181 words</title><rect x="186.0" y="0" width="64.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>Grade the machine, not the claim — 178 words</title><rect x="253.4" y="0" width="63.4" height="30" rx="4" fill="#1d2a23"/></g><g><title>A signature, and what it proves — 174 words</title><rect x="319.8" y="0" width="62.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Closing the oracles — 196 words</title><rect x="384.7" y="0" width="69.8" height="30" rx="4" fill="#1d2a23"/></g><g><title>What is left open, on purpose — 88 words</title><rect x="457.5" y="0" width="31.3" height="30" rx="4" fill="#1d2a23"/></g><g><title>If you are building something like this — 101 words</title><rect x="491.8" y="0" width="36.0" height="30" rx="4" fill="#1d2a23"/></g><g><title>Sources — 82 words</title><rect x="530.8" y="0" width="29.2" height="30" rx="4" fill="#1d2a23"/></g></svg></div>
+        <p class="muted">Norboten&#39;s labs run on the learner&#39;s own computer: a virtual machine boots, something in it is broken, and a checker inside the machine decides whether it has been fixed. That design is the product — it works offline, it</p>
+<p class="muted" style="font-size:0.85rem"><strong>Covers</strong> why local decryption is obfuscation; splitting a catalogue into rated and unrated halves; a private git submodule; keeping answers out of images and wheels; collectors in the guest and judges on the server; HMAC-signed fact records with a nonce and a reboot proof; closing grading oracles; the limit that stays open</p>        <p class="mono muted" style="font-size:0.82rem">
+          1693 words        </p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>On paper</h2>
+    <p class="prose muted">
+      <kbd>e</kbd> on a journal in the TUI exports it as a PDF —
+      light ground, green accents, running header and page numbers, made for printing and
+      annotating. The screen version stays dark, because that is where the terminal is.
+    </p>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../features/">Features</a><br>
+        <a href="../labs/">Labs</a><br>
+        <a href="../journals/">Journals</a><br>
+        <a href="../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../live/">Live</a><br>
+        <a href="../players/">Ratings</a><br>
+        <a href="../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../install/">Install</a><br>
+        <a href="../docs/">Docs</a><br>
+        <a href="../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../about/">About</a><br>
+        <a href="../community/">Community</a><br>
+        <a href="../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../totop.js"></script>
+<script src="../ask-engine.js"></script>
+<script src="../chat.js"></script>
+<script src="../copy.js"></script>
+</body>
+</html>

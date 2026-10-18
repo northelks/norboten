@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The File Server That Shows Everything — what an MCP server exposes is the server&#x27;s decision</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>The File Server That Shows Everything — what an MCP server exposes is the server&#x27;s decision</h1>
+  <div class="meta">mcp, claude-code · 25 minutes · 1323 words</div>
+</header>
+<p>An MCP server is a program that offers a model tools. A file server’s tools read and list files, and
+which files is not decided by the model, by Claude Code or by the prompt: it is decided by the server,
+from its own settings. This lab’s server was set up to share <code>/</code> — every file the user it runs as can
+read — with links followed wherever they lead, dotfiles included, and a tool to write as well. The
+assistant quoted a private key because nothing stopped it from reading one.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Say where the boundary of an MCP server’s access is set, and why a client’s prompt is not it.</li>
+<li>Read a file server’s settings and predict what a given path will return.</li>
+<li>Explain why a path that starts inside a shared folder can still lead out of it.</li>
+<li>Keep hidden files and writing out of a server that only needs to read.</li>
+<li>Test a server by hand, over stdio, without Claude Code in the way.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>A server runs as someone</h3>
+<p>A stdio MCP server is a child process of the client. Claude Code starts it with the command in
+<code>.mcp.json</code>, as the user running Claude Code, and talks JSON-RPC to it over stdin and stdout. The
+server can therefore open anything that user can open: here, <code>learner</code>’s home, <code>~/.ssh</code> included.
+Unix permissions answer “may this user read the file”; they cannot answer “should the model see it”,
+because the model and the user are, as far as the kernel knows, the same process tree.</p>
+<p>So a server that exposes files needs its own boundary. This one reads it from
+<code>/etc/mcp-files/config.json</code> on every call: <code>roots</code> (the folders a path must lie in),
+<code>follow_symlinks</code>, <code>show_hidden</code> and <code>read_only</code>.</p>
+<h3>Roots, and the path as written</h3>
+<p>Every path a tool receives is resolved first — a relative path is taken from the first root — and then
+checked: is it inside one of the roots? With <code>&quot;roots&quot;: [&quot;/&quot;]</code>, every absolute path is inside, and the
+check means nothing. The fix everyone reaches for first is to narrow the roots to <code>~/notes</code>, and it is
+necessary. It is not enough.</p>
+<h3>Links: where a path really leads</h3>
+<p><code>~/notes/shared-keys</code> is a symbolic link to <code>~/.ssh</code>. The path <code>~/notes/shared-keys/id_ed25519</code> <em>is</em>
+inside <code>~/notes</code> as written — its text starts with <code>/home/learner/notes/</code> — and the file it opens is
+outside. A check on the path as written (<code>os.path.abspath</code>) passes it; a check on where it leads
+(<code>os.path.realpath</code>, with the roots resolved the same way) refuses it. <code>follow_symlinks: true</code> is the
+first kind. Links are how shared folders grow in practice — somebody links a directory in “for
+convenience” — so a server has to decide on the real location, not the spelling.</p>
+<h3>Hidden files</h3>
+<p>Dotfiles are where applications keep configuration and, often, credentials: <code>.env</code>, <code>.netrc</code>, <code>.git</code>.
+A notes folder has no business showing them to a model. <code>show_hidden: false</code> makes the server leave
+them out of listings and refuse to read them, even when the name is asked for directly.</p>
+<h3>Read-only is a tool list</h3>
+<p>With <code>read_only: false</code>, the server offers <code>write_file</code>. A model that can write the runbook can change
+what the next reader believes. The right shape is not a tool that checks a flag and says no: it is a
+server that does not offer the tool at all, so it never appears in the model’s list.</p>
+<h3>The client is a second fence, not the first</h3>
+<p>The job allows <code>mcp__files</code> — every tool the server offers. Claude Code could narrow that
+(<code>mcp__files__read_file,mcp__files__list_directory</code>), and that is worth doing. But permission rules
+decide which <em>tools</em> may be called, not which <em>paths</em>: a model allowed <code>read_file</code> may pass it any
+path at all. The paths are the server’s business.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the lab’s container (Ubuntu 26.04, Claude Code 2.1.270; JSON shown on one line). The project’s server definition,
+and the settings the server reads:</p>
+<pre><code class="language-console">$ cat ~/notes-bot/.mcp.json
+{&quot;mcpServers&quot;: {&quot;files&quot;: {&quot;type&quot;: &quot;stdio&quot;, &quot;command&quot;: &quot;python3&quot;, &quot;args&quot;: [&quot;/opt/mcp-files/files_mcp.py&quot;]}}}
+$ cat /etc/mcp-files/config.json
+{&quot;roots&quot;: [&quot;/&quot;], &quot;follow_symlinks&quot;: true, &quot;show_hidden&quot;: true, &quot;read_only&quot;: false}
+$ ls -la ~/notes
+-rw------- 1 learner learner   54 Sep 15 18:48 .env
+-rw-r--r-- 1 learner learner  100 Sep 15 18:48 oncall.md
+-rw-r--r-- 1 learner learner  207 Sep 15 18:48 runbook.md
+lrwxrwxrwx 1 learner learner   18 Sep 15 18:48 shared-keys -&gt; /home/learner/.ssh
+</code></pre>
+<p><code>claude mcp list</code> in an interactive-style call shows the project server waiting for approval — yet the
+headless job starts it and uses it; what counts is what the job does, so test the server directly. Two
+JSON-RPC messages on its stdin are enough:</p>
+<pre><code class="language-console">$ printf '%s\n' '{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:1,&quot;method&quot;:&quot;initialize&quot;,&quot;params&quot;:{}}' \
+    '{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:3,&quot;method&quot;:&quot;tools/call&quot;,&quot;params&quot;:{&quot;name&quot;:&quot;read_file&quot;,&quot;arguments&quot;:{&quot;path&quot;:&quot;/home/learner/notes/shared-keys/id_ed25519&quot;}}}' \
+  | python3 /opt/mcp-files/files_mcp.py
+{&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 1, &quot;result&quot;: {&quot;protocolVersion&quot;: &quot;2025-06-18&quot;, ...}}
+files: starting; roots ['/']
+{&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 3, &quot;result&quot;: {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: &quot;-----BEGIN OPENSSH PRIVATE KEY-----\n(lab key)\n&quot;}]}}
+</code></pre>
+<p>The log line went to stderr, the answers to stdout. Now narrow the roots and nothing else — the
+settings file becomes <code>{&quot;roots&quot;: [&quot;/home/learner/notes&quot;], &quot;follow_symlinks&quot;: true, &quot;show_hidden&quot;: true, &quot;read_only&quot;: false}</code> — and ask again. Each line below is one call written to the server’s stdin the
+same way, with its answer shortened:</p>
+<pre><code class="language-text">read_file /etc/passwd                        → refused: /etc/passwd is outside the folders this server shares
+read_file ~/notes/shared-keys/id_ed25519     → &quot;-----BEGIN OPENSSH PRIVATE KEY-----...&quot;
+read_file ~/notes/.env                       → &quot;ALERT_WEBHOOK=https://hooks.example/T7ac1899de40cf974&quot;
+</code></pre>
+<p>Half the problem is gone and both of the review’s findings are still there. With all four settings
+right — roots on the notes, links checked where they lead, dotfiles hidden, read-only:</p>
+<pre><code class="language-text">read_file ~/notes/shared-keys/id_ed25519     → refused: ... is outside the folders this server shares
+read_file ~/notes/.env                       → refused: /home/learner/notes/.env is hidden
+list_directory ~/notes                       → oncall.md  runbook.md  shared-keys/
+write_file ~/notes/runbook.md                → error -32602: unknown tool
+read_file runbook.md                         → &quot;# On-call runbook ...&quot;
+</code></pre>
+<p>The link is still listed — it is a name in the folder — but it no longer opens anything outside it,
+and the relative path works from the first root.</p>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong>Deleting the link and the <code>.env</code>.</strong> The next colleague links something in again, or keeps an <code>.env</code>
+for a script. The grader creates fresh ones on every check for exactly that reason.</li>
+<li><strong>Narrowing the roots and stopping.</strong> Shown above: links and dotfiles inside the root still leak.</li>
+<li><strong>Telling the model not to read secrets.</strong> A system prompt is advice to a model that a hostile page or
+a bad plan can override. A boundary the server enforces cannot be talked around.</li>
+<li><strong><code>chmod 000 ~/.ssh</code>.</strong> The server runs as the same user as everything else, so the next thing that
+needs the key breaks — and the server still reads every other file that user can.</li>
+<li><strong>Removing <code>mcp__files</code> from the job.</strong> The job then answers nothing; the task was to share the notes,
+not to stop sharing.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-text">cat .mcp.json                               # which command starts which server
+claude mcp list                             # what Claude Code makes of the definitions
+printf '%s\n' '{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:1,&quot;method&quot;:&quot;initialize&quot;,&quot;params&quot;:{}}' \
+  '{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:2,&quot;method&quot;:&quot;tools/list&quot;}' | &lt;server command&gt;   # the server by hand
+realpath ~/notes/some/link                  # where a path really leads
+python3 -c 'import os; print(os.path.realpath(p).startswith(root))'    # the check that matters
+--allowedTools &quot;mcp__files__read_file,mcp__files__list_directory&quot;      # narrow the tools too
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>The Model Context Protocol</em> (topic journal <code>mcp</code>) — What a server exposes is the server’s decision</li>
+</ul>
+<p>Manual pages: <code>man 7 symlink</code>, <code>man 1 realpath</code>.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://modelcontextprotocol.io/specification/2026-07-28/server/tools</li>
+<li>https://modelcontextprotocol.io/specification/2026-07-28/basic/security_best_practices</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>The Model Context Protocol</em> (<code>mcp</code>), <em>Claude Code in a job</em> (<code>claude-code</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A stdio MCP server runs as which user, and what can it therefore read?</p>
+<blockquote>
+<p>The user who runs Claude Code, since it is Claude Code’s child process; anything that user can read,
+unless the server enforces a narrower boundary of its own.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>roots: [&quot;/home/learner/notes&quot;]</code> not stop <code>~/notes/shared-keys/id_ed25519</code> from being read
+when <code>follow_symlinks</code> is true?</p>
+<blockquote>
+<p>The server checks the path as written, which starts with the root; the link inside the root points
+outside it. Only a check on the resolved path (realpath) refuses it.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between refusing <code>write_file</code> in the tool and not offering it?</p>
+<blockquote>
+<p>A tool that refuses still appears in the model’s list and invites attempts; a tool that is not
+offered cannot be called or planned around, and a later change to the check cannot open it.</p>
+</blockquote>
+</li>
+<li>
+<p>Can a Claude Code permission rule keep a model from reading <code>~/.ssh</code> through an MCP file server?</p>
+<blockquote>
+<p>Not by path: rules allow or deny tools such as <code>mcp__files__read_file</code>; the arguments are the
+server’s to check.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you test what an MCP server returns without a model?</p>
+<blockquote>
+<p>Start its command yourself and write JSON-RPC to its stdin: <code>initialize</code>, then <code>tools/list</code> or
+<code>tools/call</code>; the answers come back on stdout, one per line, and the logs on stderr.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

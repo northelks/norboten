@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Active, green, and not working</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Active, green, and not working</h1>
+  <div class="meta">monitoring · 35 minutes · 2617 words</div>
+</header>
+<p>Every monitoring failure that matters has the same shape: the check said the service was fine, and a
+user said it was not. Nobody writes a check intending it to lie. It lies because it measures something
+adjacent to what matters — that a process exists, that a command exited 0, that a unit was <code>active</code> the
+moment someone looked — and the service found a way to fail that the adjacent thing does not see.</p>
+<p>This journal builds a small web service with a <code>/health</code> endpoint on a Rocky Linux 10 lab machine and
+breaks it in the ways real services break: an error it reports politely, a hang, a crash loop, a hang
+in one thread while another stays cheerful. For each, it records what the obvious check said. Most of
+them said “fine”.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Write an HTTP health check whose exit status reflects the answer, and that cannot hang.</li>
+<li>Say what <code>systemctl is-active</code> does and does not tell you about a service.</li>
+<li>Use <code>OnFailure=</code> to raise an alert when a unit fails, and know which failures never reach it.</li>
+<li>Use the systemd watchdog to turn a hang into a restart, and put the watchdog ping where it proves
+something.</li>
+<li>Recognise a crash loop that looks healthy to a sampling check, and measure restarts instead.</li>
+<li>Design the check of last resort: the one that notices when the checks themselves have stopped.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>A check is an exit status</h3>
+<p>Every scheduler, monitoring agent and systemd timer consumes a check the same way: exit status <code>0</code> is
+healthy, anything else is not. So the first question about any check is what makes it exit non-zero. For
+the most common one — fetching a URL with <code>curl</code> — the answer is surprising. The service here answers
+<code>/health</code> with <code>500 database unreachable</code> while its database is down:</p>
+<pre><code class="language-console">$ curl -s localhost:8088/health ; echo &quot;exit=$?&quot;
+database unreachable
+exit=0
+</code></pre>
+<p><code>curl</code> succeeded: it connected, sent a request and received a response. The status code is data, not
+failure. <code>-f</code> (<code>--fail</code>) makes an HTTP error an error:</p>
+<pre><code class="language-console">$ curl -sf localhost:8088/health ; echo &quot;exit=$?&quot;
+exit=22
+</code></pre>
+<p>Exit 22 is curl’s “HTTP page not retrieved”: the response was 400 or above. A check without <code>-f</code> alerts
+on nothing but a refused connection.</p>
+<h3>A check must have a deadline</h3>
+<p>Stop the service’s process — <code>kill -STOP</code>, the cheapest way to simulate a deadlock — and ask again:</p>
+<pre><code class="language-console">$ curl -s -m 3 localhost:8088/health ; echo &quot;exit=$?&quot;
+exit=28
+$ timeout 10 curl -s localhost:8088/health ; echo &quot;exit=$?&quot;
+exit=124
+</code></pre>
+<p>With <code>-m 3</code>, curl gives up after three seconds with exit 28 (operation timed out). Without it, curl
+waited until <code>timeout</code> killed it at ten seconds (124). A check with no deadline does not fail when the
+service hangs; it hangs with it, and a monitoring agent waiting on it reports nothing — which a dashboard
+draws as “no change”. Every check needs a timeout shorter than its interval.</p>
+<h3><code>is-active</code> is about the process, not the service</h3>
+<pre><code class="language-console">$ sudo kill -STOP $(systemctl show -p MainPID --value shop)
+$ systemctl is-active shop
+active
+</code></pre>
+<p>A stopped process, a server that answers nobody, and systemd reports <code>active</code> — correctly. <code>active</code> means
+systemd started the unit and its main process has not exited. It says nothing about whether the process
+does its job. The same was true of the polite 500: <code>systemctl is-active shop</code> said <code>active</code> the whole
+time the database was down. <code>is-active</code> is a useful check for “did it crash and stay down”; it is not a
+health check.</p>
+<h3><code>OnFailure=</code>: an alert when a unit fails</h3>
+<pre><code class="language-ini"># /etc/systemd/system/alert@.service
+[Unit]
+Description=alert for %i
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/logger -t ALERT &quot;unit %i entered failed state&quot;
+</code></pre>
+<pre><code class="language-ini"># in shop.service
+[Unit]
+OnFailure=alert@%n.service
+</code></pre>
+<p>When <code>shop.service</code> enters the failed state, systemd starts <code>alert@shop.service.service</code> — a template
+instance whose <code>%i</code> is the failing unit’s name. In a real deployment <code>ExecStart</code> sends a message to a
+chat channel or an alerting API; <code>logger</code> stands in. Killing the process shows it working:</p>
+<pre><code class="language-console">$ sudo kill -9 $(systemctl show -p MainPID --value shop)
+$ systemctl is-active shop
+failed
+$ sudo journalctl -t ALERT --since -1min
+ALERT[2099]: unit shop.service entered failed state
+</code></pre>
+<p>And the stopped process shows its limit. Before the kill, the process had been frozen for twelve
+seconds — service unusable — and the alert log said:</p>
+<pre><code class="language-console">$ sudo journalctl -t ALERT --since -1min
+-- No entries --
+</code></pre>
+<p><code>OnFailure=</code> reacts to a state change. A hang is not a state change. With <code>Restart=on-failure</code> in the unit
+it still fires on every failure (the journal says <em>Triggering OnFailure= dependencies</em> before the
+restart), so a service that crashes and restarts still reaches the alert.</p>
+<h3>The watchdog: make a hang a failure</h3>
+<p>systemd can require a service to prove it is alive. With <code>Type=notify</code> and <code>WatchdogSec=</code>, the service
+must send <code>WATCHDOG=1</code> to the socket named in <code>$NOTIFY_SOCKET</code> more often than the interval; if it
+stops, systemd kills it, marks the unit failed, and <code>Restart=</code> and <code>OnFailure=</code> take over:</p>
+<pre><code class="language-ini">[Unit]
+OnFailure=alert@%n.service
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/shop
+WatchdogSec=5
+Restart=on-failure
+</code></pre>
+<p>(The service sends <code>READY=1</code> when it is ready, which is what <code>Type=notify</code> waits for, and pings at half
+the interval systemd passes it in <code>$WATCHDOG_USEC</code>. A shell script can do the same with <code>systemd-notify</code>,
+with one trap measured on the lab machine: a service running as a non-root <code>User=</code> whose script called
+<code>systemd-notify --ready</code> hit <em>start operation timed out</em> — the message comes from a child process, and
+systemd accepts notifications only from the main process unless the unit says <code>NotifyAccess=all</code>.
+With that line added, the same unit started at once. Run as root, it worked either way.) Freeze the process again:</p>
+<pre><code class="language-console">$ sudo kill -STOP $(systemctl show -p MainPID --value shop)
+$ sudo journalctl -u shop --since -12s
+systemd[1]: shop.service: Watchdog timeout (limit 5s)!
+systemd[1]: shop.service: Main process exited, code=dumped, status=6/ABRT
+systemd[1]: shop.service: Failed with result 'watchdog'.
+systemd[1]: shop.service: Triggering OnFailure= dependencies.
+systemd[1]: shop.service: Scheduled restart job, restart counter is at 1.
+systemd[1]: Started shop.service - shop.
+$ systemctl show -p NRestarts shop
+NRestarts=1
+$ curl -s -m 3 localhost:8088/health
+ok
+</code></pre>
+<p>Five seconds without a ping, <code>SIGABRT</code> (so a core dump shows where it was stuck), <code>Result: watchdog</code>, an
+alert, a restart, and the service answering again.</p>
+<h3>Where the ping comes from decides what it proves</h3>
+<p>The watchdog proves only that <em>whatever sends the ping</em> is alive. In this service the ping comes from its
+own thread. Make the request handler block forever — the realistic version: a request waiting on a lock
+or a dead database connection — and leave that thread alone:</p>
+<pre><code class="language-console">$ sudo touch /run/shop-stuck                 # the handler now waits forever
+$ curl -s -m 3 localhost:8088/health ; echo &quot;curl exit=$?&quot;
+curl exit=28
+$ sleep 15 ; systemctl is-active shop ; systemctl show -p NRestarts shop
+active
+NRestarts=0
+</code></pre>
+<p>Fifteen seconds of a service that answers nobody, three times the watchdog interval, and no restart: the
+ping thread was fine. A watchdog ping belongs in the code path whose progress matters — after a request
+completes, at the top of the main loop, after a successful query — not on a timer of its own. A ping from
+an independent thread is a very elaborate <code>is-active</code>.</p>
+<h3>A crash loop looks healthy to a sampling check</h3>
+<p>A service that crashes two seconds after starting, with <code>Restart=always</code> and <code>RestartSec=1</code>, sampled with
+<code>systemctl is-active</code> every 1.3 seconds:</p>
+<pre><code>active active activating active activating active active activating active activating
+NRestarts=4
+</code></pre>
+<p>Six “active” answers out of ten, and four restarts in thirteen seconds. A check that runs once a minute
+and asks “is it active” is right most of the time — and a service that does nothing but crash is exactly
+what it will miss. The honest measure is the restart counter:</p>
+<pre><code class="language-console">$ systemctl show -p NRestarts flappy
+NRestarts=4
+</code></pre>
+<p>Alert when <code>NRestarts</code> increases between two checks, or when <code>Result</code> is not <code>success</code>, and a crash loop
+becomes an alert instead of an intermittent green.</p>
+<h3>The check that watches the checks</h3>
+<p>Every mechanism above fails silently in one way: if the check stops running, nothing complains. A timer
+that was disabled during maintenance, an agent that crashed, a cron entry removed with a config change —
+the dashboard shows the last good value, forever.</p>
+<p>The defence inverts the logic: a <strong>dead man’s switch</strong>. The check, on each successful run, pings an
+external service (“I am alive”); that service alerts when the pings <em>stop</em>. It catches a dead check, a
+dead machine and a dead network in one rule, which no check running on the machine itself can do. And
+checks run from outside the machine — a request from another host through the real firewall and proxy —
+see failures an on-host check never will, because they take the user’s path.</p>
+<h2>A failure, walked through</h2>
+<p>The shop’s monitoring is a timer that runs every minute:</p>
+<pre><code class="language-bash">curl -s localhost:8088/health &amp;&amp; systemctl is-active --quiet shop
+</code></pre>
+<p>It has not alerted in a month. Customers report checkout failures twice this week.</p>
+<p><strong>1. Read the check as an exit status.</strong> Put the service into the state the customers describe — the
+database is down — and run the check exactly as the timer does:</p>
+<pre><code class="language-console">$ sudo touch /run/shop-db-down
+$ curl -s localhost:8088/health &amp;&amp; systemctl is-active --quiet shop ; echo &quot;exit=$?&quot;
+database unreachable
+exit=0
+</code></pre>
+<p>The check passes while the service returns 500. <code>curl</code> without <code>-f</code> succeeds on any HTTP response, and
+<code>is-active</code> only says the process exists.</p>
+<p><strong>2. Fix the HTTP half, and give it a deadline.</strong></p>
+<pre><code class="language-console">$ curl -sf -m 3 localhost:8088/health &gt; /dev/null ; echo &quot;exit=$?&quot;
+exit=22
+$ sudo rm /run/shop-db-down
+$ curl -sf -m 3 localhost:8088/health &gt; /dev/null ; echo &quot;exit=$?&quot;
+exit=0
+</code></pre>
+<p><strong>3. Try the other failure the check was blind to: a hang.</strong></p>
+<pre><code class="language-console">$ sudo kill -STOP $(systemctl show -p MainPID --value shop)
+$ curl -sf -m 3 localhost:8088/health &gt; /dev/null ; echo &quot;exit=$?&quot;
+exit=28
+$ systemctl is-active shop
+active
+</code></pre>
+<p>The fixed check now fails, correctly. But a check every minute only <em>reports</em> the hang; nothing ends it.
+And the original <code>curl</code> with no <code>-m</code> would simply have waited — the timer’s run would never finish, and a
+timer does not start a new run while the previous one is still going: on the lab machine a check that
+slept 20 seconds, on a timer due every 4, ran exactly once in 18 seconds.</p>
+<p><strong>4. Make the unit end a hang itself.</strong> <code>Type=notify</code>, <code>WatchdogSec=5</code>, <code>Restart=on-failure</code> and
+<code>OnFailure=alert@%n.service</code>, as above. Frozen again, the journal shows <em>Watchdog timeout (limit 5s)!</em>,
+<code>Result 'watchdog'</code>, the alert, and a restart; <code>curl</code> answers <code>ok</code> a moment later.</p>
+<p><strong>5. Check where the ping comes from.</strong> A blocked request handler with a healthy ping thread left the
+service <code>active</code> and unrestarted for fifteen seconds while every request timed out. Move the ping into
+the request path (or into a loop that exercises it), so a stuck handler stops the pings.</p>
+<p><strong>6. Watch restarts, not just state.</strong> With the watchdog restarting it, a service that hangs every few
+minutes will look <code>active</code> at almost every sample. Alert on <code>NRestarts</code> growing, and on the <code>ALERT</code> events
+<code>OnFailure=</code> produces.</p>
+<p><strong>7. Watch the watcher.</strong> Make the minute check ping a dead man’s switch on success, so that a disabled
+timer or a dead machine produces an alert instead of a quiet dashboard.</p>
+<h2>Common wrong turns</h2>
+<p><strong><code>curl -s URL</code> as a health check.</strong> Exit 0 on a 500. Use <code>-f</code>, and consider checking the body for a
+known string.</p>
+<p><strong>A check with no timeout.</strong> It hangs with the service it is checking, and silence looks like health.
+<code>curl -m</code>, <code>timeout</code>, and an interval longer than the deadline.</p>
+<p><strong><code>systemctl is-active</code> as the health check.</strong> It reports that the main process has not exited. A
+frozen process, a server returning errors and a crash loop at the moment of sampling are all <code>active</code>.</p>
+<p><strong>Expecting <code>OnFailure=</code> to catch a hang.</strong> It fires on entering the failed state. A hang never gets
+there without a watchdog.</p>
+<p><strong>A watchdog pinged from its own thread.</strong> It proves that thread is alive. Ping from the work.</p>
+<p><strong>Sampling state to detect a crash loop.</strong> <code>active</code> six times out of ten while restarting every three
+seconds. Measure <code>NRestarts</code>, or <code>Result</code>.</p>
+<p><strong>Restarting without alerting.</strong> <code>Restart=</code> hides failures from users and from you. Pair it with
+<code>OnFailure=</code> (it still fires before each restart) or an alert on the restart counter.</p>
+<p><strong>Only checking from the machine itself.</strong> The firewall, the proxy, DNS and the network are not on that
+path. Run at least one check from outside, the way a user arrives.</p>
+<p><strong>No check of the checks.</strong> A disabled timer and a dead agent are indistinguishable from a quiet week.
+A dead man’s switch is the only kind of alert that fires on silence.</p>
+<h2>Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>the check is green while users see errors</td>
+<td>it tests the process (<code>is-active</code>), not the service’s answer</td>
+<td>run the check’s command yourself; compare with a request a user makes</td>
+</tr>
+<tr>
+<td>the monitoring job hangs and nothing is reported</td>
+<td>a check with no deadline waits on a stalled dependency</td>
+<td><code>timeout 10 CHECK; echo $?</code> — 124 means it timed out</td>
+</tr>
+<tr>
+<td>a crashing service shows as running at every sample</td>
+<td><code>Restart=</code> brings it back faster than the sampling interval</td>
+<td><code>systemctl show -p NRestarts UNIT</code>; <code>journalctl -u UNIT</code> for starts</td>
+</tr>
+<tr>
+<td>a unit failed and nobody was told</td>
+<td>no <code>OnFailure=</code>, or the alert unit itself fails</td>
+<td><code>systemctl list-dependencies --reverse</code>; the alert unit’s journal</td>
+</tr>
+<tr>
+<td>a hung process is never restarted</td>
+<td>nothing turns a hang into a failure</td>
+<td><code>WatchdogSec=</code> in the unit, and the program’s <code>sd_notify</code> pings</td>
+</tr>
+<tr>
+<td>the check runs from the same host it checks</td>
+<td>it proves the process answers loopback, not that the network path works</td>
+<td>where the check runs, and which address it uses</td>
+</tr>
+</tbody>
+</table>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># HTTP checks that tell the truth
+curl -sf -m 3 URL &gt; /dev/null ; echo $?     # 0 ok, 22 HTTP &gt;= 400, 28 timeout, 7 refused
+curl -sf -m 3 URL | grep -q '^ok$'          # …and the body says what you expect
+timeout 10 CMD                              # a deadline for anything (124 = timed out)
+
+# what systemd knows
+systemctl is-active UNIT                    # main process not exited — NOT &quot;working&quot;
+systemctl show -p Result -p NRestarts -p ActiveEnterTimestamp UNIT
+journalctl -u UNIT --since -10min
+
+# alert on failure
+# alert@.service: [Service] Type=oneshot  ExecStart=/path/to/notify &quot;unit %i failed&quot;
+# in the unit:    [Unit] OnFailure=alert@%n.service    (fires before each Restart= too)
+
+# end hangs
+# [Service] Type=notify  WatchdogSec=5  Restart=on-failure
+# the program: send READY=1 once, then WATCHDOG=1 more often than every $WATCHDOG_USEC µs
+#              — from the code path that does the work, not a separate timer thread
+systemd-notify --ready ; systemd-notify WATCHDOG=1     # from a shell service; with User= (non-root)
+                                                       # it is ignored unless NotifyAccess=all
+
+# crash loops
+systemctl show -p NRestarts UNIT            # alert when it grows between checks
+
+# simulate failures
+kill -STOP PID ; kill -CONT PID             # a hang, and back
+kill -9 PID                                 # a crash
+</code></pre>
+<h2>Exercises</h2>
+<ol>
+<li>Write a check script for an HTTP service that exits 0, 1 and 2 for up, degraded and down, with a
+deadline; test each case, including a server that accepts and never answers.</li>
+<li>Give a unit <code>Restart=always</code> and a program that exits after two seconds. Sample <code>is-active</code> every ten
+seconds for a minute, then read <code>NRestarts</code>.</li>
+<li>Add <code>OnFailure=</code> to a unit, pointing at a template that writes the failing unit’s name to a file;
+make the unit fail and read the file.</li>
+<li>Run a check from the machine itself and from another one, against a service bound to <code>127.0.0.1</code>.
+What does each prove?</li>
+<li>Make the check itself fail (a typo in its path). How would you notice, and what watches it?</li>
+</ol>
+<h2>Sources</h2>
+<ul>
+<li><code>man 5 systemd.unit</code> — <code>OnFailure=</code>, <code>OnSuccess=</code>, <code>StartLimitIntervalSec=</code>, <code>StartLimitBurst=</code>.</li>
+<li><code>man 5 systemd.service</code> — <code>Restart=</code>, <code>RestartSec=</code>, <code>WatchdogSec=</code>.</li>
+<li><code>man 1 timeout</code> — deadlines for any command; exit status 124.</li>
+<li><code>man 3 sd_notify</code> — how a service tells systemd it is alive.</li>
+<li>systemd’s manual online: https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A health check is <code>curl -s http://localhost:8088/health</code>. The service returns <code>500 database unreachable</code>. What exit status does the check produce, and how do you fix it?</p>
+<blockquote>
+<p>0: curl received a response, and without <code>--fail</code> the HTTP status is only data. <code>curl -sf</code> exits 22
+for a status of 400 or more; add <code>-m</code> for a deadline.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does a health check need its own timeout, and what did the lab machine show without one?</p>
+<blockquote>
+<p>A hung service makes an unbounded check hang too, so it never reports failure — and the scheduler
+or agent waiting on it reports nothing. With <code>-m 3</code> curl exited 28 after three seconds; without it
+curl waited until <code>timeout 10</code> killed it (124).</p>
+</blockquote>
+</li>
+<li>
+<p>A service’s process is frozen with <code>SIGSTOP</code>. What does <code>systemctl is-active</code> say, and why is that
+correct?</p>
+<blockquote>
+<p><code>active</code>. The state means systemd started the unit and its main process has not exited; a frozen
+process has not exited. <code>is-active</code> reports process lifecycle, not whether the service works.</p>
+</blockquote>
+</li>
+<li>
+<p>A unit has <code>OnFailure=alert@%n.service</code>. Which of these produce an alert: a <code>kill -9</code>, a hang, a
+crash followed by an automatic restart?</p>
+<blockquote>
+<p>The kill (the unit enters the failed state) and the crash with restart (systemd triggers <code>OnFailure=</code>
+dependencies before scheduling the restart). The hang does not: no state change happens without a
+watchdog.</p>
+</blockquote>
+</li>
+<li>
+<p>With <code>Type=notify</code> and <code>WatchdogSec=5</code>, what happens when the process stops sending <code>WATCHDOG=1</code>?</p>
+<blockquote>
+<p>After five seconds systemd logs <em>Watchdog timeout</em>, kills the process with <code>SIGABRT</code>, marks the unit
+failed with result <code>watchdog</code>, triggers <code>OnFailure=</code>, and restarts it if <code>Restart=</code> allows.</p>
+</blockquote>
+</li>
+<li>
+<p>A service’s request handler is stuck, yet the watchdog never fires. What is the likely design fault?</p>
+<blockquote>
+<p>The watchdog ping comes from an independent thread or timer, which is still healthy. A ping proves
+only that its sender runs; it must be sent from the code path whose progress matters, so a stuck
+handler stops the pings.</p>
+</blockquote>
+</li>
+<li>
+<p>A check samples <code>systemctl is-active</code> and a service is in a crash loop with <code>Restart=always</code>. Why can
+the check stay green, and what should it measure instead?</p>
+<blockquote>
+<p>Between crashes the unit is <code>active</code>, so most samples catch it active (six of ten on the lab machine,
+with four restarts in thirteen seconds). Measure the restart counter (<code>NRestarts</code>) or the unit’s
+<code>Result</code>, and alert when restarts increase.</p>
+</blockquote>
+</li>
+<li>
+<p>What failure does a dead man’s switch detect that no check running on the server can?</p>
+<blockquote>
+<p>The checks themselves stopping — a disabled timer, a dead agent, a dead machine or network. The
+switch alerts when the expected “I am alive” pings stop arriving, so silence becomes an alert.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

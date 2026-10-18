@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A development install is not an installation · Norboten</title>
+<meta name="description" content="netprobe works. It works for the colleague who installed it, it works when they run it with sudo, and it has worked on their laptop for months. On this machine ">
+<link rel="canonical" href="https://norboten.org/journals/python-02-tool-only-root-can-run/"><meta property="og:title" content="A development install is not an installation · Norboten">
+<meta property="og:description" content="netprobe works. It works for the colleague who installed it, it works when they run it with sudo, and it has worked on their laptop for months. On this machine ">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/python-02-tool-only-root-can-run/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A development install is not an installation · Norboten">
+<meta name="twitter:description" content="netprobe works. It works for the colleague who installed it, it works when they run it with sudo, and it has worked on their laptop for months. On this machine ">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A development install is not an installation",
+  "description": "netprobe works. It works for the colleague who installed it, it works when they run it with sudo, and it has worked on their laptop for months. On this machine ",
+  "url": "https://norboten.org/journals/python-02-tool-only-root-can-run/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2191,
+  "timeRequired": "PT35M",
+  "about": ["Python", "Users and permissions"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Tool Only Root Can Run</div>
+    <h1>A development install is not an installation</h1>
+    <p class="muted">
+      35 minutes' reading · 2191 words ·<span class="tag">Python</span><span class="tag">Users and permissions</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 111 words</title><rect x="0.0" y="0" width="32.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 916 words</title><rect x="35.3" y="0" width="266.5" height="30" rx="4" fill="#1d2a23"/><text x="43.3" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 731 words</title><rect x="304.8" y="0" width="212.7" height="30" rx="4" fill="#4ade80"/><text x="312.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 244 words</title><rect x="520.5" y="0" width="71.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 190 words</title><rect x="594.5" y="0" width="55.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 39 words</title><rect x="652.8" y="0" width="11.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 319 words</title><rect x="667.2" y="0" width="92.8" height="30" rx="4" fill="#1d2a23"/><text x="675.2" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/python-02-tool-only-root-can-run/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p><code>netprobe</code> works. It works for the colleague who installed it, it works when they run it with
+<code>sudo</code>, and it has worked on their laptop for months. On this machine every other user gets
+<code>command not found</code>, and when they call the program by its full path they get <code>Permission denied</code>,
+and when someone opens up the permissions they get <code>ModuleNotFoundError: No module named 'netprobe'</code>.
+Three different errors, three layers of the same misunderstanding.</p>
+<p>The colleague did what developers are taught to do: create a virtual environment and run
+<code>pip install --editable .</code> from their checkout. That is exactly right for developing a package. It is
+exactly wrong for installing a tool that other people use, because an editable install <strong>does not put
+the code in the environment at all</strong> — it leaves a pointer to the checkout, and the checkout is in
+<code>/root</code>, which nobody else may enter. The venv directory was also created with permissions only root
+could use, and nothing on anyone's <code>PATH</code> led to it.</p>
+<p>This journal is about what a virtual environment actually is, what the different kinds of install put
+into it, and how to deploy a Python tool for every user of a machine — offline, from wheels, without
+touching the system Python.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Say what a virtual environment contains, and why its <code>bin/</code> programs work without activating it.</li>
+<li>Tell an editable install from a normal one with <code>pip list</code>, <code>pip show</code> and the files in
+<code>site-packages</code>, and say what each depends on at run time.</li>
+<li>Diagnose <code>command not found</code>, <code>Permission denied</code> and <code>ModuleNotFoundError</code> as three separate layers:
+<code>PATH</code>, directory permissions, and the import path.</li>
+<li>Install a local project into a venv without network access, using <code>--no-index --find-links</code>.</li>
+<li>Make an application in <code>/opt</code> usable by every account: modes, a link on the default <code>PATH</code>.</li>
+<li>Explain why <code>pip install</code> into Ubuntu's system Python is refused, and what to do instead.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="what-a-virtual-environment-is">What a virtual environment is</h3>
+<p>A venv is a directory:</p>
+<pre><code>/opt/netprobe/venv/
+├── pyvenv.cfg                    home = /usr/bin, version = 3.13.x
+├── bin/
+│   ├── python -&gt; python3 -&gt; /usr/bin/python3
+│   ├── pip
+│   └── netprobe                  a console script: #!/opt/netprobe/venv/bin/python3
+└── lib/python3.13/site-packages/ the packages this environment can import
+</code></pre>
+<p>When <code>bin/python</code> starts, it finds <code>pyvenv.cfg</code> next to it and uses that directory's <code>site-packages</code>
+instead of the system's. That is the whole trick. <strong>Activation is not required</strong>: <code>source bin/activate</code> only puts <code>bin/</code> at the front of <code>PATH</code> so that typing <code>python</code> or <code>netprobe</code> finds the
+venv's copies. Any program in <code>bin/</code> has the venv's interpreter in its <code>#!</code> line and works from
+anywhere — from systemd, from cron, through a symlink in <code>/usr/local/bin</code>.</p>
+<p>A consequence worth remembering: the interpreter itself is a symlink to the system Python. A venv
+isolates <em>packages</em>, not the Python binary, and it breaks if the system Python it was built from is
+upgraded to a new minor version.</p>
+<h3 id="three-kinds-of-install">Three kinds of install</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What lands in <code>site-packages</code></th>
+<th>Depends on at run time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pip install .</code> or <code>pip install pkg.whl</code></td>
+<td>the package's files, copied, plus <code>pkg-X.dist-info</code></td>
+<td>nothing outside the venv</td>
+</tr>
+<tr>
+<td><code>pip install -e .</code> (editable)</td>
+<td>a <code>.pth</code> file or an import hook pointing at the source tree, plus <code>dist-info</code></td>
+<td>the source directory, readable by whoever runs it</td>
+</tr>
+<tr>
+<td><code>pip install --user .</code></td>
+<td>files under <code>~/.local/lib/python3.X/site-packages</code> of the installing user</td>
+<td>that user's home, and that user's Python</td>
+</tr>
+</tbody>
+</table>
+<p>An editable install exists so that a developer's edits take effect without reinstalling. It does that
+by <strong>not copying the code</strong>. Modern setuptools implements it (PEP 660) either with a <code>.pth</code> file — a
+text file in <code>site-packages</code> whose lines are added to <code>sys.path</code> at start-up — or, for some layouts,
+with a small generated import finder. Either way, every import of <code>netprobe</code> goes to the checkout.</p>
+<p><code>pip list</code> shows editable installs with their project location, and <code>pip show</code> prints an
+&quot;Editable project location&quot; line. Those two are the quickest way to spot one.</p>
+<h3 id="why-the-error-changes-as-you-fix-things">Why the error changes as you fix things</h3>
+<p>Running <code>netprobe</code> as an unprivileged user fails at three layers, in order:</p>
+<ol>
+<li><strong><code>PATH</code>.</strong> <code>netprobe: command not found</code> (exit 127) — no directory on the user's <code>PATH</code> contains a
+program of that name. Nothing on the system linked <code>/opt/netprobe/venv/bin/netprobe</code> anywhere.</li>
+<li><strong>Directory permissions.</strong> <code>Permission denied</code> (exit 126) — to execute <code>/opt/netprobe/venv/bin/ netprobe</code>, a user needs search (<code>x</code>) permission on every directory on the way. The venv was mode
+0750, owner root, group root: other users cannot pass through it.</li>
+<li><strong>The import path.</strong> With the venv opened up, Python starts, reads the <code>.pth</code> file, adds
+<code>/root/src/netprobe/src</code> to <code>sys.path</code> — and cannot see anything there, because <code>/root</code> is 0700.
+Python does not complain about unreadable path entries; it just does not find the module:
+<code>ModuleNotFoundError</code>.</li>
+</ol>
+<p>Root never hits any of these, which is why the tool &quot;works&quot;. Testing as root proves nothing about other
+users. Test as one.</p>
+<h3 id="a-normal-install-offline">A normal install, offline</h3>
+<p>The project has a <code>pyproject.toml</code> with a build backend (<code>setuptools</code>) and one dependency (<code>pyyaml</code>).
+<code>pip install /path/to/project</code> builds a wheel from it and installs the wheel. Building needs the
+backend, and by default pip builds in an <strong>isolated</strong> environment into which it installs the build
+requirements — which, with no internet, must come from somewhere local:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>pip<span class="hl-w"> </span>install<span class="hl-w"> </span>--no-index<span class="hl-w"> </span>--find-links<span class="hl-w"> </span>/opt/wheels<span class="hl-w"> </span>/opt/netprobe/src
+</code></pre>
+
+<ul>
+<li><code>--no-index</code> forbids PyPI entirely, so a missing wheel is an error instead of a hang on the network.</li>
+<li><code>--find-links DIR</code> lets pip use the wheels in a directory, both for the build requirements
+(<code>setuptools</code>) and for runtime dependencies (<code>pyyaml</code>).</li>
+<li><code>pip download -d DIR pkg…</code> on a machine with network access is how such a directory is made; wheels
+are specific to the Python version and CPU architecture when they contain compiled code (the
+<code>cp313 … aarch64</code> in PyYAML's file name).</li>
+</ul>
+<p>The source must be somewhere pip — and, for an editable install, every user — can read. Copying it to
+<code>/opt/netprobe/src</code> next to the venv keeps the deployment in one place. After a normal install the
+source could be deleted; keeping it documents exactly what was installed.</p>
+<h3 id="making-it-usable-by-everyone">Making it usable by everyone</h3>
+<p>Two things, both outside Python:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span>-R<span class="hl-w"> </span>a+rX<span class="hl-w"> </span>/opt/netprobe
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ln<span class="hl-w"> </span>-sfn<span class="hl-w"> </span>/opt/netprobe/venv/bin/netprobe<span class="hl-w"> </span>/usr/local/bin/netprobe
+</code></pre>
+
+<p><code>a+rX</code> gives everyone read access, and search/execute access <strong>only</strong> to directories and files that are
+already executable for someone — the capital <code>X</code>. That opens the venv without making every data file
+executable. <code>/usr/local/bin</code> is on the default <code>PATH</code> of every user and of most service managers, and
+it is the place administrators put locally installed programs. A symlink works because the console
+script finds its interpreter through its <code>#!</code> line, not through the directory it is called from.</p>
+<p>A wrapper script (<code>exec /opt/netprobe/venv/bin/netprobe &quot;$@&quot;</code>) is the alternative when the tool needs
+environment variables set.</p>
+<h3 id="why-not-just-sudo-pip-install">Why not just <code>sudo pip install</code>?</h3>
+<p>On Ubuntu 23.04 and later (and other distributions following PEP 668), the system Python is marked
+<strong>externally managed</strong>: <code>pip install</code> outside a venv fails with <code>externally-managed-environment</code>,
+because packages installed that way can overwrite files that <code>apt</code> owns and break system tools.
+<code>--break-system-packages</code> overrides it and does what it says. For applications, the choices are a venv
+in <code>/opt</code> as here, <code>pipx</code> (which automates exactly this: one venv per app plus a link in a <code>bin</code>
+directory), or the distribution's package when one exists.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the track's lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. Reproduce it as an ordinary user.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>id<span class="hl-w"> </span>-un<span class="hl-p">;</span><span class="hl-w"> </span>netprobe<span class="hl-w"> </span>--version<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">northelks</span>
+<span class="hl-go">bash: line 2: netprobe: command not found</span>
+<span class="hl-go">exit=127</span>
+<span class="hl-gp">$ </span>/opt/netprobe/venv/bin/netprobe<span class="hl-w"> </span>--version<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">bash: line 2: /opt/netprobe/venv/bin/netprobe: Permission denied</span>
+<span class="hl-go">exit=126</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-ld<span class="hl-w"> </span>/opt/netprobe<span class="hl-w"> </span>/opt/netprobe/venv
+<span class="hl-go">drwxr-xr-x 3 root root 4096 Sep 14 03:42 /opt/netprobe</span>
+<span class="hl-go">drwxr-x--- 5 root root 4096 Sep 14 03:42 /opt/netprobe/venv</span>
+</code></pre>
+
+<p>Exit 127 is &quot;not found on <code>PATH</code>&quot;; exit 126 is &quot;found but cannot be executed&quot;. The venv is <code>drwxr-x---</code>:
+nobody but root and group root can pass through it.</p>
+<p><strong>2. Confirm root is the only one it works for.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>/opt/netprobe/venv/bin/netprobe<span class="hl-w"> </span>check<span class="hl-w"> </span>--config<span class="hl-w"> </span>/etc/netprobe/targets.yaml
+<span class="hl-go">[{"target": "127.0.0.1:22", "open": true}, {"target": "127.0.0.1:9", "open": false}]</span>
+</code></pre>
+
+<p><strong>3. Ask pip how it was installed.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>/opt/netprobe/venv/bin/pip<span class="hl-w"> </span>list<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null
+<span class="hl-go">Package  Version Editable project location</span>
+<span class="hl-go">-------- ------- -------------------------</span>
+<span class="hl-go">netprobe 1.4.0   /root/src/netprobe</span>
+<span class="hl-go">pip      25.1.1</span>
+<span class="hl-go">PyYAML   6.0.3</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>/opt/netprobe/venv/bin/pip<span class="hl-w"> </span>show<span class="hl-w"> </span>netprobe
+<span class="hl-go">Name: netprobe</span>
+<span class="hl-go">Version: 1.4.0</span>
+<span class="hl-go">Summary: Which of these host:port targets accept a TCP connection?</span>
+<span class="hl-go">Home-page: </span>
+<span class="hl-go">Author: </span>
+<span class="hl-go">Author-email: </span>
+<span class="hl-go">License: </span>
+<span class="hl-go">Location: /opt/netprobe/venv/lib/python3.13/site-packages</span>
+<span class="hl-go">Editable project location: /root/src/netprobe</span>
+<span class="hl-go">Requires: pyyaml</span>
+<span class="hl-go">Required-by: </span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'ls /opt/netprobe/venv/lib/python3*/site-packages/ | grep -i netprobe'</span>
+<span class="hl-go">__editable__.netprobe-1.4.0.pth</span>
+<span class="hl-go">netprobe-1.4.0.dist-info</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'cat /opt/netprobe/venv/lib/python3*/site-packages/__editable__.netprobe-*.pth'</span>
+<span class="hl-go">/root/src/netprobe/src</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-ld<span class="hl-w"> </span>/root
+<span class="hl-go">drwx------ 6 root root 4096 Sep 14 03:42 /root</span>
+</code></pre>
+
+<p>There is no <code>netprobe/</code> package directory in <code>site-packages</code> — only metadata and a <code>.pth</code> file whose
+single line is a path into root's home, which is mode 0700.</p>
+<p><strong>4. Open the venv, and watch the next layer fail.</strong> (A deliberate intermediate step, to prove the
+diagnosis.)</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">755</span><span class="hl-w"> </span>/opt/netprobe/venv
+<span class="hl-gp">$ </span>/opt/netprobe/venv/bin/netprobe<span class="hl-w"> </span>--version<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">Traceback (most recent call last):</span>
+<span class="hl-go">  File "/opt/netprobe/venv/bin/netprobe", line 5, in &lt;module&gt;</span>
+<span class="hl-go">    from netprobe.cli import main</span>
+<span class="hl-go">ModuleNotFoundError: No module named 'netprobe'</span>
+<span class="hl-go">exit=1</span>
+<span class="hl-gp">$ </span>/opt/netprobe/venv/bin/python<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'import netprobe'</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">Traceback (most recent call last):</span>
+<span class="hl-go">  File "&lt;string&gt;", line 1, in &lt;module&gt;</span>
+<span class="hl-go">    import netprobe</span>
+<span class="hl-go">ModuleNotFoundError: No module named 'netprobe'</span>
+<span class="hl-go">exit=1</span>
+</code></pre>
+
+<p>The permission error is gone and the import error appears: Python added <code>/root/src/netprobe/src</code> to
+its path and could not see into it.</p>
+<p><strong>5. Install it properly, offline.</strong> What the wheelhouse holds, a readable copy of the source, then out
+with the editable install and in with a real one:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>/opt/wheels
+<span class="hl-go">packaging-26.3-py3-none-any.whl</span>
+<span class="hl-go">pyyaml-6.0.3-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl</span>
+<span class="hl-go">setuptools-84.0.0-py3-none-any.whl</span>
+<span class="hl-go">wheel-0.48.0-py3-none-any.whl</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>cp<span class="hl-w"> </span>-r<span class="hl-w"> </span>/root/src/netprobe<span class="hl-w"> </span>/opt/netprobe/src<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>/opt/netprobe/src
+<span class="hl-go">pyproject.toml</span>
+<span class="hl-go">src</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>/opt/netprobe/venv/bin/pip<span class="hl-w"> </span>uninstall<span class="hl-w"> </span>--yes<span class="hl-w"> </span>netprobe
+<span class="hl-go">Found existing installation: netprobe 1.4.0</span>
+<span class="hl-go">Uninstalling netprobe-1.4.0:</span>
+<span class="hl-go">  Successfully uninstalled netprobe-1.4.0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>/opt/netprobe/venv/bin/pip<span class="hl-w"> </span>install<span class="hl-w"> </span>--no-index<span class="hl-w"> </span>--find-links<span class="hl-w"> </span>/opt/wheels<span class="hl-w"> </span>/opt/netprobe/src
+<span class="hl-go">Looking in links: /opt/wheels</span>
+<span class="hl-go">Processing /opt/netprobe/src</span>
+<span class="hl-go">  Installing build dependencies: started</span>
+<span class="hl-go">  Installing build dependencies: finished with status 'done'</span>
+<span class="hl-go">  Getting requirements to build wheel: started</span>
+<span class="hl-go">  Getting requirements to build wheel: finished with status 'done'</span>
+<span class="hl-go">  Preparing metadata (pyproject.toml): started</span>
+<span class="hl-go">  Preparing metadata (pyproject.toml): finished with status 'done'</span>
+<span class="hl-go">Requirement already satisfied: pyyaml&gt;=6 in /opt/netprobe/venv/lib/python3.13/site-packages (from netprobe==1.4.0) (6.0.3)</span>
+<span class="hl-go">Building wheels for collected packages: netprobe</span>
+<span class="hl-go">  Building wheel for netprobe (pyproject.toml): started</span>
+<span class="hl-go">  Building wheel for netprobe (pyproject.toml): finished with status 'done'</span>
+<span class="hl-go">  Created wheel for netprobe: filename=netprobe-1.4.0-py3-none-any.whl size=2215 sha256=6340c344279a6b8717d4c7ef60420a9bd9a31754960177f1cd7fe074ead18f10</span>
+<span class="hl-go">  Stored in directory: /tmp/pip-ephem-wheel-cache-nt0n1v2v/wheels/3a/f7/c5/44d95c4fa039065478af4fa4417fdc44361a9aec25c84f6c07</span>
+<span class="hl-go">Successfully built netprobe</span>
+<span class="hl-go">Installing collected packages: netprobe</span>
+<span class="hl-go">Successfully installed netprobe-1.4.0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>/opt/netprobe/venv/bin/pip<span class="hl-w"> </span>show<span class="hl-w"> </span>-f<span class="hl-w"> </span>netprobe<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sed<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s1">'1,12p'</span>
+<span class="hl-go">Name: netprobe</span>
+<span class="hl-go">Version: 1.4.0</span>
+<span class="hl-go">Summary: Which of these host:port targets accept a TCP connection?</span>
+<span class="hl-go">Home-page: </span>
+<span class="hl-go">Author: </span>
+<span class="hl-go">Author-email: </span>
+<span class="hl-go">License: </span>
+<span class="hl-go">Location: /opt/netprobe/venv/lib/python3.13/site-packages</span>
+<span class="hl-go">Requires: pyyaml</span>
+<span class="hl-go">Required-by: </span>
+<span class="hl-go">Files:</span>
+<span class="hl-go">  ../../../bin/netprobe</span>
+</code></pre>
+
+<p>&quot;Installing build dependencies&quot; came from <code>/opt/wheels</code> — no network was involved. The &quot;Editable
+project location&quot; line is gone, and <code>pip show -f</code> now lists real files.</p>
+<p><strong>6. Open it to everyone and put it on the <code>PATH</code>.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span>-R<span class="hl-w"> </span>a+rX<span class="hl-w"> </span>/opt/netprobe<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>ln<span class="hl-w"> </span>-sfn<span class="hl-w"> </span>/opt/netprobe/venv/bin/netprobe<span class="hl-w"> </span>/usr/local/bin/netprobe<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/usr/local/bin/netprobe
+<span class="hl-go">lrwxrwxrwx 1 root root 31 Sep 14 03:42 /usr/local/bin/netprobe -&gt; /opt/netprobe/venv/bin/netprobe</span>
+<span class="hl-gp">$ </span>head<span class="hl-w"> </span>-1<span class="hl-w"> </span>/opt/netprobe/venv/bin/netprobe
+<span class="hl-gp">#</span>!/opt/netprobe/venv/bin/python3
+</code></pre>
+
+<p>The console script names the venv's interpreter, so the symlink needs no activation.</p>
+<p><strong>7. Test as the ordinary user — including with the original checkout gone.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>netprobe<span class="hl-w"> </span>--version<span class="hl-p">;</span><span class="hl-w"> </span>netprobe<span class="hl-w"> </span>check<span class="hl-w"> </span>--config<span class="hl-w"> </span>/etc/netprobe/targets.yaml
+<span class="hl-go">netprobe 1.4.0</span>
+<span class="hl-go">[{"target": "127.0.0.1:22", "open": true}, {"target": "127.0.0.1:9", "open": false}]</span>
+<span class="hl-gp">$ </span>/opt/netprobe/venv/bin/python<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'import netprobe; print(netprobe.__file__)'</span>
+<span class="hl-go">/opt/netprobe/venv/lib/python3.13/site-packages/netprobe/__init__.py</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>mv<span class="hl-w"> </span>/root/src/netprobe<span class="hl-w"> </span>/root/src/netprobe.away<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>netprobe<span class="hl-w"> </span>--version<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>mv<span class="hl-w"> </span>/root/src/netprobe.away<span class="hl-w"> </span>/root/src/netprobe
+<span class="hl-go">netprobe 1.4.0</span>
+</code></pre>
+
+<p>The package imports from inside the venv, and moving the developer's checkout away changes nothing.</p>
+<p><strong>8. Grade.</strong> The checks ran as the unprivileged learner account, the machine rebooted, and they ran
+again: all three passed in both passes.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong><code>chmod 755 /opt/netprobe/venv</code> and stopping there.</strong> It turns <code>Permission denied</code> into
+<code>ModuleNotFoundError</code>, which looks like a new, unrelated problem. The editable pointer is still there.</p>
+<p><strong><code>chmod 755 /root</code> to make the checkout readable.</strong> It exposes root's home — SSH keys, shell history,
+credentials in dotfiles — to every account, in order to keep a development install alive in
+production.</p>
+<p><strong><code>sudo pip install --break-system-packages .</code></strong> It installs into the system Python, where the next
+<code>apt upgrade</code> of a Python package can break it or be broken by it, and it bypasses the venv that was
+created for exactly this reason.</p>
+<p><strong><code>pip install --user</code> as each user.</strong> Every account gets its own copy, of whatever version was
+current that day, in its home directory; nothing is shared, and services running as system accounts
+without a home cannot use it.</p>
+<p><strong>Activating the venv in <code>/etc/profile</code>.</strong> Activation only changes <code>PATH</code> for interactive login
+shells. cron, systemd and <code>sudo</code> do not read it. A link in <code>/usr/local/bin</code> works everywhere.</p>
+<p><strong>Reinstalling with <code>pip install -e /opt/netprobe/src</code>.</strong> Better than <code>/root</code>, but still a pointer:
+editing, moving or deleting <code>/opt/netprobe/src</code> changes the installed tool. Use a normal install.</p>
+<p><strong>Running <code>pip install</code> without <code>--no-index</code> on a machine without internet.</strong> pip tries PyPI first and
+waits for timeouts and retries before it falls back or fails. <code>--no-index</code> makes the failure immediate
+and the source of every package explicit.</p>
+<p><strong>Testing with <code>sudo</code>.</strong> Everything works as root. Test as the account that will use the tool.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>python3<span class="hl-w"> </span>-m<span class="hl-w"> </span>venv<span class="hl-w"> </span>/opt/APP/venv<span class="hl-w">                          </span><span class="hl-c1"># a venv (needs python3-venv on Ubuntu)</span>
+<span class="hl-gp">$ </span>/opt/APP/venv/bin/pip<span class="hl-w"> </span>install<span class="hl-w"> </span>--no-index<span class="hl-w"> </span>--find-links<span class="hl-w"> </span>/opt/wheels<span class="hl-w"> </span>/opt/APP/src
+<span class="hl-gp">$ </span>/opt/APP/venv/bin/pip<span class="hl-w"> </span>list<span class="hl-w">                             </span><span class="hl-c1"># editable installs show their location</span>
+<span class="hl-gp">$ </span>/opt/APP/venv/bin/pip<span class="hl-w"> </span>show<span class="hl-w"> </span>-f<span class="hl-w"> </span>PKG<span class="hl-w">                      </span><span class="hl-c1"># where it is, which files it installed</span>
+<span class="hl-gp">$ </span>/opt/APP/venv/bin/pip<span class="hl-w"> </span>uninstall<span class="hl-w"> </span>--yes<span class="hl-w"> </span>PKG
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>/opt/APP/venv/lib/python3*/site-packages/<span class="hl-w">           </span><span class="hl-c1"># __editable__*.pth = editable install</span>
+<span class="hl-gp">$ </span>/opt/APP/venv/bin/python<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'import PKG; print(PKG.__file__)'</span>
+<span class="hl-gp">$ </span>head<span class="hl-w"> </span>-1<span class="hl-w"> </span>/opt/APP/venv/bin/TOOL<span class="hl-w">                         </span><span class="hl-c1"># the interpreter a console script uses</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span>-R<span class="hl-w"> </span>a+rX<span class="hl-w"> </span>/opt/APP<span class="hl-w">                            </span><span class="hl-c1"># readable to all; X only where already executable</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ln<span class="hl-w"> </span>-sfn<span class="hl-w"> </span>/opt/APP/venv/bin/TOOL<span class="hl-w"> </span>/usr/local/bin/TOOL
+<span class="hl-gp">$ </span>pip<span class="hl-w"> </span>download<span class="hl-w"> </span>-d<span class="hl-w"> </span>/opt/wheels<span class="hl-w"> </span>PKG…<span class="hl-w">                       </span><span class="hl-c1"># build a wheelhouse where there is network</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-u<span class="hl-w"> </span>someuser<span class="hl-w"> </span>TOOL<span class="hl-w"> </span>…<span class="hl-w">                                </span><span class="hl-c1"># test as someone who is not root</span>
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>Exit status / error</th>
+<th>Layer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>127, <code>command not found</code></td>
+<td>nothing on <code>PATH</code> has that name</td>
+</tr>
+<tr>
+<td>126, <code>Permission denied</code></td>
+<td>a directory on the way, or the file, is not executable for you</td>
+</tr>
+<tr>
+<td><code>ModuleNotFoundError</code></td>
+<td>the interpreter runs, but the package is not on its import path</td>
+</tr>
+<tr>
+<td><code>externally-managed-environment</code></td>
+<td>pip refused to modify a distribution-managed Python</td>
+</tr>
+</tbody>
+</table>
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.python.org/3/library/venv.html</li>
+<li>https://pip.pypa.io/en/stable/topics/local-project-installs/</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Why does a program in a venv's <code>bin/</code> work without activating the venv?</p>
+<blockquote>
+<p>Its <code>#!</code> line names the venv's own interpreter, which finds <code>pyvenv.cfg</code> and uses the venv's <code>site-packages</code>; activation only changes <code>PATH</code> for convenience.</p>
+</blockquote>
+</li>
+<li>
+<p>What does an editable install put into <code>site-packages</code>, and what does it depend on at run time?</p>
+<blockquote>
+<p>Metadata plus a <code>.pth</code> file (or an import hook) that points at the source tree; at run time the source directory must exist and be readable by whoever imports the package.</p>
+</blockquote>
+</li>
+<li>
+<p>Name the three errors an ordinary user met, in order, and the layer each belongs to.</p>
+<blockquote>
+<p><code>command not found</code> (exit 127, <code>PATH</code>), <code>Permission denied</code> (exit 126, directory permissions on the venv), <code>ModuleNotFoundError</code> (import path pointing into unreadable <code>/root</code>).</p>
+</blockquote>
+</li>
+<li>
+<p>What do <code>--no-index</code> and <code>--find-links /opt/wheels</code> each do?</p>
+<blockquote>
+<p><code>--no-index</code> stops pip from contacting PyPI; <code>--find-links</code> lets it install packages — including build requirements such as setuptools — from the wheels in that directory.</p>
+</blockquote>
+</li>
+<li>
+<p>What does the capital <code>X</code> in <code>chmod -R a+rX</code> do differently from <code>a+rx</code>?</p>
+<blockquote>
+<p>It adds execute/search permission only to directories and to files already executable by someone, instead of making every file executable.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is a symlink in <code>/usr/local/bin</code> better than activating the venv in <code>/etc/profile</code>?</p>
+<blockquote>
+<p><code>/usr/local/bin</code> is on the default PATH for every user, cron and most service managers; activation in a profile only affects interactive login shells.</p>
+</blockquote>
+</li>
+<li>
+<p>What does Ubuntu's <code>externally-managed-environment</code> error protect, and what are the proper alternatives?</p>
+<blockquote>
+<p>It stops pip from overwriting or conflicting with Python packages installed by apt in the system Python (PEP 668). Use a venv, pipx, or the distribution's package.</p>
+</blockquote>
+</li>
+<li>
+<p>How can you prove an installed tool no longer depends on a developer's checkout?</p>
+<blockquote>
+<p>Check <code>pip list</code>/<code>pip show</code> for an editable location and <code>PKG.__file__</code> pointing inside the venv, then move the checkout away and run the tool as an ordinary user.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publish when complete, clean up however it ends · Norboten</title>
+<meta name="description" content="An export is read by someone else. That one fact changes what &amp;quot;done&amp;quot; means for the script that writes it: the warehouse importer does not wait for the">
+<link rel="canonical" href="https://norboten.org/journals/bash-05-export-that-leaves-its-mess/"><meta property="og:title" content="Publish when complete, clean up however it ends · Norboten">
+<meta property="og:description" content="An export is read by someone else. That one fact changes what &amp;quot;done&amp;quot; means for the script that writes it: the warehouse importer does not wait for the">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/bash-05-export-that-leaves-its-mess/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Publish when complete, clean up however it ends · Norboten">
+<meta name="twitter:description" content="An export is read by someone else. That one fact changes what &amp;quot;done&amp;quot; means for the script that writes it: the warehouse importer does not wait for the">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Publish when complete, clean up however it ends",
+  "description": "An export is read by someone else. That one fact changes what \u0026quot;done\u0026quot; means for the script that writes it: the warehouse importer does not wait for the",
+  "url": "https://norboten.org/journals/bash-05-export-that-leaves-its-mess/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1694,
+  "timeRequired": "PT35M",
+  "about": ["Bash", "Linux basics"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Export That Leaves Its Mess Behind</div>
+    <h1>Publish when complete, clean up however it ends</h1>
+    <p class="muted">
+      35 minutes' reading · 1694 words ·<span class="tag">Bash</span><span class="tag">Linux basics</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 97 words</title><rect x="0.0" y="0" width="36.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 660 words</title><rect x="39.4" y="0" width="247.7" height="30" rx="4" fill="#1d2a23"/><text x="47.4" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 617 words</title><rect x="290.1" y="0" width="231.6" height="30" rx="4" fill="#4ade80"/><text x="298.1" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 209 words</title><rect x="524.7" y="0" width="78.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 80 words</title><rect x="606.1" y="0" width="30.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 46 words</title><rect x="639.2" y="0" width="17.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 268 words</title><rect x="659.4" y="0" width="100.6" height="30" rx="4" fill="#1d2a23"/><text x="667.4" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/bash-05-export-that-leaves-its-mess/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>An export is read by someone else. That one fact changes what &quot;done&quot; means for the script that
+writes it: the warehouse importer does not wait for the script to finish, it takes whatever file has
+the right name the moment the name appears. So a file that is still being written, or that was cut
+short by a failure or a signal, is not a harmless leftover — it is a wrong answer delivered to another
+system.</p>
+<p><code>export-orders</code> makes three mistakes that all come from forgetting that. It writes straight to the
+name the importer watches. It keeps its work in a file with a fixed name in <code>/tmp</code>, shared by every
+run on the machine. And it has no idea it can be stopped: nothing cleans up when it fails, and nothing
+at all runs when it receives <code>SIGTERM</code>.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Publish a file atomically: write it under a name nobody reads, then <code>mv</code> it into place.</li>
+<li>Create private temporary files with <code>mktemp</code>, and say why a fixed name in <code>/tmp</code> is a bug and a
+security problem.</li>
+<li>Install an <code>EXIT</code> trap that removes temporary files on success, failure and signals, and know
+which shells run it when a signal kills the script.</li>
+<li>Explain why trapping <code>SIGTERM</code> yourself makes a script slower to stop, not safer.</li>
+<li>Stop a whole process group the way systemd stops a unit, and test a script against it.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="readers-do-not-wait">Readers do not wait</h3>
+<p>A redirection such as <code>gzip -c work &gt; &quot;$DEST/$name&quot;</code> creates the file with its final name first,
+then fills it. From the first byte, a reader that lists the directory sees <code>orders-…csv.gz</code>. If the
+script is killed, the disk is full, or an input fails half way, the file stays short under a name that
+says &quot;complete&quot;.</p>
+<p>The fix is to separate <em>writing</em> from <em>publishing</em>. Write to a name the reader ignores — here a hidden
+<code>.orders.XXXXXX</code> in the same directory — and when it is complete, <code>mv</code> it to the final name. Within one
+file system <code>mv</code> is a <code>rename(2)</code>: the name points at the old inode or at the new one, never at
+something in between. The temporary file has to be in the same directory (or at least the same file
+system); across file systems <code>mv</code> falls back to copying, and the half-written window is back.</p>
+<h3 id="temporary-files-that-belong-to-one-run">Temporary files that belong to one run</h3>
+<p><code>/tmp/export.tmp</code> is the same path for every run by every user. Two runs at once truncate and delete
+each other's work. A file left behind by one user can make another user's run fail, because the
+sticky <code>/tmp</code> directory will not let them replace it. And a predictable name in a world-writable
+directory is a classic attack: another user creates it first, as a symlink to a file of yours.</p>
+<p><code>mktemp</code> creates a new file with a random name, exclusively and with mode <code>0600</code>, and prints the name.
+It honours <code>TMPDIR</code>. <code>mktemp &quot;$DEST/.orders.XXXXXX&quot;</code> does the same in a chosen directory.</p>
+<h3 id="traps-what-runs-when-a-script-ends">Traps: what runs when a script ends</h3>
+<p><code>trap cleanup EXIT</code> runs <code>cleanup</code> when the shell exits: at the end of the script, through <code>exit</code>,
+because <code>set -e</code> stopped it — and, in bash, when a signal such as <code>SIGTERM</code>, <code>SIGINT</code> or <code>SIGHUP</code> kills
+it. Bash handles those fatal signals by running the <code>EXIT</code> trap and then dying of the signal, so the
+exit status still says what happened (128 + the signal number: 143 for <code>SIGTERM</code>). That one line is
+enough cleanup for a bash script.</p>
+<p>It is not portable. <code>dash</code>, which is <code>/bin/sh</code> on Ubuntu, does not run an <code>EXIT</code> trap when a signal
+kills it; a POSIX <code>sh</code> script has to trap the signals too. Which shell runs the script is decided by
+its <code>#!</code> line, not by the shell you test it from.</p>
+<h3 id="trapping-sigterm-yourself-makes-a-script-wait">Trapping <code>SIGTERM</code> yourself makes a script wait</h3>
+<p>When bash has <strong>no</strong> trap for <code>SIGTERM</code>, the signal is handled at once, even while the script is
+waiting for a foreground command: the <code>EXIT</code> trap runs and bash exits. When the script <strong>does</strong> trap
+<code>SIGTERM</code>, bash runs that trap only after the foreground command returns — and then carries on with
+the next line unless the trap exits. A trap such as <code>trap 'echo stopping' TERM</code> turns &quot;stop now&quot; into
+&quot;finish this command, print something, and keep going&quot;. If the command is blocked — reading from a
+pipe nobody writes to, waiting on a stalled network file — the script does not stop at all until
+systemd sends <code>SIGKILL</code>, and <code>SIGKILL</code> runs no trap.</p>
+<p>So in bash, trap <code>EXIT</code> for cleanup and leave <code>SIGTERM</code> alone, unless the script has a real reason to
+finish its current step first; in that case start the long command in the background and <code>wait</code> for
+it, because <code>wait</code> is interrupted by a trapped signal.</p>
+<h3 id="stopping-a-group-as-systemd-does">Stopping a group, as systemd does</h3>
+<p>When systemd stops a unit, it sends <code>SIGTERM</code> to every process in the unit's control group, waits
+(90 seconds by default), and then sends <code>SIGKILL</code>. From a shell, <code>setsid cmd &amp;</code> puts a command in a
+new session and process group, and <code>kill -TERM -- -PID</code> signals the whole group — the same shape.
+That is how this lab's grader stops the export, and it is the honest way to test cleanup: a signal
+sent to the script alone is a situation that rarely happens.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Run on the lab's own machine: <code>ubuntu-26.04-devops</code>, GNU bash 5.3.9, before any change.</p>
+<p>An order file that cannot be read, and an unprivileged user running the export into a directory of
+its own:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">000</span><span class="hl-w"> </span>/srv/orders/afternoon.csv<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>-u<span class="hl-w"> </span>nobody<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">EXPORT_DEST</span><span class="hl-o">=</span>/tmp/exp1<span class="hl-w"> </span>bash<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'mkdir -p /tmp/exp1; export-orders'</span><span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/tmp/exp1<span class="hl-w"> </span>/tmp/export.tmp<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">644</span><span class="hl-w"> </span>/srv/orders/afternoon.csv
+<span class="hl-go">tail: cannot open '/srv/orders/afternoon.csv' for reading: Permission denied</span>
+<span class="hl-go">exported to /tmp/exp1/orders-2026-09-16.csv.gz</span>
+<span class="hl-go">exit status: 0</span>
+<span class="hl-go">/tmp/exp1:</span>
+<span class="hl-go">total 4</span>
+<span class="hl-go">-rw-r--r-- 1 nobody nogroup 64 Sep 16 16:06 orders-2026-09-16.csv.gz</span>
+<span class="hl-go">ls: cannot access '/tmp/export.tmp': No such file or directory</span>
+</code></pre>
+
+<p>A 64-byte export with the morning's rows only, published under the final name, with exit status 0.
+The same happens when the destination itself cannot be written:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>export-orders<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">/usr/local/bin/export-orders: line 13: /srv/exports/orders-2026-09-16.csv.gz: Permission denied</span>
+<span class="hl-go">exported to /srv/exports/orders-2026-09-16.csv.gz</span>
+<span class="hl-go">exit status: 0</span>
+</code></pre>
+
+<p>Now an export stopped half way. The second order file is a named pipe, so reading it blocks — the
+export is mid-way and stays there — and the whole process group gets <code>SIGTERM</code>, as it would from
+systemd:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/tmp/slow/src<span class="hl-w"> </span>/tmp/slow/dest<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'id,sku,qty\n1,A,1\n'</span><span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/slow/src/a.csv<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>mkfifo<span class="hl-w"> </span>/tmp/slow/src/b.csv<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>rm<span class="hl-w"> </span>-f<span class="hl-w"> </span>/tmp/export.tmp<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">(</span><span class="hl-nv">EXPORT_SRC</span><span class="hl-o">=</span>/tmp/slow/src<span class="hl-w"> </span><span class="hl-nv">EXPORT_DEST</span><span class="hl-o">=</span>/tmp/slow/dest<span class="hl-w"> </span>setsid<span class="hl-w"> </span>export-orders<span class="hl-w"> </span><span class="hl-p">&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-nv">$!</span><span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/slow/pid<span class="hl-o">)</span><span class="hl-p">;</span><span class="hl-w"> </span>sleep<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">kill</span><span class="hl-w"> </span>-TERM<span class="hl-w"> </span>--<span class="hl-w"> </span>-<span class="hl-k">$(</span>cat<span class="hl-w"> </span>/tmp/slow/pid<span class="hl-k">)</span><span class="hl-p">;</span><span class="hl-w"> </span>sleep<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/tmp/slow/dest<span class="hl-w"> </span>/tmp/export.tmp<span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/tmp/export.tmp
+<span class="hl-go">-rw-rw-r-- 1 northelks northelks 17 Sep 16 16:06 /tmp/export.tmp</span>
+
+<span class="hl-go">/tmp/slow/dest:</span>
+<span class="hl-go">total 0</span>
+<span class="hl-go">id,sku,qty</span>
+<span class="hl-go">1,A,1</span>
+</code></pre>
+
+<p>The shared work file is left in <code>/tmp</code> with half an export in it, owned by whoever ran last.</p>
+<p>Three experiments show what a trap does with a signal. With only an <code>EXIT</code> trap, bash cleans up and
+dies of the signal; <code>dash</code> does not run the trap at all; and a <code>TERM</code> trap waits for the foreground
+command, then lets the script carry on:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>bash<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'trap "echo cleaned" EXIT; sleep 5; echo after'</span><span class="hl-w"> </span><span class="hl-p">&amp;</span><span class="hl-w"> </span>sleep<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">kill</span><span class="hl-w"> </span>-TERM<span class="hl-w"> </span><span class="hl-nv">$!</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">wait</span><span class="hl-w"> </span><span class="hl-nv">$!</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"status=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">cleaned</span>
+<span class="hl-go">status=143</span>
+<span class="hl-gp">$ </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'trap "echo cleaned" EXIT; kill -TERM $$; echo after'</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"status=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">status=143</span>
+<span class="hl-go">Terminated                 sh -c 'trap "echo cleaned" EXIT; kill -TERM $$; echo after'</span>
+<span class="hl-gp">$ </span>bash<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'trap "echo trap ran" TERM; sleep 3; echo after'</span><span class="hl-w"> </span><span class="hl-p">&amp;</span><span class="hl-w"> </span>sleep<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">kill</span><span class="hl-w"> </span>-TERM<span class="hl-w"> </span><span class="hl-nv">$!</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">wait</span><span class="hl-w"> </span><span class="hl-nv">$!</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"status=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">trap ran</span>
+<span class="hl-go">after</span>
+<span class="hl-go">status=0</span>
+</code></pre>
+
+<p>The last one is the trap you do not want: it ran two seconds late, and the script then went on as if
+nothing had happened.</p>
+<p>After the fix — <code>set -euo pipefail</code>, a private work file from <code>mktemp</code>, the partial export as a hidden
+<code>.orders.XXXXXX</code> in the destination, and an <code>EXIT</code> trap that removes both — the same interruption,
+looking at the destination before and after the signal:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/tmp/slow/src<span class="hl-w"> </span>/tmp/slow/dest<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'id,sku,qty\n1,A,1\n'</span><span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/slow/src/a.csv<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>mkfifo<span class="hl-w"> </span>/tmp/slow/src/b.csv<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">(</span><span class="hl-nv">EXPORT_SRC</span><span class="hl-o">=</span>/tmp/slow/src<span class="hl-w"> </span><span class="hl-nv">EXPORT_DEST</span><span class="hl-o">=</span>/tmp/slow/dest<span class="hl-w"> </span>setsid<span class="hl-w"> </span>export-orders<span class="hl-w"> </span><span class="hl-p">&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-nv">$!</span><span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/slow/pid<span class="hl-o">)</span><span class="hl-p">;</span><span class="hl-w"> </span>sleep<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-la<span class="hl-w"> </span>/tmp/slow/dest<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">kill</span><span class="hl-w"> </span>-TERM<span class="hl-w"> </span>--<span class="hl-w"> </span>-<span class="hl-k">$(</span>cat<span class="hl-w"> </span>/tmp/slow/pid<span class="hl-k">)</span><span class="hl-p">;</span><span class="hl-w"> </span>sleep<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-la<span class="hl-w"> </span>/tmp/slow/dest<span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>/tmp/export.tmp<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span>
+<span class="hl-go">total 0</span>
+<span class="hl-go">drwxrwxr-x 2 northelks northelks  60 Sep 16 16:10 .</span>
+<span class="hl-go">drwxrwxr-x 4 northelks northelks 100 Sep 16 16:10 ..</span>
+<span class="hl-go">-rw------- 1 northelks northelks   0 Sep 16 16:10 .orders.NcK4lp</span>
+<span class="hl-go">total 0</span>
+<span class="hl-go">drwxrwxr-x 2 northelks northelks  40 Sep 16 16:10 .</span>
+<span class="hl-go">drwxrwxr-x 4 northelks northelks 100 Sep 16 16:10 ..</span>
+<span class="hl-go">ls: cannot access '/tmp/export.tmp': No such file or directory</span>
+</code></pre>
+
+<p>While it runs, the only file in the destination is a hidden, private one the importer ignores; after
+the signal there is nothing at all. And a good run still publishes the whole export:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>rm<span class="hl-w"> </span>/tmp/slow/src/b.csv<span class="hl-p">;</span><span class="hl-w"> </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/tmp/good<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nv">EXPORT_DEST</span><span class="hl-o">=</span>/tmp/good<span class="hl-w"> </span>export-orders<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>zcat<span class="hl-w"> </span>/tmp/good/orders-*.csv.gz
+<span class="hl-go">exported to /tmp/good/orders-2026-09-16.csv.gz</span>
+<span class="hl-go">exit status: 0</span>
+<span class="hl-go">id,sku,qty</span>
+<span class="hl-go">1003,WASHER-6,200</span>
+<span class="hl-go">1001,BOLT-M6,40</span>
+<span class="hl-go">1002,NUT-M6,40</span>
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong>Deleting the temporary file at the end.</strong> <code>rm $tmp</code> as the last line runs only when every line
+before it succeeded; a failure or a signal skips it. That is the original script.</li>
+<li><strong>Adding <code>trap '…' TERM</code> &quot;to be safe&quot;.</strong> In bash it delays the reaction to the signal until the
+current command ends, and a trap that does not <code>exit</code> lets the script continue. The <code>EXIT</code> trap
+already runs when <code>SIGTERM</code> kills bash.</li>
+<li><strong>Testing cleanup with <code>sh script</code>.</strong> <code>dash</code> does not run an <code>EXIT</code> trap on a signal; run the script
+the way its <code>#!</code> line says.</li>
+<li><strong>Writing the temporary file to <code>/tmp</code> and moving it to <code>/srv/exports</code>.</strong> Across file systems <code>mv</code>
+copies, and the importer can see the copy in progress. Keep the partial file in the destination
+directory, under a name the reader ignores.</li>
+<li><strong>A name with <code>$$</code> in it.</strong> <code>/tmp/export.$$</code> is unique per process but predictable, and it is not
+created exclusively or privately. <code>mktemp</code> is.</li>
+<li><strong>Checking only the happy path.</strong> A cleanup that was never exercised does not work. Test failure and
+interruption on purpose, with a signal to the process group.</li>
+<li><strong>Relying on <code>set -e</code> for cleanup.</strong> It stops the script; it does not remove anything.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-nb">set</span><span class="hl-w"> </span>-euo<span class="hl-w"> </span>pipefail
+<span class="hl-nv">work</span><span class="hl-o">=</span><span class="hl-k">$(</span>mktemp<span class="hl-k">)</span><span class="hl-w">                                  </span><span class="hl-c1"># private, 0600, honours TMPDIR</span>
+<span class="hl-nv">part</span><span class="hl-o">=</span><span class="hl-k">$(</span>mktemp<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$DEST</span><span class="hl-s2">/.orders.XXXXXX"</span><span class="hl-k">)</span><span class="hl-w">           </span><span class="hl-c1"># same directory as the final file</span>
+cleanup<span class="hl-o">()</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span>rm<span class="hl-w"> </span>-f<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$work</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$part</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+<span class="hl-nb">trap</span><span class="hl-w"> </span>cleanup<span class="hl-w"> </span>EXIT<span class="hl-w">            </span><span class="hl-c1"># bash: also runs when SIGTERM/SIGINT/SIGHUP kill the script</span>
+
+produce<span class="hl-w"> </span>&gt;<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$part</span><span class="hl-s2">"</span>
+chmod<span class="hl-w"> </span><span class="hl-m">644</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$part</span><span class="hl-s2">"</span>
+mv<span class="hl-w"> </span>-f<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$part</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$DEST</span><span class="hl-s2">/</span><span class="hl-nv">$name</span><span class="hl-s2">"</span><span class="hl-w">                  </span><span class="hl-c1"># atomic within one file system</span>
+
+long_command<span class="hl-w"> </span><span class="hl-p">&amp;</span><span class="hl-w"> </span><span class="hl-nb">wait</span><span class="hl-w"> </span><span class="hl-nv">$!</span><span class="hl-w">                          </span><span class="hl-c1"># a trapped signal interrupts wait</span>
+setsid<span class="hl-w"> </span>cmd<span class="hl-w"> </span><span class="hl-p">&amp;</span><span class="hl-w"> </span><span class="hl-nb">kill</span><span class="hl-w"> </span>-TERM<span class="hl-w"> </span>--<span class="hl-w"> </span>-<span class="hl-nv">$!</span><span class="hl-w">                  </span><span class="hl-c1"># signal a whole process group</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<ul>
+<li><code>man 1 bash</code>, <em>SIGNALS</em> and the <code>trap</code> builtin, for exactly when traps run.</li>
+<li><code>man 1 mktemp</code> and <code>man 2 rename</code>.</li>
+<li><code>man 5 systemd.kill</code>, <code>KillMode=</code> and <code>TimeoutStopSec=</code>, for how a unit is stopped.</li>
+<li><code>man 7 signal</code>, for the default action of each signal.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Why is <code>gzip -c work &gt; &quot;$DEST/orders-$(date +%F).csv.gz&quot;</code> unsafe when an importer watches <code>$DEST</code>?</p>
+<blockquote>
+<p>The redirection creates the final name before gzip has written anything, so the importer can
+take a partial file; a failure or a signal leaves it partial for good.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must the partial file live in the same directory, or file system, as the final one?</p>
+<blockquote>
+<p>Only a rename within one file system is atomic; across file systems <code>mv</code> copies, and the copy is
+visible while it is being written.</p>
+</blockquote>
+</li>
+<li>
+<p>Does <code>trap cleanup EXIT</code> run when bash is killed by <code>SIGTERM</code>? And in <code>dash</code>?</p>
+<blockquote>
+<p>In bash, yes: bash runs the <code>EXIT</code> trap and then dies of the signal, with status 143. <code>dash</code> does
+not run it, so a POSIX <code>sh</code> script has to trap the signals as well.</p>
+</blockquote>
+</li>
+<li>
+<p>What changes when a bash script traps <code>SIGTERM</code> itself?</p>
+<blockquote>
+<p>The trap runs only after the current foreground command returns, and the script continues
+afterwards unless the trap exits — so the script stops later, or not at all if that command is
+blocked.</p>
+</blockquote>
+</li>
+<li>
+<p>What three problems does a fixed path such as <code>/tmp/export.tmp</code> cause?</p>
+<blockquote>
+<p>Concurrent runs overwrite and delete each other's work, a leftover owned by another user makes
+later runs fail, and a predictable name in a world-writable directory can be pre-created as a
+symlink by someone else.</p>
+</blockquote>
+</li>
+<li>
+<p>How does systemd stop a running service?</p>
+<blockquote>
+<p>It sends <code>SIGTERM</code> to every process in the unit's control group, waits for <code>TimeoutStopSec=</code>, then
+sends <code>SIGKILL</code> to whatever remains.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

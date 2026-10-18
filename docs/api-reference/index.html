@@ -1,0 +1,1053 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API reference · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/docs/api-reference/"><meta property="og:title" content="API reference · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/docs/api-reference/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="API reference · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" aria-current="page">Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      <div class="group">Getting started</div>
+      <a href="../../docs/getting-started/"
+>Install and first lab</a>
+      <a href="../../docs/tui-reference/"
+>TUI reference</a>
+      <a href="../../docs/faq/"
+>FAQ</a>
+      <div class="group">Contributing labs</div>
+      <a href="../../docs/writing-a-lab/"
+>Writing a lab</a>
+      <a href="../../docs/lab-spec/"
+>Lab specification</a>
+      <a href="../../docs/quiz-spec/"
+>Theory question spec</a>
+      <a href="../../docs/claude-code-plugin/"
+>The Claude Code plugin</a>
+      <div class="group">How it is built</div>
+      <a href="../../docs/architecture/"
+>Architecture</a>
+      <a href="../../docs/rated-labs/"
+>Rated and unrated labs</a>
+      <a href="../../docs/claude-code-in-norboten/"
+>How Norboten uses Claude</a>
+      <a href="../../docs/mcp/"
+>The MCP server</a>
+      <a href="../../docs/data-model/"
+>Data model</a>
+      <a href="../../docs/api-reference/"
+aria-current="page">API reference</a>
+      <a href="../../docs/pipelines/"
+>Pipelines</a>
+      <a href="../../docs/open-questions/"
+>Open questions</a>
+      <div class="group">Running it yourself</div>
+      <a href="../../docs/self-hosting/"
+>Self-hosting and configuration</a>
+      <a href="../../docs/deploy/"
+>Deploying the server</a>
+      <a href="../../docs/ci-cd/"
+>CI/CD</a>
+      <a href="../../docs/releasing/"
+>Releasing</a>
+    </nav>
+    <article class="prose">
+      <h1 id="api-reference">API reference</h1>
+<p>&lt;!-- generated by <code>python -m norboten_api.reference</code>; do not edit by hand --&gt;</p>
+<p>The API is served at <code>https://api.&lt;domain&gt;</code> (<code>http://localhost:8000</code> with <code>make stack-up</code>).
+Requests and responses are JSON unless noted. The interactive form of the same document is at
+<code>/docs</code> on any running API.</p>
+<p><strong>Signing requests.</strong> Endpoints marked <em>token</em> need <code>Authorization: Bearer &lt;token&gt;</code> — a <code>web</code> or
+<code>cli</code> token from signing in with GitHub (<code>/auth/github/poll</code> in a terminal,
+<code>/auth/github/exchange</code> on the site), which is the only way in: no password anywhere. On a server
+with <code>NORBOTEN_REQUIRE_AUTH=false</code> (tests, <code>make stack-up</code>) <code>X-Debug-User: &lt;id&gt;</code> stands in for
+one. Endpoints marked <em>public</em> need nothing.</p>
+<p><strong>Errors</strong> are <code>{&quot;detail&quot;: &quot;…&quot;}</code> with a status: 401 no or bad token, 403 not yours (or denied on
+GitHub), 404 unknown, 409 conflict (a taken nick), 410 gone (a sign-in expired or already used),
+422 invalid body, 428 still waiting for GitHub, 429 rate-limited, 502/503 a model provider, GitHub
+or Discord failed, or this deployment has none.</p>
+<h2 id="health-and-metrics">Health and metrics</h2>
+<h3 id="get-healthz"><code>GET /healthz</code></h3>
+<p><em>public</em></p>
+<p>The process is up. Docker's health check and Caddy use this.</p>
+<h3 id="get-readyz"><code>GET /readyz</code></h3>
+<p><em>public</em></p>
+<p>The process can do its job: the database and Redis answer. A deploy waits on this and rolls back when it never turns ready.</p>
+<h2 id="accounts-and-signing-in">Accounts and signing in</h2>
+<h3 id="get-authconfig"><code>GET /auth/config</code></h3>
+<p><em>public</em></p>
+<p>How to sign in on this server. The TUI and the site ask, so a self-hosted server needs no new release; <code>discord</code> says whether the account page offers linking Discord.</p>
+<h3 id="post-authgithubdevice"><code>POST /auth/github/device</code></h3>
+<p><em>public</em></p>
+<p>Start signing a terminal in. GitHub's device code stays here; the terminal gets the code a person types, the page to type it on, and a handle to poll with.</p>
+<p>Body — <code>DeviceIn</code>:</p>
+<ul>
+<li><code>label</code> · string · optional · min 1 · max 120</li>
+<li><code>remember</code> · boolean · optional</li>
+</ul>
+<h3 id="post-authgithubpoll"><code>POST /auth/github/poll</code></h3>
+<p><em>public</em></p>
+<p>Has the person approved on GitHub yet? One call to GitHub per poll, so a terminal that polls faster than <code>interval</code> is told to slow down by GitHub itself.</p>
+<p>Body — <code>PollIn</code>:</p>
+<ul>
+<li><code>poll_id</code> · string · min 8 · max 128</li>
+<li><code>remember</code> · boolean · optional</li>
+</ul>
+<h3 id="get-authgithubgo"><code>GET /auth/github/go</code></h3>
+<p><em>public</em></p>
+<p>Send the browser to GitHub. The page's <code>state</code> comes back to it in the fragment; GitHub is given this server's own state, which names the flow.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>state</code></td>
+<td>query</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>remember</code></td>
+<td>query</td>
+<td>boolean</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>return</code></td>
+<td>query</td>
+<td>string</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-authgithubcallback"><code>GET /auth/github/callback</code></h3>
+<p><em>public</em></p>
+<p>GitHub sends the browser here. Whatever happens, the browser goes back to the page it came from, with a one-time code or an error in the fragment.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>state</code></td>
+<td>query</td>
+<td>string</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>code</code></td>
+<td>query</td>
+<td>string</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>query</td>
+<td>string</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<h3 id="post-authgithubexchange"><code>POST /auth/github/exchange</code></h3>
+<p><em>public</em></p>
+<p>The one-time code from the callback, for a <code>web</code> token. It works once, for sixty seconds.</p>
+<p>Body — <code>ExchangeIn</code>:</p>
+<ul>
+<li><code>once</code> · string · min 8 · max 128</li>
+</ul>
+<h3 id="post-authlogout"><code>POST /auth/logout</code></h3>
+<p><em>token</em></p>
+<p>Revoke the token this request was made with.</p>
+<h3 id="get-authtokens"><code>GET /auth/tokens</code></h3>
+<p><em>token</em></p>
+<p>Where this account is signed in: the site and each terminal, with when each expires.</p>
+<h3 id="get-authme"><code>GET /auth/me</code></h3>
+<p><em>token</em></p>
+<p>Who this account is on GitHub, and what it has linked and asked for — for its own account page. 404 for a debug identity, which has no credentials.</p>
+<h3 id="get-authpreferences"><code>GET /auth/preferences</code></h3>
+<p><em>token</em></p>
+<p>What this account has asked to be sent. Everything is off until the learner turns it on.</p>
+<h3 id="put-authpreferences"><code>PUT /auth/preferences</code></h3>
+<p><em>token</em></p>
+<p>Turn the weekly digest on or off. It is a Discord direct message, so it can only be turned on once Discord is linked (409 before that).</p>
+<p>Body — <code>PreferencesIn</code>:</p>
+<ul>
+<li><code>digest</code> · boolean</li>
+</ul>
+<h3 id="post-authdiscordstart"><code>POST /auth/discord/start</code></h3>
+<p><em>token</em></p>
+<p>Where to send the browser to link Discord to this account.</p>
+<p>Body — <code>norboten_api__routers__discord__StartIn</code>:</p>
+<ul>
+<li><code>join</code> · boolean · optional</li>
+</ul>
+<h3 id="get-authdiscordcallback"><code>GET /auth/discord/callback</code></h3>
+<p><em>public</em></p>
+<p>Discord sends the browser here after the consent screen.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>state</code></td>
+<td>query</td>
+<td>string</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>code</code></td>
+<td>query</td>
+<td>string</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>query</td>
+<td>string</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<h3 id="delete-authdiscord"><code>DELETE /auth/discord</code></h3>
+<p><em>token</em></p>
+<p>Forget the Discord user, and stop the digest that went to it.</p>
+<h2 id="the-lab-catalogue">The lab catalogue</h2>
+<h3 id="get-labs"><code>GET /labs</code></h3>
+<p><em>public</em></p>
+<p>Every lab the server knows: id, short id, title, track, difficulty, estimated minutes, base images and topics.</p>
+<h3 id="get-labslab_id"><code>GET /labs/{lab_id}</code></h3>
+<p><em>public</em></p>
+<p>One lab's manifest and briefing, by id or short id. Hints come with the lab package; the reference solution never leaves the server.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lab_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="theory">Theory</h2>
+<h3 id="get-quiztopics"><code>GET /quiz/topics</code></h3>
+<p><em>public</em></p>
+<p>The theory banks: every topic bank and every lab's own, with how many questions each has.</p>
+<h2 id="rated-labs-and-rated-theory">Rated labs and rated theory</h2>
+<h3 id="get-ratedlabs"><code>GET /rated/labs</code></h3>
+<p><em>token</em></p>
+<p>The rated labs this server grades: id, title, track, topics, difficulty, clock and images. Nothing about what is broken. Empty on a server with no rated content.</p>
+<h3 id="get-ratedlabslab_id"><code>GET /rated/labs/{lab_id}</code></h3>
+<p><em>token</em></p>
+<p>One rated lab's manifest and briefing — what a learner reads before starting. The faults, the collectors, the judges, the hints and the solution are not in it.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lab_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="post-ratedattempts"><code>POST /rated/attempts</code></h3>
+<p><em>token</em></p>
+<p>Start a rated attempt: an id, a nonce, the key that signs this attempt's records, the clock, and the break bundle. Any attempt still open for this account is closed as a loss first — seeing the faults and walking away is not free.</p>
+<p>Body — <code>norboten_api__routers__rated__StartIn</code>:</p>
+<ul>
+<li><code>lab_id</code> · string</li>
+<li><code>image</code> · string · optional</li>
+</ul>
+<h3 id="get-ratedattemptsattempt_id"><code>GET /rated/attempts/{attempt_id}</code></h3>
+<p><em>token</em></p>
+<p>Where an attempt stands: open, or its outcome with each check's verdict and the rating change.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>attempt_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-ratedattemptsattempt_idcollect"><code>GET /rated/attempts/{attempt_id}/collect</code></h3>
+<p><em>token</em></p>
+<p>The collect bundle for an open attempt: which facts to gather, never what they must be.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>attempt_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="post-ratedattemptsattempt_idabandon"><code>POST /rated/attempts/{attempt_id}/abandon</code></h3>
+<p><em>token</em></p>
+<p>Give an attempt up. It is rated as a loss, like running out of time.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>attempt_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="post-ratedattemptsattempt_idfacts"><code>POST /rated/attempts/{attempt_id}/facts</code></h3>
+<p><em>token</em></p>
+<p>A signed fact record from the guest, before or after the reboot. The last one the lab needs closes the attempt: judged here, rated, and answered pass or fail per check.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>attempt_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p>Body — <code>FactsIn</code>:</p>
+<ul>
+<li><code>record</code> · object</li>
+<li><code>signature</code> · string · min 64 · max 64</li>
+</ul>
+<h3 id="get-ratedquizbanks"><code>GET /rated/quiz/banks</code></h3>
+<p><em>token</em></p>
+<p>The rated question banks: topic, title, description, topics and how many questions a run asks. Empty on a server with no rated content.</p>
+<h3 id="post-ratedquizsessions"><code>POST /rated/quiz/sessions</code></h3>
+<p><em>token</em></p>
+<p>Start a rated run and serve its first question. A run still open for this account is closed first, on what it had answered — a question seen and not answered counts as wrong.</p>
+<p>Body — <code>StartQuiz</code>:</p>
+<ul>
+<li><code>topic</code> · string</li>
+</ul>
+<h3 id="post-ratedquizsessionssession_idanswers"><code>POST /rated/quiz/sessions/{session_id}/answers</code></h3>
+<p><em>token</em></p>
+<p>Answer the question on screen. Graded here, against the time it was served: the verdict, the right answer, the explanation and the references. The last answer closes and rates the run. An empty selection is how a client reports that its clock ran out.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p>Body — <code>AnswerIn</code>:</p>
+<ul>
+<li><code>question_id</code> · string</li>
+<li><code>selected</code> · list of string · optional</li>
+</ul>
+<h3 id="post-ratedquizsessionssession_idnext"><code>POST /rated/quiz/sessions/{session_id}/next</code></h3>
+<p><em>token</em></p>
+<p>Serve the next question; its clock starts now. Asked for when the learner has read the last explanation, so reading it costs nothing.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="anonymous-progress">Anonymous progress</h2>
+<h3 id="post-progress"><code>POST /progress</code></h3>
+<p><em>public</em></p>
+<p>Store an anonymous, opt-in progress event under a random client id. No account involved.</p>
+<p>Body — <code>Attempt</code>:</p>
+<ul>
+<li><code>client_id</code> · string · min 8 · max 64</li>
+<li><code>lab_id</code> · string</li>
+<li><code>score_percent</code> · integer · ≥ 0.0 · ≤ 100.0</li>
+<li><code>passed</code> · boolean</li>
+<li><code>minutes</code> · integer · optional</li>
+<li><code>base_image</code> · string · optional</li>
+</ul>
+<h3 id="get-progressclient_id"><code>GET /progress/{client_id}</code></h3>
+<p><em>public</em></p>
+<p>Read back the progress events recorded under a client id.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>client_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="profiles-attempts-and-the-board">Profiles, attempts and the board</h2>
+<h3 id="post-me"><code>POST /me</code></h3>
+<p><em>token</em></p>
+<p>Make the profile: a nick, chosen once, and a country. After that the country is the one thing that changes — a different nick is 409 &quot;the nick is chosen once&quot;.</p>
+<p>Body — <code>SignUp</code>:</p>
+<ul>
+<li><code>nick</code> · string · optional</li>
+<li><code>country</code> · string</li>
+</ul>
+<h3 id="get-me"><code>GET /me</code></h3>
+<p><em>token</em></p>
+<p>The signed-in account's profile: nick, country, overall and per-topic ratings, a year of contributions and recent attempts. 404 until a nick is chosen.</p>
+<h3 id="delete-me"><code>DELETE /me</code></h3>
+<p><em>token</em></p>
+<p>Delete this account and everything on it: the profile and its nick, every attempt and rating, open rated attempts and theory runs, the Play recordings it made, the GitHub and Discord links, and every token — so the call ends the session that made it. Nothing is kept and nothing can be restored; the nick becomes free for someone else. Backups age out on their own schedule (the privacy policy says how long). The account need not have a nick yet.</p>
+<h3 id="get-geocountry"><code>GET /geo/country</code></h3>
+<p><em>public</em></p>
+<p>The country this request probably comes from, to pre-fill a form — <code>{&quot;country&quot;: &quot;PL&quot;}</code>, or <code>&quot;&quot;</code> when the address is unknown or private. Looked up offline (<code>geo.py</code>, DB-IP Lite); nothing is sent anywhere and nothing is stored.</p>
+<h3 id="get-profilenick"><code>GET /profile/{nick}</code></h3>
+<p><em>public</em></p>
+<p>Anyone's public profile by nick, in the same shape as <code>/me</code>, with the GitHub account it signs in with.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>nick</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="post-attempts"><code>POST /attempts</code></h3>
+<p><em>token</em></p>
+<p>Record an attempt on the profile. It never moves a rating: only a rated lab or rated theory, graded on this server (<code>/rated</code>), does — an unrated lab's checks and answer are public, so a reported pass proves nothing. <code>rated</code> in the body is accepted from older clients and ignored. The server still decides the difficulty, topics and clock, which the profile shows.</p>
+<p>Body — <code>AttemptIn</code>:</p>
+<ul>
+<li><code>lab_id</code> · string</li>
+<li><code>kind</code> · string · optional</li>
+<li><code>started_at</code> · number</li>
+<li><code>duration_seconds</code> · integer · ≥ 0.0</li>
+<li><code>score_percent</code> · integer · ≥ 0.0 · ≤ 100.0</li>
+<li><code>passed</code> · boolean</li>
+<li><code>rated</code> · boolean · optional</li>
+<li><code>difficulty</code> · integer · optional</li>
+<li><code>topics</code> · list of string · optional</li>
+</ul>
+<h3 id="get-leaderboard"><code>GET /leaderboard</code></h3>
+<p><em>public</em></p>
+<p>Sorted on the conservative rating, so a lucky first win does not top the board. Cached for thirty seconds: every profile page and TUI screen asks, and it changes one attempt at a time.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>topic</code></td>
+<td>query</td>
+<td>string</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>limit</code></td>
+<td>query</td>
+<td>integer</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<h2 id="live-and-recorded-sessions">Live and recorded sessions</h2>
+<h3 id="post-playsessions"><code>POST /play/sessions</code></h3>
+<p><em>token</em></p>
+<p>Open a session. Anyone who can see the site can watch it from here on, and the Telegram channel is told (<code>announce.py</code>).</p>
+<p>Body — <code>norboten_api__routers__play__StartIn</code>:</p>
+<ul>
+<li><code>lab_id</code> · string</li>
+<li><code>width</code> · integer · ≥ 20.0 · ≤ 400.0</li>
+<li><code>height</code> · integer · ≥ 5.0 · ≤ 200.0</li>
+</ul>
+<h3 id="post-playsessionssession_idframes"><code>POST /play/sessions/{session_id}/frames</code></h3>
+<p><em>token</em></p>
+<p>Append one batch of frames, commands and diffs to your own live session; it is stored and published to viewers at once. 409 once the session has ended.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p>Body — <code>AppendIn</code>:</p>
+<ul>
+<li><code>seq</code> · integer · ≥ 0.0</li>
+<li><code>at</code> · number</li>
+<li><code>events</code> · list of list of  · optional</li>
+<li><code>commands</code> · list of object · optional</li>
+<li><code>changes</code> · list of object · optional</li>
+</ul>
+<h3 id="post-playsessionssession_idend"><code>POST /play/sessions/{session_id}/end</code></h3>
+<p><em>token</em></p>
+<p>End your own session, optionally with whether the lab was passed; viewers receive <code>end</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p>Body — <code>EndIn</code>:</p>
+<ul>
+<li><code>passed</code> · boolean · optional</li>
+</ul>
+<h3 id="get-playlive"><code>GET /play/live</code></h3>
+<p><em>public</em></p>
+<p>Who is working right now, and what finished recently.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>limit</code></td>
+<td>query</td>
+<td>integer</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-playsessionssession_id"><code>GET /play/sessions/{session_id}</code></h3>
+<p><em>public</em></p>
+<p>The whole recording: an asciicast header, its events, the commands and the diffs.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-playsessionssession_idstream"><code>GET /play/sessions/{session_id}/stream</code></h3>
+<p><em>public</em></p>
+<p>Server-sent events: what is stored, then every batch as it is published, then <code>end</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>after</code></td>
+<td>query</td>
+<td>integer</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-playleaderboard-contextnick"><code>GET /play/leaderboard-context/{nick}</code></h3>
+<p><em>public</em></p>
+<p>What a viewer sees next to a live terminal: whose it is, and how they are rated.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>nick</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-consultant">The consultant</h2>
+<h3 id="get-chatfaq"><code>GET /chat/faq</code></h3>
+<p><em>public</em></p>
+<p>The chips under the input: what people actually arrive wanting to know.</p>
+<h3 id="post-chat"><code>POST /chat</code></h3>
+<p><em>public</em></p>
+<p>Ask the consultant once and wait for the whole answer: the reply, the passages it used, and whether the guard blocked it. The streaming form is <code>/chat/stream</code>.</p>
+<p>Body — <code>Ask</code>:</p>
+<ul>
+<li><code>question</code> · string · min 3 · max 500</li>
+<li><code>lab_id</code> · string · optional</li>
+</ul>
+<h3 id="get-chatstream"><code>GET /chat/stream</code></h3>
+<p><em>public</em></p>
+<p><code>sources</code> first — so a reader can start checking before the answer lands — then <code>token</code>s.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>question</code></td>
+<td>query</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>lab_id</code></td>
+<td>query</td>
+<td>string</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<h2 id="donations">Donations</h2>
+<h3 id="post-donationscheckout"><code>POST /donations/checkout</code></h3>
+<p><em>public</em></p>
+<p>Start a donation. Returns the Stripe page to send the donor to.</p>
+<p>Body — <code>Donation</code>:</p>
+<ul>
+<li><code>amount</code> · integer · ≥ 2.0 · ≤ 5000.0</li>
+<li><code>interval</code> · string · optional</li>
+</ul>
+<h2 id="telemetry">Telemetry</h2>
+<h3 id="post-telemetry"><code>POST /telemetry</code></h3>
+<p><em>public</em></p>
+<p>Record an opt-in stuck point: which check a learner was on and at which hint level. 404 when the server has telemetry turned off.</p>
+<p>Body — <code>StuckPoint</code>:</p>
+<ul>
+<li><code>lab_id</code> · string</li>
+<li><code>base_image</code> · string · optional</li>
+<li><code>check_id</code> · string</li>
+<li><code>failed_attempts</code> · integer · ≥ 1.0 · ≤ 1000.0</li>
+<li><code>hint_level</code> · integer · optional · ≥ 0.0 · ≤ 4.0</li>
+<li><code>minutes</code> · integer · optional · ≥ 0.0 · ≤ 600.0</li>
+</ul>
+<h3 id="get-telemetrystuck-points"><code>GET /telemetry/stuck-points</code></h3>
+<p><em>public</em></p>
+<p>What the weekly digest reads: the checks people fail most.</p>
+<h2 id="oauth-for-mcp-clients">OAuth for MCP clients</h2>
+<h3 id="get-well-knownoauth-authorization-server"><code>GET /.well-known/oauth-authorization-server</code></h3>
+<p><em>public</em></p>
+<p>Authorization server metadata (RFC 8414): where to authorize and exchange codes, PKCE S256 only, public clients, and client ID metadata documents instead of registration.</p>
+<h3 id="get-well-knownoauth-protected-resource"><code>GET /.well-known/oauth-protected-resource</code></h3>
+<p><em>public</em></p>
+<p>Protected resource metadata for the MCP server (RFC 9728): its identifier, and that this API issues the tokens it accepts.</p>
+<h3 id="get-well-knownoauth-protected-resourcemcp"><code>GET /.well-known/oauth-protected-resource/mcp</code></h3>
+<p><em>public</em></p>
+<p>Protected resource metadata for the MCP server (RFC 9728): its identifier, and that this API issues the tokens it accepts.</p>
+<h3 id="get-well-knownoauth-protected-resourcemcpaccount"><code>GET /.well-known/oauth-protected-resource/mcp/account</code></h3>
+<p><em>public</em></p>
+<p>The same, for the door that asks for a token on every request (<code>/mcp/account</code>).</p>
+<h3 id="get-oauthauthorize"><code>GET /oauth/authorize</code></h3>
+<p><em>public</em></p>
+<p>Start an authorization: check the client, its redirect URI and the PKCE challenge, then send the browser to the site, where the account approves it. Errors before the redirect URI is trusted are answered here; after, they go back to the client.</p>
+<h3 id="get-oauthrequestsrequest_id"><code>GET /oauth/requests/{request_id}</code></h3>
+<p><em>public</em></p>
+<p>What the site shows before the account approves: who is asking, where the browser goes back to, and what the token will allow.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>request_id</code></td>
+<td>path</td>
+<td>string</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="post-oauthapprove"><code>POST /oauth/approve</code></h3>
+<p><em>token</em></p>
+<p>The signed-in account's answer. Returns where to send the browser: back to the client, with a one-time code (five minutes) or <code>access_denied</code>.</p>
+<p>Body — <code>Decision</code>:</p>
+<ul>
+<li><code>request</code> · string · min 16 · max 64</li>
+<li><code>allow</code> · boolean</li>
+</ul>
+<h3 id="post-oauthtoken"><code>POST /oauth/token</code></h3>
+<p><em>public</em></p>
+<p>Exchange a code and its PKCE verifier, or a refresh token, for an <code>mcp</code> access token (an hour) and a new refresh token (thirty days; the old one stops working). Form-encoded.</p>
+
+    </article>
+    <div class="toc">
+<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>      <a class="h2" href="#health-and-metrics">Health and metrics</a>
+      <a class="h3" href="#get-healthz">GET /healthz</a>
+      <a class="h3" href="#get-readyz">GET /readyz</a>
+      <a class="h2" href="#accounts-and-signing-in">Accounts and signing in</a>
+      <a class="h3" href="#get-authconfig">GET /auth/config</a>
+      <a class="h3" href="#post-authgithubdevice">POST /auth/github/device</a>
+      <a class="h3" href="#post-authgithubpoll">POST /auth/github/poll</a>
+      <a class="h3" href="#get-authgithubgo">GET /auth/github/go</a>
+      <a class="h3" href="#get-authgithubcallback">GET /auth/github/callback</a>
+      <a class="h3" href="#post-authgithubexchange">POST /auth/github/exchange</a>
+      <a class="h3" href="#post-authlogout">POST /auth/logout</a>
+      <a class="h3" href="#get-authtokens">GET /auth/tokens</a>
+      <a class="h3" href="#get-authme">GET /auth/me</a>
+      <a class="h3" href="#get-authpreferences">GET /auth/preferences</a>
+      <a class="h3" href="#put-authpreferences">PUT /auth/preferences</a>
+      <a class="h3" href="#post-authdiscordstart">POST /auth/discord/start</a>
+      <a class="h3" href="#get-authdiscordcallback">GET /auth/discord/callback</a>
+      <a class="h3" href="#delete-authdiscord">DELETE /auth/discord</a>
+      <a class="h2" href="#the-lab-catalogue">The lab catalogue</a>
+      <a class="h3" href="#get-labs">GET /labs</a>
+      <a class="h3" href="#get-labslab_id">GET /labs/{lab_id}</a>
+      <a class="h2" href="#theory">Theory</a>
+      <a class="h3" href="#get-quiztopics">GET /quiz/topics</a>
+      <a class="h2" href="#rated-labs-and-rated-theory">Rated labs and rated theory</a>
+      <a class="h3" href="#get-ratedlabs">GET /rated/labs</a>
+      <a class="h3" href="#get-ratedlabslab_id">GET /rated/labs/{lab_id}</a>
+      <a class="h3" href="#post-ratedattempts">POST /rated/attempts</a>
+      <a class="h3" href="#get-ratedattemptsattempt_id">GET /rated/attempts/{attempt_id}</a>
+      <a class="h3" href="#get-ratedattemptsattempt_idcollect">GET /rated/attempts/{attempt_id}/collect</a>
+      <a class="h3" href="#post-ratedattemptsattempt_idabandon">POST /rated/attempts/{attempt_id}/abandon</a>
+      <a class="h3" href="#post-ratedattemptsattempt_idfacts">POST /rated/attempts/{attempt_id}/facts</a>
+      <a class="h3" href="#get-ratedquizbanks">GET /rated/quiz/banks</a>
+      <a class="h3" href="#post-ratedquizsessions">POST /rated/quiz/sessions</a>
+      <a class="h3" href="#post-ratedquizsessionssession_idanswers">POST /rated/quiz/sessions/{session_id}/answers</a>
+      <a class="h3" href="#post-ratedquizsessionssession_idnext">POST /rated/quiz/sessions/{session_id}/next</a>
+      <a class="h2" href="#anonymous-progress">Anonymous progress</a>
+      <a class="h3" href="#post-progress">POST /progress</a>
+      <a class="h3" href="#get-progressclient_id">GET /progress/{client_id}</a>
+      <a class="h2" href="#profiles-attempts-and-the-board">Profiles, attempts and the board</a>
+      <a class="h3" href="#post-me">POST /me</a>
+      <a class="h3" href="#get-me">GET /me</a>
+      <a class="h3" href="#delete-me">DELETE /me</a>
+      <a class="h3" href="#get-geocountry">GET /geo/country</a>
+      <a class="h3" href="#get-profilenick">GET /profile/{nick}</a>
+      <a class="h3" href="#post-attempts">POST /attempts</a>
+      <a class="h3" href="#get-leaderboard">GET /leaderboard</a>
+      <a class="h2" href="#live-and-recorded-sessions">Live and recorded sessions</a>
+      <a class="h3" href="#post-playsessions">POST /play/sessions</a>
+      <a class="h3" href="#post-playsessionssession_idframes">POST /play/sessions/{session_id}/frames</a>
+      <a class="h3" href="#post-playsessionssession_idend">POST /play/sessions/{session_id}/end</a>
+      <a class="h3" href="#get-playlive">GET /play/live</a>
+      <a class="h3" href="#get-playsessionssession_id">GET /play/sessions/{session_id}</a>
+      <a class="h3" href="#get-playsessionssession_idstream">GET /play/sessions/{session_id}/stream</a>
+      <a class="h3" href="#get-playleaderboard-contextnick">GET /play/leaderboard-context/{nick}</a>
+      <a class="h2" href="#the-consultant">The consultant</a>
+      <a class="h3" href="#get-chatfaq">GET /chat/faq</a>
+      <a class="h3" href="#post-chat">POST /chat</a>
+      <a class="h3" href="#get-chatstream">GET /chat/stream</a>
+      <a class="h2" href="#donations">Donations</a>
+      <a class="h3" href="#post-donationscheckout">POST /donations/checkout</a>
+      <a class="h2" href="#telemetry">Telemetry</a>
+      <a class="h3" href="#post-telemetry">POST /telemetry</a>
+      <a class="h3" href="#get-telemetrystuck-points">GET /telemetry/stuck-points</a>
+      <a class="h2" href="#oauth-for-mcp-clients">OAuth for MCP clients</a>
+      <a class="h3" href="#get-well-knownoauth-authorization-server">GET /.well-known/oauth-authorization-server</a>
+      <a class="h3" href="#get-well-knownoauth-protected-resource">GET /.well-known/oauth-protected-resource</a>
+      <a class="h3" href="#get-well-knownoauth-protected-resourcemcp">GET /.well-known/oauth-protected-resource/mcp</a>
+      <a class="h3" href="#get-well-knownoauth-protected-resourcemcpaccount">GET /.well-known/oauth-protected-resource/mcp/account</a>
+      <a class="h3" href="#get-oauthauthorize">GET /oauth/authorize</a>
+      <a class="h3" href="#get-oauthrequestsrequest_id">GET /oauth/requests/{request_id}</a>
+      <a class="h3" href="#post-oauthapprove">POST /oauth/approve</a>
+      <a class="h3" href="#post-oauthtoken">POST /oauth/token</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("../../search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+</body>
+</html>

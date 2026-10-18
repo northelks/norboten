@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A playbook describes a state, not a sequence of commands · Norboten</title>
+<meta name="description" content="The playbook in /srv/ansible runs without errors. That is the problem with it: it runs without errors every single time, reports six changes every single time, ">
+<link rel="canonical" href="https://norboten.org/journals/ansible-01-playbook-changes-everything/"><meta property="og:title" content="A playbook describes a state, not a sequence of commands · Norboten">
+<meta property="og:description" content="The playbook in /srv/ansible runs without errors. That is the problem with it: it runs without errors every single time, reports six changes every single time, ">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/ansible-01-playbook-changes-everything/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A playbook describes a state, not a sequence of commands · Norboten">
+<meta name="twitter:description" content="The playbook in /srv/ansible runs without errors. That is the problem with it: it runs without errors every single time, reports six changes every single time, ">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A playbook describes a state, not a sequence of commands",
+  "description": "The playbook in /srv/ansible runs without errors. That is the problem with it: it runs without errors every single time, reports six changes every single time, ",
+  "url": "https://norboten.org/journals/ansible-01-playbook-changes-everything/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2280,
+  "timeRequired": "PT40M",
+  "about": ["Ansible", "Boot and systemd"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Playbook That Changes Everything, Every Time</div>
+    <h1>A playbook describes a state, not a sequence of commands</h1>
+    <p class="muted">
+      40 minutes' reading · 2280 words ·<span class="tag">Ansible</span><span class="tag">Boot and systemd</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 113 words</title><rect x="0.0" y="0" width="27.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 1026 words</title><rect x="30.4" y="0" width="248.4" height="30" rx="4" fill="#1d2a23"/><text x="38.4" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 1018 words</title><rect x="281.7" y="0" width="246.4" height="30" rx="4" fill="#4ade80"/><text x="289.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 254 words</title><rect x="531.2" y="0" width="61.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 153 words</title><rect x="595.7" y="0" width="37.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 167 words</title><rect x="635.7" y="0" width="40.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 334 words</title><rect x="679.1" y="0" width="80.9" height="30" rx="4" fill="#1d2a23"/><text x="687.1" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/ansible-01-playbook-changes-everything/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>The playbook in <code>/srv/ansible</code> runs without errors. That is the problem with it: it runs without
+errors every single time, reports six changes every single time, restarts the application every
+single time, and grows a configuration file by one line every single time. Its <code>--check</code> mode skips
+five of its seven tasks, so nobody can preview what it will do. And the application listens on 8080
+although the inventory says 8081, because a variable set &quot;for testing&quot; in the play outranks the
+inventory.</p>
+<p>None of that is a bug in Ansible. It is what happens when a playbook is written as a shell script
+with YAML around it. <code>command</code> and <code>shell</code> tasks run commands; they do not know what the machine is
+supposed to look like, so they cannot tell whether there is anything to do, they cannot report
+honestly whether they changed something, and they cannot predict it in check mode. Ansible's value
+comes from <strong>modules</strong>, which compare the desired state with the actual one and act only on the
+difference. A playbook built from them <strong>converges</strong>: run it once and the machine matches; run it
+again and nothing happens.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Explain idempotence in terms of what a module does: read the current state, compare, change only the
+difference, report <code>changed</code> truthfully.</li>
+<li>Recognise tasks that cannot converge — <code>command</code>, <code>shell</code>, appends — and replace them with the
+builtin module that describes the same state.</li>
+<li>Use handlers so services restart only when their configuration actually changed.</li>
+<li>Find where a variable's value comes from with <code>ansible … -m debug</code>, and name which sources outrank
+inventory <code>group_vars</code>.</li>
+<li>Use <code>--check --diff</code> as a preview, and read its skipped and changed counts.</li>
+<li>Apply kernel parameters persistently and immediately, and know that writing a file in
+<code>/etc/sysctl.d</code> does neither by itself at run time.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="what-idempotent-really-means">What &quot;idempotent&quot; really means</h3>
+<p>An operation is idempotent when doing it twice has the same effect as doing it once. For
+configuration management the useful form is stronger: a task <strong>describes an end state</strong>, and running
+it is a request to make the machine match. The builtin modules implement that in three steps:</p>
+<ol>
+<li><strong>Gather</strong> the current state (does the user exist? what is in the file? is the unit enabled?).</li>
+<li><strong>Compare</strong> with the parameters of the task.</li>
+<li><strong>Act</strong> only if they differ, and set <code>changed</code> accordingly.</li>
+</ol>
+<p>That third step is what gives <code>changed</code> a meaning. On a converged machine every task reports <code>ok</code>,
+handlers are not notified, and the play recap says <code>changed=0</code>. When something drifts, exactly the
+tasks that fixed it report <code>changed</code>, which is a small, readable audit of what was wrong.</p>
+<h3 id="why-command-and-shell-cannot-converge">Why <code>command</code> and <code>shell</code> cannot converge</h3>
+<pre class="hl"><code class="language-yaml"><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Enable forwarding for the application's containers</span>
+<span class="hl-w">  </span><span class="hl-nt">ansible.builtin.shell</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">echo "net.ipv4.ip_forward = 1" &gt;&gt; /etc/sysctl.d/90-app.conf</span>
+</code></pre>
+
+<p>Ansible cannot know what an arbitrary command does, so it assumes the worst: every run, the command
+runs and the task reports <code>changed</code>. An append is the pure form of the problem — each run is a new
+line. <code>useradd app</code> fails on the second run, which is why it came with <code>ignore_errors: true</code>, which
+in turn hides the day it fails for a real reason. <code>cp</code> always &quot;changes&quot;. <code>systemctl restart</code> in a
+handler notified by a task that always changes restarts the application on every run.</p>
+<p><code>command</code> and <code>shell</code> are still legitimate, for operations no module covers. They must then be taught
+the missing steps:</p>
+<pre class="hl"><code class="language-yaml"><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">ansible.builtin.command</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/opt/app/bin/migrate</span>
+<span class="hl-w">  </span><span class="hl-nt">args</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">creates</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/var/lib/app/.migrated</span><span class="hl-w">        </span><span class="hl-c1"># skip if this exists</span>
+<span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">ansible.builtin.command</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/opt/app/bin/rotate-keys --dry-run</span>
+<span class="hl-w">  </span><span class="hl-nt">register</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">plan</span>
+<span class="hl-w">  </span><span class="hl-nt">changed_when</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"'nothing</span><span class="hl-nv"> </span><span class="hl-s">to</span><span class="hl-nv"> </span><span class="hl-s">do'</span><span class="hl-nv"> </span><span class="hl-s">not</span><span class="hl-nv"> </span><span class="hl-s">in</span><span class="hl-nv"> </span><span class="hl-s">plan.stdout"</span>
+</code></pre>
+
+<p><code>creates</code>/<code>removes</code> decide whether to run; <code>changed_when</code> decides what to report. Without them, a
+command task is a statement that the playbook cannot be trusted to converge.</p>
+<h3 id="the-module-for-each-job">The module for each job</h3>
+<table>
+<thead>
+<tr>
+<th>What the shell did</th>
+<th>What describes the state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>useradd …</code></td>
+<td><code>ansible.builtin.user</code> (<code>name</code>, <code>system</code>, <code>home</code>, <code>shell</code>, <code>create_home</code>)</td>
+</tr>
+<tr>
+<td><code>mkdir -p</code></td>
+<td><code>ansible.builtin.file</code> with <code>state: directory</code> and a <code>mode</code></td>
+</tr>
+<tr>
+<td><code>cp files/x dest</code></td>
+<td><code>ansible.builtin.copy</code> with <code>src</code> and <code>mode</code></td>
+</tr>
+<tr>
+<td><code>echo … &gt; file</code>, <code>printf … &gt; file</code></td>
+<td><code>ansible.builtin.copy</code> with <code>content</code>, or <code>ansible.builtin.template</code></td>
+</tr>
+<tr>
+<td><code>echo … &gt;&gt; file</code></td>
+<td><code>copy</code>/<code>template</code> for a file you own; <code>lineinfile</code> for one line in someone else's file</td>
+</tr>
+<tr>
+<td><code>systemctl daemon-reload &amp;&amp; enable --now</code></td>
+<td><code>ansible.builtin.systemd_service</code> with <code>state</code>, <code>enabled</code>, <code>daemon_reload</code></td>
+</tr>
+<tr>
+<td><code>sysctl -w</code>, sysctl.d files</td>
+<td>a file via <code>copy</code> plus a handler, or <code>ansible.posix.sysctl</code> if that collection is installed</td>
+</tr>
+</tbody>
+</table>
+<p><code>copy</code> with <code>content:</code> manages the <em>whole</em> file: whatever duplicates or strays are in it, the next run
+replaces them with exactly the content given, and reports <code>changed</code> once. That is why it is the right
+tool here, and <code>lineinfile</code> is not — <code>lineinfile</code> would leave the existing duplicates alone.</p>
+<h3 id="handlers-change-triggered-actions">Handlers: change-triggered actions</h3>
+<pre class="hl"><code class="language-yaml"><span class="hl-w">    </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Configuration</span>
+<span class="hl-w">      </span><span class="hl-nt">ansible.builtin.template</span><span class="hl-p">:</span>
+<span class="hl-w">        </span><span class="hl-nt">src</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">templates/app.conf.j2</span>
+<span class="hl-w">        </span><span class="hl-nt">dest</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/etc/app/app.conf</span>
+<span class="hl-w">      </span><span class="hl-nt">notify</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Restart app</span>
+<span class="hl-w"> </span><span class="hl-w hl-w-Error"> </span><span class="hl-nt">handlers</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Restart app</span>
+<span class="hl-w">      </span><span class="hl-nt">ansible.builtin.systemd_service</span><span class="hl-p">:</span>
+<span class="hl-w">        </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">app</span>
+<span class="hl-w">        </span><span class="hl-nt">state</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">restarted</span>
+</code></pre>
+
+<p>A task notifies a handler <strong>only when it reports <code>changed</code></strong>. Handlers run once, after the tasks of
+the play (or at <code>meta: flush_handlers</code>), however many tasks notified them. A handler that is a
+<code>command</code> with <code>changed_when: true</code> is fine: it only runs when something real changed. The restart on
+every run in the original came from the notifying task, not from the handler.</p>
+<h3 id="where-a-variables-value-comes-from">Where a variable's value comes from</h3>
+<p>Ansible merges variables from many sources, and each source has a fixed rank. The ones that matter
+most, from low to high:</p>
+<pre><code>role defaults  &lt;  inventory group_vars/all  &lt;  inventory group_vars/&lt;group&gt;  &lt;  host_vars
+               &lt;  play vars / vars_files     &lt;  role vars  &lt;  block/task vars
+               &lt;  set_fact / register        &lt;  extra vars (-e)   ← always wins
+</code></pre>
+<p><code>group_vars/app.yml</code> next to the inventory gives <code>app_port: 8081</code>. The play has</p>
+<pre class="hl"><code class="language-yaml"><span class="hl-w">  </span><span class="hl-nt">vars</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">app_port</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">8080</span><span class="hl-w">  </span><span class="hl-c1"># testing — remove before merging</span>
+</code></pre>
+
+<p>and <strong>play vars outrank inventory variables</strong>, so every task in the play sees 8080. The inventory is
+not ignored; it is overridden. <code>ansible &lt;pattern&gt; -m ansible.builtin.debug -a var=app_port</code> evaluates
+the variable from the inventory alone (no play), which is the quickest way to see that the inventory
+is right and the play is the culprit.</p>
+<p>A useful habit that follows: values that describe a host or group live in the inventory; play and role
+<code>vars</code> are for constants that should <em>not</em> be overridable per host. Anything &quot;temporary&quot; belongs on
+the command line as <code>-e</code>, where it cannot be committed by accident.</p>
+<h3 id="check-mode-and-diff">Check mode and diff</h3>
+<p><code>--check</code> runs the play without changing anything. Modules that support it report what they would
+change. <code>command</code> and <code>shell</code> cannot be simulated, so Ansible <strong>skips</strong> them in check mode — which is
+why <code>skipped</code> is as important in a check-mode recap as <code>changed</code>: a skipped task is a part of the
+playbook that the preview did not see. <code>--diff</code> adds a unified diff for file changes.</p>
+<p>On a converged host, <code>ansible-playbook site.yml --check</code> should say <code>changed=0 skipped=0</code> (tasks with
+a <code>when:</code> condition that is false are the legitimate exception). That single line is a strong test of
+a playbook: it proves the tasks describe state and that the machine is in it. It is exactly what the
+lab grades, and it never changes the machine.</p>
+<p>One subtlety visible in the walkthrough: a handler notified in check mode also runs in check mode.
+A <code>systemd_service</code> handler reports <code>changed</code> (&quot;it would restart&quot;); a <code>command</code> handler is skipped.</p>
+<h3 id="kernel-parameters-two-places-two-moments">Kernel parameters: two places, two moments</h3>
+<p><code>/etc/sysctl.d/*.conf</code> is read by <code>systemd-sysctl.service</code> <strong>at boot</strong>. Writing the file changes
+nothing now. <code>sysctl -w key=value</code> (or writing to <code>/proc/sys/…</code>) changes the running kernel and is
+lost at reboot. A correct configuration does both: the file for the next boot, and an apply for now.
+<code>sysctl -p FILE</code> loads one file; <code>sysctl --system</code> reloads them all. In a playbook that is a file task
+plus a handler, so the kernel is touched only when the file changed. On Ubuntu <code>sysctl</code> lives in
+<code>/usr/sbin</code>, which is not on an unprivileged user's <code>PATH</code>.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the track's lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. Look at the symptoms before running anything.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/etc/sysctl.d/90-app.conf<span class="hl-p">;</span><span class="hl-w"> </span>/usr/sbin/sysctl<span class="hl-w"> </span>net.ipv4.ip_forward
+<span class="hl-go">net.ipv4.ip_forward = 1</span>
+<span class="hl-go">net.ipv4.ip_forward = 1</span>
+<span class="hl-go">net.ipv4.ip_forward = 0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ss<span class="hl-w"> </span>-ltnp<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>python3
+<span class="hl-go">LISTEN 0      5          127.0.0.1:8080      0.0.0.0:*    users:(("python3",pid=1512,fd=3))</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>http://127.0.0.1:8080/<span class="hl-p">;</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-sS<span class="hl-w"> </span>http://127.0.0.1:8081/<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">inventory service</span>
+<span class="hl-go">curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Could not connect to server</span>
+<span class="hl-go">exit=7</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>app<span class="hl-w"> </span>-p<span class="hl-w"> </span>ActiveEnterTimestamp
+<span class="hl-go">ActiveEnterTimestamp=Mon 2026-09-14 03:47:32 UTC</span>
+</code></pre>
+
+<p>Two identical lines in the sysctl file — the playbook has been run twice — and forwarding is still
+off in the kernel: nothing ever applied the file. The application answers on 8080, not 8081.</p>
+<p><strong>2. Run the playbook, look again, then preview it.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/ansible<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">4</span>
+
+<span class="hl-go">PLAY RECAP *********************************************************************</span>
+<span class="hl-go">localhost                  : ok=8    changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=1</span>
+<span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/etc/sysctl.d/90-app.conf<span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>app<span class="hl-w"> </span>-p<span class="hl-w"> </span>ActiveEnterTimestamp
+<span class="hl-go">net.ipv4.ip_forward = 1</span>
+<span class="hl-go">net.ipv4.ip_forward = 1</span>
+<span class="hl-go">net.ipv4.ip_forward = 1</span>
+<span class="hl-go">ActiveEnterTimestamp=Mon 2026-09-14 03:47:34 UTC</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/ansible<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span>--check<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'^(TASK|changed|ok|skipping)|localhost'</span>
+<span class="hl-go">TASK [Gathering Facts] *********************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [Create the app account] **************************************************</span>
+<span class="hl-go">skipping: [localhost]</span>
+<span class="hl-go">TASK [Enable forwarding for the application's containers] **********************</span>
+<span class="hl-go">skipping: [localhost]</span>
+<span class="hl-go">TASK [Install the application] *************************************************</span>
+<span class="hl-go">skipping: [localhost]</span>
+<span class="hl-go">TASK [Write the configuration] *************************************************</span>
+<span class="hl-go">skipping: [localhost]</span>
+<span class="hl-go">TASK [Install the unit] ********************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [Start the application] ***************************************************</span>
+<span class="hl-go">skipping: [localhost]</span>
+<span class="hl-go">localhost                  : ok=2    changed=0    unreachable=0    failed=0    skipped=5    rescued=0    ignored=0</span>
+</code></pre>
+
+<p>On an unchanged machine: six changes, one ignored failure (the second <code>useradd</code>), a third line in the
+file, and a new <code>ActiveEnterTimestamp</code> — the application restarted for nothing. Check mode skips five
+tasks and reports <code>changed=0</code>, which looks reassuring and means only &quot;I did not look&quot;.</p>
+<p><strong>3. Find where the port comes from.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/srv/ansible/inventory.ini<span class="hl-w"> </span>/srv/ansible/group_vars/app.yml
+<span class="hl-go">[app]</span>
+<span class="hl-go">localhost ansible_connection=local</span>
+<span class="hl-go">---</span>
+<span class="hl-go">app_port: 8081</span>
+<span class="hl-go">app_greeting: inventory service</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/ansible<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>ansible<span class="hl-w"> </span>app<span class="hl-w"> </span>-m<span class="hl-w"> </span>ansible.builtin.debug<span class="hl-w"> </span>-a<span class="hl-w"> </span><span class="hl-nv">var</span><span class="hl-o">=</span>app_port
+<span class="hl-go">localhost | SUCCESS =&gt; {</span>
+<span class="hl-go">    "app_port": 8081</span>
+<span class="hl-go">}</span>
+<span class="hl-gp">$ </span>sed<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">1</span>,12p<span class="hl-w"> </span>/srv/ansible/site.yml
+<span class="hl-go">---</span>
+<span class="hl-go">- name: Configure the application host</span>
+<span class="hl-go">  hosts: app</span>
+<span class="hl-go">  become: true</span>
+<span class="hl-go">  vars:</span>
+<span class="hl-go">    app_port: 8080  # testing — remove before merging</span>
+<span class="hl-go">  tasks:</span>
+<span class="hl-go">    - name: Create the app account</span>
+<span class="hl-go">      ansible.builtin.command: useradd --system --home-dir /opt/app --shell /usr/sbin/nologin app</span>
+<span class="hl-go">      ignore_errors: true</span>
+
+<span class="hl-go">    - name: Enable forwarding for the application's containers</span>
+</code></pre>
+
+<p>The inventory alone resolves <code>app_port</code> to 8081. The play's own <code>vars</code> sets 8080, and play vars
+outrank inventory variables.</p>
+<p><strong>4. Rewrite the playbook with modules.</strong> No play <code>vars</code>, one module per piece of state, and handlers
+for the two things that should follow a change:</p>
+<pre class="hl"><code class="language-yaml"><span class="hl-nn">---</span>
+<span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Configure the application host</span>
+<span class="hl-w">  </span><span class="hl-nt">hosts</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">app</span>
+<span class="hl-w">  </span><span class="hl-nt">become</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">true</span>
+<span class="hl-w">  </span><span class="hl-nt">tasks</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">App account</span>
+<span class="hl-w">      </span><span class="hl-nt">ansible.builtin.user</span><span class="hl-p">:</span>
+<span class="hl-w">        </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">app</span>
+<span class="hl-w">        </span><span class="hl-nt">system</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">true</span>
+<span class="hl-w">        </span><span class="hl-nt">home</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/opt/app</span>
+<span class="hl-w">        </span><span class="hl-nt">create_home</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">false</span>
+<span class="hl-w">        </span><span class="hl-nt">shell</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/usr/sbin/nologin</span>
+
+<span class="hl-w">    </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Forwarding for the application's containers</span>
+<span class="hl-w">      </span><span class="hl-nt">ansible.builtin.copy</span><span class="hl-p">:</span>
+<span class="hl-w">        </span><span class="hl-nt">dest</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/etc/sysctl.d/90-app.conf</span>
+<span class="hl-w">        </span><span class="hl-nt">content</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"net.ipv4.ip_forward</span><span class="hl-nv"> </span><span class="hl-s">=</span><span class="hl-nv"> </span><span class="hl-s">1\n"</span>
+<span class="hl-w">        </span><span class="hl-nt">mode</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"0644"</span>
+<span class="hl-w">      </span><span class="hl-nt">notify</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Apply sysctl</span>
+
+<span class="hl-w">    </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Application directory</span>
+<span class="hl-w">      </span><span class="hl-nt">ansible.builtin.file</span><span class="hl-p">:</span>
+<span class="hl-w">        </span><span class="hl-nt">path</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/opt/app</span>
+<span class="hl-w">        </span><span class="hl-nt">state</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">directory</span>
+<span class="hl-w">        </span><span class="hl-nt">mode</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"0755"</span>
+
+<span class="hl-w">    </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Application</span>
+<span class="hl-w">      </span><span class="hl-nt">ansible.builtin.copy</span><span class="hl-p">:</span>
+<span class="hl-w">        </span><span class="hl-nt">src</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">files/app.py</span>
+<span class="hl-w">        </span><span class="hl-nt">dest</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/opt/app/app.py</span>
+<span class="hl-w">        </span><span class="hl-nt">mode</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"0644"</span>
+<span class="hl-w">      </span><span class="hl-nt">notify</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Restart app</span>
+
+<span class="hl-w">    </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Configuration directory</span>
+<span class="hl-w">      </span><span class="hl-nt">ansible.builtin.file</span><span class="hl-p">:</span>
+<span class="hl-w">        </span><span class="hl-nt">path</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/etc/app</span>
+<span class="hl-w">        </span><span class="hl-nt">state</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">directory</span>
+<span class="hl-w">        </span><span class="hl-nt">mode</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"0755"</span>
+
+<span class="hl-w">    </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Configuration</span>
+<span class="hl-w">      </span><span class="hl-nt">ansible.builtin.template</span><span class="hl-p">:</span>
+<span class="hl-w">        </span><span class="hl-nt">src</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">templates/app.conf.j2</span>
+<span class="hl-w">        </span><span class="hl-nt">dest</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/etc/app/app.conf</span>
+<span class="hl-w">        </span><span class="hl-nt">mode</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"0644"</span>
+<span class="hl-w">      </span><span class="hl-nt">notify</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Restart app</span>
+
+<span class="hl-w">    </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Unit</span>
+<span class="hl-w">      </span><span class="hl-nt">ansible.builtin.copy</span><span class="hl-p">:</span>
+<span class="hl-w">        </span><span class="hl-nt">src</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">files/app.service</span>
+<span class="hl-w">        </span><span class="hl-nt">dest</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/etc/systemd/system/app.service</span>
+<span class="hl-w">        </span><span class="hl-nt">mode</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"0644"</span>
+<span class="hl-w">      </span><span class="hl-nt">notify</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Restart app</span>
+
+<span class="hl-w">    </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Application running and enabled</span>
+<span class="hl-w">      </span><span class="hl-nt">ansible.builtin.systemd_service</span><span class="hl-p">:</span>
+<span class="hl-w">        </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">app</span>
+<span class="hl-w">        </span><span class="hl-nt">state</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">started</span>
+<span class="hl-w">        </span><span class="hl-nt">enabled</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">true</span>
+<span class="hl-w">        </span><span class="hl-nt">daemon_reload</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">true</span>
+
+<span class="hl-w">  </span><span class="hl-nt">handlers</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Apply sysctl</span>
+<span class="hl-w">      </span><span class="hl-nt">ansible.builtin.command</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">sysctl -p /etc/sysctl.d/90-app.conf</span>
+<span class="hl-w">      </span><span class="hl-nt">changed_when</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">true</span>
+
+<span class="hl-w">    </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Restart app</span>
+<span class="hl-w">      </span><span class="hl-nt">ansible.builtin.systemd_service</span><span class="hl-p">:</span>
+<span class="hl-w">        </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">app</span>
+<span class="hl-w">        </span><span class="hl-nt">state</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">restarted</span>
+<span class="hl-w">        </span><span class="hl-nt">daemon_reload</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">true</span>
+</code></pre>
+
+<p><strong>5. Preview, apply, apply again, preview again.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/ansible<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span>--check<span class="hl-w"> </span>--diff<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-vE<span class="hl-w"> </span><span class="hl-s1">'^\s*$'</span>
+<span class="hl-go">PLAY [Configure the application host] ******************************************</span>
+<span class="hl-go">TASK [Gathering Facts] *********************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [App account] *************************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [Forwarding for the application's containers] *****************************</span>
+<span class="hl-go">--- before: /etc/sysctl.d/90-app.conf</span>
+<span class="hl-go">+++ after: /etc/sysctl.d/90-app.conf</span>
+<span class="hl-go">@@ -1,3 +1 @@</span>
+<span class="hl-go"> net.ipv4.ip_forward = 1</span>
+<span class="hl-go">-net.ipv4.ip_forward = 1</span>
+<span class="hl-go">-net.ipv4.ip_forward = 1</span>
+<span class="hl-go">changed: [localhost]</span>
+<span class="hl-go">TASK [Application directory] ***************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [Application] *************************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [Configuration directory] *************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [Configuration] ***********************************************************</span>
+<span class="hl-go">--- before: /etc/app/app.conf</span>
+<span class="hl-go">+++ after: /root/.ansible/tmp/ansible-local-21777amddf4y/tmp669hmsui/app.conf.j2</span>
+<span class="hl-go">@@ -1,2 +1,3 @@</span>
+<span class="hl-go">-port = 8080</span>
+<span class="hl-go">+# managed by Ansible — /srv/ansible</span>
+<span class="hl-go">+port = 8081</span>
+<span class="hl-go"> greeting = inventory service</span>
+<span class="hl-go">changed: [localhost]</span>
+<span class="hl-go">TASK [Unit] ********************************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [Application running and enabled] *****************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">RUNNING HANDLER [Apply sysctl] *************************************************</span>
+<span class="hl-go">skipping: [localhost]</span>
+<span class="hl-go">RUNNING HANDLER [Restart app] **************************************************</span>
+<span class="hl-go">changed: [localhost]</span>
+<span class="hl-go">PLAY RECAP *********************************************************************</span>
+<span class="hl-go">localhost                  : ok=10   changed=3    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0</span>
+</code></pre>
+
+<p>The preview now covers every task and says exactly what will change: the duplicate lines go, the port
+becomes 8081. The existing <code>app</code> account, directories, application file and unit already match, so
+those tasks are <code>ok</code>. The one skip is the <code>command</code> handler, which check mode cannot simulate.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/ansible<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'^(TASK|RUNNING|changed|ok)|localhost'</span>
+<span class="hl-go">TASK [Gathering Facts] *********************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [App account] *************************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [Forwarding for the application's containers] *****************************</span>
+<span class="hl-go">changed: [localhost]</span>
+<span class="hl-go">TASK [Application directory] ***************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [Application] *************************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [Configuration directory] *************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [Configuration] ***********************************************************</span>
+<span class="hl-go">changed: [localhost]</span>
+<span class="hl-go">TASK [Unit] ********************************************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">TASK [Application running and enabled] *****************************************</span>
+<span class="hl-go">ok: [localhost]</span>
+<span class="hl-go">RUNNING HANDLER [Apply sysctl] *************************************************</span>
+<span class="hl-go">changed: [localhost]</span>
+<span class="hl-go">RUNNING HANDLER [Restart app] **************************************************</span>
+<span class="hl-go">changed: [localhost]</span>
+<span class="hl-go">localhost                  : ok=11   changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/ansible<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">3</span>
+<span class="hl-go">PLAY RECAP *********************************************************************</span>
+<span class="hl-go">localhost                  : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/ansible<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span>--check<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">3</span>
+<span class="hl-go">PLAY RECAP *********************************************************************</span>
+<span class="hl-go">localhost                  : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0</span>
+</code></pre>
+
+<p>The real run changed two things and ran both handlers once. The second run changed nothing and ran no
+handlers. Check mode on the converged machine: <code>changed=0 skipped=0</code>.</p>
+<p><strong>6. Confirm the result on the machine.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/etc/sysctl.d/90-app.conf<span class="hl-w"> </span>/etc/app/app.conf<span class="hl-p">;</span><span class="hl-w"> </span>/usr/sbin/sysctl<span class="hl-w"> </span>net.ipv4.ip_forward<span class="hl-p">;</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>http://127.0.0.1:8081/
+<span class="hl-go">net.ipv4.ip_forward = 1</span>
+<span class="hl-gp"># </span>managed<span class="hl-w"> </span>by<span class="hl-w"> </span>Ansible<span class="hl-w"> </span>—<span class="hl-w"> </span>/srv/ansible
+<span class="hl-go">port = 8081</span>
+<span class="hl-go">greeting = inventory service</span>
+<span class="hl-go">net.ipv4.ip_forward = 1</span>
+<span class="hl-go">inventory service</span>
+</code></pre>
+
+<p><strong>7. Grade.</strong> The checks — including the check-mode run — passed before and after the reboot.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Deleting the <code>vars:</code> block and changing nothing else.</strong> The port is fixed, but the playbook still
+appends, restarts on every run and hides in check mode.</p>
+<p><strong><code>lineinfile</code> for the sysctl setting.</strong> It stops new duplicates but leaves the two that already exist,
+so the file keeps three lines. For a file the playbook owns, manage the whole content.</p>
+<p><strong><code>changed_when: false</code> on the shell tasks.</strong> The recap becomes <code>changed=0</code>, and the tasks still append
+and restart on every run. It silences the report without making the task describe a state, and check
+mode still skips them.</p>
+<p><strong><code>check_mode: false</code> on the shell tasks &quot;so --check does not skip them&quot;.</strong> Then <code>--check</code> really
+runs them — and changes the machine during what everybody believes is a dry run.</p>
+<p><strong>Keeping <code>ignore_errors: true</code> on the account task.</strong> With <code>ansible.builtin.user</code> there is no error to
+ignore; with <code>ignore_errors</code> left in place, a genuine failure (a UID clash, a locked <code>/etc/passwd</code>)
+passes silently.</p>
+<p><strong>Setting the port with <code>-e app_port=8081</code> in the documentation.</strong> It works because extra vars win,
+and it hides the conflict instead of removing it. The next person who forgets <code>-e</code> gets 8080.</p>
+<p><strong>Writing the sysctl file and expecting the kernel to follow.</strong> The file is read at boot. Without a
+handler (or <code>sysctl --system</code>) the value is only right after the next reboot — the grader checks the
+running kernel too.</p>
+<p><strong>Restarting through <code>ansible.builtin.command: systemctl restart app</code>.</strong> It works as a handler, but
+<code>systemd_service</code> with <code>state: restarted</code> also runs <code>daemon-reload</code> when asked and reports clearly;
+use the module.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span>--check<span class="hl-w"> </span>--diff<span class="hl-w">          </span><span class="hl-c1"># preview; watch changed AND skipped</span>
+<span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w">                          </span><span class="hl-c1"># apply</span>
+<span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w">              </span><span class="hl-c1"># the recap: a second run should be changed=0</span>
+<span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span>--list-tasks<span class="hl-w">             </span><span class="hl-c1"># what would run, without running it</span>
+<span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span>--start-at-task<span class="hl-w"> </span><span class="hl-s2">"Configuration"</span>
+<span class="hl-gp">$ </span>ansible<span class="hl-w"> </span>app<span class="hl-w"> </span>-m<span class="hl-w"> </span>ansible.builtin.debug<span class="hl-w"> </span>-a<span class="hl-w"> </span><span class="hl-nv">var</span><span class="hl-o">=</span>app_port<span class="hl-w">     </span><span class="hl-c1"># a variable from the inventory alone</span>
+<span class="hl-gp">$ </span>ansible-inventory<span class="hl-w"> </span>--host<span class="hl-w"> </span>localhost<span class="hl-w">                 </span><span class="hl-c1"># all inventory variables for a host</span>
+<span class="hl-gp">$ </span>ansible-doc<span class="hl-w"> </span>ansible.builtin.copy<span class="hl-w">                   </span><span class="hl-c1"># a module's parameters and examples</span>
+<span class="hl-gp">$ </span>/usr/sbin/sysctl<span class="hl-w"> </span>net.ipv4.ip_forward<span class="hl-w">               </span><span class="hl-c1"># the running value</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sysctl<span class="hl-w"> </span>-p<span class="hl-w"> </span>/etc/sysctl.d/90-app.conf<span class="hl-w">           </span><span class="hl-c1"># apply one file now</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>app<span class="hl-w"> </span>-p<span class="hl-w"> </span>ActiveEnterTimestamp<span class="hl-w">         </span><span class="hl-c1"># did the service restart?</span>
+</code></pre>
+
+<pre class="hl"><code class="language-yaml"><span class="hl-c1"># a command that converges</span>
+<span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">ansible.builtin.command</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/usr/local/bin/init-db</span>
+<span class="hl-w">  </span><span class="hl-nt">args</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">{</span><span class="hl-nt">creates</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">/var/lib/db/.initialised</span><span class="hl-p hl-p-Indicator">}</span>
+<span class="hl-c1"># a command that reports honestly</span>
+<span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">ansible.builtin.command</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">some-tool status</span>
+<span class="hl-w">  </span><span class="hl-nt">register</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">out</span>
+<span class="hl-w">  </span><span class="hl-nt">changed_when</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">false</span>
+<span class="hl-c1"># restart only on change</span>
+<span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">ansible.builtin.template</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">{</span><span class="hl-nt">src</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">app.conf.j2</span><span class="hl-p hl-p-Indicator">,</span><span class="hl-nt"> dest</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">/etc/app/app.conf</span><span class="hl-p hl-p-Indicator">}</span>
+<span class="hl-w">  </span><span class="hl-nt">notify</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Restart app</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>A green run is not a correct machine</em> (topic journal <code>ansible</code>) — Variable precedence, the parts that bite</li>
+<li><em>A green run is not a correct machine</em> (topic journal <code>ansible</code>) — Idempotence is a property of each task</li>
+<li><em>A green run is not a correct machine</em> (topic journal <code>ansible</code>) — Handlers: a notification is a promise kept at the end</li>
+<li><em>A green run is not a correct machine</em> (topic journal <code>ansible</code>) — shell and command report changed because they cannot know</li>
+<li><em>A green run is not a correct machine</em> (topic journal <code>ansible</code>) — Check mode, and what it cannot see</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>A green run is not a correct machine</em> (<code>ansible</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>What three steps does a state module perform that a <code>command</code> task does not?</p>
+<blockquote>
+<p>It reads the current state, compares it with the desired state from its parameters, and changes only the difference — reporting <code>changed</code> only when it acted.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did check mode report <code>changed=0</code> on the original playbook, and why is that misleading?</p>
+<blockquote>
+<p>Five of the seven tasks were <code>command</code>/<code>shell</code> tasks, which check mode cannot simulate and therefore skips; <code>changed=0</code> only reflects the two tasks it did evaluate.</p>
+</blockquote>
+</li>
+<li>
+<p><code>group_vars/app.yml</code> sets <code>app_port: 8081</code> and the play sets <code>vars: app_port: 8080</code>. Which value do tasks see, and how do you prove the inventory value?</p>
+<blockquote>
+<p>8080 — play vars outrank inventory group_vars. <code>ansible app -m ansible.builtin.debug -a var=app_port</code> shows the inventory's 8081 without the play.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>copy</code> with <code>content:</code> the right fix for the duplicated sysctl lines, and <code>lineinfile</code> not?</p>
+<blockquote>
+<p><code>copy</code> manages the whole file, so it removes the existing duplicates and reports changed once; <code>lineinfile</code> only ensures one matching line exists and leaves the other copies.</p>
+</blockquote>
+</li>
+<li>
+<p>When does a handler run, and how many times?</p>
+<blockquote>
+<p>Only if at least one task that notifies it reports <code>changed</code>; once per host, after the play's tasks (or at <code>meta: flush_handlers</code>), no matter how many tasks notified it.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a playbook recap of <code>changed=0 skipped=0</code> from <code>--check</code> prove on a configured host?</p>
+<blockquote>
+<p>That every task could be evaluated without being skipped, and that none of them would change anything: the playbook describes state and the machine is already in it.</p>
+</blockquote>
+</li>
+<li>
+<p>After a play writes <code>/etc/sysctl.d/90-app.conf</code>, why can <code>sysctl net.ipv4.ip_forward</code> still print 0?</p>
+<blockquote>
+<p>The file is only read at boot by systemd-sysctl; the running kernel changes only when the value is applied, e.g. with <code>sysctl -p FILE</code> or <code>sysctl --system</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>changed_when: false</code> on an appending <code>shell</code> task not a fix?</p>
+<blockquote>
+<p>It only changes the report; the task still appends on every run and is still skipped in check mode.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

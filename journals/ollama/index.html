@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ollama on a server — a model is a service, a file, a cache and a timer · Norboten</title>
+<meta name="description" content="Ollama makes running a language model on your own hardware look like running any other daemon: install one binary, start ollama serve, and an HTTP API on port 1">
+<link rel="canonical" href="https://norboten.org/journals/ollama/"><meta property="og:title" content="Ollama on a server — a model is a service, a file, a cache and a timer · Norboten">
+<meta property="og:description" content="Ollama makes running a language model on your own hardware look like running any other daemon: install one binary, start ollama serve, and an HTTP API on port 1">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/ollama/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ollama on a server — a model is a service, a file, a cache and a timer · Norboten">
+<meta name="twitter:description" content="Ollama makes running a language model on your own hardware look like running any other daemon: install one binary, start ollama serve, and an HTTP API on port 1">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Ollama on a server \u2014 a model is a service, a file, a cache and a timer",
+  "description": "Ollama makes running a language model on your own hardware look like running any other daemon: install one binary, start ollama serve, and an HTTP API on port 1",
+  "url": "https://norboten.org/journals/ollama/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2067,
+  "timeRequired": "PT45M",
+  "about": ["Ollama", "AI Services"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal</div>
+    <h1>Ollama on a server — a model is a service, a file, a cache and a timer</h1>
+    <p class="muted">
+      45 minutes' reading · 2067 words ·<span class="tag">Ollama</span><span class="tag">AI Services</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 90 words</title><rect x="0.0" y="0" width="28.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 651 words</title><rect x="31.7" y="0" width="207.5" height="30" rx="4" fill="#1d2a23"/><text x="39.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 584 words</title><rect x="242.2" y="0" width="186.2" height="30" rx="4" fill="#4ade80"/><text x="250.2" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 174 words</title><rect x="431.3" y="0" width="55.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#symptoms-and-causes"><title>Symptoms and causes — 167 words</title><rect x="489.8" y="0" width="53.2" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 179 words</title><rect x="546.0" y="0" width="57.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#exercises"><title>Exercises — 98 words</title><rect x="606.1" y="0" width="31.2" height="30" rx="4" fill="#1d2a23"/></a><a href="#sources"><title>Sources — 26 words</title><rect x="640.3" y="0" width="8.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 340 words</title><rect x="651.6" y="0" width="108.4" height="30" rx="4" fill="#1d2a23"/><text x="659.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#symptoms-and-causes">Symptoms and causes</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#exercises">Exercises</a></li>
+          <li><a href="#sources">Sources</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Ollama makes running a language model on your own hardware look like running any other daemon:
+install one binary, start <code>ollama serve</code>, and an HTTP API on port 11434 lists models, generates text,
+chats and computes embeddings. That resemblance is useful and a little misleading. A model server
+behaves unlike a web application in three ways that matter to whoever runs it: what it loads is huge
+and has to be warmed up, how much memory it needs depends on settings rather than on traffic, and what
+it gives the model to read is bounded by a context window that silently cuts off whatever does not fit.</p>
+<p>This journal follows one server through a morning's work on Norboten's automation image, recorded
+before it moved to Ubuntu 26.04 (<code>ubuntu-26.04-automation</code>) —
+Ollama 0.34.0, <code>qwen2.5:0.5b</code> and the <code>all-minilm</code> embedding model on a 2-CPU, 3 GB VM — and ties
+together what the automation track's four Ollama labs take apart one at a time: <code>ai-01</code> (the service
+account and a proxy for streamed answers), <code>ollama-01</code> (exposure and origins), <code>ollama-02</code> (Modelfiles and
+context) and <code>ollama-03</code> (memory).</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Run Ollama as a systemd service with its own account and model directory, and configure it through
+its environment.</li>
+<li>Use the API to list, load, query, embed and unload models, and read its timings.</li>
+<li>Explain keep-alive, preload a model and predict when it unloads.</li>
+<li>Build a model with a Modelfile and keep its context window large enough for its instructions.</li>
+<li>Size context and parallelism to memory, and cap the service safely.</li>
+<li>Keep the server off the network and put authentication in front of it.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="the-service">The service</h3>
+<p>Ollama is configured by environment variables read by <code>ollama serve</code>. Under systemd:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-k">[Service]</span>
+<span class="hl-na">User</span><span class="hl-o">=</span><span class="hl-s">ollama</span>
+<span class="hl-na">Group</span><span class="hl-o">=</span><span class="hl-s">ollama</span>
+<span class="hl-na">Environment</span><span class="hl-o">=</span><span class="hl-s">HOME=/var/lib/ollama</span>
+<span class="hl-na">Environment</span><span class="hl-o">=</span><span class="hl-s">OLLAMA_MODELS=/var/lib/ollama/models</span>
+<span class="hl-na">ExecStart</span><span class="hl-o">=</span><span class="hl-s">/usr/local/bin/ollama serve</span>
+<span class="hl-na">Restart</span><span class="hl-o">=</span><span class="hl-s">on-failure</span>
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>variable</th>
+<th>default</th>
+<th>what it controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OLLAMA_HOST</code></td>
+<td><code>127.0.0.1:11434</code></td>
+<td>listen address (and where the <code>ollama</code> client connects)</td>
+</tr>
+<tr>
+<td><code>OLLAMA_MODELS</code></td>
+<td><code>~/.ollama/models</code> of the serving user</td>
+<td>model blobs and manifests</td>
+</tr>
+<tr>
+<td><code>OLLAMA_ORIGINS</code></td>
+<td>local origins</td>
+<td>extra web origins allowed to call it from a browser</td>
+</tr>
+<tr>
+<td><code>OLLAMA_KEEP_ALIVE</code></td>
+<td><code>5m</code></td>
+<td>how long a loaded model stays in memory</td>
+</tr>
+<tr>
+<td><code>OLLAMA_CONTEXT_LENGTH</code></td>
+<td>4096</td>
+<td>default context window</td>
+</tr>
+<tr>
+<td><code>OLLAMA_NUM_PARALLEL</code></td>
+<td>1</td>
+<td>simultaneous requests per loaded model</td>
+</tr>
+<tr>
+<td><code>OLLAMA_MAX_LOADED_MODELS</code></td>
+<td>3 (CPU)</td>
+<td>models kept loaded at once, memory permitting</td>
+</tr>
+<tr>
+<td><code>OLLAMA_MAX_QUEUE</code></td>
+<td>512</td>
+<td>queued requests before 503</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>ollama</code> command is an HTTP client of that server. <code>ollama pull</code>, <code>create</code> and <code>rm</code> ask the server to
+act; the files are written as the server's user under its <code>OLLAMA_MODELS</code>, whoever typed the command.</p>
+<p>The API has no authentication. Keep <code>OLLAMA_HOST</code> on loopback and publish it through a proxy that
+authenticates (<code>ollama-01</code>); give the proxy <code>proxy_buffering off</code> and a long <code>proxy_read_timeout</code> for
+answers that stream (<code>ai-01</code>).</p>
+<h3 id="models-on-disk">Models on disk</h3>
+<p>A model is a manifest pointing at content-addressed blobs: weights, template, parameters, system prompt.
+<code>qwen2.5:0.5b</code> is 494 million parameters quantized to about 4 bits (<code>Q4_K_M</code>), a 398 MB file; <code>all-minilm</code>
+is 23 million parameters in 16-bit floats, 46 MB. Both together occupy 424 MB of <code>/var/lib/ollama/models</code>
+on the image — pulled at build time, because a lab machine has no internet.</p>
+<p>A <strong>Modelfile</strong> derives a model: <code>FROM</code> a base, <code>PARAMETER</code> lines (<code>num_ctx</code>, <code>temperature</code>, <code>seed</code>,
+<code>stop</code>, …), a <code>SYSTEM</code> prompt, optional <code>MESSAGE</code> examples. <code>ollama create</code> reads it once and stores a new
+manifest that reuses the base's weight blobs. Editing the file changes nothing until the model is created
+again; <code>ollama show --modelfile</code> tells you what the server holds.</p>
+<h3 id="what-a-request-costs-load-prompt-generation">What a request costs: load, prompt, generation</h3>
+<p>Every response carries timings in <strong>nanoseconds</strong>: <code>load_duration</code> (bringing the model into memory),
+<code>prompt_eval_count</code> and <code>prompt_eval_duration</code> (reading the prompt), <code>eval_count</code> and <code>eval_duration</code>
+(generating). The first request after a load pays the load; the rest do not, until the model is unloaded.</p>
+<p><strong>Keep-alive</strong> decides when that happens. Each loaded model has an expiry: five minutes after its last
+request by default, <code>OLLAMA_KEEP_ALIVE</code> for the server, or <code>keep_alive</code> in a request (a duration, seconds,
+<code>0</code> to unload right after, any negative number for never). A request with a model and no prompt loads it
+and returns — the documented way to preload. <code>ollama stop &lt;model&gt;</code> unloads now.</p>
+<h3 id="context-windows">Context windows</h3>
+<p><code>num_ctx</code> bounds everything one request holds — system prompt, conversation, question and answer. Chat is
+stateless: each request resends the whole conversation, so the prompt grows with every turn. When a prompt
+does not fit, Ollama cuts it to about half the window, keeping a few tokens from the start and the most
+recent text, logs <code>truncating input prompt</code>, and answers anyway (<code>ollama-02</code>: a 1,388-token prompt became
+130 tokens at <code>num_ctx</code> 256). Options in a request override the model's parameters, which override the
+server's defaults.</p>
+<h3 id="memory">Memory</h3>
+<p>A loaded model holds its weights, working memory, and a <strong>key-value cache</strong> sized for context length ×
+parallel requests. <code>ollama-03</code> measured <code>qwen2.5:0.5b</code>: 734 MiB peak at 4,096 × 2; 1,398 MiB at 16,384 × 4;
+a 3,072 MB cache allocation (and failure) at 32,768 × 8. A systemd <code>MemoryMax=</code> below the working set gets
+the process OOM-killed inside its cgroup; a cache the machine cannot provide fails with HTTP 500 instead.</p>
+<h3 id="embeddings">Embeddings</h3>
+<p><code>/api/embed</code> turns texts into vectors — 384 numbers each for <code>all-minilm</code> — placed so that similar meanings
+are close. Retrieval-augmented generation embeds documents ahead of time, embeds the question, fetches the
+closest passages, and puts them in the chat model's context. Vectors are comparable only within one
+embedding model.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>The morning: the service is installed and enabled on a fresh VM, and the chat backend's first request of the
+day is slow. What is on disk, and what is loaded:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/tags<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'.models[] | {name, size, details: .details | {family, parameter_size, quantization_level}}'</span>
+<span class="hl-go">{"name":"all-minilm:latest","size":45960996,"details":{"family":"bert","parameter_size":"23M","quantization_level":"F16"}}</span>
+<span class="hl-go">{"name":"qwen2.5:0.5b","size":397821319,"details":{"family":"qwen2","parameter_size":"494.03M","quantization_level":"Q4_K_M"}}</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/ps
+<span class="hl-go">{"models":[]}</span>
+</code></pre>
+
+<p>Nothing loaded: the first question pays the load. Preload instead, and look at the expiry:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">time</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/generate<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"qwen2.5:0.5b"}'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{done, done_reason}'</span>
+<span class="hl-go">{"done":true,"done_reason":"load"}</span>
+<span class="hl-go">real	0m1.099s</span>
+<span class="hl-gp">$ </span>date<span class="hl-w"> </span>-u<span class="hl-w"> </span>+%H:%M:%S<span class="hl-p">;</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/ps<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'.models[] | {name, expires_at}'</span>
+<span class="hl-go">20:44:21</span>
+<span class="hl-go">{"name":"qwen2.5:0.5b","expires_at":"2026-09-14T20:49:21.834045013Z"}</span>
+</code></pre>
+
+<p>A 1.1-second load, and five minutes of life. The next question costs almost nothing to start:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/generate<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-err">'</span><span class="hl-o">{</span><span class="hl-s2">"model"</span>:<span class="hl-s2">"qwen2.5:0.5b"</span>,<span class="hl-s2">"prompt"</span>:<span class="hl-s2">"Name one Linux command."</span>,<span class="hl-s2">"stream"</span>:false,
+<span class="hl-go">    "options":{"num_predict":8,"temperature":0}}' | jq -c '{response, load_duration, prompt_eval_duration, eval_count, eval_duration}'</span>
+<span class="hl-go">{"response":"One Linux command is `ls`.","load_duration":276667,"prompt_eval_duration":261954999,"eval_count":8,"eval_duration":79914000}</span>
+</code></pre>
+
+<p>0.3 ms to &quot;load&quot;, 0.26 s to read the prompt, and eight tokens in 0.08 s — about 100 tokens a second for this
+model on two vCPUs. With a small model on a CPU the load is short; a model ten times the size takes
+correspondingly longer to read into memory, which is why preloading and keep-alive matter.</p>
+<p>Keep it loaded, then send an ordinary request:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/generate<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"qwen2.5:0.5b","keep_alive":-1}'</span><span class="hl-w"> </span>&gt;/dev/null
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/ps<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'.models[].expires_at'</span>
+<span class="hl-go">2318-12-25T20:31:39.046054987Z</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/generate<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"qwen2.5:0.5b","prompt":"hi","stream":false,"options":{"num_predict":1}}'</span><span class="hl-w"> </span>&gt;/dev/null
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/ps<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'.models[].expires_at'</span>
+<span class="hl-go">2318-12-25T20:31:39.097215279Z</span>
+</code></pre>
+
+<p>&quot;Forever&quot; is a date three centuries away. The ordinary request did not bring back the five-minute default:
+the loaded model kept the last keep-alive it was given. The same happens the other way. After a restart:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/generate<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"qwen2.5:0.5b","keep_alive":"2m"}'</span><span class="hl-w"> </span>&gt;/dev/null
+<span class="hl-gp">$ </span>date<span class="hl-w"> </span>-u<span class="hl-w"> </span>+%H:%M:%S<span class="hl-p">;</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/ps<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'.models[].expires_at'</span>
+<span class="hl-go">20:44:38</span>
+<span class="hl-go">2026-09-14T20:46:38.878194029Z</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/generate<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"qwen2.5:0.5b","prompt":"hi","stream":false,"options":{"num_predict":1}}'</span><span class="hl-w"> </span>&gt;/dev/null
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/ps<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'.models[].expires_at'</span>
+<span class="hl-go">2026-09-14T20:46:39.101225529Z</span>
+</code></pre>
+
+<p>Two minutes again, not five. On a shared server, one client that sends <code>keep_alive</code> sets the lifetime for
+everyone's requests to that model until it unloads — set <code>OLLAMA_KEEP_ALIVE</code> on the server and keep clients
+from sending their own. <code>ollama stop</code> ends it at once:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ollama<span class="hl-w"> </span>stop<span class="hl-w"> </span>qwen2.5:0.5b<span class="hl-p">;</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/ps
+<span class="hl-go">{"models":[]}</span>
+</code></pre>
+
+<p>The retrieval side of the chat uses the embedding model:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/embed<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"all-minilm","input":["disk full","no space left on device","refund request"]}'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{dims: (.embeddings[0]|length), n: (.embeddings|length)}'</span>
+<span class="hl-go">{"dims":384,"n":3}</span>
+<span class="hl-gp">$ </span><span class="hl-c1"># cosine similarity of the three vectors, computed in Python</span>
+<span class="hl-go">disk full ~ no space left on device: 0.621</span>
+<span class="hl-go">disk full ~ refund request: 0.228</span>
+</code></pre>
+
+<p>The phrasings share no words and still score far closer than the unrelated one — what lexical search cannot
+do. And a tool written for the OpenAI API needs only a base URL:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/v1/chat/completions<span class="hl-w"> </span>-H<span class="hl-w"> </span><span class="hl-s1">'Content-Type: application/json'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"qwen2.5:0.5b","messages":[{"role":"user","content":"Say OK."}],"max_tokens":3}'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{object, content: .choices[0].message.content, usage}'</span>
+<span class="hl-go">{"object":"chat.completion","content":"OK, I","usage":{"prompt_tokens":32,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens":3,"total_tokens":35}}</span>
+</code></pre>
+
+<p>(Three tokens are three tokens: &quot;OK, I&quot;.) Both models are now loaded, and the service's memory shows it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/ps<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'[.models[] | {name, size}]'</span>
+<span class="hl-go">[{"name":"qwen2.5:0.5b","size":628862482},{"name":"all-minilm:latest","size":48203038}]</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>ollama<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryPeak<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryCurrent
+<span class="hl-go">MemoryCurrent=1255858176</span>
+<span class="hl-go">MemoryPeak=1322995712</span>
+</code></pre>
+
+<p>The loaded sizes add to 646 MiB; the cgroup counts 1.2 GiB, because it also charges the page cache of the model
+files the service read. That difference is the headroom a <code>MemoryMax=</code> has to leave: set a limit from
+measurements like these, not from the size of the model file.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Treating the model file size as the memory need.</strong> Weights plus runtime plus a cache that scales with
+context × parallel, plus page cache in the cgroup's accounting.</p>
+<p><strong><code>OLLAMA_HOST=0.0.0.0</code> so another machine can reach it.</strong> It can — and so can everyone else. Loopback and a
+proxy with authentication.</p>
+<p><strong><code>OLLAMA_ORIGINS=*</code> for a web page.</strong> Allow the page's origin, nothing more.</p>
+<p><strong>Editing a Modelfile and not rebuilding.</strong> The server does not read it again.</p>
+<p><strong>Shrinking <code>num_ctx</code> for speed.</strong> Long prompts are truncated without an error; the model answers without its
+instructions.</p>
+<p><strong>Relying on the five-minute default while clients send <code>keep_alive</code>.</strong> The last one given sticks to the loaded
+model.</p>
+<p><strong><code>OLLAMA_NUM_PARALLEL</code> equal to the number of users.</strong> It is simultaneous requests; each slot costs a full context
+of cache.</p>
+<p><strong>Mixing embedding models in one index.</strong> Similarities between vectors of different models mean nothing.</p>
+<p><strong>Expecting a 0.5B model to follow a long rulebook.</strong> Small local models are good at short, constrained work and
+at answering from retrieved passages; they are poor at complex instructions and know little.</p>
+<h2 id="symptoms-and-causes">Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>the service will not start, or cannot find its models</td>
+<td>it runs as <code>ollama</code> and the model directory belongs to someone else</td>
+<td><code>systemctl status ollama</code>; <code>ls -ld $OLLAMA_MODELS</code></td>
+</tr>
+<tr>
+<td>other machines can use the model server</td>
+<td><code>OLLAMA_HOST=0.0.0.0</code> with no proxy or authentication in front</td>
+<td><code>ss -ltnp 'sport = :11434'</code>; <code>systemctl cat ollama</code></td>
+</tr>
+<tr>
+<td>a browser page cannot call the API</td>
+<td>the page's origin is not allowed</td>
+<td><code>OLLAMA_ORIGINS</code>; the request's <code>Origin</code> header</td>
+</tr>
+<tr>
+<td>a model ignores the start of a long system prompt</td>
+<td>the context window truncates the prompt</td>
+<td><code>prompt_eval_count</code> in the response; <code>num_ctx</code></td>
+</tr>
+<tr>
+<td>a model loads, then the server is killed</td>
+<td>memory: the model plus its KV cache exceed the unit's <code>MemoryMax=</code> or the machine</td>
+<td><code>journalctl -u ollama</code>; the kernel log; <code>MemoryPeak</code></td>
+</tr>
+<tr>
+<td>answers vary from run to run</td>
+<td>sampling: temperature above zero</td>
+<td><code>ollama show MODEL --parameters</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># service</span>
+systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>ollama<span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>-p<span class="hl-w"> </span>Environment<span class="hl-w"> </span>ollama
+sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>edit<span class="hl-w"> </span>ollama<span class="hl-w">                       </span><span class="hl-c1"># drop-in: Environment="OLLAMA_…"</span>
+sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>ollama
+sudo<span class="hl-w"> </span>ss<span class="hl-w"> </span>-ltnp<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span><span class="hl-m">11434</span><span class="hl-w">                       </span><span class="hl-c1"># 127.0.0.1 only</span>
+
+<span class="hl-c1"># models</span>
+ollama<span class="hl-w"> </span>list<span class="hl-w">                                      </span><span class="hl-c1"># on disk      (GET /api/tags)</span>
+ollama<span class="hl-w"> </span>ps<span class="hl-w">                                        </span><span class="hl-c1"># loaded, until when (GET /api/ps)</span>
+ollama<span class="hl-w"> </span>show<span class="hl-w"> </span>NAME<span class="hl-w"> </span>--modelfile<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>--parameters<span class="hl-w">      </span><span class="hl-c1"># definition   (POST /api/show)</span>
+ollama<span class="hl-w"> </span>create<span class="hl-w"> </span>NAME<span class="hl-w"> </span>-f<span class="hl-w"> </span>Modelfile<span class="hl-w">                  </span><span class="hl-c1"># build from a Modelfile</span>
+ollama<span class="hl-w"> </span>stop<span class="hl-w"> </span>NAME<span class="hl-w">                                 </span><span class="hl-c1"># unload now</span>
+ollama<span class="hl-w"> </span>rm<span class="hl-w"> </span>NAME<span class="hl-w">                                   </span><span class="hl-c1"># delete</span>
+
+<span class="hl-c1"># requests</span>
+curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/generate<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"M"}'</span><span class="hl-w">                         </span><span class="hl-c1"># preload</span>
+curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/generate<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"M","keep_alive":-1}'</span><span class="hl-w">         </span><span class="hl-c1"># keep loaded</span>
+curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/chat<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"M","stream":false,"messages":[{"role":"user","content":"…"}],</span>
+<span class="hl-s1">  "options":{"num_ctx":4096,"temperature":0.2,"num_predict":200},"format":{…schema…}}'</span>
+curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/embed<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"all-minilm","input":["a","b"]}'</span>
+curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/v1/chat/completions<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"M","messages":[…]}'</span><span class="hl-w">   </span><span class="hl-c1"># OpenAI-compatible</span>
+<span class="hl-c1">#   durations are nanoseconds; tokens/s = eval_count / (eval_duration / 1e9)</span>
+<span class="hl-c1">#   prompt_eval_count &lt; expected → truncated: journalctl -u ollama | grep 'truncating input'</span>
+
+<span class="hl-c1"># memory</span>
+systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>ollama<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryMax<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryPeak<span class="hl-w"> </span>-p<span class="hl-w"> </span>NRestarts
+sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>ollama<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'projected to use|n_ctx|insufficient memory|oom-kill'</span>
+
+<span class="hl-c1"># Modelfile</span>
+FROM<span class="hl-w"> </span>qwen2.5:0.5b
+PARAMETER<span class="hl-w"> </span>num_ctx<span class="hl-w"> </span><span class="hl-m">4096</span>
+PARAMETER<span class="hl-w"> </span>temperature<span class="hl-w"> </span><span class="hl-m">0</span>.2
+SYSTEM<span class="hl-w"> </span><span class="hl-s2">"""…"""</span>
+</code></pre>
+
+<h2 id="exercises">Exercises</h2>
+<ol>
+<li>Ask the API a question and read <code>load_duration</code>, <code>prompt_eval_count</code> and <code>eval_count</code> in the
+answer; ask again and compare the load time.</li>
+<li>Build a model with <code>num_ctx 256</code> and a long system prompt; compare <code>prompt_eval_count</code> with the
+prompt's length.</li>
+<li>Raise <code>OLLAMA_NUM_PARALLEL</code> and the context length, load a model, and read <code>/api/ps</code> and the unit's
+memory use.</li>
+<li>Change a Modelfile's <code>PARAMETER temperature</code> and compare <code>ollama show --modelfile</code> before and after
+<code>ollama create</code>.</li>
+<li>Move the service to <code>0.0.0.0</code> in a drop-in and check who can reach it; then put it back behind a
+proxy with authentication.</li>
+</ol>
+<h2 id="sources">Sources</h2>
+<ul>
+<li>Ollama's FAQ (environment, networking, memory): https://docs.ollama.com/faq</li>
+<li>The Modelfile reference: https://docs.ollama.com/modelfile</li>
+<li>The API reference: https://docs.ollama.com/api</li>
+<li><code>man 5 systemd.resource-control</code> — <code>MemoryMax=</code> for the service.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Why does <code>ollama pull</code> run by your own account still write the model as the <code>ollama</code> user?</p>
+<blockquote>
+<p>The CLI only asks the server to pull; the server writes under its own <code>OLLAMA_MODELS</code> as the account it
+runs as.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a request containing only a model name do, and why would you send one?</p>
+<blockquote>
+<p>It loads the model into memory and returns (<code>done_reason: &quot;load&quot;</code>), so the first real question does not pay
+the load time.</p>
+</blockquote>
+</li>
+<li>
+<p>A model was loaded with <code>keep_alive: -1</code>. A later request sends no <code>keep_alive</code>. When does the model unload,
+according to the lab VM?</p>
+<blockquote>
+<p>Not at all: the loaded model kept the last keep-alive it was given. It unloads on <code>ollama stop</code>, a
+<code>keep_alive: 0</code> request, or a restart.</p>
+</blockquote>
+</li>
+<li>
+<p>From <code>eval_count</code> 8 and <code>eval_duration</code> 79914000, how fast is generation?</p>
+<blockquote>
+<p>Durations are nanoseconds: 8 tokens in 0.0799 s, about 100 tokens per second.</p>
+</blockquote>
+</li>
+<li>
+<p>Two models report loaded sizes adding to 646 MiB, and <code>MemoryCurrent</code> says 1.2 GiB. Where is the rest?</p>
+<blockquote>
+<p>The cgroup also charges page cache for the model files the service read, plus runtime memory. A memory
+limit has to leave room for it.</p>
+</blockquote>
+</li>
+<li>
+<p>What happens to a 1,388-token prompt sent to a model with <code>num_ctx</code> 256, and how do you notice?</p>
+<blockquote>
+<p>It is truncated to about half the window (130 tokens), keeping the start and the most recent text; the answer
+comes back normally. <code>prompt_eval_count</code> and the server's &quot;truncating input prompt&quot; log line show it.</p>
+</blockquote>
+</li>
+<li>
+<p>Two phrasings share no words, yet their <code>all-minilm</code> embeddings score 0.621 while an unrelated phrase scores
+0.228. What does that make possible, and what must stay constant?</p>
+<blockquote>
+<p>Retrieval by meaning rather than by shared words. Every vector compared must come from the same embedding
+model.</p>
+</blockquote>
+</li>
+<li>
+<p>Name the three controls that keep a model server private and usable from one web page.</p>
+<blockquote>
+<p><code>OLLAMA_HOST</code> on loopback, a proxy that requires authentication, and <code>OLLAMA_ORIGINS</code> listing only that
+page's origin.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

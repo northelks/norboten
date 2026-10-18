@@ -1,0 +1,2298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play · Norboten</title>
+<meta name="description" content="Watch a learner fix a broken Linux machine, live or replayed.">
+<link rel="canonical" href="https://norboten.org/live/"><meta property="og:title" content="Play · Norboten">
+<meta property="og:description" content="Watch a learner fix a broken Linux machine, live or replayed.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/live/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Play · Norboten">
+<meta name="twitter:description" content="Watch a learner fix a broken Linux machine, live or replayed.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../features/" >Features</a>
+      <a href="../labs/" >Labs</a>
+      <a href="../how-it-works/" >How it works</a>
+      <a href="../journals/" >Journals</a>
+      <a href="../docs/" >Docs</a>
+      <a class="group" href="../players/" >Ratings</a>
+      <a class="live" href="../live/" aria-current="page"><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Play</div>
+    <h1>Watch someone fix a Linux box</h1>
+    <p class="lede prose">
+      <kbd>P</kbd> on a lab in the TUI records the session's terminal and publishes it
+      here while it runs.<br>Read-only: you see what the learner sees, at the speed they typed it, and
+      every file they change is a diff.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="live" data-api="">
+  <div class="wrap">
+    <h2><span class="pulse"></span> Live now</h2>
+    <p class="muted" id="livestate" hidden></p>
+  </div>
+  <div class="wrap wide">
+    <div class="wall">
+      <figure class="wallterm" data-slot="0">
+        <figcaption>
+          <span class="dot green"></span>
+          <strong>The backup script that lies</strong>
+          <span class="muted mono">linux-03-backup-script-lies · alpine</span>
+        </figcaption>
+        <div class="term" data-theme="green" data-autoplay="loop" data-controls="wall"
+             data-title="The backup script that lies" data-meta="linux-03-backup-script-lies · alpine · 13 Sep 2026 · 16:57 → 17:01 UTC"
+             data-cast="../streams/backup-script-lies.json"></div>
+      </figure>
+      <figure class="wallterm" data-slot="1">
+        <figcaption>
+          <span class="dot amber"></span>
+          <strong>The contractor who cannot write</strong>
+          <span class="muted mono">rhcsa-01-users-and-permissions · rocky-10</span>
+        </figcaption>
+        <div class="term" data-theme="amber" data-autoplay="loop" data-controls="wall"
+             data-title="The contractor who cannot write" data-meta="rhcsa-01-users-and-permissions · rocky-10 · 13 Sep 2026 · 17:07 → 17:10 UTC"
+             data-cast="../streams/contractor-cannot-write.json"></div>
+      </figure>
+      <figure class="wallterm" data-slot="2">
+        <figcaption>
+          <span class="dot ice"></span>
+          <strong>The service that won&#39;t stay up</strong>
+          <span class="muted mono">linux-02-service-wont-stay-up · ubuntu-26.04</span>
+        </figcaption>
+        <div class="term" data-theme="ice" data-autoplay="loop" data-controls="wall"
+             data-title="The service that won&#39;t stay up" data-meta="linux-02-service-wont-stay-up · ubuntu-26.04 · 16 Sep 2026 · 02:50 → 02:56 UTC"
+             data-cast="../streams/notes-wont-stay-up.json"></div>
+      </figure>
+      <figure class="wallterm" data-slot="3">
+        <figcaption>
+          <span class="dot violet"></span>
+          <strong>The site nobody can reach</strong>
+          <span class="muted mono">rhcsa-04-selinux-firewall-network · rocky-10</span>
+        </figcaption>
+        <div class="term" data-theme="violet" data-autoplay="loop" data-controls="wall"
+             data-title="The site nobody can reach" data-meta="rhcsa-04-selinux-firewall-network · rocky-10 · 13 Sep 2026 · 17:11 → 17:15 UTC"
+             data-cast="../streams/site-nobody-can-reach.json"></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>Recorded sessions</h2>
+    <p class="muted">Real sessions against real VMs, recorded with the same recorder. Until you
+      press play each screen lists the commands it is about to run; skipping to the next three
+      commands pauses. Click a command in the logs to jump to it. Long pauses are squeezed; nothing else is
+      edited.</p>
+    <figure class="play" id="backup-script-lies">
+      <figcaption>
+        <strong>The backup script that lies</strong>
+        <span class="tag">linux-03-backup-script-lies</span>
+        <span class="tag">alpine</span>
+        <span class="muted mono small">73 commands · 3m 53s · 1 file changed</span>
+      </figcaption>
+<p class="muted mono blurb small">13 Sep 2026 · 16:57 → 17:01 UTC</p>      <div class="term" data-theme="green"
+           data-cast="../streams/backup-script-lies.json"
+           data-title="The backup script that lies"
+data-logs="#logs-backup-script-lies"           data-commands="#cmds-backup-script-lies"></div>
+      <div class="commands-holder" id="logs-backup-script-lies"
+           data-subtitle="73 commands, and how long each took" hidden>
+        <div class="tablewrap">
+        <table class="board cmdtable" id="cmds-backup-script-lies">
+          <tr><th>At</th><th>Command</th><th class="num">Took</th></tr>
+          <tr data-command="0">
+            <td class="muted mono num">0:02</td>
+            <td class="mono cmd">cat /etc/os-release | head -2</td>
+            <td class="muted mono num">0.6 s</td>
+          </tr>
+          <tr data-command="1">
+            <td class="muted mono num">0:02</td>
+            <td class="mono cmd">id</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="2">
+            <td class="muted mono num">0:04</td>
+            <td class="mono cmd">ls -l /usr/local/bin/backup-data</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="3">
+            <td class="muted mono num">0:06</td>
+            <td class="mono cmd">cat /usr/local/bin/backup-data</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="4">
+            <td class="muted mono num">0:08</td>
+            <td class="mono cmd">ls -la /var/backups</td>
+            <td class="muted mono num">3.9 s</td>
+          </tr>
+          <tr data-command="5">
+            <td class="muted mono num">0:12</td>
+            <td class="mono cmd">tail -5 /var/log/backup-data.log 2&gt;/dev/null || echo &#34;no log yet&#34;</td>
+            <td class="muted mono num">1.7 s</td>
+          </tr>
+          <tr data-command="6">
+            <td class="muted mono num">0:14</td>
+            <td class="mono cmd">find /srv/data -type f</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="7">
+            <td class="muted mono num">0:16</td>
+            <td class="mono cmd">find /srv/data -type f | wc -l</td>
+            <td class="muted mono num">1.4 s</td>
+          </tr>
+          <tr data-command="8">
+            <td class="muted mono num">0:17</td>
+            <td class="mono cmd">du -sh /srv/data</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="9">
+            <td class="muted mono num">0:19</td>
+            <td class="mono cmd">sudo /usr/local/bin/backup-data</td>
+            <td class="muted mono num">1.7 s</td>
+          </tr>
+          <tr data-command="10">
+            <td class="muted mono num">0:21</td>
+            <td class="mono cmd">echo &#34;exit status: $?&#34;</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="11">
+            <td class="muted mono num">0:23</td>
+            <td class="mono cmd">tail -3 /var/log/backup-data.log</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="12">
+            <td class="muted mono num">0:25</td>
+            <td class="mono cmd">ls -lt /var/backups | head -5</td>
+            <td class="muted mono num">3.8 s</td>
+          </tr>
+          <tr data-command="13">
+            <td class="muted mono num">0:29</td>
+            <td class="mono cmd">NEWEST=$(ls -t /var/backups/*.tar.gz | head -1); echo &#34;$NEWEST&#34;</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="14">
+            <td class="muted mono num">0:30</td>
+            <td class="mono cmd">tar -tzf &#34;$NEWEST&#34;</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="15">
+            <td class="muted mono num">0:32</td>
+            <td class="mono cmd">tar -tzf &#34;$NEWEST&#34; | wc -l</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="16">
+            <td class="muted mono num">0:34</td>
+            <td class="mono cmd">cd /srv/data &amp;&amp; find . -type f</td>
+            <td class="muted mono num">0.7 s</td>
+          </tr>
+          <tr data-command="17">
+            <td class="muted mono num">0:35</td>
+            <td class="mono cmd">cd</td>
+            <td class="muted mono num">3.1 s</td>
+          </tr>
+          <tr data-command="18">
+            <td class="muted mono num">0:38</td>
+            <td class="mono cmd">bash -x /usr/local/bin/backup-data 2&gt;&amp;1 | head -20</td>
+            <td class="muted mono num">3.4 s</td>
+          </tr>
+          <tr data-command="19">
+            <td class="muted mono num">0:42</td>
+            <td class="mono cmd">sudo bash -x /usr/local/bin/backup-data 2&gt;&amp;1 | tail -8</td>
+            <td class="muted mono num">2.8 s</td>
+          </tr>
+          <tr data-command="20">
+            <td class="muted mono num">0:44</td>
+            <td class="mono cmd">mkdir -p /tmp/t/src/&#39;with space&#39; /tmp/t/dest</td>
+            <td class="muted mono num">2.7 s</td>
+          </tr>
+          <tr data-command="21">
+            <td class="muted mono num">0:47</td>
+            <td class="mono cmd">echo one &gt; &#39;/tmp/t/src/with space/a b.txt&#39;</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="22">
+            <td class="muted mono num">0:49</td>
+            <td class="mono cmd">echo two &gt; /tmp/t/src/plain.txt</td>
+            <td class="muted mono num">6.2 s</td>
+          </tr>
+          <tr data-command="23">
+            <td class="muted mono num">0:56</td>
+            <td class="mono cmd">BACKUP_SRC=/tmp/t/src BACKUP_DEST=/tmp/t/dest BACKUP_LOG=/tmp/t/log /usr/local/bin/backup-data; echo &#34;exit $?&#34;</td>
+            <td class="muted mono num">1.3 s</td>
+          </tr>
+          <tr data-command="24">
+            <td class="muted mono num">0:57</td>
+            <td class="mono cmd">cat /tmp/t/log</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="25">
+            <td class="muted mono num">0:59</td>
+            <td class="mono cmd">tar -tzf /tmp/t/dest/*.tar.gz</td>
+            <td class="muted mono num">6.4 s</td>
+          </tr>
+          <tr data-command="26">
+            <td class="muted mono num">1:05</td>
+            <td class="mono cmd">BACKUP_SRC=/nonexistent BACKUP_DEST=/tmp/t/dest BACKUP_LOG=/tmp/t/log /usr/local/bin/backup-data; echo &#34;exit $?&#34;</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="27">
+            <td class="muted mono num">1:07</td>
+            <td class="mono cmd">tail -1 /tmp/t/log</td>
+            <td class="muted mono num">6.2 s</td>
+          </tr>
+          <tr data-command="28">
+            <td class="muted mono num">1:13</td>
+            <td class="mono cmd">BACKUP_SRC=/tmp/t/src BACKUP_DEST=/nonexistent BACKUP_LOG=/tmp/t/log /usr/local/bin/backup-data; echo &#34;exit $?&#34;</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="29">
+            <td class="muted mono num">1:14</td>
+            <td class="mono cmd">tail -1 /tmp/t/log</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="30">
+            <td class="muted mono num">1:16</td>
+            <td class="mono cmd">sudo cat /etc/crontabs/root</td>
+            <td class="muted mono num">1.4 s</td>
+          </tr>
+          <tr data-command="31">
+            <td class="muted mono num">1:18</td>
+            <td class="mono cmd">ls /etc/periodic/</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="32">
+            <td class="muted mono num">1:20</td>
+            <td class="mono cmd">rc-service crond status</td>
+            <td class="muted mono num">5.0 s</td>
+          </tr>
+          <tr data-command="33">
+            <td class="muted mono num">1:25</td>
+            <td class="mono cmd">sudo sh -c &#39;env -i sh -c &#34;command -v backup-data || echo not found on an empty PATH&#34;&#39;</td>
+            <td class="muted mono num">1.2 s</td>
+          </tr>
+          <tr data-command="34">
+            <td class="muted mono num">1:26</td>
+            <td class="mono cmd">echo &#34;$PATH&#34;</td>
+            <td class="muted mono num">3.5 s</td>
+          </tr>
+          <tr data-command="35">
+            <td class="muted mono num">1:29</td>
+            <td class="mono cmd">sudo cp /usr/local/bin/backup-data /root/backup-data.orig</td>
+            <td class="muted mono num">31.3 s</td>
+          </tr>
+          <tr data-command="36">
+            <td class="muted mono num">2:01</td>
+            <td class="mono cmd">cat &gt; /tmp/backup-data &lt;&lt;&#39;SCRIPT&#39;</td>
+            <td class="muted mono num">2.8 s</td>
+          </tr>
+          <tr data-command="37">
+            <td class="muted mono num">2:03</td>
+            <td class="mono cmd">bash -n /tmp/backup-data &amp;&amp; echo &#34;syntax ok&#34;</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="38">
+            <td class="muted mono num">2:05</td>
+            <td class="mono cmd">head -4 /tmp/backup-data</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="39">
+            <td class="muted mono num">2:07</td>
+            <td class="mono cmd">rm -rf /tmp/t/dest/* /tmp/t/log</td>
+            <td class="muted mono num">6.0 s</td>
+          </tr>
+          <tr data-command="40">
+            <td class="muted mono num">2:13</td>
+            <td class="mono cmd">BACKUP_SRC=/tmp/t/src BACKUP_DEST=/tmp/t/dest BACKUP_LOG=/tmp/t/log bash /tmp/backup-data; echo &#34;exit $?&#34;</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="41">
+            <td class="muted mono num">2:15</td>
+            <td class="mono cmd">tar -tzf /tmp/t/dest/*.tar.gz</td>
+            <td class="muted mono num">1.3 s</td>
+          </tr>
+          <tr data-command="42">
+            <td class="muted mono num">2:17</td>
+            <td class="mono cmd">cat /tmp/t/log</td>
+            <td class="muted mono num">6.1 s</td>
+          </tr>
+          <tr data-command="43">
+            <td class="muted mono num">2:23</td>
+            <td class="mono cmd">BACKUP_SRC=/nonexistent BACKUP_DEST=/tmp/t/dest BACKUP_LOG=/tmp/t/log bash /tmp/backup-data; echo &#34;exit $?&#34;</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="44">
+            <td class="muted mono num">2:24</td>
+            <td class="mono cmd">tail -1 /tmp/t/log</td>
+            <td class="muted mono num">6.0 s</td>
+          </tr>
+          <tr data-command="45">
+            <td class="muted mono num">2:30</td>
+            <td class="mono cmd">BACKUP_SRC=/tmp/t/src BACKUP_DEST=/nonexistent BACKUP_LOG=/tmp/t/log bash /tmp/backup-data; echo &#34;exit $?&#34;</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="46">
+            <td class="muted mono num">2:32</td>
+            <td class="mono cmd">tail -1 /tmp/t/log</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="47">
+            <td class="muted mono num">2:34</td>
+            <td class="mono cmd">grep -c &#39;backup OK&#39; /tmp/t/log</td>
+            <td class="muted mono num">3.9 s</td>
+          </tr>
+          <tr data-command="48">
+            <td class="muted mono num">2:38</td>
+            <td class="mono cmd">sudo install -m 0755 /tmp/backup-data /usr/local/bin/backup-data</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="49">
+            <td class="muted mono num">2:40</td>
+            <td class="mono cmd">ls -l /usr/local/bin/backup-data</td>
+            <td class="muted mono num">4.7 s</td>
+          </tr>
+          <tr data-command="50">
+            <td class="muted mono num">2:45</td>
+            <td class="mono cmd">sudo sed -i &#39;s#\* backup-data$#* /usr/local/bin/backup-data#&#39; /etc/crontabs/root</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="51">
+            <td class="muted mono num">2:46</td>
+            <td class="mono cmd">sudo cat /etc/crontabs/root</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="52">
+            <td class="muted mono num">2:49</td>
+            <td class="mono cmd">sudo rc-service crond restart</td>
+            <td class="muted mono num">1.7 s</td>
+          </tr>
+          <tr data-command="53">
+            <td class="muted mono num">2:50</td>
+            <td class="mono cmd">rc-service crond status</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="54">
+            <td class="muted mono num">2:53</td>
+            <td class="mono cmd">sudo /usr/local/bin/backup-data; echo &#34;exit $?&#34;</td>
+            <td class="muted mono num">3.8 s</td>
+          </tr>
+          <tr data-command="55">
+            <td class="muted mono num">2:57</td>
+            <td class="mono cmd">NEWEST=$(ls -t /var/backups/*.tar.gz | head -1); echo &#34;$NEWEST&#34;</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="56">
+            <td class="muted mono num">2:58</td>
+            <td class="mono cmd">tar -tzf &#34;$NEWEST&#34;</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="57">
+            <td class="muted mono num">3:01</td>
+            <td class="mono cmd">tar -tzf &#34;$NEWEST&#34; | grep -c .</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="58">
+            <td class="muted mono num">3:03</td>
+            <td class="mono cmd">find /srv/data -type f | wc -l</td>
+            <td class="muted mono num">3.5 s</td>
+          </tr>
+          <tr data-command="59">
+            <td class="muted mono num">3:06</td>
+            <td class="mono cmd">tar -xzf &#34;$NEWEST&#34; -O &#39;./contracts/Acme Corp — signed.pdf&#39;</td>
+            <td class="muted mono num">3.3 s</td>
+          </tr>
+          <tr data-command="60">
+            <td class="muted mono num">3:10</td>
+            <td class="mono cmd">tar -xzf &#34;$NEWEST&#34; -O &#39;./invoices/2026 Q3 summary.csv&#39;</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="61">
+            <td class="muted mono num">3:12</td>
+            <td class="mono cmd">tail -2 /var/log/backup-data.log</td>
+            <td class="muted mono num">4.1 s</td>
+          </tr>
+          <tr data-command="62">
+            <td class="muted mono num">3:16</td>
+            <td class="mono cmd">sudo BACKUP_DEST=/root/nope /usr/local/bin/backup-data; echo &#34;exit $?&#34;</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="63">
+            <td class="muted mono num">3:18</td>
+            <td class="mono cmd">tail -1 /var/log/backup-data.log</td>
+            <td class="muted mono num">4.2 s</td>
+          </tr>
+          <tr data-command="64">
+            <td class="muted mono num">3:22</td>
+            <td class="mono cmd">sudo BACKUP_SRC=/srv/missing /usr/local/bin/backup-data; echo &#34;exit $?&#34;</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="65">
+            <td class="muted mono num">3:25</td>
+            <td class="mono cmd">tail -1 /var/log/backup-data.log</td>
+            <td class="muted mono num">5.7 s</td>
+          </tr>
+          <tr data-command="66">
+            <td class="muted mono num">3:30</td>
+            <td class="mono cmd">sudo sh -c &#39;cd / &amp;&amp; env -i PATH=/usr/bin:/bin /usr/local/bin/backup-data&#39;; echo &#34;cron-like exit $?&#34;</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="67">
+            <td class="muted mono num">3:32</td>
+            <td class="mono cmd">ls -lt /var/backups | head -4</td>
+            <td class="muted mono num">3.4 s</td>
+          </tr>
+          <tr data-command="68">
+            <td class="muted mono num">3:36</td>
+            <td class="mono cmd">(cd /srv/data &amp;&amp; find . -type f | sort) &gt; /tmp/src.list</td>
+            <td class="muted mono num">5.2 s</td>
+          </tr>
+          <tr data-command="69">
+            <td class="muted mono num">3:41</td>
+            <td class="mono cmd">tar -tzf &#34;$(ls -t /var/backups/*.tar.gz | head -1)&#34; | grep -v &#39;/$&#39; | sort &gt; /tmp/tar.list</td>
+            <td class="muted mono num">3.9 s</td>
+          </tr>
+          <tr data-command="70">
+            <td class="muted mono num">3:45</td>
+            <td class="mono cmd">diff /tmp/src.list /tmp/tar.list &amp;&amp; echo &#34;archive matches source&#34;</td>
+            <td class="muted mono num">3.6 s</td>
+          </tr>
+          <tr data-command="71">
+            <td class="muted mono num">3:48</td>
+            <td class="mono cmd">rm -rf /tmp/t /tmp/backup-data /tmp/src.list /tmp/tar.list</td>
+            <td class="muted mono num">4.4 s</td>
+          </tr>
+          <tr data-command="72">
+            <td class="muted mono num">3:53</td>
+            <td class="mono cmd">echo &#34;backup-data: strict mode, quoted, fails loudly, and cron can find it&#34;</td>
+            <td class="muted mono num">0.6 s</td>
+          </tr>
+        </table>
+        </div>
+      </div>
+    </figure>
+    <figure class="play" id="contractor-cannot-write">
+      <figcaption>
+        <strong>The contractor who cannot write</strong>
+        <span class="tag">rhcsa-01-users-and-permissions</span>
+        <span class="tag">rocky-10</span>
+        <span class="muted mono small">88 commands · 3m 46s · 1 file changed</span>
+      </figcaption>
+<p class="muted mono blurb small">13 Sep 2026 · 17:07 → 17:10 UTC</p>      <div class="term" data-theme="amber"
+           data-cast="../streams/contractor-cannot-write.json"
+           data-title="The contractor who cannot write"
+data-logs="#logs-contractor-cannot-write"           data-commands="#cmds-contractor-cannot-write"></div>
+      <div class="commands-holder" id="logs-contractor-cannot-write"
+           data-subtitle="88 commands, and how long each took" hidden>
+        <div class="tablewrap">
+        <table class="board cmdtable" id="cmds-contractor-cannot-write">
+          <tr><th>At</th><th>Command</th><th class="num">Took</th></tr>
+          <tr data-command="0">
+            <td class="muted mono num">0:02</td>
+            <td class="mono cmd">export SYSTEMD_PAGER= PAGER=cat</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="1">
+            <td class="muted mono num">0:03</td>
+            <td class="mono cmd">cat /etc/redhat-release</td>
+            <td class="muted mono num">1.1 s</td>
+          </tr>
+          <tr data-command="2">
+            <td class="muted mono num">0:05</td>
+            <td class="mono cmd">id kmorris</td>
+            <td class="muted mono num">1.1 s</td>
+          </tr>
+          <tr data-command="3">
+            <td class="muted mono num">0:06</td>
+            <td class="mono cmd">id apatel</td>
+            <td class="muted mono num">1.0 s</td>
+          </tr>
+          <tr data-command="4">
+            <td class="muted mono num">0:07</td>
+            <td class="mono cmd">id rsingh</td>
+            <td class="muted mono num">2.3 s</td>
+          </tr>
+          <tr data-command="5">
+            <td class="muted mono num">0:09</td>
+            <td class="mono cmd">getent group devops developers ops</td>
+            <td class="muted mono num">1.3 s</td>
+          </tr>
+          <tr data-command="6">
+            <td class="muted mono num">0:10</td>
+            <td class="mono cmd">groups kmorris</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="7">
+            <td class="muted mono num">0:13</td>
+            <td class="mono cmd">getent passwd kmorris apatel rsingh</td>
+            <td class="muted mono num">3.3 s</td>
+          </tr>
+          <tr data-command="8">
+            <td class="muted mono num">0:16</td>
+            <td class="mono cmd">chage -l kmorris 2&gt;/dev/null || sudo chage -l kmorris</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="9">
+            <td class="muted mono num">0:18</td>
+            <td class="mono cmd">ls -ld /srv/project</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="10">
+            <td class="muted mono num">0:19</td>
+            <td class="mono cmd">ls -l /srv/project</td>
+            <td class="muted mono num">3.1 s</td>
+          </tr>
+          <tr data-command="11">
+            <td class="muted mono num">0:22</td>
+            <td class="mono cmd">stat -c &#39;%A %U:%G %n&#39; /srv/project /srv/project/*</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="12">
+            <td class="muted mono num">0:24</td>
+            <td class="mono cmd">namei -l /srv/project/README</td>
+            <td class="muted mono num">3.7 s</td>
+          </tr>
+          <tr data-command="13">
+            <td class="muted mono num">0:28</td>
+            <td class="mono cmd">getfacl /srv/project 2&gt;/dev/null || sudo getfacl /srv/project</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="14">
+            <td class="muted mono num">0:30</td>
+            <td class="mono cmd">ls -Zd /srv/project</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="15">
+            <td class="muted mono num">0:33</td>
+            <td class="mono cmd">sudo -u kmorris touch /srv/project/kmorris-test</td>
+            <td class="muted mono num">2.9 s</td>
+          </tr>
+          <tr data-command="16">
+            <td class="muted mono num">0:35</td>
+            <td class="mono cmd">sudo -u apatel touch /srv/project/apatel-test</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="17">
+            <td class="muted mono num">0:38</td>
+            <td class="mono cmd">sudo -u kmorris ls /srv/project</td>
+            <td class="muted mono num">2.3 s</td>
+          </tr>
+          <tr data-command="18">
+            <td class="muted mono num">0:40</td>
+            <td class="mono cmd">sudo -u apatel ls -l /srv/project</td>
+            <td class="muted mono num">3.1 s</td>
+          </tr>
+          <tr data-command="19">
+            <td class="muted mono num">0:43</td>
+            <td class="mono cmd">find / -xdev -group developers 2&gt;/dev/null | head</td>
+            <td class="muted mono num">3.7 s</td>
+          </tr>
+          <tr data-command="20">
+            <td class="muted mono num">0:47</td>
+            <td class="mono cmd">sudo find / -xdev -group developers 2&gt;/dev/null | head</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="21">
+            <td class="muted mono num">0:49</td>
+            <td class="mono cmd">sudo ls -la /home/kmorris</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="22">
+            <td class="muted mono num">0:51</td>
+            <td class="mono cmd">sudo cat /home/kmorris/.bash_profile</td>
+            <td class="muted mono num">1.7 s</td>
+          </tr>
+          <tr data-command="23">
+            <td class="muted mono num">0:53</td>
+            <td class="mono cmd">sudo -iu kmorris umask</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="24">
+            <td class="muted mono num">0:55</td>
+            <td class="mono cmd">grep -i &#39;^umask&#39; /etc/login.defs</td>
+            <td class="muted mono num">4.6 s</td>
+          </tr>
+          <tr data-command="25">
+            <td class="muted mono num">1:00</td>
+            <td class="mono cmd">grep -rn umask /etc/profile /etc/bashrc /etc/profile.d/ 2&gt;/dev/null | head -5</td>
+            <td class="muted mono num">1.7 s</td>
+          </tr>
+          <tr data-command="26">
+            <td class="muted mono num">1:01</td>
+            <td class="mono cmd">sudo -iu apatel umask</td>
+            <td class="muted mono num">4.7 s</td>
+          </tr>
+          <tr data-command="27">
+            <td class="muted mono num">1:06</td>
+            <td class="mono cmd">sudo -iu kmorris bash -lc &#39;touch /tmp/kmorris-umask &amp;&amp; ls -l /tmp/kmorris-umask&#39;</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="28">
+            <td class="muted mono num">1:08</td>
+            <td class="mono cmd">sudo ls -l /etc/sudoers.d/</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="29">
+            <td class="muted mono num">1:10</td>
+            <td class="mono cmd">sudo cat /etc/sudoers.d/devops</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="30">
+            <td class="muted mono num">1:12</td>
+            <td class="mono cmd">sudo -l -U kmorris</td>
+            <td class="muted mono num">1.4 s</td>
+          </tr>
+          <tr data-command="31">
+            <td class="muted mono num">1:13</td>
+            <td class="mono cmd">sudo -l -U apatel</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="32">
+            <td class="muted mono num">1:15</td>
+            <td class="mono cmd">sudo -l -U rsingh</td>
+            <td class="muted mono num">3.1 s</td>
+          </tr>
+          <tr data-command="33">
+            <td class="muted mono num">1:18</td>
+            <td class="mono cmd">sudo grep -rn nginx /etc/sudoers /etc/sudoers.d/</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="34">
+            <td class="muted mono num">1:20</td>
+            <td class="mono cmd">sudo grep -n includedir /etc/sudoers</td>
+            <td class="muted mono num">3.8 s</td>
+          </tr>
+          <tr data-command="35">
+            <td class="muted mono num">1:24</td>
+            <td class="mono cmd">sudo -u apatel sudo -n systemctl restart nginx; echo &#34;exit $?&#34;</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="36">
+            <td class="muted mono num">1:27</td>
+            <td class="mono cmd">grep -E &#39;^(devops|developers|ops):&#39; /etc/group</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="37">
+            <td class="muted mono num">1:29</td>
+            <td class="mono cmd">sudo usermod -G devops kmorris</td>
+            <td class="muted mono num">1.1 s</td>
+          </tr>
+          <tr data-command="38">
+            <td class="muted mono num">1:30</td>
+            <td class="mono cmd">id kmorris</td>
+            <td class="muted mono num">2.9 s</td>
+          </tr>
+          <tr data-command="39">
+            <td class="muted mono num">1:33</td>
+            <td class="mono cmd">grep -E &#39;^(devops|developers|ops):&#39; /etc/group</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="40">
+            <td class="muted mono num">1:35</td>
+            <td class="mono cmd">sudo -u kmorris id</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="41">
+            <td class="muted mono num">1:37</td>
+            <td class="mono cmd">sudo chmod 2770 /srv/project</td>
+            <td class="muted mono num">3.6 s</td>
+          </tr>
+          <tr data-command="42">
+            <td class="muted mono num">1:40</td>
+            <td class="mono cmd">sudo find /srv/project -maxdepth 1 -printf &#39;%m %u:%g %p\n&#39;</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="43">
+            <td class="muted mono num">1:42</td>
+            <td class="mono cmd">ls -ld /srv/project</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="44">
+            <td class="muted mono num">1:44</td>
+            <td class="mono cmd">stat -c &#39;%a %A %U:%G&#39; /srv/project</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="45">
+            <td class="muted mono num">1:47</td>
+            <td class="mono cmd">sudo -u kmorris touch /srv/project/kmorris-test</td>
+            <td class="muted mono num">2.9 s</td>
+          </tr>
+          <tr data-command="46">
+            <td class="muted mono num">1:50</td>
+            <td class="mono cmd">sudo -u apatel touch /srv/project/apatel-test</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="47">
+            <td class="muted mono num">1:51</td>
+            <td class="mono cmd">ls -l /srv/project</td>
+            <td class="muted mono num">3.3 s</td>
+          </tr>
+          <tr data-command="48">
+            <td class="muted mono num">1:55</td>
+            <td class="mono cmd">sudo -u rsingh ls /srv/project; echo &#34;rsingh exit $?&#34;</td>
+            <td class="muted mono num">2.8 s</td>
+          </tr>
+          <tr data-command="49">
+            <td class="muted mono num">1:58</td>
+            <td class="mono cmd">sudo -u kmorris mkdir /srv/project/releases</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="50">
+            <td class="muted mono num">2:00</td>
+            <td class="mono cmd">ls -ld /srv/project/releases</td>
+            <td class="muted mono num">4.0 s</td>
+          </tr>
+          <tr data-command="51">
+            <td class="muted mono num">2:04</td>
+            <td class="mono cmd">sudo cp /home/kmorris/.bash_profile /root/kmorris.bash_profile.bak</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="52">
+            <td class="muted mono num">2:07</td>
+            <td class="mono cmd">sudo grep -n umask /home/kmorris/.bash_profile</td>
+            <td class="muted mono num">4.0 s</td>
+          </tr>
+          <tr data-command="53">
+            <td class="muted mono num">2:11</td>
+            <td class="mono cmd">sudo sed -i &#39;s/^umask 077$/umask 002/&#39; /home/kmorris/.bash_profile</td>
+            <td class="muted mono num">2.9 s</td>
+          </tr>
+          <tr data-command="54">
+            <td class="muted mono num">2:14</td>
+            <td class="mono cmd">sudo grep -n umask /home/kmorris/.bash_profile</td>
+            <td class="muted mono num">1.7 s</td>
+          </tr>
+          <tr data-command="55">
+            <td class="muted mono num">2:15</td>
+            <td class="mono cmd">sudo -iu kmorris umask</td>
+            <td class="muted mono num">5.3 s</td>
+          </tr>
+          <tr data-command="56">
+            <td class="muted mono num">2:21</td>
+            <td class="mono cmd">sudo -iu kmorris bash -lc &#39;echo draft &gt; /srv/project/plan.txt; ls -l /srv/project/plan.txt&#39;</td>
+            <td class="muted mono num">3.8 s</td>
+          </tr>
+          <tr data-command="57">
+            <td class="muted mono num">2:24</td>
+            <td class="mono cmd">sudo -u apatel sh -c &#39;echo reviewed &gt;&gt; /srv/project/plan.txt&#39;</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="58">
+            <td class="muted mono num">2:26</td>
+            <td class="mono cmd">cat /srv/project/plan.txt</td>
+            <td class="muted mono num">4.2 s</td>
+          </tr>
+          <tr data-command="59">
+            <td class="muted mono num">2:30</td>
+            <td class="mono cmd">sudo -u kmorris sh -c &#39;echo edit-by-kmorris &gt;&gt; /srv/project/plan.txt&#39;</td>
+            <td class="muted mono num">2.7 s</td>
+          </tr>
+          <tr data-command="60">
+            <td class="muted mono num">2:33</td>
+            <td class="mono cmd">stat -c &#39;%A %U:%G %n&#39; /srv/project/plan.txt</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="61">
+            <td class="muted mono num">2:35</td>
+            <td class="mono cmd">ls -l /srv/project/plan.txt</td>
+            <td class="muted mono num">3.4 s</td>
+          </tr>
+          <tr data-command="62">
+            <td class="muted mono num">2:38</td>
+            <td class="mono cmd">sudo cp /etc/sudoers.d/devops /root/sudoers.devops.bak</td>
+            <td class="muted mono num">3.4 s</td>
+          </tr>
+          <tr data-command="63">
+            <td class="muted mono num">2:42</td>
+            <td class="mono cmd">sudo sed -i &#39;s/^%ops /%devops /&#39; /etc/sudoers.d/devops</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="64">
+            <td class="muted mono num">2:44</td>
+            <td class="mono cmd">sudo cat /etc/sudoers.d/devops</td>
+            <td class="muted mono num">2.5 s</td>
+          </tr>
+          <tr data-command="65">
+            <td class="muted mono num">2:46</td>
+            <td class="mono cmd">sudo visudo -cf /etc/sudoers.d/devops</td>
+            <td class="muted mono num">1.3 s</td>
+          </tr>
+          <tr data-command="66">
+            <td class="muted mono num">2:48</td>
+            <td class="mono cmd">sudo visudo -c</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="67">
+            <td class="muted mono num">2:50</td>
+            <td class="mono cmd">sudo grep -c . /etc/sudoers.d/devops</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="68">
+            <td class="muted mono num">2:52</td>
+            <td class="mono cmd">ls -l /etc/sudoers.d/devops</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="69">
+            <td class="muted mono num">2:54</td>
+            <td class="mono cmd">sudo -l -U kmorris</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="70">
+            <td class="muted mono num">2:55</td>
+            <td class="mono cmd">sudo -l -U rsingh</td>
+            <td class="muted mono num">3.4 s</td>
+          </tr>
+          <tr data-command="71">
+            <td class="muted mono num">2:59</td>
+            <td class="mono cmd">systemctl is-active nginx || sudo systemctl start nginx</td>
+            <td class="muted mono num">4.3 s</td>
+          </tr>
+          <tr data-command="72">
+            <td class="muted mono num">3:03</td>
+            <td class="mono cmd">sudo -u kmorris sudo -n systemctl restart nginx; echo &#34;kmorris exit $?&#34;</td>
+            <td class="muted mono num">4.3 s</td>
+          </tr>
+          <tr data-command="73">
+            <td class="muted mono num">3:07</td>
+            <td class="mono cmd">sudo -u apatel sudo -n systemctl restart nginx; echo &#34;apatel exit $?&#34;</td>
+            <td class="muted mono num">4.2 s</td>
+          </tr>
+          <tr data-command="74">
+            <td class="muted mono num">3:11</td>
+            <td class="mono cmd">sudo -u rsingh sudo -n systemctl restart nginx; echo &#34;rsingh exit $?&#34;</td>
+            <td class="muted mono num">4.8 s</td>
+          </tr>
+          <tr data-command="75">
+            <td class="muted mono num">3:16</td>
+            <td class="mono cmd">sudo -u kmorris sudo -n systemctl stop nginx; echo &#34;stop is not allowed: exit $?&#34;</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="76">
+            <td class="muted mono num">3:18</td>
+            <td class="mono cmd">systemctl is-active nginx</td>
+            <td class="muted mono num">2.8 s</td>
+          </tr>
+          <tr data-command="77">
+            <td class="muted mono num">3:21</td>
+            <td class="mono cmd">systemctl status nginx --no-pager | head -5</td>
+            <td class="muted mono num">2.7 s</td>
+          </tr>
+          <tr data-command="78">
+            <td class="muted mono num">3:23</td>
+            <td class="mono cmd">sudo journalctl -n 6 --no-pager _COMM=sudo</td>
+            <td class="muted mono num">4.7 s</td>
+          </tr>
+          <tr data-command="79">
+            <td class="muted mono num">3:28</td>
+            <td class="mono cmd">sudo rm -f /srv/project/kmorris-test /srv/project/apatel-test /tmp/kmorris-umask</td>
+            <td class="muted mono num">2.8 s</td>
+          </tr>
+          <tr data-command="80">
+            <td class="muted mono num">3:31</td>
+            <td class="mono cmd">sudo -u kmorris rmdir /srv/project/releases</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="81">
+            <td class="muted mono num">3:33</td>
+            <td class="mono cmd">ls -la /srv/project</td>
+            <td class="muted mono num">1.1 s</td>
+          </tr>
+          <tr data-command="82">
+            <td class="muted mono num">3:34</td>
+            <td class="mono cmd">id kmorris</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="83">
+            <td class="muted mono num">3:35</td>
+            <td class="mono cmd">ls -ld /srv/project</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="84">
+            <td class="muted mono num">3:37</td>
+            <td class="mono cmd">sudo -iu kmorris umask</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="85">
+            <td class="muted mono num">3:39</td>
+            <td class="mono cmd">sudo cat /etc/sudoers.d/devops</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="86">
+            <td class="muted mono num">3:41</td>
+            <td class="mono cmd">getent group devops</td>
+            <td class="muted mono num">5.1 s</td>
+          </tr>
+          <tr data-command="87">
+            <td class="muted mono num">3:46</td>
+            <td class="mono cmd">echo &#34;kmorris: devops only, setgid workspace, umask 002, nginx restart rule for %devops&#34;</td>
+            <td class="muted mono num">0.6 s</td>
+          </tr>
+        </table>
+        </div>
+      </div>
+    </figure>
+    <figure class="play" id="disk-stays-full">
+      <figcaption>
+        <strong>The disk that stays full</strong>
+        <span class="tag">linux-01-disk-full</span>
+        <span class="tag">ubuntu-26.04</span>
+        <span class="muted mono small">15 commands · 51.6 s · 1 file changed</span>
+      </figcaption>
+<p class="muted mono blurb small">16 Sep 2026 · 02:48 → 02:49 UTC</p>      <div class="term" data-theme="green"
+           data-cast="../streams/disk-stays-full.json"
+           data-title="The disk that stays full"
+data-logs="#logs-disk-stays-full"           data-commands="#cmds-disk-stays-full"></div>
+      <div class="commands-holder" id="logs-disk-stays-full"
+           data-subtitle="15 commands, and how long each took" hidden>
+        <div class="tablewrap">
+        <table class="board cmdtable" id="cmds-disk-stays-full">
+          <tr><th>At</th><th>Command</th><th class="num">Took</th></tr>
+          <tr data-command="0">
+            <td class="muted mono num">0:01</td>
+            <td class="mono cmd">df -h /var/log/app</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="1">
+            <td class="muted mono num">0:03</td>
+            <td class="mono cmd">du -sh /var/log/app</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="2">
+            <td class="muted mono num">0:06</td>
+            <td class="mono cmd">ls -l /var/log/app</td>
+            <td class="muted mono num">2.5 s</td>
+          </tr>
+          <tr data-command="3">
+            <td class="muted mono num">0:08</td>
+            <td class="mono cmd">sudo du -xh --max-depth=1 /var/log/app</td>
+            <td class="muted mono num">2.9 s</td>
+          </tr>
+          <tr data-command="4">
+            <td class="muted mono num">0:11</td>
+            <td class="mono cmd">sudo lsof +L1 /var/log/app</td>
+            <td class="muted mono num">4.4 s</td>
+          </tr>
+          <tr data-command="5">
+            <td class="muted mono num">0:15</td>
+            <td class="mono cmd">sudo lsof -nP /var/log/app | head -5</td>
+            <td class="muted mono num">2.8 s</td>
+          </tr>
+          <tr data-command="6">
+            <td class="muted mono num">0:18</td>
+            <td class="mono cmd">systemctl status ledger --no-pager | head -8</td>
+            <td class="muted mono num">6.1 s</td>
+          </tr>
+          <tr data-command="7">
+            <td class="muted mono num">0:24</td>
+            <td class="mono cmd">sudo ls -l /proc/$(systemctl show -p MainPID --value ledger)/fd | grep deleted</td>
+            <td class="muted mono num">4.1 s</td>
+          </tr>
+          <tr data-command="8">
+            <td class="muted mono num">0:28</td>
+            <td class="mono cmd">sudo systemctl restart ledger</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="9">
+            <td class="muted mono num">0:30</td>
+            <td class="mono cmd">df -h /var/log/app</td>
+            <td class="muted mono num">2.6 s</td>
+          </tr>
+          <tr data-command="10">
+            <td class="muted mono num">0:32</td>
+            <td class="mono cmd">ls /etc/logrotate.d/</td>
+            <td class="muted mono num">8.6 s</td>
+          </tr>
+          <tr data-command="11">
+            <td class="muted mono num">0:41</td>
+            <td class="mono cmd">sudo tee /etc/logrotate.d/ledger &gt;/dev/null &lt;&lt;&#39;CONF&#39;</td>
+            <td class="muted mono num">3.5 s</td>
+          </tr>
+          <tr data-command="12">
+            <td class="muted mono num">0:45</td>
+            <td class="mono cmd">sudo logrotate --debug /etc/logrotate.d/ledger | head -12</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="13">
+            <td class="muted mono num">0:48</td>
+            <td class="mono cmd">df -h /var/log/app</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="14">
+            <td class="muted mono num">0:49</td>
+            <td class="mono cmd">systemctl is-enabled ledger</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+        </table>
+        </div>
+      </div>
+    </figure>
+    <figure class="play" id="first-lab">
+      <figcaption>
+        <strong>The first lab, start to finish</strong>
+        <span class="tag">hello</span>
+        <span class="tag">alpine</span>
+        <span class="muted mono small">11 commands · 26.6 s</span>
+      </figcaption>
+<p class="muted mono blurb small">12 Sep 2026 · 16:42 → 16:42 UTC</p>      <div class="term" data-theme="green"
+           data-cast="../streams/first-lab.json"
+           data-title="The first lab, start to finish"
+data-logs="#logs-first-lab"           data-commands="#cmds-first-lab"></div>
+      <div class="commands-holder" id="logs-first-lab"
+           data-subtitle="11 commands, and how long each took" hidden>
+        <div class="tablewrap">
+        <table class="board cmdtable" id="cmds-first-lab">
+          <tr><th>At</th><th>Command</th><th class="num">Took</th></tr>
+          <tr data-command="0">
+            <td class="muted mono num">0:01</td>
+            <td class="mono cmd">cat /etc/norboten/base.json</td>
+            <td class="muted mono num">1.3 s</td>
+          </tr>
+          <tr data-command="1">
+            <td class="muted mono num">0:03</td>
+            <td class="mono cmd">ls -l /srv/hello/</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="2">
+            <td class="muted mono num">0:04</td>
+            <td class="mono cmd">cat /srv/hello/message.txt</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="3">
+            <td class="muted mono num">0:07</td>
+            <td class="mono cmd">sudo cat /srv/hello/message.txt</td>
+            <td class="muted mono num">4.2 s</td>
+          </tr>
+          <tr data-command="4">
+            <td class="muted mono num">0:11</td>
+            <td class="mono cmd">stat -c &#39;%A %U:%G %n&#39; /srv/hello/message.txt</td>
+            <td class="muted mono num">2.3 s</td>
+          </tr>
+          <tr data-command="5">
+            <td class="muted mono num">0:13</td>
+            <td class="mono cmd">sudo chmod o+r /srv/hello/message.txt</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="6">
+            <td class="muted mono num">0:15</td>
+            <td class="mono cmd">ls -l /srv/hello/message.txt</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="7">
+            <td class="muted mono num">0:17</td>
+            <td class="mono cmd">cat /srv/hello/message.txt</td>
+            <td class="muted mono num">5.3 s</td>
+          </tr>
+          <tr data-command="8">
+            <td class="muted mono num">0:22</td>
+            <td class="mono cmd">cat /srv/hello/message.txt | sed -n &#39;s/^The secret word is: //p&#39; &gt; ~/reply.txt</td>
+            <td class="muted mono num">1.2 s</td>
+          </tr>
+          <tr data-command="9">
+            <td class="muted mono num">0:23</td>
+            <td class="mono cmd">cat ~/reply.txt</td>
+            <td class="muted mono num">1.4 s</td>
+          </tr>
+          <tr data-command="10">
+            <td class="muted mono num">0:25</td>
+            <td class="mono cmd">ls -l ~/reply.txt</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+        </table>
+        </div>
+      </div>
+    </figure>
+    <figure class="play" id="notes-wont-stay-up">
+      <figcaption>
+        <strong>The service that won&#39;t stay up</strong>
+        <span class="tag">linux-02-service-wont-stay-up</span>
+        <span class="tag">ubuntu-26.04</span>
+        <span class="muted mono small">90 commands · 5m 56s · 1 file changed</span>
+      </figcaption>
+<p class="muted mono blurb small">16 Sep 2026 · 02:50 → 02:56 UTC</p>      <div class="term" data-theme="ice"
+           data-cast="../streams/notes-wont-stay-up.json"
+           data-title="The service that won&#39;t stay up"
+data-logs="#logs-notes-wont-stay-up"           data-commands="#cmds-notes-wont-stay-up"></div>
+      <div class="commands-holder" id="logs-notes-wont-stay-up"
+           data-subtitle="90 commands, and how long each took" hidden>
+        <div class="tablewrap">
+        <table class="board cmdtable" id="cmds-notes-wont-stay-up">
+          <tr><th>At</th><th>Command</th><th class="num">Took</th></tr>
+          <tr data-command="0">
+            <td class="muted mono num">0:02</td>
+            <td class="mono cmd">export SYSTEMD_PAGER= PAGER=cat</td>
+            <td class="muted mono num">1.0 s</td>
+          </tr>
+          <tr data-command="1">
+            <td class="muted mono num">0:03</td>
+            <td class="mono cmd">hostname</td>
+            <td class="muted mono num">0.9 s</td>
+          </tr>
+          <tr data-command="2">
+            <td class="muted mono num">0:04</td>
+            <td class="mono cmd">uptime</td>
+            <td class="muted mono num">2.5 s</td>
+          </tr>
+          <tr data-command="3">
+            <td class="muted mono num">0:06</td>
+            <td class="mono cmd">curl -s -m 3 localhost:8080/ | head -5</td>
+            <td class="muted mono num">2.6 s</td>
+          </tr>
+          <tr data-command="4">
+            <td class="muted mono num">0:09</td>
+            <td class="mono cmd">curl -sI -m 3 localhost:8080/ | head -5</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="5">
+            <td class="muted mono num">0:10</td>
+            <td class="mono cmd">systemctl is-active notes</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="6">
+            <td class="muted mono num">0:12</td>
+            <td class="mono cmd">systemctl is-enabled notes</td>
+            <td class="muted mono num">2.8 s</td>
+          </tr>
+          <tr data-command="7">
+            <td class="muted mono num">0:15</td>
+            <td class="mono cmd">systemctl status notes --no-pager | head -12</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="8">
+            <td class="muted mono num">0:17</td>
+            <td class="mono cmd">sudo systemctl start notes</td>
+            <td class="muted mono num">3.9 s</td>
+          </tr>
+          <tr data-command="9">
+            <td class="muted mono num">0:21</td>
+            <td class="mono cmd">systemctl is-active notes</td>
+            <td class="muted mono num">2.9 s</td>
+          </tr>
+          <tr data-command="10">
+            <td class="muted mono num">0:24</td>
+            <td class="mono cmd">systemctl status notes --no-pager | head -14</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="11">
+            <td class="muted mono num">0:26</td>
+            <td class="mono cmd">journalctl -u notes -n 15 --no-pager</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="12">
+            <td class="muted mono num">0:28</td>
+            <td class="mono cmd">systemctl cat notes</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="13">
+            <td class="muted mono num">0:30</td>
+            <td class="mono cmd">ls -l /usr/local/bin/notes-app</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="14">
+            <td class="muted mono num">0:32</td>
+            <td class="mono cmd">head -20 /usr/local/bin/notes-app</td>
+            <td class="muted mono num">1.0 s</td>
+          </tr>
+          <tr data-command="15">
+            <td class="muted mono num">0:33</td>
+            <td class="mono cmd">id notes</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="16">
+            <td class="muted mono num">0:35</td>
+            <td class="mono cmd">getent passwd notes</td>
+            <td class="muted mono num">1.4 s</td>
+          </tr>
+          <tr data-command="17">
+            <td class="muted mono num">0:36</td>
+            <td class="mono cmd">ls -ld /etc/notes</td>
+            <td class="muted mono num">1.4 s</td>
+          </tr>
+          <tr data-command="18">
+            <td class="muted mono num">0:37</td>
+            <td class="mono cmd">ls -l /etc/notes/</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="19">
+            <td class="muted mono num">0:40</td>
+            <td class="mono cmd">sudo cat /etc/notes/notes.ini</td>
+            <td class="muted mono num">2.5 s</td>
+          </tr>
+          <tr data-command="20">
+            <td class="muted mono num">0:42</td>
+            <td class="mono cmd">sudo -u notes cat /etc/notes/notes.ini</td>
+            <td class="muted mono num">2.7 s</td>
+          </tr>
+          <tr data-command="21">
+            <td class="muted mono num">0:45</td>
+            <td class="mono cmd">sudo chown root:notes /etc/notes/notes.ini</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="22">
+            <td class="muted mono num">0:47</td>
+            <td class="mono cmd">sudo chmod 0640 /etc/notes/notes.ini</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="23">
+            <td class="muted mono num">0:49</td>
+            <td class="mono cmd">ls -l /etc/notes/notes.ini</td>
+            <td class="muted mono num">2.5 s</td>
+          </tr>
+          <tr data-command="24">
+            <td class="muted mono num">0:52</td>
+            <td class="mono cmd">sudo -u notes cat /etc/notes/notes.ini</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="25">
+            <td class="muted mono num">0:54</td>
+            <td class="mono cmd">sudo systemctl restart notes</td>
+            <td class="muted mono num">3.9 s</td>
+          </tr>
+          <tr data-command="26">
+            <td class="muted mono num">0:57</td>
+            <td class="mono cmd">systemctl is-active notes</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="27">
+            <td class="muted mono num">1:00</td>
+            <td class="mono cmd">journalctl -u notes -n 10 --no-pager</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="28">
+            <td class="muted mono num">1:02</td>
+            <td class="mono cmd">sudo ss -tlnp | grep 8080</td>
+            <td class="muted mono num">1.3 s</td>
+          </tr>
+          <tr data-command="29">
+            <td class="muted mono num">1:03</td>
+            <td class="mono cmd">sudo ss -tlnp</td>
+            <td class="muted mono num">5.9 s</td>
+          </tr>
+          <tr data-command="30">
+            <td class="muted mono num">1:09</td>
+            <td class="mono cmd">ps -o pid,user,cmd -p &#34;$(sudo ss -tlnpH &#39;sport = :8080&#39; | grep -o &#39;pid=[0-9]*&#39; | head -1 | cut -d= -f2)&#34;</td>
+            <td class="muted mono num">3.7 s</td>
+          </tr>
+          <tr data-command="31">
+            <td class="muted mono num">1:13</td>
+            <td class="mono cmd">systemctl list-units --type=service --no-pager | grep -i notes</td>
+            <td class="muted mono num">3.2 s</td>
+          </tr>
+          <tr data-command="32">
+            <td class="muted mono num">1:16</td>
+            <td class="mono cmd">systemctl status notes-legacy --no-pager | head -10</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="33">
+            <td class="muted mono num">1:18</td>
+            <td class="mono cmd">systemctl cat notes-legacy</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="34">
+            <td class="muted mono num">1:20</td>
+            <td class="mono cmd">ls -l /var/www/legacy-notes/</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="35">
+            <td class="muted mono num">1:22</td>
+            <td class="mono cmd">cat /var/www/legacy-notes/index.html</td>
+            <td class="muted mono num">2.3 s</td>
+          </tr>
+          <tr data-command="36">
+            <td class="muted mono num">1:24</td>
+            <td class="mono cmd">systemctl is-enabled notes-legacy</td>
+            <td class="muted mono num">2.7 s</td>
+          </tr>
+          <tr data-command="37">
+            <td class="muted mono num">1:27</td>
+            <td class="mono cmd">sudo systemctl disable --now notes-legacy</td>
+            <td class="muted mono num">2.3 s</td>
+          </tr>
+          <tr data-command="38">
+            <td class="muted mono num">1:29</td>
+            <td class="mono cmd">systemctl is-active notes-legacy</td>
+            <td class="muted mono num">3.2 s</td>
+          </tr>
+          <tr data-command="39">
+            <td class="muted mono num">1:33</td>
+            <td class="mono cmd">sudo ss -tlnp | grep 8080 || echo &#34;nothing on 8080&#34;</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="40">
+            <td class="muted mono num">1:35</td>
+            <td class="mono cmd">sudo systemctl restart notes</td>
+            <td class="muted mono num">3.9 s</td>
+          </tr>
+          <tr data-command="41">
+            <td class="muted mono num">1:39</td>
+            <td class="mono cmd">systemctl is-active notes</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="42">
+            <td class="muted mono num">1:40</td>
+            <td class="mono cmd">sudo ss -tlnp | grep 8080</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="43">
+            <td class="muted mono num">1:42</td>
+            <td class="mono cmd">curl -s -m 3 localhost:8080/</td>
+            <td class="muted mono num">2.6 s</td>
+          </tr>
+          <tr data-command="44">
+            <td class="muted mono num">1:45</td>
+            <td class="mono cmd">curl -si -m 3 localhost:8080/ | head -6</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="45">
+            <td class="muted mono num">1:47</td>
+            <td class="mono cmd">journalctl -u notes -n 10 --no-pager</td>
+            <td class="muted mono num">1.7 s</td>
+          </tr>
+          <tr data-command="46">
+            <td class="muted mono num">1:49</td>
+            <td class="mono cmd">sudo ls -ld /srv/notes</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="47">
+            <td class="muted mono num">1:51</td>
+            <td class="mono cmd">sudo ls -l /srv/notes</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="48">
+            <td class="muted mono num">1:53</td>
+            <td class="mono cmd">sudo -u notes ls /srv/notes</td>
+            <td class="muted mono num">4.4 s</td>
+          </tr>
+          <tr data-command="49">
+            <td class="muted mono num">1:57</td>
+            <td class="mono cmd">grep -n data /etc/notes/notes.ini || sudo grep -n data /etc/notes/notes.ini</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="50">
+            <td class="muted mono num">1:59</td>
+            <td class="mono cmd">sudo aa-status | head -20</td>
+            <td class="muted mono num">2.3 s</td>
+          </tr>
+          <tr data-command="51">
+            <td class="muted mono num">2:01</td>
+            <td class="mono cmd">sudo aa-status | grep -A2 -i notes</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="52">
+            <td class="muted mono num">2:04</td>
+            <td class="mono cmd">ls -l /etc/apparmor.d/ | grep notes</td>
+            <td class="muted mono num">2.8 s</td>
+          </tr>
+          <tr data-command="53">
+            <td class="muted mono num">2:06</td>
+            <td class="mono cmd">cat /etc/apparmor.d/usr.local.bin.notes-app</td>
+            <td class="muted mono num">3.5 s</td>
+          </tr>
+          <tr data-command="54">
+            <td class="muted mono num">2:10</td>
+            <td class="mono cmd">sudo journalctl -k --no-pager | grep -i apparmor | tail -5</td>
+            <td class="muted mono num">1m 04s</td>
+          </tr>
+          <tr data-command="55">
+            <td class="muted mono num">3:14</td>
+            <td class="mono cmd">sudo journalctl --no-pager -n 200 | grep -i &#39;apparmor=&#34;DENIED&#34;&#39; | tail -3</td>
+            <td class="muted mono num">1m 04s</td>
+          </tr>
+          <tr data-command="56">
+            <td class="muted mono num">4:19</td>
+            <td class="mono cmd">sudo cp /etc/apparmor.d/usr.local.bin.notes-app /root/usr.local.bin.notes-app.bak</td>
+            <td class="muted mono num">4.8 s</td>
+          </tr>
+          <tr data-command="57">
+            <td class="muted mono num">4:24</td>
+            <td class="mono cmd">sudo sed -i &#39;s#/var/lib/notes/#/srv/notes/#&#39; /etc/apparmor.d/usr.local.bin.notes-app</td>
+            <td class="muted mono num">3.3 s</td>
+          </tr>
+          <tr data-command="58">
+            <td class="muted mono num">4:27</td>
+            <td class="mono cmd">grep -n notes /etc/apparmor.d/usr.local.bin.notes-app</td>
+            <td class="muted mono num">3.8 s</td>
+          </tr>
+          <tr data-command="59">
+            <td class="muted mono num">4:31</td>
+            <td class="mono cmd">sudo apparmor_parser -r /etc/apparmor.d/usr.local.bin.notes-app</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="60">
+            <td class="muted mono num">4:33</td>
+            <td class="mono cmd">sudo aa-status | grep -i notes</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="61">
+            <td class="muted mono num">4:35</td>
+            <td class="mono cmd">sudo systemctl restart notes</td>
+            <td class="muted mono num">4.0 s</td>
+          </tr>
+          <tr data-command="62">
+            <td class="muted mono num">4:39</td>
+            <td class="mono cmd">curl -s -m 3 localhost:8080/</td>
+            <td class="muted mono num">4.1 s</td>
+          </tr>
+          <tr data-command="63">
+            <td class="muted mono num">4:43</td>
+            <td class="mono cmd">sudo journalctl --no-pager -n 50 | grep -c &#39;apparmor=&#34;DENIED&#34;&#39; || true</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="64">
+            <td class="muted mono num">4:45</td>
+            <td class="mono cmd">systemctl show notes -p Restart</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="65">
+            <td class="muted mono num">4:48</td>
+            <td class="mono cmd">systemctl show notes -p UnitFileState</td>
+            <td class="muted mono num">3.1 s</td>
+          </tr>
+          <tr data-command="66">
+            <td class="muted mono num">4:51</td>
+            <td class="mono cmd">sudo mkdir -p /etc/systemd/system/notes.service.d</td>
+            <td class="muted mono num">6.4 s</td>
+          </tr>
+          <tr data-command="67">
+            <td class="muted mono num">4:57</td>
+            <td class="mono cmd">printf &#39;[Service]\nRestart=on-failure\nRestartSec=2\n&#39; | sudo tee /etc/systemd/system/notes.service.d/restart.conf</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="68">
+            <td class="muted mono num">4:59</td>
+            <td class="mono cmd">sudo systemctl daemon-reload</td>
+            <td class="muted mono num">1.7 s</td>
+          </tr>
+          <tr data-command="69">
+            <td class="muted mono num">5:01</td>
+            <td class="mono cmd">systemctl cat notes</td>
+            <td class="muted mono num">2.9 s</td>
+          </tr>
+          <tr data-command="70">
+            <td class="muted mono num">5:04</td>
+            <td class="mono cmd">systemctl show notes -p Restart -p RestartUSec</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="71">
+            <td class="muted mono num">5:06</td>
+            <td class="mono cmd">sudo systemctl enable --now notes</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="72">
+            <td class="muted mono num">5:08</td>
+            <td class="mono cmd">systemctl is-enabled notes</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="73">
+            <td class="muted mono num">5:10</td>
+            <td class="mono cmd">systemctl is-active notes</td>
+            <td class="muted mono num">4.0 s</td>
+          </tr>
+          <tr data-command="74">
+            <td class="muted mono num">5:14</td>
+            <td class="mono cmd">MAINPID=$(systemctl show notes -p MainPID --value); echo &#34;$MAINPID&#34;</td>
+            <td class="muted mono num">1.7 s</td>
+          </tr>
+          <tr data-command="75">
+            <td class="muted mono num">5:16</td>
+            <td class="mono cmd">sudo kill -9 &#34;$MAINPID&#34;</td>
+            <td class="muted mono num">2.9 s</td>
+          </tr>
+          <tr data-command="76">
+            <td class="muted mono num">5:18</td>
+            <td class="mono cmd">systemctl is-active notes</td>
+            <td class="muted mono num">4.8 s</td>
+          </tr>
+          <tr data-command="77">
+            <td class="muted mono num">5:23</td>
+            <td class="mono cmd">systemctl is-active notes</td>
+            <td class="muted mono num">2.9 s</td>
+          </tr>
+          <tr data-command="78">
+            <td class="muted mono num">5:26</td>
+            <td class="mono cmd">systemctl show notes -p MainPID -p NRestarts</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="79">
+            <td class="muted mono num">5:29</td>
+            <td class="mono cmd">journalctl -u notes -n 8 --no-pager</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="80">
+            <td class="muted mono num">5:31</td>
+            <td class="mono cmd">curl -s -m 3 localhost:8080/</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="81">
+            <td class="muted mono num">5:32</td>
+            <td class="mono cmd">sudo ss -tlnp | grep 8080</td>
+            <td class="muted mono num">3.1 s</td>
+          </tr>
+          <tr data-command="82">
+            <td class="muted mono num">5:35</td>
+            <td class="mono cmd">systemctl list-unit-files --no-pager | grep notes</td>
+            <td class="muted mono num">2.5 s</td>
+          </tr>
+          <tr data-command="83">
+            <td class="muted mono num">5:38</td>
+            <td class="mono cmd">systemctl is-enabled notes-legacy</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="84">
+            <td class="muted mono num">5:40</td>
+            <td class="mono cmd">sudo aa-status | grep -i notes</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="85">
+            <td class="muted mono num">5:42</td>
+            <td class="mono cmd">ls -l /etc/notes/notes.ini</td>
+            <td class="muted mono num">3.2 s</td>
+          </tr>
+          <tr data-command="86">
+            <td class="muted mono num">5:45</td>
+            <td class="mono cmd">cat /etc/systemd/system/notes.service.d/restart.conf</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="87">
+            <td class="muted mono num">5:48</td>
+            <td class="mono cmd">curl -si -m 3 localhost:8080/ | grep -i x-notes</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="88">
+            <td class="muted mono num">5:50</td>
+            <td class="mono cmd">systemctl --failed --no-pager</td>
+            <td class="muted mono num">5.1 s</td>
+          </tr>
+          <tr data-command="89">
+            <td class="muted mono num">5:55</td>
+            <td class="mono cmd">echo &#34;notes: running, enabled, restarts on failure; legacy disabled; profile enforcing&#34;</td>
+            <td class="muted mono num">0.6 s</td>
+          </tr>
+        </table>
+        </div>
+      </div>
+    </figure>
+    <figure class="play" id="site-nobody-can-reach">
+      <figcaption>
+        <strong>The site nobody can reach</strong>
+        <span class="tag">rhcsa-04-selinux-firewall-network</span>
+        <span class="tag">rocky-10</span>
+        <span class="muted mono small">89 commands · 3m 49s · 1 file changed</span>
+      </figcaption>
+<p class="muted mono blurb small">13 Sep 2026 · 17:11 → 17:15 UTC</p>      <div class="term" data-theme="violet"
+           data-cast="../streams/site-nobody-can-reach.json"
+           data-title="The site nobody can reach"
+data-logs="#logs-site-nobody-can-reach"           data-commands="#cmds-site-nobody-can-reach"></div>
+      <div class="commands-holder" id="logs-site-nobody-can-reach"
+           data-subtitle="89 commands, and how long each took" hidden>
+        <div class="tablewrap">
+        <table class="board cmdtable" id="cmds-site-nobody-can-reach">
+          <tr><th>At</th><th>Command</th><th class="num">Took</th></tr>
+          <tr data-command="0">
+            <td class="muted mono num">0:02</td>
+            <td class="mono cmd">export SYSTEMD_PAGER= PAGER=cat</td>
+            <td class="muted mono num">1.0 s</td>
+          </tr>
+          <tr data-command="1">
+            <td class="muted mono num">0:03</td>
+            <td class="mono cmd">hostname</td>
+            <td class="muted mono num">1.2 s</td>
+          </tr>
+          <tr data-command="2">
+            <td class="muted mono num">0:04</td>
+            <td class="mono cmd">hostnamectl</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="3">
+            <td class="muted mono num">0:06</td>
+            <td class="mono cmd">ip -4 addr show dev eth0</td>
+            <td class="muted mono num">1.2 s</td>
+          </tr>
+          <tr data-command="4">
+            <td class="muted mono num">0:07</td>
+            <td class="mono cmd">getenforce</td>
+            <td class="muted mono num">2.6 s</td>
+          </tr>
+          <tr data-command="5">
+            <td class="muted mono num">0:10</td>
+            <td class="mono cmd">cat /etc/selinux/config | grep ^SELINUX=</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="6">
+            <td class="muted mono num">0:11</td>
+            <td class="mono cmd">sestatus | head -6</td>
+            <td class="muted mono num">3.8 s</td>
+          </tr>
+          <tr data-command="7">
+            <td class="muted mono num">0:15</td>
+            <td class="mono cmd">curl -s -m 3 http://127.0.0.1:8090/ || echo &#34;no answer on 8090&#34;</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="8">
+            <td class="muted mono num">0:17</td>
+            <td class="mono cmd">systemctl is-active nginx</td>
+            <td class="muted mono num">2.9 s</td>
+          </tr>
+          <tr data-command="9">
+            <td class="muted mono num">0:20</td>
+            <td class="mono cmd">systemctl status nginx --no-pager | head -14</td>
+            <td class="muted mono num">2.7 s</td>
+          </tr>
+          <tr data-command="10">
+            <td class="muted mono num">0:22</td>
+            <td class="mono cmd">sudo journalctl -u nginx -n 12 --no-pager</td>
+            <td class="muted mono num">2.6 s</td>
+          </tr>
+          <tr data-command="11">
+            <td class="muted mono num">0:25</td>
+            <td class="mono cmd">cat /etc/nginx/conf.d/status-site.conf</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="12">
+            <td class="muted mono num">0:27</td>
+            <td class="mono cmd">ls -l /etc/nginx/conf.d/</td>
+            <td class="muted mono num">1.2 s</td>
+          </tr>
+          <tr data-command="13">
+            <td class="muted mono num">0:28</td>
+            <td class="mono cmd">sudo ss -tlnp</td>
+            <td class="muted mono num">1.2 s</td>
+          </tr>
+          <tr data-command="14">
+            <td class="muted mono num">0:29</td>
+            <td class="mono cmd">sudo nginx -t</td>
+            <td class="muted mono num">2.7 s</td>
+          </tr>
+          <tr data-command="15">
+            <td class="muted mono num">0:32</td>
+            <td class="mono cmd">sudo systemctl start nginx; echo &#34;exit $?&#34;</td>
+            <td class="muted mono num">2.7 s</td>
+          </tr>
+          <tr data-command="16">
+            <td class="muted mono num">0:35</td>
+            <td class="mono cmd">sudo journalctl -u nginx -n 5 --no-pager</td>
+            <td class="muted mono num">3.3 s</td>
+          </tr>
+          <tr data-command="17">
+            <td class="muted mono num">0:38</td>
+            <td class="mono cmd">sudo ausearch -m avc -ts recent 2&gt;/dev/null | tail -6</td>
+            <td class="muted mono num">4.0 s</td>
+          </tr>
+          <tr data-command="18">
+            <td class="muted mono num">0:42</td>
+            <td class="mono cmd">sudo ausearch -m avc -ts recent 2&gt;/dev/null | audit2why | head -20</td>
+            <td class="muted mono num">2.9 s</td>
+          </tr>
+          <tr data-command="19">
+            <td class="muted mono num">0:45</td>
+            <td class="mono cmd">sudo semanage port -l | grep -w http_port_t</td>
+            <td class="muted mono num">4.0 s</td>
+          </tr>
+          <tr data-command="20">
+            <td class="muted mono num">0:49</td>
+            <td class="mono cmd">sudo semanage port -l | grep -w 8090 || echo &#34;8090 has no label&#34;</td>
+            <td class="muted mono num">3.2 s</td>
+          </tr>
+          <tr data-command="21">
+            <td class="muted mono num">0:52</td>
+            <td class="mono cmd">sudo semanage port -a -t http_port_t -p tcp 8090</td>
+            <td class="muted mono num">3.2 s</td>
+          </tr>
+          <tr data-command="22">
+            <td class="muted mono num">0:55</td>
+            <td class="mono cmd">sudo semanage port -l | grep -w http_port_t</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="23">
+            <td class="muted mono num">0:57</td>
+            <td class="mono cmd">sudo systemctl start nginx</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="24">
+            <td class="muted mono num">0:59</td>
+            <td class="mono cmd">systemctl is-active nginx</td>
+            <td class="muted mono num">2.5 s</td>
+          </tr>
+          <tr data-command="25">
+            <td class="muted mono num">1:02</td>
+            <td class="mono cmd">sudo ss -tlnp | grep -E &#39;:8090|:9100&#39;</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="26">
+            <td class="muted mono num">1:05</td>
+            <td class="mono cmd">curl -si -m 3 http://127.0.0.1:8090/ | head -8</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="27">
+            <td class="muted mono num">1:06</td>
+            <td class="mono cmd">ls -ldZ /srv/status</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="28">
+            <td class="muted mono num">1:08</td>
+            <td class="mono cmd">ls -lZ /srv/status</td>
+            <td class="muted mono num">0.8 s</td>
+          </tr>
+          <tr data-command="29">
+            <td class="muted mono num">1:09</td>
+            <td class="mono cmd">id -Z</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="30">
+            <td class="muted mono num">1:11</td>
+            <td class="mono cmd">ps -eZ | grep nginx | head -3</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="31">
+            <td class="muted mono num">1:13</td>
+            <td class="mono cmd">ls -ldZ /usr/share/nginx/html</td>
+            <td class="muted mono num">4.2 s</td>
+          </tr>
+          <tr data-command="32">
+            <td class="muted mono num">1:17</td>
+            <td class="mono cmd">sudo ausearch -m avc -ts recent 2&gt;/dev/null | grep index.html | tail -2</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="33">
+            <td class="muted mono num">1:20</td>
+            <td class="mono cmd">matchpathcon /srv/status /srv/status/index.html</td>
+            <td class="muted mono num">3.1 s</td>
+          </tr>
+          <tr data-command="34">
+            <td class="muted mono num">1:23</td>
+            <td class="mono cmd">sudo semanage fcontext -l | grep -E &#39;^/srv&#39; | head</td>
+            <td class="muted mono num">4.2 s</td>
+          </tr>
+          <tr data-command="35">
+            <td class="muted mono num">1:27</td>
+            <td class="mono cmd">sudo semanage fcontext -a -t httpd_sys_content_t &#39;/srv/status(/.*)?&#39;</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="36">
+            <td class="muted mono num">1:30</td>
+            <td class="mono cmd">sudo semanage fcontext -l -C</td>
+            <td class="muted mono num">2.5 s</td>
+          </tr>
+          <tr data-command="37">
+            <td class="muted mono num">1:32</td>
+            <td class="mono cmd">matchpathcon /srv/status/index.html</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="38">
+            <td class="muted mono num">1:34</td>
+            <td class="mono cmd">sudo restorecon -Rv /srv/status</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="39">
+            <td class="muted mono num">1:36</td>
+            <td class="mono cmd">ls -lZ /srv/status</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="40">
+            <td class="muted mono num">1:39</td>
+            <td class="mono cmd">curl -si -m 3 http://127.0.0.1:8090/ | head -8</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="41">
+            <td class="muted mono num">1:41</td>
+            <td class="mono cmd">curl -s -m 3 http://127.0.0.1:8090/</td>
+            <td class="muted mono num">3.5 s</td>
+          </tr>
+          <tr data-command="42">
+            <td class="muted mono num">1:45</td>
+            <td class="mono cmd">curl -si -m 3 http://127.0.0.1:8090/api/status | head -6</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="43">
+            <td class="muted mono num">1:47</td>
+            <td class="mono cmd">systemctl is-active status-api</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="44">
+            <td class="muted mono num">1:49</td>
+            <td class="mono cmd">systemctl cat status-api</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="45">
+            <td class="muted mono num">1:51</td>
+            <td class="mono cmd">ls -lZ /usr/local/bin/status-api</td>
+            <td class="muted mono num">2.7 s</td>
+          </tr>
+          <tr data-command="46">
+            <td class="muted mono num">1:54</td>
+            <td class="mono cmd">curl -s -m 3 http://127.0.0.1:9100/status</td>
+            <td class="muted mono num">2.5 s</td>
+          </tr>
+          <tr data-command="47">
+            <td class="muted mono num">1:56</td>
+            <td class="mono cmd">sudo tail -3 /var/log/nginx/error.log</td>
+            <td class="muted mono num">4.3 s</td>
+          </tr>
+          <tr data-command="48">
+            <td class="muted mono num">2:00</td>
+            <td class="mono cmd">sudo ausearch -m avc -ts recent 2&gt;/dev/null | grep name_connect | tail -2</td>
+            <td class="muted mono num">2.5 s</td>
+          </tr>
+          <tr data-command="49">
+            <td class="muted mono num">2:03</td>
+            <td class="mono cmd">getsebool -a | grep httpd_can_network</td>
+            <td class="muted mono num">3.5 s</td>
+          </tr>
+          <tr data-command="50">
+            <td class="muted mono num">2:06</td>
+            <td class="mono cmd">sudo semanage boolean -l | grep httpd_can_network_connect</td>
+            <td class="muted mono num">3.1 s</td>
+          </tr>
+          <tr data-command="51">
+            <td class="muted mono num">2:09</td>
+            <td class="mono cmd">sudo setsebool -P httpd_can_network_connect on</td>
+            <td class="muted mono num">2.7 s</td>
+          </tr>
+          <tr data-command="52">
+            <td class="muted mono num">2:12</td>
+            <td class="mono cmd">getsebool httpd_can_network_connect</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="53">
+            <td class="muted mono num">2:15</td>
+            <td class="mono cmd">curl -s -m 3 http://127.0.0.1:8090/api/status</td>
+            <td class="muted mono num">3.5 s</td>
+          </tr>
+          <tr data-command="54">
+            <td class="muted mono num">2:19</td>
+            <td class="mono cmd">curl -si -m 3 http://127.0.0.1:8090/api/status | head -4</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="55">
+            <td class="muted mono num">2:20</td>
+            <td class="mono cmd">sudo firewall-cmd --state</td>
+            <td class="muted mono num">2.5 s</td>
+          </tr>
+          <tr data-command="56">
+            <td class="muted mono num">2:23</td>
+            <td class="mono cmd">sudo firewall-cmd --get-active-zones</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="57">
+            <td class="muted mono num">2:25</td>
+            <td class="mono cmd">sudo firewall-cmd --list-all</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="58">
+            <td class="muted mono num">2:27</td>
+            <td class="mono cmd">sudo firewall-cmd --list-services</td>
+            <td class="muted mono num">2.8 s</td>
+          </tr>
+          <tr data-command="59">
+            <td class="muted mono num">2:30</td>
+            <td class="mono cmd">sudo firewall-cmd --permanent --list-ports</td>
+            <td class="muted mono num">3.3 s</td>
+          </tr>
+          <tr data-command="60">
+            <td class="muted mono num">2:34</td>
+            <td class="mono cmd">sudo firewall-cmd --permanent --remove-port=8080/tcp</td>
+            <td class="muted mono num">3.2 s</td>
+          </tr>
+          <tr data-command="61">
+            <td class="muted mono num">2:37</td>
+            <td class="mono cmd">sudo firewall-cmd --permanent --add-port=8090/tcp</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="62">
+            <td class="muted mono num">2:39</td>
+            <td class="mono cmd">sudo firewall-cmd --reload</td>
+            <td class="muted mono num">2.3 s</td>
+          </tr>
+          <tr data-command="63">
+            <td class="muted mono num">2:41</td>
+            <td class="mono cmd">sudo firewall-cmd --list-ports</td>
+            <td class="muted mono num">2.8 s</td>
+          </tr>
+          <tr data-command="64">
+            <td class="muted mono num">2:44</td>
+            <td class="mono cmd">sudo firewall-cmd --permanent --list-ports</td>
+            <td class="muted mono num">1.1 s</td>
+          </tr>
+          <tr data-command="65">
+            <td class="muted mono num">2:45</td>
+            <td class="mono cmd">hostname</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="66">
+            <td class="muted mono num">2:47</td>
+            <td class="mono cmd">hostnamectl --static</td>
+            <td class="muted mono num">1.5 s</td>
+          </tr>
+          <tr data-command="67">
+            <td class="muted mono num">2:48</td>
+            <td class="mono cmd">cat /etc/hostname</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="68">
+            <td class="muted mono num">2:51</td>
+            <td class="mono cmd">sudo hostnamectl set-hostname web01.lab.example</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="69">
+            <td class="muted mono num">2:53</td>
+            <td class="mono cmd">hostnamectl --static</td>
+            <td class="muted mono num">1.4 s</td>
+          </tr>
+          <tr data-command="70">
+            <td class="muted mono num">2:54</td>
+            <td class="mono cmd">cat /etc/hostname</td>
+            <td class="muted mono num">1.6 s</td>
+          </tr>
+          <tr data-command="71">
+            <td class="muted mono num">2:56</td>
+            <td class="mono cmd">nmcli device status</td>
+            <td class="muted mono num">1.7 s</td>
+          </tr>
+          <tr data-command="72">
+            <td class="muted mono num">2:57</td>
+            <td class="mono cmd">nmcli connection show</td>
+            <td class="muted mono num">2.9 s</td>
+          </tr>
+          <tr data-command="73">
+            <td class="muted mono num">3:00</td>
+            <td class="mono cmd">nmcli -g GENERAL.CONNECTION device show eth0</td>
+            <td class="muted mono num">3.8 s</td>
+          </tr>
+          <tr data-command="74">
+            <td class="muted mono num">3:04</td>
+            <td class="mono cmd">CON=$(nmcli -g GENERAL.CONNECTION device show eth0); echo &#34;$CON&#34;</td>
+            <td class="muted mono num">3.5 s</td>
+          </tr>
+          <tr data-command="75">
+            <td class="muted mono num">3:08</td>
+            <td class="mono cmd">nmcli -g ipv4.addresses,ipv4.method connection show &#34;$CON&#34;</td>
+            <td class="muted mono num">1.8 s</td>
+          </tr>
+          <tr data-command="76">
+            <td class="muted mono num">3:09</td>
+            <td class="mono cmd">ip -4 addr show dev eth0</td>
+            <td class="muted mono num">4.0 s</td>
+          </tr>
+          <tr data-command="77">
+            <td class="muted mono num">3:13</td>
+            <td class="mono cmd">sudo nmcli connection modify &#34;$CON&#34; +ipv4.addresses 192.168.5.50/24</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="78">
+            <td class="muted mono num">3:16</td>
+            <td class="mono cmd">nmcli -g ipv4.addresses connection show &#34;$CON&#34;</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+          <tr data-command="79">
+            <td class="muted mono num">3:18</td>
+            <td class="mono cmd">sudo nmcli device reapply eth0</td>
+            <td class="muted mono num">3.9 s</td>
+          </tr>
+          <tr data-command="80">
+            <td class="muted mono num">3:22</td>
+            <td class="mono cmd">ip -4 addr show dev eth0</td>
+            <td class="muted mono num">4.7 s</td>
+          </tr>
+          <tr data-command="81">
+            <td class="muted mono num">3:27</td>
+            <td class="mono cmd">sudo grep -rl 192.168.5.50 /etc/NetworkManager/system-connections/ 2&gt;/dev/null</td>
+            <td class="muted mono num">2.3 s</td>
+          </tr>
+          <tr data-command="82">
+            <td class="muted mono num">3:29</td>
+            <td class="mono cmd">sestatus | grep -i &#39;current mode&#39;</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="83">
+            <td class="muted mono num">3:31</td>
+            <td class="mono cmd">sudo restorecon -Rnv /srv/status</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="84">
+            <td class="muted mono num">3:34</td>
+            <td class="mono cmd">curl -s -m 3 http://127.0.0.1:8090/</td>
+            <td class="muted mono num">2.8 s</td>
+          </tr>
+          <tr data-command="85">
+            <td class="muted mono num">3:37</td>
+            <td class="mono cmd">curl -s -m 3 http://127.0.0.1:8090/api/status</td>
+            <td class="muted mono num">2.5 s</td>
+          </tr>
+          <tr data-command="86">
+            <td class="muted mono num">3:39</td>
+            <td class="mono cmd">systemctl is-enabled nginx status-api</td>
+            <td class="muted mono num">3.3 s</td>
+          </tr>
+          <tr data-command="87">
+            <td class="muted mono num">3:43</td>
+            <td class="mono cmd">sudo ausearch -m avc -ts recent 2&gt;/dev/null | tail -2</td>
+            <td class="muted mono num">6.2 s</td>
+          </tr>
+          <tr data-command="88">
+            <td class="muted mono num">3:49</td>
+            <td class="mono cmd">echo &#34;status site: labelled, bound, allowed out, opened, and web01.lab.example with 192.168.5.50 persistently&#34;</td>
+            <td class="muted mono num">0.6 s</td>
+          </tr>
+        </table>
+        </div>
+      </div>
+    </figure>
+    <figure class="play" id="vanishes-on-reboot">
+      <figcaption>
+        <strong>The API that vanishes on reboot</strong>
+        <span class="tag">rhcsa-02-systemd-and-boot</span>
+        <span class="tag">rocky-10</span>
+        <span class="muted mono small">19 commands · 1m 07s · 1 file changed</span>
+      </figcaption>
+<p class="muted mono blurb small">12 Sep 2026 · 17:21 → 17:23 UTC</p>      <div class="term" data-theme="green"
+           data-cast="../streams/vanishes-on-reboot.json"
+           data-title="The API that vanishes on reboot"
+data-logs="#logs-vanishes-on-reboot"           data-commands="#cmds-vanishes-on-reboot"></div>
+      <div class="commands-holder" id="logs-vanishes-on-reboot"
+           data-subtitle="19 commands, and how long each took" hidden>
+        <div class="tablewrap">
+        <table class="board cmdtable" id="cmds-vanishes-on-reboot">
+          <tr><th>At</th><th>Command</th><th class="num">Took</th></tr>
+          <tr data-command="0">
+            <td class="muted mono num">0:02</td>
+            <td class="mono cmd">curl -sS localhost:8081/health</td>
+            <td class="muted mono num">3.2 s</td>
+          </tr>
+          <tr data-command="1">
+            <td class="muted mono num">0:05</td>
+            <td class="mono cmd">systemctl status inventory-api --no-pager | head -10</td>
+            <td class="muted mono num">3.8 s</td>
+          </tr>
+          <tr data-command="2">
+            <td class="muted mono num">0:08</td>
+            <td class="mono cmd">sudo systemctl start inventory-api</td>
+            <td class="muted mono num">2.7 s</td>
+          </tr>
+          <tr data-command="3">
+            <td class="muted mono num">0:11</td>
+            <td class="mono cmd">journalctl -u inventory-api -n 8 --no-pager</td>
+            <td class="muted mono num">5.6 s</td>
+          </tr>
+          <tr data-command="4">
+            <td class="muted mono num">0:17</td>
+            <td class="mono cmd">systemctl list-dependencies inventory-api --no-pager | head -8</td>
+            <td class="muted mono num">2.4 s</td>
+          </tr>
+          <tr data-command="5">
+            <td class="muted mono num">0:19</td>
+            <td class="mono cmd">systemctl cat inventory-api --no-pager</td>
+            <td class="muted mono num">4.6 s</td>
+          </tr>
+          <tr data-command="6">
+            <td class="muted mono num">0:24</td>
+            <td class="mono cmd">systemctl is-enabled config-sync</td>
+            <td class="muted mono num">2.2 s</td>
+          </tr>
+          <tr data-command="7">
+            <td class="muted mono num">0:26</td>
+            <td class="mono cmd">sudo systemctl unmask config-sync</td>
+            <td class="muted mono num">4.2 s</td>
+          </tr>
+          <tr data-command="8">
+            <td class="muted mono num">0:30</td>
+            <td class="mono cmd">ls -l /etc/systemd/system/inventory-api.service.d/</td>
+            <td class="muted mono num">3.5 s</td>
+          </tr>
+          <tr data-command="9">
+            <td class="muted mono num">0:34</td>
+            <td class="mono cmd">cat /etc/systemd/system/inventory-api.service.d/override.conf</td>
+            <td class="muted mono num">5.8 s</td>
+          </tr>
+          <tr data-command="10">
+            <td class="muted mono num">0:39</td>
+            <td class="mono cmd">sudo rm -f /etc/systemd/system/inventory-api.service.d/override.conf</td>
+            <td class="muted mono num">3.3 s</td>
+          </tr>
+          <tr data-command="11">
+            <td class="muted mono num">0:43</td>
+            <td class="mono cmd">sudo mkdir -p /etc/systemd/system/inventory-api.service.d</td>
+            <td class="muted mono num">5.8 s</td>
+          </tr>
+          <tr data-command="12">
+            <td class="muted mono num">0:49</td>
+            <td class="mono cmd">printf &#39;[Unit]\nWants=config-sync.service\n&#39; | sudo tee /etc/systemd/system/inventory-api.service.d/deps.conf</td>
+            <td class="muted mono num">1.9 s</td>
+          </tr>
+          <tr data-command="13">
+            <td class="muted mono num">0:51</td>
+            <td class="mono cmd">sudo systemctl daemon-reload</td>
+            <td class="muted mono num">2.8 s</td>
+          </tr>
+          <tr data-command="14">
+            <td class="muted mono num">0:53</td>
+            <td class="mono cmd">systemctl get-default</td>
+            <td class="muted mono num">2.7 s</td>
+          </tr>
+          <tr data-command="15">
+            <td class="muted mono num">0:56</td>
+            <td class="mono cmd">sudo systemctl set-default multi-user.target</td>
+            <td class="muted mono num">3.8 s</td>
+          </tr>
+          <tr data-command="16">
+            <td class="muted mono num">1:00</td>
+            <td class="mono cmd">sudo systemctl enable --now inventory-api</td>
+            <td class="muted mono num">3.0 s</td>
+          </tr>
+          <tr data-command="17">
+            <td class="muted mono num">1:03</td>
+            <td class="mono cmd">systemctl is-active inventory-api config-sync</td>
+            <td class="muted mono num">2.0 s</td>
+          </tr>
+          <tr data-command="18">
+            <td class="muted mono num">1:05</td>
+            <td class="mono cmd">curl -sS localhost:8081/health</td>
+            <td class="muted mono num">2.1 s</td>
+          </tr>
+        </table>
+        </div>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>What is recorded, and what is not</h2>
+    <div class="grid three">
+      <div class="card plain">
+        <h3>Nothing, by default</h3>
+        <p class="muted"><kbd>o</kbd> opens a shell and records nothing.
+          <kbd>p</kbd> writes an asciicast and a command log to
+          <span class="mono">~/.norboten/plays</span>, on your machine.</p>
+      </div>
+      <div class="card plain">
+        <h3>Streaming asks first</h3>
+        <p class="muted">Only <kbd>P</kbd> publishes anything, after a confirmation,
+          and only while the session runs. Recordings expire after a week.</p>
+      </div>
+      <div class="card plain">
+        <h3>Theory is never recorded</h3>
+        <p class="muted">Answers and scores, nothing else. There is no terminal to record and no
+          reason to keep one.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../features/">Features</a><br>
+        <a href="../labs/">Labs</a><br>
+        <a href="../journals/">Journals</a><br>
+        <a href="../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../live/">Live</a><br>
+        <a href="../players/">Ratings</a><br>
+        <a href="../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../install/">Install</a><br>
+        <a href="../docs/">Docs</a><br>
+        <a href="../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../about/">About</a><br>
+        <a href="../community/">Community</a><br>
+        <a href="../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../totop.js"></script>
+<script src="../ask-engine.js"></script>
+<script src="../chat.js"></script>
+<script src="../copy.js"></script>
+<script src="../player.js"></script>
+<script src="../live.js"></script>
+</body>
+</html>

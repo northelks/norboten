@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Every place a secret can leak from · Norboten</title>
+<meta name="description" content="The security review found four things wrong with the chat gateway, and none of them is a bug in the usual sense. The code does what it was told. The upstream AP">
+<link rel="canonical" href="https://norboten.org/journals/ai-02-chatbot-leaks-key/"><meta property="og:title" content="Every place a secret can leak from · Norboten">
+<meta property="og:description" content="The security review found four things wrong with the chat gateway, and none of them is a bug in the usual sense. The code does what it was told. The upstream AP">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/ai-02-chatbot-leaks-key/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Every place a secret can leak from · Norboten">
+<meta name="twitter:description" content="The security review found four things wrong with the chat gateway, and none of them is a bug in the usual sense. The code does what it was told. The upstream AP">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Every place a secret can leak from",
+  "description": "The security review found four things wrong with the chat gateway, and none of them is a bug in the usual sense. The code does what it was told. The upstream AP",
+  "url": "https://norboten.org/journals/ai-02-chatbot-leaks-key/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 4050,
+  "timeRequired": "PT45M",
+  "about": ["AI Services", "Users and permissions", "Logging and journald"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Chatbot That Leaks Its Key</div>
+    <h1>Every place a secret can leak from</h1>
+    <p class="muted">
+      45 minutes' reading · 4050 words ·<span class="tag">AI Services</span><span class="tag">Users and permissions</span><span class="tag">Logging and journald</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 124 words</title><rect x="0.0" y="0" width="18.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 2336 words</title><rect x="21.9" y="0" width="356.6" height="30" rx="4" fill="#1d2a23"/><text x="29.9" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 843 words</title><rect x="381.5" y="0" width="128.7" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 511 words</title><rect x="513.2" y="0" width="78.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 339 words</title><rect x="594.2" y="0" width="51.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 108 words</title><rect x="648.9" y="0" width="16.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 600 words</title><rect x="668.4" y="0" width="91.6" height="30" rx="4" fill="#1d2a23"/><text x="676.4" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/ai-02-chatbot-leaks-key/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>The security review found four things wrong with the chat gateway, and none of them is a bug in the
+usual sense. The code does what it was told. The upstream API key is simply <em>everywhere</em>: in a
+world-readable file and in the unit's environment where <code>systemctl show</code> prints it to any account;
+and the clients' tokens are in the journal, because the gateway logs request headers. (The review
+feared the upstream key was logged too. On the lab machine it was not — until a careless check for
+leaks put it there, which is a story this journal tells below.) Meanwhile the gateway will serve anyone who can
+reach the port, and nothing stops one script in a loop from spending a month's budget in an afternoon.</p>
+<p>An AI gateway is a particularly good place to learn this, because it concentrates the two things that
+make a leak expensive: a secret that costs money per use, and an endpoint whose whole purpose is to
+spend it. But the lesson is general. <strong>A secret is only as private as the most readable place it has
+ever been written</strong> — and &quot;written&quot; includes environment variables, command lines, and logs, not just
+files. Fixing the file permissions is the easy fifth of the job.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>List the places a process's secret can be read from — file, unit, command line, environment, log —
+and say which accounts can read each.</li>
+<li>Move a secret out of a systemd unit into a private file or a systemd credential, and verify that
+<code>systemctl show</code> no longer reveals it.</li>
+<li>Put bearer-token authentication in front of an internal service, and say why 401 and 403 are
+different answers.</li>
+<li>Rate-limit an expensive endpoint in nginx with <code>limit_req</code>, and explain rate, burst and <code>nodelay</code> in
+terms of the leaky bucket.</li>
+<li>Stop an application logging secrets, and deal with the secrets already in the journal.</li>
+<li>Explain why a secret that has leaked must be rotated even after every leak is closed.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="where-a-secret-actually-lives">Where a secret actually lives</h3>
+<p>A process's secret can be read from more places than its author usually thinks about. Take the
+gateway as the security review found it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/etc/chat-gateway/upstream.key
+<span class="hl-go">-rw-r--r-- 1 root root 45 Sep 12 09:02 /etc/chat-gateway/upstream.key     # every account</span>
+
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>-p<span class="hl-w"> </span>Environment<span class="hl-w"> </span>chat-gateway<span class="hl-w">          </span><span class="hl-c1"># run as an unprivileged user</span>
+<span class="hl-go">Environment=UPSTREAM_KEY=sk-norboten-3f9a…</span>
+
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>chat-gateway<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>KEY
+<span class="hl-go">Environment=UPSTREAM_KEY=sk-norboten-3f9a…</span>
+</code></pre>
+
+<p>The last two need no privilege at all. Unit files under <code>/etc/systemd/system</code> are world-readable by
+convention, and systemd's D-Bus API exposes a unit's properties — including its <code>Environment=</code> — to any
+local user. So <code>Environment=</code> in a unit is not a place to keep a secret; it is a place to <em>publish</em>
+one to everyone with a shell.</p>
+<p>The full map, for reference:</p>
+<table>
+<thead>
+<tr>
+<th>where</th>
+<th>who can read it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a file</td>
+<td>whatever its mode says — <code>0644</code> means every account</td>
+</tr>
+<tr>
+<td><code>Environment=</code> in a unit</td>
+<td><strong>every local user</strong>, via <code>systemctl show</code> / <code>systemctl cat</code></td>
+</tr>
+<tr>
+<td><code>EnvironmentFile=</code></td>
+<td>the file's mode governs the file — but the values still end up in the process environment</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/environ</code></td>
+<td>the process owner and root (mode <code>0400</code>) — and every child process inherits the environment</td>
+</tr>
+<tr>
+<td>the command line (<code>ExecStart=… --key sk-…</code>)</td>
+<td><strong>every local user</strong>, via <code>ps</code> or <code>/proc/&lt;pid&gt;/cmdline</code></td>
+</tr>
+<tr>
+<td>the journal</td>
+<td>members of <code>adm</code>/<code>systemd-journal</code>, and root — and it is retained, and often shipped off the box</td>
+</tr>
+<tr>
+<td>shell history</td>
+<td>whoever typed <code>export KEY=…</code> — and whoever reads their <code>~/.bash_history</code></td>
+</tr>
+<tr>
+<td>a command run through <code>sudo</code></td>
+<td>the journal again: sudo logs every command it runs, <strong>arguments included</strong></td>
+</tr>
+<tr>
+<td>a core dump</td>
+<td>whoever can read <code>/var/lib/systemd/coredump</code></td>
+</tr>
+</tbody>
+</table>
+<p>Two entries in that table surprise people most. <strong>Command-line arguments are public</strong>: a secret passed
+as a flag is visible to <code>ps aux</code> for as long as the process runs, which is why well-behaved tools take
+secrets from files or stdin. And <strong>environment variables are inherited</strong>: a secret in the environment
+is handed to every subprocess the service starts — every <code>curl</code>, every shell-out, every crash
+reporter — whether or not it needs it.</p>
+<h3 id="three-good-homes-for-a-secret-in-increasing-order-of-isolation">Three good homes for a secret, in increasing order of isolation</h3>
+<p><strong>A private file the service reads by path.</strong> The gateway supports <code>UPSTREAM_KEY_FILE</code>, which is the
+most portable pattern: the secret is in one file, owned by the service account, readable by nobody
+else:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chown<span class="hl-w"> </span>chatgw:chatgw<span class="hl-w"> </span>/etc/chat-gateway/upstream.key
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">600</span><span class="hl-w"> </span>/etc/chat-gateway/upstream.key
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-u<span class="hl-w"> </span>nobody<span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/chat-gateway/upstream.key
+<span class="hl-go">cat: /etc/chat-gateway/upstream.key: Permission denied</span>
+</code></pre>
+
+<p><code>0600</code> owned by the service is correct. <code>0640 root:chatgw</code> is also correct and slightly better on a
+machine where you do not want the service able to <em>rewrite</em> its own secret; either way, the <code>o</code>
+triad is empty.</p>
+<p><strong><code>EnvironmentFile=</code> with a private file.</strong> Many applications only read their secrets from the
+environment. <code>EnvironmentFile=/etc/app/env</code> with that file at <code>0600 root:root</code> keeps the value out of
+<code>systemctl show</code> and out of the world-readable unit — systemd reads the file as root at start. The
+value still ends up in the process environment, with the inheritance caveat above.</p>
+<p><strong>A systemd credential.</strong> This is the mechanism designed for exactly this problem:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-k">[Service]</span>
+<span class="hl-na">LoadCredential</span><span class="hl-o">=</span><span class="hl-s">upstream_key:/etc/chat-gateway/upstream.key</span>
+</code></pre>
+
+<p>At start, systemd copies the file into a private, in-memory directory that only this unit's processes
+can read, and sets <code>$CREDENTIALS_DIRECTORY</code> to point at it. The application reads
+<code>$CREDENTIALS_DIRECTORY/upstream_key</code>. The source file can then be <code>0600 root:root</code> — the service
+account never needs access to it at all — nothing appears in the environment, nothing is inherited,
+and the credential disappears when the unit stops. With <code>systemd-creds encrypt</code>, the stored file can
+even be encrypted to the machine's TPM or host key, which makes a copied <code>/etc</code> useless. The gateway in
+this lab checks for a credential first, then a key file, then the environment, which is the right
+order of preference.</p>
+<p>Whichever you choose, verify from the outside as an unprivileged user — that is the view an attacker
+gets:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-u<span class="hl-w"> </span>nobody<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>chat-gateway<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span>sk-norboten
+<span class="hl-go">0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-u<span class="hl-w"> </span>nobody<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>chat-gateway<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span>sk-norboten
+<span class="hl-go">0</span>
+<span class="hl-gp">$ </span>ps<span class="hl-w"> </span>-eo<span class="hl-w"> </span>args<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'[s]k-norboten'</span>
+<span class="hl-go">0</span>
+</code></pre>
+
+<h3 id="removing-it-from-the-unit-really">Removing it from the unit, really</h3>
+<p>There is a detail here that catches careful people. The key is in the unit file itself:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-k">[Service]</span>
+<span class="hl-na">User</span><span class="hl-o">=</span><span class="hl-s">chatgw</span>
+<span class="hl-na">EnvironmentFile</span><span class="hl-o">=</span><span class="hl-s">/etc/chat-gateway/gateway.env</span>
+<span class="hl-na">Environment</span><span class="hl-o">=</span><span class="hl-s">UPSTREAM_KEY=sk-norboten-3f9a…</span>
+</code></pre>
+
+<p>The drop-in reflex — override it in <code>chat-gateway.service.d/</code> with an empty <code>Environment=</code> — does
+reset the variable for the running process. But <code>systemctl cat</code> still prints the original file, key
+and all, because a drop-in is layered on top of the unit rather than replacing it. The value has to be
+deleted from the file it is written in:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'/^Environment=UPSTREAM_KEY=/d'</span><span class="hl-w"> </span>/etc/systemd/system/chat-gateway.service
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>chat-gateway
+</code></pre>
+
+<p>And check the rest of <code>/etc</code> while you are there. A secret that has been copied once has usually been
+copied twice — into a backup of the unit (<code>chat-gateway.service.bak</code>, <code>.orig</code>, <code>~</code>), into an old
+<code>env</code> file, into a note:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>grep<span class="hl-w"> </span>-rlF<span class="hl-w"> </span>-f<span class="hl-w"> </span>/etc/chat-gateway/upstream.key<span class="hl-w"> </span>/etc<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span>-r<span class="hl-w"> </span>sudo<span class="hl-w"> </span>stat<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'%a %U %n'</span>
+<span class="hl-go">600 chatgw /etc/chat-gateway/upstream.key</span>
+<span class="hl-go">600 root /etc/model-api/key</span>
+</code></pre>
+
+<p>Read the shape of that <code>grep</code> before you type anything like it, because the obvious version is itself a
+leak. <code>sudo grep -rl &quot;$(sudo cat /etc/chat-gateway/upstream.key)&quot; /etc</code> finds the same two files — and
+puts the key into the system journal, because sudo logs each command it runs with its full argument
+list:</p>
+<pre><code>sudo[1246]: northelks : PWD=/ ; USER=root ; COMMAND=/usr/bin/grep -rl sk-norboten-87a81936e2272b54d3475d9764629233 /etc
+</code></pre>
+<p>That line is real. On the lab machine, after every other leak had been closed, it was the <em>only</em> line
+in the journal containing the key — written by the check for leaks. <code>-F -f FILE</code> reads the pattern
+from the file, so the command line holds a path instead of the secret; searched again afterwards, the
+journal still had just that one old line. The same logic applies to any tool that takes a secret as an
+argument: prefer the form that reads it from a file or from stdin.</p>
+<p>Two files, both now private. <code>/etc/model-api/key</code> is the upstream service's own copy, which belongs to
+a different service and is <code>0600 root:root</code> already.</p>
+<h3 id="authentication-who-is-asking">Authentication: who is asking</h3>
+<p>The gateway supports a shared bearer token, enabled by <code>REQUIRE_TOKEN=1</code>. The client sends:</p>
+<pre><code>Authorization: Bearer &lt;token&gt;
+</code></pre>
+<p>and the gateway compares it against the first line of <code>/etc/chat-gateway/clients.token</code>. Two
+response codes are involved and they are not interchangeable:</p>
+<ul>
+<li><strong>401 Unauthorized</strong> — &quot;I do not know who you are&quot;: no credentials, or credentials that do not
+verify. Retry with credentials.</li>
+<li><strong>403 Forbidden</strong> — &quot;I know who you are, and you may not do this&quot;. Retrying with the same
+credentials will not help.</li>
+</ul>
+<p>An anonymous request to a protected endpoint is a 401.</p>
+<p>A bearer token is a password with a different name, so everything true of passwords is true of it.
+It belongs in a file with a tight mode (<code>clients.token</code> is <code>0640 root:chatgw</code> — readable by the service,
+by root, by nobody else). It should be compared in constant time — <code>hmac.compare_digest</code> in Python,
+not <code>!=</code>, which returns faster the earlier the first wrong byte is and in principle leaks the token a
+character at a time. And it must never be logged, which is the next section.</p>
+<p>Where to enforce it is a design choice worth making consciously. In the application, as here, the
+check lives next to the code that needs it and cannot be bypassed by reaching the gateway's port
+directly — and the gateway binds <code>127.0.0.1:8100</code>, so only the proxy can reach it anyway. At the
+proxy, nginx can do it with <code>auth_request</code> to a small auth endpoint, or with a <code>map</code> on
+<code>$http_authorization</code>; that protects several backends at once. Real deployments often do both. What
+matters is that a service that spends money never answers an unauthenticated request.</p>
+<h3 id="rate-limiting-the-leaky-bucket">Rate limiting: the leaky bucket</h3>
+<p>nginx's <code>limit_req</code> implements a leaky bucket, and the three numbers only make sense in those terms:</p>
+<pre class="hl"><code class="language-nginx"><span class="hl-c1"># in the http context (conf.d/*.conf is included inside http{})</span>
+<span class="hl-k">limit_req_zone</span><span class="hl-w"> </span><span class="hl-nv">$binary_remote_addr</span><span class="hl-w"> </span><span class="hl-s">zone=chatgw:10m</span><span class="hl-w"> </span><span class="hl-s">rate=2r/s</span><span class="hl-p">;</span>
+
+<span class="hl-k">server</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">    </span><span class="hl-kn">listen</span><span class="hl-w"> </span><span class="hl-mi">8090</span><span class="hl-p">;</span>
+<span class="hl-w">    </span><span class="hl-kn">location</span><span class="hl-w"> </span><span class="hl-s">/</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">        </span><span class="hl-kn">limit_req</span><span class="hl-w"> </span><span class="hl-s">zone=chatgw</span><span class="hl-w"> </span><span class="hl-s">burst=5</span><span class="hl-w"> </span><span class="hl-s">nodelay</span><span class="hl-p">;</span>
+<span class="hl-w">        </span><span class="hl-kn">limit_req_status</span><span class="hl-w"> </span><span class="hl-mi">429</span><span class="hl-p">;</span>
+<span class="hl-w">        </span><span class="hl-kn">proxy_pass</span><span class="hl-w"> </span><span class="hl-s">http://127.0.0.1:8100</span><span class="hl-p">;</span>
+<span class="hl-w">    </span><span class="hl-p">}</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<ul>
+<li><strong><code>rate=2r/s</code></strong> — the bucket drains at two requests per second, per key. nginx tracks this in
+milliseconds, so <code>2r/s</code> means &quot;one every 500 ms&quot;, not &quot;two in any given second&quot;.</li>
+<li><strong><code>burst=5</code></strong> — the bucket can hold five requests above the rate before it overflows. Without
+<code>burst</code> the default is zero, so the second request inside 500 ms is rejected — which is too strict for
+any real client.</li>
+<li><strong><code>nodelay</code></strong> — serve burst requests immediately rather than delaying each one until it fits the
+rate. Without <code>nodelay</code>, nginx <em>queues</em> excess requests and releases them at 2 r/s, so a client sees
+slow responses rather than refusals — gentler, and it ties up connections.</li>
+<li><strong><code>limit_req_status 429</code></strong> — the default rejection status is <strong>503</strong>, which tells clients and
+monitoring that the service is broken. <code>429 Too Many Requests</code> tells them to slow down, and it is what
+well-behaved clients back off on.</li>
+</ul>
+<p>The key is the other half of the design. <code>$binary_remote_addr</code> is the client IP in 4 or 16 bytes
+rather than a string, so a <code>10m</code> zone holds roughly 160,000 addresses. But limiting by IP has two
+well-known failure modes: every client behind one NAT or corporate proxy shares a single budget, and
+if nginx itself sits behind a load balancer, <em>every</em> request has the balancer's address and one
+bucket throttles the whole company. For a token-authenticated API, limiting per token is often closer
+to the intent:</p>
+<pre class="hl"><code class="language-nginx"><span class="hl-k">limit_req_zone</span><span class="hl-w"> </span><span class="hl-nv">$http_authorization</span><span class="hl-w"> </span><span class="hl-s">zone=pertoken:10m</span><span class="hl-w"> </span><span class="hl-s">rate=2r/s</span><span class="hl-p">;</span>
+</code></pre>
+
+<p><code>limit_conn</code> is the companion for <em>concurrency</em> rather than rate — &quot;at most two generations in flight
+per client&quot; — which matters for model endpoints where a single request can hold a GPU for a minute.
+And <code>limit_req_dry_run on;</code> logs what would have been rejected without rejecting it, which is how you
+choose numbers on a live service.</p>
+<p>Rate limiting belongs at the proxy rather than in the application for the same reason a firewall
+belongs in front of a service: excess requests are turned away before they cost anything, including
+the application's own threads. The briefing's phrasing — &quot;rejected before it reaches the model&quot; — is
+precise.</p>
+<p>Test a limit with an actual burst, not a loop of sequential requests (which a 2 r/s limit may let
+through if each request takes more than half a second):</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">tok</span><span class="hl-o">=</span><span class="hl-k">$(</span>sudo<span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-w"> </span>/etc/chat-gateway/clients.token<span class="hl-k">)</span>
+<span class="hl-gp">$ </span>seq<span class="hl-w"> </span><span class="hl-m">40</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span>-P<span class="hl-w"> </span><span class="hl-m">10</span><span class="hl-w"> </span>-I<span class="hl-o">{}</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>-H<span class="hl-w"> </span><span class="hl-s2">"Authorization: Bearer </span><span class="hl-nv">$tok</span><span class="hl-s2">"</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"prompt":"ping"}'</span><span class="hl-w"> </span>localhost:8090/ask<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">  </span><span class="hl-p">|</span><span class="hl-w"> </span>sort<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>uniq<span class="hl-w"> </span>-c
+<span class="hl-go">      6 200</span>
+<span class="hl-go">     34 429</span>
+</code></pre>
+
+<p><code>xargs -P 10</code> runs ten at once; <code>sort | uniq -c</code> is the frequency count from the linux-04 journal.
+Some 200s (the rate plus the burst) and many 429s is the shape of a working limit. All 200 means no
+limit; all 429 means a limit that refuses normal use.</p>
+<h3 id="logs-are-a-copy-of-every-secret-they-print">Logs are a copy of every secret they print</h3>
+<pre class="hl"><code class="language-python"><span class="hl-k">if</span> <span class="hl-n">LOG_HEADERS</span><span class="hl-p">:</span>
+    <span class="hl-nb">print</span><span class="hl-p">(</span><span class="hl-sa">f</span><span class="hl-s2">"request headers: </span><span class="hl-si">{</span><span class="hl-nb">dict</span><span class="hl-p">(</span><span class="hl-bp">self</span><span class="hl-o">.</span><span class="hl-n">headers</span><span class="hl-p">)</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-p">,</span> <span class="hl-n">flush</span><span class="hl-o">=</span><span class="hl-kc">True</span><span class="hl-p">)</span>
+</code></pre>
+
+<p>Every request's <code>Authorization</code> header — a client token — goes to stdout, and systemd captures stdout
+into the journal. The journal is readable by root and by the <code>adm</code> and <code>systemd-journal</code> groups, it is
+retained for weeks, and on most real machines it is forwarded to a central log system where far more
+people can search it. A secret in a log has been <em>copied to everywhere the log goes</em>.</p>
+<p>The fix is to stop logging headers (<code>LOG_HEADERS=0</code>), and the general rules are worth writing down:</p>
+<ul>
+<li>never log <code>Authorization</code>, <code>Cookie</code>, <code>Set-Cookie</code>, <code>X-Api-Key</code>, or request bodies of authentication
+endpoints — redact them by name if you log headers at all;</li>
+<li>log <em>that</em> a request was authenticated and <em>as whom</em> (a client id), not the credential;</li>
+<li>nginx's default access log format records none of these headers — keep it that way, and be careful
+with custom formats that add <code>$http_authorization</code>.</li>
+</ul>
+<p>Two journal mechanics are useful here. Every start of a unit gets a fresh <strong>invocation ID</strong>, and each
+journal entry records it, so you can look at exactly one run:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">id</span><span class="hl-o">=</span><span class="hl-k">$(</span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>-p<span class="hl-w"> </span>InvocationID<span class="hl-w"> </span>--value<span class="hl-w"> </span>chat-gateway<span class="hl-k">)</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span><span class="hl-nv">_SYSTEMD_INVOCATION_ID</span><span class="hl-o">=</span><span class="hl-nv">$id</span><span class="hl-w"> </span>--no-pager
+</code></pre>
+
+<p>That is how you verify the fix — the current run is clean — without the older, leaked entries getting
+in the way. And those older entries do not disappear because you fixed the logging. If they matter,
+remove them:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>--rotate<span class="hl-w">                   </span><span class="hl-c1"># close the active journal files</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>--vacuum-time<span class="hl-o">=</span>1s<span class="hl-w">           </span><span class="hl-c1"># delete archived files older than one second</span>
+</code></pre>
+
+<p>That is a blunt instrument — it deletes <em>all</em> history, not just the leaked lines, since journal files
+cannot be edited — and it does nothing about copies already forwarded elsewhere.</p>
+<h3 id="a-leaked-secret-is-a-burned-secret">A leaked secret is a burned secret</h3>
+<p>Which leads to the part of the job no configuration change performs. Everything above closes the
+leaks. It does not un-leak anything. The key sat in a world-readable file and in <code>systemctl show</code>, and
+the journal has held client tokens for as long as <code>LOG_HEADERS</code> was on. Anyone who read them still has
+them.</p>
+<p>So the professional finish is <strong>rotation</strong>: issue a new upstream key, revoke the old one at the
+provider, generate a new client token and hand it to the clients through a proper channel. The lab
+cannot do that for you — the stand-in model service owns its key — but on a real system, &quot;we fixed the
+permissions&quot; without &quot;and we rotated the key&quot; is a finding that stays open. Rotation is also why the
+secret should live in exactly one private file: replacing it is then one write and one restart, rather
+than an archaeology project.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>The four findings are known. The job is to fix them without breaking the gateway, and to verify each
+from the outside.</p>
+<p><strong>1. See what an ordinary account sees.</strong> Do this before changing anything, so you can confirm the
+same commands come back clean afterwards:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-u<span class="hl-w"> </span>nobody<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>-p<span class="hl-w"> </span>Environment<span class="hl-w"> </span>chat-gateway
+<span class="hl-go">Environment=UPSTREAM_KEY=sk-norboten-3f9a…</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/etc/chat-gateway/
+<span class="hl-go">-rw-r----- 1 root chatgw 33 Sep 12 09:02 clients.token</span>
+<span class="hl-go">-rw-r--r-- 1 root root   79 Sep 12 09:02 gateway.env</span>
+<span class="hl-go">-rw-r--r-- 1 root root   45 Sep 12 09:02 upstream.key</span>
+<span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/etc/chat-gateway/gateway.env
+<span class="hl-go">REQUIRE_TOKEN=0</span>
+<span class="hl-go">LOG_HEADERS=1</span>
+<span class="hl-go">UPSTREAM_KEY_FILE=/etc/chat-gateway/upstream.key</span>
+</code></pre>
+
+<p>The key file is world-readable, the unit publishes the key, authentication is off, header logging is
+on. <code>gateway.env</code> itself holds only switches and a path, so <code>0644</code> is fine for it — which is worth
+checking rather than assuming.</p>
+<p><strong>2. Make the key file private, and stop the unit carrying the key.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chown<span class="hl-w"> </span>chatgw:chatgw<span class="hl-w"> </span>/etc/chat-gateway/upstream.key
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">600</span><span class="hl-w"> </span>/etc/chat-gateway/upstream.key
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'/^Environment=UPSTREAM_KEY=/d'</span><span class="hl-w"> </span>/etc/systemd/system/chat-gateway.service
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload
+</code></pre>
+
+<p>The gateway will now find the key through <code>UPSTREAM_KEY_FILE</code>, which is readable by its own account
+and nobody else. (<code>LoadCredential=upstream_key:/etc/chat-gateway/upstream.key</code> would be the stronger
+choice; the gateway reads a credential in preference to the file.)</p>
+<p><strong>3. Turn on authentication and turn off header logging</strong>, then restart so a fresh invocation begins:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'s/^REQUIRE_TOKEN=.*/REQUIRE_TOKEN=1/; s/^LOG_HEADERS=.*/LOG_HEADERS=0/'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>/etc/chat-gateway/gateway.env
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>chat-gateway
+</code></pre>
+
+<p><strong>4. Verify authentication, and that the upstream still accepts the key</strong> — a 200 proves both, since
+the upstream refuses requests without it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"prompt":"ping"}'</span><span class="hl-w"> </span>localhost:8090/ask
+<span class="hl-go">401</span>
+<span class="hl-gp">$ </span><span class="hl-nv">tok</span><span class="hl-o">=</span><span class="hl-k">$(</span>sudo<span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-w"> </span>/etc/chat-gateway/clients.token<span class="hl-k">)</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-H<span class="hl-w"> </span><span class="hl-s2">"Authorization: Bearer </span><span class="hl-nv">$tok</span><span class="hl-s2">"</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"prompt":"ping"}'</span><span class="hl-w"> </span>localhost:8090/ask
+<span class="hl-go">{"answer": "stub answer for: ping"}</span>
+</code></pre>
+
+<p>Had step 2 broken the key lookup, this would be a 502 from the gateway: <code>upstream unavailable</code>. (For a
+lab test this is fine; on a shared machine note that <code>$tok</code> on curl's command line is visible in <code>ps</code>
+while it runs. <code>curl -H @file</code> reads headers from a file instead — <code>sudo curl -s -H @/root/auth.hdr …</code>
+with a <code>0600</code> header file works identically.)</p>
+<p><strong>5. Verify the unit is clean, from the unprivileged view.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-u<span class="hl-w"> </span>nobody<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>chat-gateway<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span>sk-norboten
+<span class="hl-go">0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-u<span class="hl-w"> </span>nobody<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>chat-gateway<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span>sk-norboten
+<span class="hl-go">0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>grep<span class="hl-w"> </span>-rlF<span class="hl-w"> </span>-f<span class="hl-w"> </span>/etc/chat-gateway/upstream.key<span class="hl-w"> </span>/etc<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span>-r<span class="hl-w"> </span>sudo<span class="hl-w"> </span>stat<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'%a %U %n'</span>
+<span class="hl-go">600 chatgw /etc/chat-gateway/upstream.key</span>
+<span class="hl-go">600 root /etc/model-api/key</span>
+</code></pre>
+
+<p><strong>6. Add the rate limit at the proxy.</strong> The zone goes in the <code>http</code> context — a file in <code>conf.d/</code> is
+included there — and the limit in the <code>location</code>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s1">'limit_req_zone $binary_remote_addr zone=chatgw:10m rate=2r/s;'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>/etc/nginx/conf.d/chat-limit.conf
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>/etc/nginx/conf.d/chat-proxy.conf<span class="hl-w"> </span>&gt;/dev/null<span class="hl-w"> </span>&lt;&lt;<span class="hl-s1">'CONF'</span>
+<span class="hl-go">server {</span>
+<span class="hl-go">    listen 8090;</span>
+<span class="hl-go">    server_name _;</span>
+
+<span class="hl-go">    location / {</span>
+<span class="hl-go">        limit_req zone=chatgw burst=5 nodelay;</span>
+<span class="hl-go">        limit_req_status 429;</span>
+<span class="hl-go">        proxy_pass http://127.0.0.1:8100;</span>
+<span class="hl-go">        proxy_set_header Authorization $http_authorization;</span>
+<span class="hl-go">    }</span>
+<span class="hl-go">}</span>
+<span class="hl-go">CONF</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>nginx<span class="hl-w"> </span>-t<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>reload<span class="hl-w"> </span>nginx
+<span class="hl-go">nginx: configuration file /etc/nginx/nginx.conf test is successful</span>
+</code></pre>
+
+<p><strong>7. Test it with a real burst.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>seq<span class="hl-w"> </span><span class="hl-m">40</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span>-P<span class="hl-w"> </span><span class="hl-m">10</span><span class="hl-w"> </span>-I<span class="hl-o">{}</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>-H<span class="hl-w"> </span><span class="hl-s2">"Authorization: Bearer </span><span class="hl-nv">$tok</span><span class="hl-s2">"</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"prompt":"ping"}'</span><span class="hl-w"> </span>localhost:8090/ask<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sort<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>uniq<span class="hl-w"> </span>-c
+<span class="hl-go">      6 200</span>
+<span class="hl-go">     34 429</span>
+<span class="hl-gp">$ </span>sleep<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span>-H<span class="hl-w"> </span><span class="hl-s2">"Authorization: Bearer </span><span class="hl-nv">$tok</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"prompt":"ping"}'</span><span class="hl-w"> </span>localhost:8090/ask
+<span class="hl-go">200</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>tail<span class="hl-w"> </span>-1<span class="hl-w"> </span>/var/log/nginx/error.log
+<span class="hl-go">… [error] 1391#1391: *134 limiting requests, excess: 5.864 by zone "chatgw", client: 127.0.0.1, …</span>
+</code></pre>
+
+<p>nginx logs each rejection at <code>error</code> level with how far over the burst the request was. On a busy
+proxy that is a lot of lines; <code>limit_req_log_level warn</code> moves them down a level.</p>
+<p>Rejections under a burst, and normal service once the bucket drains — both halves matter.</p>
+<p><strong>8. Check this run's log for secrets.</strong> Generate some traffic first, so the check is meaningful:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">id</span><span class="hl-o">=</span><span class="hl-k">$(</span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>-p<span class="hl-w"> </span>InvocationID<span class="hl-w"> </span>--value<span class="hl-w"> </span>chat-gateway<span class="hl-k">)</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span><span class="hl-nv">_SYSTEMD_INVOCATION_ID</span><span class="hl-o">=</span><span class="hl-nv">$id</span><span class="hl-w"> </span>--no-pager<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-cF<span class="hl-w"> </span>-f<span class="hl-w"> </span>/etc/chat-gateway/clients.token
+<span class="hl-go">0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>chat-gateway<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-cF<span class="hl-w"> </span>-f<span class="hl-w"> </span>/etc/chat-gateway/clients.token
+<span class="hl-go">1</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>chat-gateway<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-m1<span class="hl-w"> </span><span class="hl-s1">'request headers'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>cut<span class="hl-w"> </span>-c1-120
+<span class="hl-go">… gateway.py[962]: request headers: {'Host': '127.0.0.1:8100', 'Connection': 'close', 'Content-Length': '17', …</span>
+</code></pre>
+
+<p>This run is clean; the history is not — on the lab machine one earlier request was enough to put a
+client token in the journal, inside that header dump. (Searching with <code>-F -f</code> again, so the search does
+not add a copy.) Purge it if policy requires (<code>journalctl --rotate</code> then
+<code>--vacuum-time=1s</code>), and — separately — rotate the key and the client token, because both were
+readable for as long as that history exists.</p>
+<p><strong>9. Reboot, and repeat the outside checks.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>reboot
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w"> </span>chat-gateway<span class="hl-w"> </span>nginx<span class="hl-w"> </span>model-api
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-u<span class="hl-w"> </span>nobody<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>chat-gateway<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span>sk-norboten
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"prompt":"ping"}'</span><span class="hl-w"> </span>localhost:8090/ask<span class="hl-w">      </span><span class="hl-c1"># 401</span>
+<span class="hl-gp">$ </span>seq<span class="hl-w"> </span><span class="hl-m">40</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span>-P<span class="hl-w"> </span><span class="hl-m">10</span><span class="hl-w"> </span>-I<span class="hl-o">{}</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>-H<span class="hl-w"> </span><span class="hl-s2">"Authorization: Bearer </span><span class="hl-nv">$tok</span><span class="hl-s2">"</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"prompt":"ping"}'</span><span class="hl-w"> </span>localhost:8090/ask<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sort<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>uniq<span class="hl-w"> </span>-c
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Overriding <code>Environment=UPSTREAM_KEY</code> in a drop-in instead of deleting it.</strong> The process no longer
+receives the key, and <code>systemctl cat</code> still prints the original unit file with the key in it — to any
+account. A drop-in layers on top of a unit; it does not redact it.</p>
+<p><strong>Moving the key to the <code>ExecStart</code> line.</strong> <code>ExecStart=/opt/chat-gateway/gateway.py --key sk-…</code> is
+worse than <code>Environment=</code>: the command line is visible in <code>ps</code> and <code>/proc/&lt;pid&gt;/cmdline</code> for as long as
+the process runs, to every user.</p>
+<p><strong>Moving the key into <code>gateway.env</code> and leaving that file at <code>0644</code>.</strong> <code>EnvironmentFile=</code> keeps the value
+out of <code>systemctl show</code>, and a world-readable file hands it straight back. The file that holds the
+secret needs the private mode, whichever file it is.</p>
+<p><strong><code>chmod 600</code> without <code>chown</code>.</strong> A <code>0600 root:root</code> key file is private — and unreadable by the gateway,
+which runs as <code>chatgw</code>. The upstream then rejects the gateway, and the symptom is a 502 that looks
+unrelated. Own it by the service, or use <code>LoadCredential=</code> so that systemd reads it as root.</p>
+<p><strong>Stopping at the file permissions.</strong> The review listed four findings; the key file is one. A gateway
+with a private key and no authentication is still a free inference endpoint for anyone who can reach
+the port.</p>
+<p><strong>Returning 403 to anonymous requests.</strong> 403 means &quot;authenticated, and not allowed&quot;. A missing token is
+401, and clients — and this lab's check — distinguish them.</p>
+<p><strong>Comparing tokens with <code>==</code>.</strong> It works, and it returns earlier the sooner a byte differs, which is a
+timing side channel. Use a constant-time comparison (<code>hmac.compare_digest</code>).</p>
+<p><strong><code>limit_req</code> with no <code>burst</code>.</strong> The default burst is zero, so any client that sends two requests within
+500 ms (at <code>2r/s</code>) is rejected. Real clients — a page loading, a retry — are refused for normal
+behaviour.</p>
+<p><strong>Forgetting <code>limit_req_status 429</code>.</strong> The default is 503, which tells clients and monitoring the
+gateway is broken rather than that the caller is too fast. Well-behaved clients back off on 429 and
+retry on 503 — the opposite of what you want.</p>
+<p><strong>Putting <code>limit_req_zone</code> inside a <code>server</code> block.</strong> It is only valid in the <code>http</code> context; <code>nginx -t</code>
+refuses it. A separate file in <code>conf.d/</code> is the tidy way, since those files are included inside <code>http</code>.</p>
+<p><strong>Testing the limit with a sequential loop.</strong> If each request takes longer than the rate interval, a
+plain <code>for</code> loop never exceeds the limit and you conclude it is not working. Send a real concurrent
+burst (<code>xargs -P</code>).</p>
+<p><strong>Limiting by IP behind a load balancer.</strong> Every request arrives from the balancer's address, so one
+bucket throttles every user at once. Use <code>real_ip_header</code>/<code>set_real_ip_from</code>, or key the zone on the
+client token.</p>
+<p><strong>Turning off header logging and assuming the journal is clean.</strong> The fix covers new entries only. The
+old ones — and every copy already forwarded to central logging — still contain the tokens.</p>
+<p><strong>Treating the fix as complete without rotating.</strong> A secret that was readable is compromised, whether
+or not anyone is known to have read it. Close the leaks, then replace the key and the client tokens.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>what<span class="hl-w"> </span>an<span class="hl-w"> </span>unprivileged<span class="hl-w"> </span>account<span class="hl-w"> </span>can<span class="hl-w"> </span>see
+<span class="hl-go">sudo -u nobody systemctl show UNIT | grep -i key</span>
+<span class="hl-go">sudo -u nobody systemctl cat UNIT  | grep -i key</span>
+<span class="hl-go">ps -eo args | grep '[s]ecret'                  # command lines are public</span>
+<span class="hl-go">sudo cat /proc/PID/environ | tr '\0' '\n'      # the process environment (owner and root)</span>
+<span class="hl-go">sudo grep -rlF -f /path/to/secretfile /etc     # every copy under /etc — NOT grep "$SECRET":</span>
+<span class="hl-gp">                                               #   </span>sudo<span class="hl-w"> </span>logs<span class="hl-w"> </span>the<span class="hl-w"> </span><span class="hl-nb">command</span><span class="hl-w"> </span>line,<span class="hl-w"> </span>secret<span class="hl-w"> </span>included
+
+<span class="hl-gp"># </span>homes<span class="hl-w"> </span><span class="hl-k">for</span><span class="hl-w"> </span>a<span class="hl-w"> </span>secret,<span class="hl-w"> </span>best<span class="hl-w"> </span>last
+<span class="hl-go">chown SVC:SVC /etc/app/key ; chmod 600 /etc/app/key     # a private file, read by path</span>
+<span class="hl-gp"># </span><span class="hl-nv">EnvironmentFile</span><span class="hl-o">=</span>/etc/app/env<span class="hl-w">        </span>with<span class="hl-w"> </span>the<span class="hl-w"> </span>env<span class="hl-w"> </span>file<span class="hl-w"> </span><span class="hl-m">0600</span><span class="hl-w"> </span>root:root
+<span class="hl-gp"># </span><span class="hl-nv">LoadCredential</span><span class="hl-o">=</span>name:/etc/app/key<span class="hl-w">    </span>→<span class="hl-w"> </span><span class="hl-nv">$CREDENTIALS_DIRECTORY</span>/name,<span class="hl-w"> </span>this<span class="hl-w"> </span>unit<span class="hl-w"> </span>only
+<span class="hl-go">systemd-creds encrypt --name=name plain.txt /etc/credstore.encrypted/name   # + LoadCredentialEncrypted=</span>
+<span class="hl-gp"># </span>never:<span class="hl-w"> </span><span class="hl-nv">Environment</span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>a<span class="hl-w"> </span>unit,<span class="hl-w"> </span>or<span class="hl-w"> </span>a<span class="hl-w"> </span>flag<span class="hl-w"> </span>on<span class="hl-w"> </span><span class="hl-nv">ExecStart</span><span class="hl-o">=</span>
+<span class="hl-go">sed -i '/^Environment=SECRET=/d' /etc/systemd/system/UNIT.service ; systemctl daemon-reload</span>
+
+<span class="hl-gp"># </span>authentication
+<span class="hl-go">curl -s -o /dev/null -w '%{http_code}\n' URL                          # expect 401 anonymously</span>
+<span class="hl-go">curl -s -H "Authorization: Bearer $tok" URL                          # expect 200</span>
+<span class="hl-gp"># </span><span class="hl-nv">401</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span>who<span class="hl-w"> </span>are<span class="hl-w"> </span>you?<span class="hl-w">   </span><span class="hl-nv">403</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span>I<span class="hl-w"> </span>know<span class="hl-w"> </span>who<span class="hl-w"> </span>you<span class="hl-w"> </span>are,<span class="hl-w"> </span>and<span class="hl-w"> </span>no.
+<span class="hl-gp"># </span>compare<span class="hl-w"> </span>tokens<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>constant<span class="hl-w"> </span>time:<span class="hl-w"> </span>hmac.compare_digest<span class="hl-o">(</span>a,<span class="hl-w"> </span>b<span class="hl-o">)</span>
+
+<span class="hl-gp"># </span>nginx<span class="hl-w"> </span>rate<span class="hl-w"> </span>limiting
+<span class="hl-gp"># </span>http<span class="hl-o">{}</span>:<span class="hl-w">     </span>limit_req_zone<span class="hl-w"> </span><span class="hl-nv">$binary_remote_addr</span><span class="hl-w"> </span><span class="hl-nv">zone</span><span class="hl-o">=</span>NAME:10m<span class="hl-w"> </span><span class="hl-nv">rate</span><span class="hl-o">=</span>2r/s<span class="hl-p">;</span>
+<span class="hl-gp">#             </span>limit_req_zone<span class="hl-w"> </span><span class="hl-nv">$http_authorization</span><span class="hl-w"> </span><span class="hl-nv">zone</span><span class="hl-o">=</span>pertoken:10m<span class="hl-w"> </span><span class="hl-nv">rate</span><span class="hl-o">=</span>2r/s<span class="hl-p">;</span><span class="hl-w">   </span><span class="hl-o">(</span>per<span class="hl-w"> </span>client<span class="hl-w"> </span>token<span class="hl-o">)</span>
+<span class="hl-gp"># </span>location<span class="hl-o">{}</span>:<span class="hl-w"> </span>limit_req<span class="hl-w"> </span><span class="hl-nv">zone</span><span class="hl-o">=</span>NAME<span class="hl-w"> </span><span class="hl-nv">burst</span><span class="hl-o">=</span><span class="hl-m">5</span><span class="hl-w"> </span>nodelay<span class="hl-p">;</span>
+<span class="hl-gp">#             </span>limit_req_status<span class="hl-w"> </span><span class="hl-m">429</span><span class="hl-p">;</span><span class="hl-w">            </span><span class="hl-o">(</span>default<span class="hl-w"> </span>is<span class="hl-w"> </span><span class="hl-m">503</span><span class="hl-o">)</span>
+<span class="hl-gp">#             </span>limit_req_dry_run<span class="hl-w"> </span>on<span class="hl-p">;</span><span class="hl-w">            </span><span class="hl-o">(</span>log,<span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span>not<span class="hl-w"> </span>reject<span class="hl-w"> </span>—<span class="hl-w"> </span><span class="hl-k">for</span><span class="hl-w"> </span>choosing<span class="hl-w"> </span>numbers<span class="hl-o">)</span>
+<span class="hl-gp">#             </span>limit_conn_zone<span class="hl-w"> </span>/<span class="hl-w"> </span>limit_conn<span class="hl-w">     </span><span class="hl-o">(</span>concurrency<span class="hl-w"> </span>rather<span class="hl-w"> </span>than<span class="hl-w"> </span>rate<span class="hl-o">)</span>
+<span class="hl-go">nginx -t &amp;&amp; systemctl reload nginx</span>
+<span class="hl-go">seq 40 | xargs -P 10 -I{} curl -s -o /dev/null -w '%{http_code}\n' URL | sort | uniq -c</span>
+
+<span class="hl-gp"># </span>logs
+<span class="hl-go">id=$(systemctl show -p InvocationID --value UNIT)</span>
+<span class="hl-go">journalctl _SYSTEMD_INVOCATION_ID=$id --no-pager       # this run only</span>
+<span class="hl-go">journalctl -u UNIT --no-pager | grep -cF -f SECRETFILE  # all of history (pattern from a file)</span>
+<span class="hl-go">journalctl --rotate ; journalctl --vacuum-time=1s      # purge (deletes ALL history)</span>
+<span class="hl-go">getent group adm systemd-journal                       # who can read the journal</span>
+<span class="hl-gp"># </span>never<span class="hl-w"> </span>log:<span class="hl-w"> </span>Authorization,<span class="hl-w"> </span>Cookie,<span class="hl-w"> </span>Set-Cookie,<span class="hl-w"> </span>X-Api-Key,<span class="hl-w"> </span>auth<span class="hl-w"> </span>request<span class="hl-w"> </span>bodies
+
+<span class="hl-gp"># </span>after<span class="hl-w"> </span>any<span class="hl-w"> </span>leak
+<span class="hl-gp"># </span>rotate<span class="hl-w"> </span>the<span class="hl-w"> </span>key<span class="hl-w"> </span>at<span class="hl-w"> </span>the<span class="hl-w"> </span>provider,<span class="hl-w"> </span>revoke<span class="hl-w"> </span>the<span class="hl-w"> </span>old<span class="hl-w"> </span>one,<span class="hl-w"> </span>reissue<span class="hl-w"> </span>client<span class="hl-w"> </span>tokens
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>Nine letters and a refusal</em> (lab journal <code>hello</code>) — How the kernel picks a triad</li>
+<li><em>The log lines that were never written down</em> (topic journal <code>logging-journald</code>) — Everything a service prints becomes a journal entry</li>
+</ul>
+<p>Manual pages: <code>man 5 systemd.exec</code>.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://nginx.org/en/docs/http/ngx_http_limit_req_module.html</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>The log lines that were never written down</em> (<code>logging-journald</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>An API key is in a unit's <code>Environment=</code> line and the unit file is <code>0644</code>. Name two commands an
+unprivileged user can use to read it, and explain why a drop-in that blanks the variable does not
+fix the finding.</p>
+<blockquote>
+<p><code>systemctl show -p Environment &lt;unit&gt;</code> and <code>systemctl cat &lt;unit&gt;</code> both work without privilege. A
+drop-in stops the process receiving the value, but a drop-in is layered on top of the unit rather
+than replacing it, so <code>systemctl cat</code> still prints the original file with the key in it. The line
+has to be deleted from the unit file.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is a secret on the <code>ExecStart=</code> command line worse than one in the environment?</p>
+<blockquote>
+<p>Command lines are readable by every user through <code>ps</code> and <code>/proc/&lt;pid&gt;/cmdline</code> for as long as the
+process runs. <code>/proc/&lt;pid&gt;/environ</code> is readable only by the process owner and root. (Both are
+worse than a private file or a credential.)</p>
+</blockquote>
+</li>
+<li>
+<p>Compare a <code>0600</code> key file read by path, <code>EnvironmentFile=</code>, and <code>LoadCredential=</code>. What does each
+still expose?</p>
+<blockquote>
+<p>A private file read by path exposes the secret to the service account, which must own it or be able
+to read it. <code>EnvironmentFile=</code> keeps it out of <code>systemctl show</code>, but the value ends up in the
+process environment and is inherited by every child process. <code>LoadCredential=</code> lets systemd read
+the source file as root and gives this unit alone a private in-memory copy, with nothing in the
+environment — the source can stay <code>0600 root:root</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>You <code>chmod 600</code> the key file and the gateway starts returning 502. What happened?</p>
+<blockquote>
+<p>The file is still owned by root, and the gateway runs as <code>chatgw</code>, so it can no longer read the key.
+It calls the upstream without a valid key and gets refused. <code>chown</code> the file to the service
+account, or use <code>LoadCredential=</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between 401 and 403, and which does an anonymous request to a protected
+endpoint deserve?</p>
+<blockquote>
+<p>401 means the request lacks valid credentials — authenticate and try again. 403 means the caller is
+known and is not permitted, so retrying with the same credentials is pointless. An anonymous
+request gets 401.</p>
+</blockquote>
+</li>
+<li>
+<p>Explain <code>rate=2r/s</code>, <code>burst=5</code> and <code>nodelay</code> in terms of the leaky bucket, and say why
+<code>limit_req_status 429</code> matters.</p>
+<blockquote>
+<p>The bucket drains at one request every 500 ms per key; <code>burst=5</code> lets up to five requests queue
+above that before the bucket overflows and requests are rejected; <code>nodelay</code> serves the burst
+immediately rather than spacing it out to the rate. The default rejection status is 503, which
+signals an outage — 429 tells clients to slow down, which is what well-behaved clients back off on.</p>
+</blockquote>
+</li>
+<li>
+<p>Why can limiting by <code>$binary_remote_addr</code> throttle an entire company at once, and what are two
+alternatives?</p>
+<blockquote>
+<p>Behind a load balancer or a shared NAT every request carries the same source address, so everyone
+shares one bucket. Restore the client address with <code>set_real_ip_from</code>/<code>real_ip_header</code>, or key the
+zone on something that identifies the client, such as <code>$http_authorization</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Header logging is off, this run's journal is clean, and every file is private. Why is the job not
+finished?</p>
+<blockquote>
+<p>The old journal entries, and any copies forwarded to central logging, still contain the client
+tokens, and the key was readable for as long as the file and unit were exposed. Closing a leak does
+not un-leak anything: purge what you can, then rotate the upstream key and reissue the client
+tokens.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

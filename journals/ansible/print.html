@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A green run is not a correct machine</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A green run is not a correct machine</h1>
+  <div class="meta">ansible · 40 minutes · 3091 words</div>
+</header>
+<p>Ansible’s whole promise is a sentence: <em>describe the state you want, and running the playbook again
+changes nothing</em>. Every useful property follows from it — you can re-run after a failure, run against
+a fleet where half the machines are already right, and read <code>changed=0</code> as proof that nothing drifted.
+Break that promise in one task and the others do not save you: the recap turns into noise, check mode
+lies, and a restart that should have happened quietly never does.</p>
+<p>This journal is built on a small role with four mistakes that appear in real playbooks every day,
+each run against a lab machine with ansible-core 2.21 and recorded. None of them produces a
+red line on a normal run. That is the point. A playbook that fails loudly is easy; the ones worth
+studying are the ones that pass.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Say what idempotence means for a task, and read a play recap to tell whether a playbook has it.</li>
+<li>Recognise the three module choices that break idempotence — <code>shell</code>/<code>command</code> without guards,
+<code>lineinfile</code> used as a file editor, restarts written as tasks — and replace each with the module that
+owns the state.</li>
+<li>Explain exactly when a handler runs, what happens to a notification when the play fails first, and
+why a restart can be lost for good.</li>
+<li>Use <code>--check</code> and <code>--diff</code> and know which tasks check mode silently skips.</li>
+<li>Predict which value a variable takes when it is set in role defaults, <code>group_vars</code>, play <code>vars</code>
+and <code>-e</code>.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Idempotence is a property of each task</h3>
+<p>A task is idempotent when running it against a machine already in the desired state reports <code>ok</code> and
+touches nothing. The play recap is the summary of that promise:</p>
+<pre><code>PLAY RECAP *********************************************************************
+web01                      : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+</code></pre>
+<p>Run a correct playbook twice: the first run may say <code>changed=3</code>, and the second must say <code>changed=0</code>.
+A second run that still reports changes means one of two things — something on the machine really is
+fighting the playbook, or the playbook is lying about state — and it is nearly always the second.
+<strong>Run twice</strong> is the cheapest test there is, and the one that finds everything in this journal.</p>
+<p>Modules achieve idempotence by comparing first and acting second. <code>ansible.builtin.file</code> checks mode and
+ownership before changing them; <code>template</code> renders the file, compares it with the one on the host, and
+writes only when they differ; <code>systemd_service</code> asks systemd whether the unit is already running.
+The modules that cannot compare are the ones that run arbitrary commands.</p>
+<h3><code>shell</code> and <code>command</code> report <code>changed</code> because they cannot know</h3>
+<pre><code class="language-yaml">- name: Log level
+  ansible.builtin.shell: echo &quot;LOG_LEVEL={{ app_log_level }}&quot; &gt;&gt; /etc/app/app.env
+</code></pre>
+<p>Ansible has no idea what a shell command does, so it assumes it did something: the task reports
+<code>changed</code> on every run, and here it is also <em>true</em> — every run appends another line. After a few runs
+the file on the lab machine read:</p>
+<pre><code>LOG_LEVEL=info
+PORT=8081
+LOG_LEVEL=info
+LOG_LEVEL=info
+LOG_LEVEL=info
+PORT=8082
+</code></pre>
+<p>When a command is genuinely needed, it has to be taught about state:</p>
+<ul>
+<li><code>creates:</code> / <code>removes:</code> — skip the task if a path exists (or does not);</li>
+<li><code>changed_when:</code> — decide from the output whether anything changed (<code>changed_when: false</code> for a
+read-only command, a condition on <code>result.stdout</code> otherwise);</li>
+<li><code>register:</code> plus <code>when:</code> — run it only if an earlier check said it is needed.</li>
+</ul>
+<p>But the better answer is usually a module that owns the state, and for a file that means the next
+section.</p>
+<h3><code>lineinfile</code> is for one line in a file you do not own</h3>
+<p><code>lineinfile</code> makes sure a line is present. Without <code>regexp</code> it matches the <em>whole line</em>, so changing a
+value adds a new line instead of replacing the old one — which is how the file above grew a second
+<code>PORT=</code>. With <code>regexp</code> it replaces the matching line, and the natural fix looks like this:</p>
+<pre><code class="language-yaml">- name: Port
+  ansible.builtin.lineinfile:
+    path: /etc/app/app.env
+    regexp: &quot;^PORT=&quot;
+    line: &quot;PORT={{ app_port }}&quot;
+</code></pre>
+<p>On the lab machine, against the file already full of duplicates, that fix reported <code>ok</code> for the
+log level and edited one <code>PORT=</code> line — <strong>only the last match is replaced</strong>, so the duplicates stayed,
+and the file ended with two <code>PORT=8081</code> lines. <code>lineinfile</code> is right for adding one setting to a file
+some other package owns (<code>/etc/ssh/sshd_config</code>, say). For a file your role owns completely, own it
+completely:</p>
+<pre><code class="language-yaml">- name: Environment file
+  ansible.builtin.template:
+    src: app.env.j2
+    dest: /etc/app/app.env
+    mode: &quot;0644&quot;
+  notify: Restart app
+</code></pre>
+<pre><code class="language-jinja"># {{ ansible_managed }}
+LOG_LEVEL={{ app_log_level }}
+PORT={{ app_port }}
+</code></pre>
+<p>A template states the whole file, so duplicates, stale settings and hand edits all disappear on the
+next run — and <code>--diff</code> shows exactly what went:</p>
+<pre><code class="language-diff">--- before: /etc/app/app.env
++++ after: …/app.env.j2
+@@ -1,6 +1,3 @@
++# Ansible managed
+ LOG_LEVEL=info
+ PORT=8081
+-LOG_LEVEL=info
+-LOG_LEVEL=info
+-LOG_LEVEL=info
+-PORT=8081
+</code></pre>
+<p><code>{{ ansible_managed }}</code> renders as <code>Ansible managed</code> by default: a note to the next person that hand
+edits will be overwritten.</p>
+<h3>Handlers: a notification is a promise kept at the end</h3>
+<p>A task notifies a handler; the handler runs <strong>once, at the end of the play</strong>, however many tasks
+notified it, and only if at least one of them reported <code>changed</code>:</p>
+<pre><code>TASK [app : Environment file] ***
+changed: [web01]
+TASK [app : Unit file] ***
+ok: [web01]
+TASK [app : App is enabled and running] ***
+changed: [web01]
+RUNNING HANDLER [app : Restart app] ***
+changed: [web01]
+</code></pre>
+<p>That is why a restart belongs in a handler rather than in the task list. Written as a task —
+<code>ansible.builtin.command: systemctl restart app</code> — it runs on every play, reports <code>changed</code> every time,
+and restarts a healthy service for no reason. As a handler it runs exactly when configuration changed.</p>
+<p>Three details decide whether handlers work at all:</p>
+<p><strong>The name must match exactly.</strong> Handler lookup is case-sensitive. A role whose handler is named
+<code>Restart app</code> and whose task says <code>notify: restart app</code> fails — but only when the notification fires:</p>
+<pre><code>TASK [app : Unit file] ***
+[ERROR]: The requested handler 'restart app' was not found in either the main handlers list nor in the listening handlers list
+</code></pre>
+<p>On the lab machine the task had already written the unit file when the play died. The second run found
+the file unchanged, so nothing notified, so nothing failed: the playbook went green with the bug still
+in it. A broken handler name only shows itself on runs that change something. (<code>listen:</code> on a handler
+gives it a topic name several tasks can notify, which is sturdier than matching titles.)</p>
+<p><strong>A failure before the end means the handlers do not run.</strong> The notification is held in memory until
+the handlers section, and a failed task ends the play for that host before it gets there. On the lab
+machine, a template changed the log level to <code>debug</code>, a later task failed, and the service was not
+restarted — its <code>ActiveEnterTimestamp</code> did not move.</p>
+<p><strong>That restart is not retried.</strong> The notification existed only in that run. On the next run the
+template finds the file already says <code>debug</code>, reports <code>ok</code>, notifies nothing, and the play finishes
+with <code>changed=0</code> — while the service is still running with the old configuration:</p>
+<pre><code>TASK [Environment file] ***
+ok: [web01]
+PLAY RECAP ***
+web01                      : ok=3    changed=0    unreachable=0    failed=0    …
+after both runs, service last started: Sun 2026-09-13 08:10:03 UTC     ← before the change
+LOG_LEVEL=debug
+</code></pre>
+<p>A perfectly clean recap over a machine that is not in the state it describes. The defences:
+<code>--force-handlers</code> (run notified handlers even when the play fails — verified: the handler ran and the
+recap still said <code>failed=1</code>), <code>meta: flush_handlers</code> at the points where a restart must happen before
+the next step, and designing validation into the change itself (<code>validate:</code> on <code>template</code>, a health
+check after the restart) so that a failure stops the play <em>before</em> the file is replaced.</p>
+<h3>Check mode, and what it cannot see</h3>
+<p><code>ansible-playbook site.yml --check --diff</code> runs the play without changing the host: modules report what
+they <em>would</em> do, and <code>--diff</code> shows the file differences. It is the right thing to run before any change
+to production — with one blind spot that matters here. Modules that cannot predict their effect do not
+run in check mode at all:</p>
+<pre><code>TASK [app : Log level] ***
+skipping: [web01]
+TASK [app : Restart the app] ***
+skipping: [web01]
+</code></pre>
+<p>The appending <code>shell</code> task and the restart-as-a-task — the two worst tasks in the role — are exactly
+the two check mode skipped. A clean <code>--check</code> says nothing about <code>shell</code> and <code>command</code>. If a command
+is safe to run in check mode (a read-only query), mark it <code>check_mode: false</code>, and give it
+<code>changed_when: false</code> so it does not pollute the recap.</p>
+<h3>Variable precedence, the parts that bite</h3>
+<p>Ansible has more than twenty precedence levels; four cover nearly every surprise. Verified on the lab
+machine, lowest to highest:</p>
+<table>
+<thead>
+<tr>
+<th>where</th>
+<th>value set</th>
+<th>what the play saw</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>roles/app/defaults/main.yml</code></td>
+<td><code>app_port: 8080</code></td>
+<td>overridden</td>
+</tr>
+<tr>
+<td><code>group_vars/web.yml</code></td>
+<td><code>app_port: 8081</code></td>
+<td><code>PORT=8081</code> in the file</td>
+</tr>
+<tr>
+<td>play <code>vars:</code></td>
+<td><code>app_port: 9000</code></td>
+<td><code>&quot;app_port&quot;: 9000</code></td>
+</tr>
+<tr>
+<td><code>-e app_port=9999</code></td>
+<td></td>
+<td><code>&quot;app_port&quot;: &quot;9999&quot;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Role <strong>defaults</strong> are the lowest thing there is — that is their job: a value the user of the role is
+expected to override. Inventory <code>group_vars</code> beat them. Play <code>vars:</code> beat inventory. Extra vars (<code>-e</code>)
+beat everything, and note the quotes in that last row: a <code>key=value</code> on the command line is a
+<strong>string</strong>, so <code>-e app_port=9999</code> gives <code>&quot;9999&quot;</code>, and a template doing arithmetic or a comparison on it
+may behave differently than with the integer from a file. <code>-e '{&quot;app_port&quot;: 9999}'</code> passes JSON and
+keeps the type.</p>
+<p>Role <code>vars/main.yml</code> (as opposed to <code>defaults/</code>) sits near the top of the list, above inventory, which is
+why a value that “will not change no matter what I put in group_vars” is usually hiding there.</p>
+<h2>A failure, walked through</h2>
+<p>The role configures a small service: a directory, an environment file, a unit, a restart. Someone
+reports that changing the port “sometimes does not take”, and that the playbook has “always been
+green”.</p>
+<p><strong>1. Run it, twice, and read only the recaps.</strong></p>
+<pre><code class="language-console">$ ansible-playbook site.yml
+TASK [app : Unit file] ***
+[ERROR]: The requested handler 'restart app' was not found in either the main handlers list nor in the listening handlers list
+$ ansible-playbook site.yml | tail -2
+web01                      : ok=6    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+</code></pre>
+<p>The first run fails; the second, immediately after, is green with <code>changed=2</code>. Two facts: the handler
+name is wrong but only fails when something changes, and a second run on an unchanged machine still
+changes two things — the playbook is not idempotent.</p>
+<p><strong>2. Find which tasks change on a run that should change nothing.</strong></p>
+<pre><code class="language-console">$ ansible-playbook site.yml | grep -B1 changed:
+TASK [app : Log level] ***
+changed: [web01]
+TASK [app : Restart the app] ***
+changed: [web01]
+</code></pre>
+<p>A <code>shell</code> append and a <code>command</code> restart. Look at what the first one has been doing:</p>
+<pre><code class="language-console">$ ansible web -b -m command -a &quot;cat /etc/app/app.env&quot;
+web01 | CHANGED | rc=0 &gt;&gt;
+LOG_LEVEL=info
+PORT=8081
+LOG_LEVEL=info
+LOG_LEVEL=info
+</code></pre>
+<p>(<code>CHANGED</code> there is the ad-hoc <code>command</code> module saying what it always says; it changed nothing.)</p>
+<p><strong>3. Ask check mode, and notice what it does not say.</strong></p>
+<pre><code class="language-console">$ ansible-playbook site.yml --check --diff | grep -A1 'Log level\|Restart the app'
+TASK [app : Log level] ***
+skipping: [web01]
+TASK [app : Restart the app] ***
+skipping: [web01]
+</code></pre>
+<p>Check mode skips both culprits, so it cannot be the tool that finds them. The recap of two real runs
+already has.</p>
+<p><strong>4. Reproduce “the port sometimes does not take”.</strong></p>
+<pre><code class="language-console">$ ansible-playbook site.yml -e app_port=8082 | tail -1
+web01                      : ok=6    changed=3    …
+$ ansible web -b -m command -a &quot;cat /etc/app/app.env&quot;
+LOG_LEVEL=info
+PORT=8081
+LOG_LEVEL=info
+LOG_LEVEL=info
+LOG_LEVEL=info
+PORT=8082
+</code></pre>
+<p><code>lineinfile</code> without <code>regexp</code> appended a second <code>PORT=</code>. Which one the service uses depends on how it
+reads the file — for systemd’s <code>EnvironmentFile=</code> the last assignment wins, for another program perhaps
+the first. “Sometimes does not take” is a precise description.</p>
+<p><strong>5. Try the obvious fix, and watch it be half right.</strong> Adding <code>regexp: &quot;^PORT=&quot;</code> and
+<code>regexp: &quot;^LOG_LEVEL=&quot;</code> and running with the original port:</p>
+<pre><code class="language-console">$ ansible-playbook site.yml --diff
+TASK [app : Log level] ***
+ok: [web01]
+TASK [app : Port] ***
+@@ -3,4 +3,4 @@
+ LOG_LEVEL=info
+ LOG_LEVEL=info
+ LOG_LEVEL=info
+-PORT=8082
++PORT=8081
+changed: [web01]
+$ ansible web -b -m command -a &quot;cat /etc/app/app.env&quot;
+LOG_LEVEL=info
+PORT=8081
+LOG_LEVEL=info
+LOG_LEVEL=info
+LOG_LEVEL=info
+PORT=8081
+</code></pre>
+<p>Only the last match changed. The task is idempotent now, and the file is still wrong — idempotence
+means the playbook stops making it worse, not that it repairs what is already there.</p>
+<p><strong>6. Own the file, fix the handler, delete the restart task.</strong></p>
+<pre><code class="language-yaml">- name: Environment file
+  ansible.builtin.template:
+    src: app.env.j2
+    dest: /etc/app/app.env
+    mode: &quot;0644&quot;
+  notify: Restart app            # exactly the handler's name
+
+- name: Unit file
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/app.service
+    content: |
+      …
+    mode: &quot;0644&quot;
+  notify: Restart app
+
+- name: App is enabled and running
+  ansible.builtin.systemd_service:
+    name: app
+    enabled: true
+    state: started
+</code></pre>
+<p>The first run with it replaces the file (the <code>--diff</code> above shows six lines becoming three), enables
+the service, and runs the handler once at the end.</p>
+<p><strong>7. The proof: run it again, and in check mode.</strong></p>
+<pre><code class="language-console">$ ansible-playbook site.yml | tail -1
+web01                      : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+$ ansible-playbook site.yml --check | tail -1
+web01                      : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+</code></pre>
+<p><code>changed=0</code> twice, and check mode now agrees with reality because there is no task left that it has to
+skip.</p>
+<p><strong>8. Close the last hole: a failure between the change and the restart.</strong> With a template that sets
+<code>debug</code> followed by a task that fails, the file changed and the service was not restarted; running the
+same play again reported <code>changed=0</code> and restarted nothing. The service stayed on the old
+configuration with a green recap. For plays that change running services, run with
+<code>--force-handlers</code>, or put <code>meta: flush_handlers</code> directly after the tasks whose restart must not be
+lost.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Trusting a green run.</strong> Green means no task failed. It does not mean the machine is in the described
+state, and it does not mean the playbook is idempotent. <code>changed=0</code> on a second run is the evidence.</p>
+<p><strong><code>shell: echo … &gt;&gt; file</code>.</strong> It reports <code>changed</code> every run because it is changing something every
+run. Use <code>template</code> for a file you own, <code>lineinfile</code> with <code>regexp</code> for one line in a file you do not.</p>
+<p><strong><code>lineinfile</code> without <code>regexp</code> for a value that changes.</strong> It matches the whole line, so a new value is
+a new line. And with <code>regexp</code>, remember that only the last match is replaced — it will not clean up a
+file that already has duplicates.</p>
+<p><strong>Restarting in the task list.</strong> <code>command: systemctl restart app</code> restarts on every run and reports
+<code>changed</code> every time. Notify a handler.</p>
+<p><strong>Fixing a handler error by re-running.</strong> The second run is green because nothing changed, not because
+the name matches. Handler names are case-sensitive; check them against the handler file, or use
+<code>listen:</code>.</p>
+<p><strong>Assuming the next run will do the restart a failed run missed.</strong> The notification was lost with the
+run. The next run sees the file already correct, notifies nothing and reports <code>changed=0</code>.
+<code>--force-handlers</code>, <code>meta: flush_handlers</code>, or restart by hand and verify.</p>
+<p><strong>Reading a clean <code>--check</code> as a clean playbook.</strong> <code>shell</code> and <code>command</code> tasks are skipped in check mode,
+so the most dangerous tasks are the ones it never evaluates.</p>
+<p><strong><code>changed_when: false</code> on a command that does change things</strong>, to make the recap quiet. The recap is
+then accurate about nothing. Use it for read-only commands only.</p>
+<p><strong>Putting overridable values in <code>vars/main.yml</code>.</strong> Role vars outrank inventory, so the user of the role
+cannot override them from <code>group_vars</code>. Values meant to be overridden go in <code>defaults/main.yml</code>.</p>
+<p><strong>Passing numbers with <code>-e key=value</code>.</strong> They arrive as strings. Pass JSON (<code>-e '{&quot;app_port&quot;: 9999}'</code>)
+when the type matters.</p>
+<h2>Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>every run reports <code>changed</code> for the same tasks</td>
+<td><code>command</code>/<code>shell</code> tasks with no <code>creates</code>, <code>removes</code> or <code>changed_when</code></td>
+<td><code>ansible-playbook -v</code>; the tasks marked changed on a second run</td>
+</tr>
+<tr>
+<td>a line appears in a file twice, or keeps being rewritten</td>
+<td><code>lineinfile</code> with a <code>regexp</code> that does not match the line it writes</td>
+<td><code>--check --diff</code> on a converged host</td>
+</tr>
+<tr>
+<td>a service is not restarted after its configuration changed</td>
+<td>the handler was never notified, or the play failed before handlers ran</td>
+<td><code>-v</code> output for <code>RUNNING HANDLER</code>; <code>--force-handlers</code></td>
+</tr>
+<tr>
+<td>a variable has a different value than the inventory says</td>
+<td>a higher-precedence source wins: play <code>vars</code>, <code>set_fact</code>, <code>-e</code></td>
+<td><code>ansible -m debug -a var=NAME HOST</code>; the precedence list</td>
+</tr>
+<tr>
+<td><code>--check</code> passes, the real run fails</td>
+<td>a task depends on a result that check mode could not produce</td>
+<td>tasks with <code>check_mode: false</code>, or registered results in check mode</td>
+</tr>
+<tr>
+<td>a deploy waits for a password and never finishes</td>
+<td>vault, <code>become</code> or SSH asking on a terminal the job does not have</td>
+<td><code>ansible.cfg</code>: <code>ask_vault_pass</code>, <code>become_ask_pass</code>; the job’s arguments</td>
+</tr>
+</tbody>
+</table>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># the two tests that matter
+ansible-playbook site.yml &amp;&amp; ansible-playbook site.yml | tail -1     # second run: changed=0
+ansible-playbook site.yml --check --diff                              # what would change, as a diff
+#   (shell/command tasks are SKIPPED in check mode; check_mode: false to run read-only ones)
+
+# narrowing down
+ansible-playbook site.yml | grep -B1 changed:     # which tasks change on a no-op run
+ansible-playbook site.yml --list-tasks
+ansible-playbook site.yml --start-at-task &quot;Environment file&quot;
+ansible-playbook site.yml -l web01 -v             # one host, more output
+ansible web -m ping ; ansible web -b -m command -a &quot;cat /etc/app/app.env&quot;   # ad hoc
+
+# handlers
+# notify: Restart app          ← must equal the handler's name exactly (or use listen:)
+ansible-playbook site.yml --force-handlers        # run notified handlers even if the play fails
+# - ansible.builtin.meta: flush_handlers          ← run pending handlers now, mid-play
+
+# modules that own state instead of commands that guess
+# template            a whole file you own (with {{ ansible_managed }} at the top)
+# lineinfile + regexp one line in a file someone else owns (replaces the LAST match only)
+# systemd_service     enabled / state: started|restarted, daemon_reload
+# command/shell       creates:, removes:, changed_when:, register: + when:
+
+# variables, low to high (the four that bite)
+# roles/x/defaults/main.yml &lt; inventory group_vars &lt; play vars: &lt; -e (extra vars, strings!)
+# roles/x/vars/main.yml outranks inventory — do not put overridable values there
+ansible-playbook site.yml -e '{&quot;app_port&quot;: 9999}'   # JSON keeps the type
+ansible web -m ansible.builtin.debug -a &quot;var=app_port&quot;
+</code></pre>
+<h2>Exercises</h2>
+<ol>
+<li>Run a playbook twice and count <code>changed</code> on the second run; make every task report <code>ok</code> without
+removing any.</li>
+<li>Write a <code>lineinfile</code> task whose <code>regexp</code> does not match its own <code>line</code>, run it three times, and read
+the file.</li>
+<li>Define the same variable in group_vars, host_vars, the play’s <code>vars</code> and <code>-e</code>, and print it with the
+<code>debug</code> module after removing each in turn.</li>
+<li>Make a configuration change that notifies a handler, then make a later task fail. Did the handler
+run? Try again with <code>--force-handlers</code>.</li>
+<li>Run a play that registers a command’s output and uses it, with <code>--check</code>. Which task breaks, and how
+does <code>check_mode: false</code> on the first one change that?</li>
+</ol>
+<h2>Sources</h2>
+<ul>
+<li>Variables and their precedence: https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html</li>
+<li>Handlers: https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html</li>
+<li>Check mode and diff: https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html</li>
+<li>Vault passwords without a terminal: https://docs.ansible.com/ansible/latest/vault_guide/vault_managing_passwords.html</li>
+<li><code>ansible-doc lineinfile</code>, <code>ansible-doc command</code> — every option, on the machine itself.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A playbook reports <code>changed=2</code> on a second run immediately after the first. What does that tell you,
+and what is the most likely cause?</p>
+<blockquote>
+<p>The playbook is not idempotent: on a machine already in the desired state it still claims — or
+makes — changes. The usual cause is <code>shell</code> or <code>command</code> tasks, which Ansible cannot compare
+against state and therefore always report as changed (and which may really be changing things,
+like appending a line on every run).</p>
+</blockquote>
+</li>
+<li>
+<p>You replace <code>lineinfile: line: &quot;PORT={{ app_port }}&quot;</code> with the same task plus <code>regexp: &quot;^PORT=&quot;</code>. The
+file already contains <code>PORT=8081</code> twice. What happens, and what is the better fix?</p>
+<blockquote>
+<p>Only the last matching line is replaced; the earlier duplicate stays, so the task becomes
+idempotent while the file remains wrong. For a file the role owns, use <code>template</code> to state the whole
+file, which removes duplicates and hand edits on the next run.</p>
+</blockquote>
+</li>
+<li>
+<p>A play fails with <em>The requested handler ‘restart app’ was not found</em>. You run it again and it
+succeeds. Is the bug fixed?</p>
+<blockquote>
+<p>No. The first run changed the file and fired the notification, which failed on the name (handler
+names are case-sensitive: <code>restart app</code> ≠ <code>Restart app</code>). The second run changed nothing, so nothing
+notified and nothing failed. The error returns on the next run that changes that file.</p>
+</blockquote>
+</li>
+<li>
+<p>A template changes a service’s configuration, a later task fails, and the next run of the playbook
+reports <code>changed=0</code>. Is the service running with the new configuration?</p>
+<blockquote>
+<p>No. Handlers run at the end of the play, so the failure prevented the restart, and the notification
+was not saved. On the next run the template finds the file already correct, reports <code>ok</code>, notifies
+nothing — the restart is lost. Use <code>--force-handlers</code> or <code>meta: flush_handlers</code>, or restart and
+verify by hand.</p>
+</blockquote>
+</li>
+<li>
+<p>Why can <code>ansible-playbook --check</code> report a clean run for a playbook that appends to a file on every
+real run?</p>
+<blockquote>
+<p>Modules that cannot predict their effect — <code>shell</code> and <code>command</code> — are skipped in check mode. The
+appending task never runs, so check mode has nothing to report about it.</p>
+</blockquote>
+</li>
+<li>
+<p><code>app_port</code> is 8080 in role defaults, 8081 in <code>group_vars/web.yml</code>, and 9000 in the play’s <code>vars:</code>.
+Which value does the play use, and what changes with <code>-e app_port=9999</code>?</p>
+<blockquote>
+<p>9000: play <code>vars:</code> beat inventory <code>group_vars</code>, which beat role defaults. <code>-e</code> beats all of them,
+but a <code>key=value</code> extra var is a string, <code>&quot;9999&quot;</code>; pass JSON (<code>-e '{&quot;app_port&quot;: 9999}'</code>) to keep
+it an integer.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between <code>roles/app/defaults/main.yml</code> and <code>roles/app/vars/main.yml</code>, and
+which one should hold a value users of the role are expected to change?</p>
+<blockquote>
+<p>Defaults have the lowest precedence of anything, so inventory and play variables override them;
+role vars sit above inventory and are hard to override. Overridable values belong in <code>defaults/</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Why should a service restart be a handler rather than a <code>command: systemctl restart</code> task?</p>
+<blockquote>
+<p>As a task it runs on every play, always reports <code>changed</code>, and restarts a healthy service for
+nothing. As a handler it runs once, at the end, and only when a task that affects the service
+actually changed something.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

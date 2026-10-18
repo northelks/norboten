@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Five settings levels, one winner per key, and a policy only if it can be read</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Five settings levels, one winner per key, and a policy only if it can be read</h1>
+  <div class="meta">claude-code, linux-basics · 40 minutes · 1834 words</div>
+</header>
+<p>Claude Code reads its configuration from up to five places, and on a shared machine each belongs to
+someone different: the security team owns the managed policy, whoever runs a session owns the command
+line, a developer owns their local project settings, the team owns the committed project settings,
+and each user owns their own. When they disagree, Claude Code does not ask; it applies fixed rules.
+Knowing those rules is the difference between “we set that” and “that is in effect”.</p>
+<p>This machine has three agreements, and each is defeated by a different rule. The security policy is
+in a directory Claude Code never reads, and even in the right one it would be unreadable to the users
+it governs. The team’s model is overridden by a personal settings file somebody committed. And the
+coding conventions are imported by a name that differs from the file’s in one letter’s case.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>List the settings levels in order and say, for a given key, which one wins.</li>
+<li>Tell scalar keys, which override, from list keys such as permission rules, which merge.</li>
+<li>Install a managed policy on Linux where Claude Code reads it, with permissions that let it be read.</li>
+<li>Keep personal settings and personal memory files out of a repository.</li>
+<li>Predict what a <code>CLAUDE.md</code> import loads, and find out when it loads nothing.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>The levels</h3>
+<p>Highest precedence first:</p>
+<table>
+<thead>
+<tr>
+<th>level</th>
+<th>where</th>
+<th>owned by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>managed</td>
+<td><code>/etc/claude-code/managed-settings.json</code> on Linux (macOS: <code>/Library/Application Support/ClaudeCode/</code>), or MDM / server-managed</td>
+<td>an administrator</td>
+</tr>
+<tr>
+<td>command line</td>
+<td><code>--model</code>, <code>--permission-mode</code>, <code>--allowedTools</code>, <code>--settings &lt;file&gt;</code></td>
+<td>whoever starts the session</td>
+</tr>
+<tr>
+<td>local project</td>
+<td><code>.claude/settings.local.json</code></td>
+<td>one developer, on one machine</td>
+</tr>
+<tr>
+<td>shared project</td>
+<td><code>.claude/settings.json</code></td>
+<td>the team, committed</td>
+</tr>
+<tr>
+<td>user</td>
+<td><code>~/.claude/settings.json</code></td>
+<td>the user, for every project</td>
+</tr>
+</tbody>
+</table>
+<p>Two rules decide the result:</p>
+<ul>
+<li><strong>Scalar keys</strong> — <code>model</code>, <code>permissions.defaultMode</code>, <code>outputStyle</code> — come from the highest level
+that sets them. Everything below is ignored for that key.</li>
+<li><strong>List keys merge.</strong> <code>permissions.allow</code>, <code>permissions.deny</code>, hooks and similar lists from every
+level are combined. For permissions, deny is evaluated first across all of them, so a deny at any
+level cannot be undone by an allow at another — including one on the command line.</li>
+</ul>
+<p>Verified in the lab image for <code>model</code>: user <code>sonnet</code>, project <code>haiku</code>, local <code>opus</code> requests Opus;
+without the local file, Haiku; with <code>--model haiku</code> on the command line, Haiku.</p>
+<p><code>--setting-sources user,project,local</code> chooses which of the file levels load at all; managed settings
+always load. Environment variables are not a level: the <code>env</code> block in a settings file is just a key,
+merged like the others.</p>
+<h3>Managed settings are read by the user</h3>
+<p>Claude Code is an ordinary process running as whoever started it. It reads the managed file with that
+user’s permissions. A policy file owned by root with mode <code>0600</code> cannot be read by anyone else, and
+Claude Code 2.1.270 says so on stderr and carries on without it:</p>
+<pre><code>Managed settings failed to load; policies from the failed source are NOT in effect:
+  /etc/claude-code/managed-settings.json: Settings file could not be read: EACCES: permission denied
+</code></pre>
+<p>A policy is not a secret. The correct mode is <code>0644</code>, owned by root: everyone can read it, nobody but
+root can change it. A file in the wrong directory — <code>/etc/claude/</code>, <code>/etc/claude-code.d/</code> — is not an
+error at all: nothing reads it, and nothing says so.</p>
+<p>Managed settings can also restrict the other levels: <code>allowManagedPermissionRulesOnly</code> keeps
+everyone else’s allow rules from merging in, <code>allowManagedHooksOnly</code> runs only the organisation’s
+hooks. A machine that must not run <code>--dangerously-skip-permissions</code> sets
+<code>permissions.disableBypassPermissionsMode</code> to <code>&quot;disable&quot;</code> in its managed file. Besides
+<code>managed-settings.json</code>, the same directory may hold a <code>managed-settings.d/</code> of drop-ins and a
+<code>managed-mcp.json</code>.</p>
+<h3>A deny that names a tool removes it</h3>
+<p><code>&quot;deny&quot;: [&quot;WebFetch&quot;]</code> — a tool name with no specifier — takes the tool out of the session. The model
+is not offered it, and a call fails as “No such tool available: WebFetch”, exactly as with <code>--tools</code>.
+<code>&quot;deny&quot;: [&quot;Read(~/.ssh/**)&quot;]</code> keeps the Read tool and refuses matching paths; it also refuses shell
+commands that name such a path (<code>cat ~/.ssh/id_ed25519</code>). <code>~/</code> in a rule means the home directory of
+the user running the session, so one managed rule protects every user’s keys.</p>
+<h3>Personal files and git</h3>
+<p>Two files in a project are personal by design: <code>.claude/settings.local.json</code> and <code>CLAUDE.local.md</code>.
+Claude Code adds the local settings file to git’s global excludes only when Claude Code itself creates
+it (for example when you answer “don’t ask again” to a prompt). A file created by hand, or copied from
+a colleague, is an ordinary file to git, and <code>git add -A</code> commits it. Once committed, the local level —
+which outranks the team’s file — applies to everyone who pulls.</p>
+<h3>CLAUDE.md and imports</h3>
+<p>Memory files load broad to specific and are <strong>concatenated</strong>, not overridden: managed
+(<code>/etc/claude-code/CLAUDE.md</code>), user (<code>~/.claude/CLAUDE.md</code>), the project’s <code>CLAUDE.md</code> or
+<code>.claude/CLAUDE.md</code> in the working directory and every parent, and <code>CLAUDE.local.md</code>. A line
+<code>@path/to/file</code> imports another file, resolved relative to the importing file, up to four hops deep.</p>
+<p>An import that names a file which does not exist adds nothing and warns about nothing. On Linux paths
+are case-sensitive, so <code>@docs/conventions.md</code> does not load <code>docs/CONVENTIONS.md</code> (on a default macOS
+filesystem it would — a way for this bug to pass on a laptop and fail on the build machine). An import
+inside backticks is text, not an import. All three were verified in the lab image.</p>
+<p>The transcript under <code>~/.claude/projects/&lt;project&gt;/</code> shows what was sent, <code>CLAUDE.md</code> included; the
+interactive <code>/memory</code> command lists the files that loaded.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed in the lab container (Claude Code 2.1.270, the scripted model). A session with every tool
+allowed on the command line, as a developer might start one:</p>
+<pre><code class="language-console">$ claude -p &quot;Get ready for the deploy&quot; --allowedTools &quot;WebFetch,Read,Bash&quot; --output-format json 2&gt;/tmp/err \
+    | jq -c '{num_turns, permission_denials, model: (.modelUsage|keys)}'
+{&quot;num_turns&quot;:3,&quot;permission_denials&quot;:[],&quot;model&quot;:[&quot;claude-opus-5&quot;]}
+$ jq -r 'select(.type==&quot;user&quot;) | .message.content[]? | select(.type==&quot;tool_result&quot;)
+         | .content | if type==&quot;array&quot; then .[0].text else . end' &quot;$(ls -t ~/.claude/projects/-home-learner-platform/*.jsonl | head -1)&quot;
+getaddrinfo ENOTFOUND docs.example.org
+-----BEGIN OPENSSH PRIVATE KEY-----
+73e5ec49b3b31f1e8f53d668adefc2f739fafe81d9150d92
+-----END OPENSSH PRIVATE KEY-----
+</code></pre>
+<p>WebFetch was attempted (it failed only because the address does not resolve), the key was printed, and
+the session ran on Opus. The policy exists — in the wrong place, with a mode only root can read:</p>
+<pre><code class="language-console">$ ls -l /etc/claude*/
+-rw------- 1 root root 108 Sep 14 19:49 managed-settings.json
+$ sudo cat /etc/claude/managed-settings.json
+{ &quot;permissions&quot;: { &quot;deny&quot;: [&quot;WebFetch&quot;, &quot;WebSearch&quot;, &quot;Read(~/.ssh/**)&quot;] } }
+</code></pre>
+<p>Moving it to <code>/etc/claude-code/</code> turns silence into an error message, which is progress:</p>
+<pre><code class="language-console">$ sudo mkdir -p /etc/claude-code &amp;&amp; sudo mv /etc/claude/managed-settings.json /etc/claude-code/
+$ claude -p &quot;Get ready&quot; --allowedTools &quot;WebFetch,Read,Bash&quot; --output-format json 2&gt;/tmp/err | jq -c '{permission_denials}'
+{&quot;permission_denials&quot;:[]}
+$ cat /tmp/err
+Managed settings failed to load; policies from the failed source are NOT in effect:
+  /etc/claude-code/managed-settings.json: Settings file could not be read: EACCES: permission denied, open '/etc/claude-code/managed-settings.json'
+</code></pre>
+<p>With mode <code>0644</code>:</p>
+<pre><code class="language-console">$ sudo chmod 644 /etc/claude-code/managed-settings.json &amp;&amp; sudo rmdir /etc/claude
+$ claude -p &quot;Get ready&quot; --allowedTools &quot;WebFetch,Read,Bash&quot; --output-format json 2&gt;/tmp/err \
+    | jq -c '{denials: [.permission_denials[] | .tool_name]}'
+{&quot;denials&quot;:[&quot;Bash&quot;]}
+$ jq -r '… tool results …' &quot;$(ls -t ~/.claude/projects/-home-learner-platform/*.jsonl | head -1)&quot;
+&lt;tool_use_error&gt;Error: No such tool available: WebFetch. WebFetch is disabled for this session, …
+Permission to use Bash with command cat ~/.ssh/id_ed25519 has been denied.
+</code></pre>
+<p>WebFetch no longer exists in the session despite <code>--allowedTools</code>, and <code>cat</code> of the key is refused.
+Next, the model. Every level that sets it:</p>
+<pre><code class="language-console">$ for f in ~/.claude/settings.json .claude/settings.json .claude/settings.local.json; do printf '%s: ' $f; jq -c . $f; done
+/home/learner/.claude/settings.json: {&quot;model&quot;:&quot;sonnet&quot;}
+.claude/settings.json: {&quot;model&quot;:&quot;haiku&quot;}
+.claude/settings.local.json: {&quot;model&quot;:&quot;opus&quot;}
+$ git ls-files .claude
+.claude/settings.json
+.claude/settings.local.json
+</code></pre>
+<p>The local file wins, and it is committed, so it wins for everyone. Remove it from the index and the
+disk, and ignore both personal files:</p>
+<pre><code class="language-console">$ git rm -q --cached .claude/settings.local.json &amp;&amp; rm .claude/settings.local.json
+$ printf '.claude/settings.local.json\nCLAUDE.local.md\n' &gt;&gt; .gitignore
+$ git check-ignore -v .claude/settings.local.json
+.gitignore:1:.claude/settings.local.json	.claude/settings.local.json
+</code></pre>
+<p>Last, the conventions. The transcript contains <code>CLAUDE.md</code> word for word, including the import line —
+and nothing from the conventions file:</p>
+<pre><code class="language-console">$ grep -o &quot;Follow the team.s conventions:[^\&quot;]*&quot; &quot;$s&quot; | head -1
+Follow the team's conventions:\n@docs/conventions.md
+$ grep -c &quot;rev &quot; &quot;$s&quot;
+0
+$ ls docs
+CONVENTIONS.md
+$ sed -i 's|^@docs/conventions.md$|@docs/CONVENTIONS.md|' CLAUDE.md
+$ claude -p hi --output-format json &gt;/dev/null 2&gt;&amp;1
+$ grep -o &quot;# Conventions (rev [0-9a-f]*)&quot; &quot;$(ls -t ~/.claude/projects/-home-learner-platform/*.jsonl | head -1)&quot; | head -1
+# Conventions (rev 4dbedac7)
+</code></pre>
+<p>Commit the <code>.gitignore</code>, the removal and the import. The grader:</p>
+<pre><code>PASS 01_the_machine_policy_holds_everywhere: In both directories, with every tool allowed on the command line,
+     the web tools were refused and the key stayed private.
+PASS 02_the_team_model_is_used: A session in ~/platform runs on claude-haiku-4-5-20251001.
+PASS 03_personal_settings_stay_out_of_git: Personal settings are neither tracked nor able to be added by accident.
+PASS 04_the_conventions_reach_the_model: The conventions reach the model with CLAUDE.md.
+</code></pre>
+<h2>Common wrong turns</h2>
+<p><strong>Testing the policy with <code>sudo claude</code>.</strong> root can read a <code>0600</code> file, so the policy “works”. Test as
+the users it governs.</p>
+<p><strong>Making the policy file <code>0666</code> “so it can be read”.</strong> Now anyone can rewrite the policy — or empty it.
+<code>0644</code>, owned by root.</p>
+<p><strong>Putting the policy in the user’s <code>~/.claude/settings.json</code>.</strong> The user can edit it, and it is the
+lowest level; any project can override its scalar keys. Company policy is managed settings.</p>
+<p><strong>Setting <code>&quot;model&quot;: &quot;haiku&quot;</code> in the user settings to beat the local file.</strong> User settings are the lowest
+level. The local file has to go.</p>
+<p><strong>Deleting the local file without ignoring it.</strong> The next “don’t ask again” or copied snippet recreates
+it, and <code>git add -A</code> commits it again.</p>
+<p><strong>Renaming <code>docs/CONVENTIONS.md</code> to lower case on a Mac.</strong> On a case-insensitive filesystem <code>git mv</code>
+needs two steps, and a plain rename may not register as a change at all. Fixing the import line is the
+smaller change.</p>
+<p><strong>Expecting a warning for a broken import.</strong> There is none. Check the transcript, or <code>/memory</code> in an
+interactive session.</p>
+<p><strong>Denying <code>Read(/home/learner/.ssh/**)</code>.</strong> It protects one user. <code>Read(~/.ssh/**)</code> in managed settings
+protects whoever runs the session.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># every level, for one key
+for f in /etc/claude-code/managed-settings.json ~/.claude/settings.json \
+         .claude/settings.json .claude/settings.local.json; do
+  [ -r &quot;$f&quot; ] &amp;&amp; printf '%s: %s\n' &quot;$f&quot; &quot;$(jq -c '{model, permissions}' &quot;$f&quot;)&quot;
+done
+claude -p hi --output-format json 2&gt;&amp;1 &gt;/dev/null | head    # &quot;Managed settings failed to load…&quot;
+
+# managed policy on Linux: readable by all, writable by root
+sudo install -d -m 755 /etc/claude-code
+sudo install -m 644 -o root -g root policy.json /etc/claude-code/managed-settings.json
+{
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [&quot;WebFetch&quot;, &quot;WebSearch&quot;, &quot;Read(~/.ssh/**)&quot;],
+    &quot;disableBypassPermissionsMode&quot;: &quot;disable&quot;
+  }
+}
+
+# which model a session asks for
+claude -p hi --output-format json | jq '.modelUsage | keys'
+
+# personal files
+git ls-files .claude CLAUDE.local.md
+git rm --cached .claude/settings.local.json
+printf '.claude/settings.local.json\nCLAUDE.local.md\n' &gt;&gt; .gitignore
+git check-ignore -v .claude/settings.local.json
+
+# memory and imports
+grep -n '^@' CLAUDE.md                      # imports: relative to this file, case-sensitive
+s=$(ls -t ~/.claude/projects/&lt;project&gt;/*.jsonl | head -1); grep -c 'a phrase from the import' &quot;$s&quot;
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Claude Code in a job</em> (topic journal <code>claude-code</code>) — What a session loads</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://code.claude.com/docs/en/settings</li>
+<li>https://git-scm.com/docs/gitignore</li>
+<li>https://code.claude.com/docs/en/memory</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>Claude Code in a job</em> (<code>claude-code</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>List the five settings levels from highest to lowest precedence.</p>
+<blockquote>
+<p>Managed, command line, local project (<code>.claude/settings.local.json</code>), shared project
+(<code>.claude/settings.json</code>), user (<code>~/.claude/settings.json</code>).</p>
+</blockquote>
+</li>
+<li>
+<p>User settings say <code>sonnet</code>, the project file <code>haiku</code>, the local project file <code>opus</code>. Which model
+does a session in the project request, and what would make it Haiku without touching any file?</p>
+<blockquote>
+<p>Opus — the local file is the highest level that sets <code>model</code>. Starting the session with
+<code>--model haiku</code>, since the command line outranks all three files.</p>
+</blockquote>
+</li>
+<li>
+<p>A deny rule in the project file and an allow rule for the same tool on the command line: which
+applies, and why is that not a contradiction of question 2?</p>
+<blockquote>
+<p>The deny. Permission rules are lists that merge across levels, and deny is evaluated first; only
+scalar keys such as <code>model</code> are taken from the single highest level.</p>
+</blockquote>
+</li>
+<li>
+<p>The managed policy is <code>/etc/claude-code/managed-settings.json</code>, root-owned, mode <code>0600</code>. What does a
+user’s session do, and what is the correct mode?</p>
+<blockquote>
+<p>It cannot read the file, reports “Managed settings failed to load; policies … are NOT in effect”,
+and runs without the policy. <code>0644</code>, owned by root.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>&quot;deny&quot;: [&quot;WebFetch&quot;]</code> do that <code>&quot;deny&quot;: [&quot;WebFetch(domain:example.org)&quot;]</code> does not?</p>
+<blockquote>
+<p>The bare name removes the tool from the session entirely (a call fails as “No such tool
+available”); a rule with a specifier leaves the tool and refuses only matching calls.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did a committed <code>.claude/settings.local.json</code> change the model for the whole team, and why did
+git not ignore it?</p>
+<blockquote>
+<p>The local level outranks the shared project file, and once committed everyone pulls it. Claude
+Code adds it to git’s excludes only when Claude Code creates it; a hand-made copy is an ordinary
+file until <code>.gitignore</code> names it.</p>
+</blockquote>
+</li>
+<li>
+<p><code>CLAUDE.md</code> says <code>@docs/conventions.md</code> and the file is <code>docs/CONVENTIONS.md</code>. What happens on Linux,
+and why might it work on a developer’s Mac?</p>
+<blockquote>
+<p>On Linux the import finds no file and silently adds nothing. A default macOS filesystem is
+case-insensitive, so the same path resolves there.</p>
+</blockquote>
+</li>
+<li>
+<p>How can you confirm, after a headless run, that an imported file reached the model?</p>
+<blockquote>
+<p>Search the session transcript in <code>~/.claude/projects/&lt;project&gt;/&lt;session&gt;.jsonl</code> for a phrase that
+only the imported file contains (or use <code>/memory</code> interactively to list loaded files).</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

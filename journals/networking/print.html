@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resolves here, listens there, routes until Tuesday</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Resolves here, listens there, routes until Tuesday</h1>
+  <div class="meta">networking · 35 minutes · 2436 words</div>
+</header>
+<p>Most “network problems” on a server are not packets lost on a wire. They are questions answered by the
+wrong tool: a name that one program resolves and another says does not exist, a service that answers
+every request from the machine itself and none from anywhere else, a DNS server or a route that was
+correct when someone set it and gone after the next restart of something unrelated. Each has a precise
+cause, and each is found by asking the question the way the application asks it.</p>
+<p>This journal works through those on a Rocky Linux 10 lab machine managed by NetworkManager, and every
+output in it was recorded there — including one assumption of the author’s that turned out to be wrong
+when tested, which is noted where it happened.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Explain how a program turns a name into an address, and why <code>getent</code>, <code>ping</code> and <code>curl</code> can disagree
+with <code>dig</code> and <code>host</code>.</li>
+<li>Read <code>dig</code>’s answer and exit status correctly, and not mistake one for the other.</li>
+<li>Tell a service bound to loopback from one bound to all addresses, from <code>ss</code> alone.</li>
+<li>Set DNS servers and routes so they survive NetworkManager and a reboot, and know what happens to hand
+edits of <code>/etc/resolv.conf</code>.</li>
+<li>Ask the kernel which route and source address it will use for a destination.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Name resolution goes through NSS, not through DNS</h3>
+<p>Applications do not “query DNS”. They call the C library’s resolver (<code>getaddrinfo</code>), which follows the
+<code>hosts:</code> line in <code>/etc/nsswitch.conf</code>:</p>
+<pre><code class="language-console">$ grep '^hosts' /etc/nsswitch.conf
+hosts:      files  dns myhostname
+</code></pre>
+<p><code>files</code> is <code>/etc/hosts</code>, <code>dns</code> is the servers in <code>/etc/resolv.conf</code>, <code>myhostname</code> answers for the
+machine’s own name — in that order, first answer wins. So a name added to <code>/etc/hosts</code>:</p>
+<pre><code class="language-console">$ echo &quot;10.20.30.40 db.internal&quot; | sudo tee -a /etc/hosts
+</code></pre>
+<p>is a real name for every program that uses the resolver — and does not exist for the DNS tools, which
+talk to a DNS server directly and never read <code>/etc/hosts</code>:</p>
+<pre><code class="language-console">$ getent hosts db.internal ; echo &quot;getent=$?&quot;
+10.20.30.40     db.internal
+getent=0
+$ ping -c1 -W1 db.internal | head -1
+PING db.internal (10.20.30.40) 56(84) bytes of data.
+$ curl -s -m 2 http://db.internal/ ; echo &quot;curl=$?&quot;
+curl=28
+$ host db.internal ; echo &quot;host=$?&quot;
+Host db.internal not found: 3(NXDOMAIN)
+host=1
+$ dig +short db.internal ; echo &quot;dig=$?&quot;
+dig=0
+</code></pre>
+<p><code>ping</code> and <code>curl</code> resolved it (curl then timed out connecting — exit 28 is a connection timeout, not a
+name failure, which would be 6). <code>host</code> and <code>dig</code> said the name does not exist, because in DNS it does
+not. <strong><code>getent hosts NAME</code> answers the question the application asks</strong>; <code>dig</code> answers a narrower
+question about one DNS server. Use <code>dig</code> when the question really is about DNS — which record a server
+holds, TTLs, which server answered — and <code>getent</code> when the question is “what will my program connect
+to”.</p>
+<p>Note the last line: <strong><code>dig</code> exits 0 for a name that does not exist</strong>. Its exit status says whether it got
+an answer from a server, and NXDOMAIN is an answer. <code>+short</code> prints nothing and exits 0. A script that
+checks <code>dig +short NAME</code> for success is checking that the network is up, not that the name resolves.
+Read the status in the header (<code>dig NAME | grep status:</code>) or test for non-empty output.</p>
+<h3>Who writes <code>/etc/resolv.conf</code></h3>
+<pre><code class="language-console">$ cat /etc/resolv.conf
+# Generated by NetworkManager
+nameserver 192.168.5.3
+nameserver fec0::3
+</code></pre>
+<p>The first line is the warning. On this machine <code>systemd-resolved</code> is not running
+(<code>systemctl is-active systemd-resolved</code> → <code>inactive</code>), and NetworkManager writes the file from the active
+connection profiles — here from DHCP. A hand edit is not rejected; it is simply overwritten the next time
+NetworkManager regenerates the file. Tested on the lab machine:</p>
+<pre><code class="language-console">$ printf 'nameserver 192.168.5.99\n' | sudo tee /etc/resolv.conf
+$ sudo nmcli device reapply eth0 ; cat /etc/resolv.conf
+nameserver 192.168.5.99
+$ sudo systemctl restart NetworkManager ; cat /etc/resolv.conf
+# Generated by NetworkManager
+nameserver 192.168.5.3
+nameserver fec0::3
+</code></pre>
+<p>The edit survived a <code>reapply</code> and vanished at the next restart of NetworkManager — and it would vanish at
+a DHCP renewal or a reboot too. That is the most insidious kind of fix: it works long enough to be
+forgotten. Set DNS in the profile:</p>
+<pre><code class="language-console">$ con=$(nmcli -g GENERAL.CONNECTION device show eth0)        # &quot;cloud-init eth0&quot; here
+$ sudo nmcli connection modify &quot;$con&quot; ipv4.dns 192.168.5.3 ipv4.ignore-auto-dns yes \
+    ipv4.dns-search lab.internal
+$ sudo nmcli device reapply eth0 ; cat /etc/resolv.conf
+# Generated by NetworkManager
+search lab.internal
+nameserver 192.168.5.3
+nameserver fec0::3
+</code></pre>
+<p><code>ipv4.ignore-auto-dns yes</code> stops the DHCP-supplied servers being added to yours; without it you get both.
+The <code>fec0::3</code> line is still there because it comes from IPv6 autoconfiguration, which is a separate
+setting (<code>ipv6.ignore-auto-dns</code>). After a reboot the file was unchanged — this configuration lives in the
+profile.</p>
+<h3>Listening on loopback, or on everything</h3>
+<pre><code class="language-console">$ ss -lnt | grep 860
+LISTEN 0      5            0.0.0.0:8602      0.0.0.0:*
+LISTEN 0      5          127.0.0.1:8601      0.0.0.0:*
+</code></pre>
+<p>The <strong>local address</strong> column is the whole story. <code>127.0.0.1:8601</code> accepts connections only to the
+loopback address; <code>0.0.0.0:8602</code> accepts them on every IPv4 address the machine has. From the machine
+itself:</p>
+<pre><code class="language-console">$ curl -s -o /dev/null -m 2 -w '%{http_code}\n' http://127.0.0.1:8601/
+200
+$ curl -s -o /dev/null -m 2 -w '%{http_code} exit=%{exitcode}\n' http://192.168.5.15:8601/
+000 exit=7
+$ curl -s -o /dev/null -m 2 -w '%{http_code}\n' http://192.168.5.15:8602/
+200
+</code></pre>
+<p>The loopback-bound service refused a connection to the machine’s own network address (exit 7,
+connection refused) — exactly what a client on another host would get. This is the classic “it works on
+the server”: every test run <em>on</em> the server with <code>localhost</code> passes. Test with the address a client uses.</p>
+<p>Binding loopback is often deliberate — a database, a model server, anything that should be reached only
+through a local proxy (see the ai-01 journal). The mistake is not binding loopback; it is not knowing you
+did. And a connection from the machine to its own address travels over the loopback interface, so it
+tests the binding, not the firewall: firewalld’s zone rules apply to traffic arriving on <code>eth0</code> from
+elsewhere (see rhcsa-04).</p>
+<h3>Routes: ask the kernel</h3>
+<pre><code class="language-console">$ ip route
+default via 192.168.5.2 dev eth0 proto dhcp src 192.168.5.15 metric 100
+192.168.5.0/24 dev eth0 proto kernel scope link src 192.168.5.15 metric 100
+$ ip route get 10.20.30.40
+10.20.30.40 via 192.168.5.2 dev eth0 src 192.168.5.15 uid 501
+</code></pre>
+<p><code>ip route get</code> answers the only question that matters — for this destination, which gateway, which
+interface, which source address — using the same lookup the kernel uses for real traffic, including
+policy rules and metrics you might not have spotted in the table.</p>
+<p>A route added with <code>ip route add</code> is a change to the running kernel:</p>
+<pre><code class="language-console">$ sudo ip route add 10.99.0.0/16 via 192.168.5.2
+</code></pre>
+<p>Here the author expected a NetworkManager restart to remove it, tested that, and was wrong: after
+<code>systemctl restart NetworkManager</code> the route was still in the table — NetworkManager does not flush routes
+it did not create. A reboot did remove it. A route in the connection profile survived both:</p>
+<pre><code class="language-console">$ sudo nmcli connection modify &quot;$con&quot; +ipv4.routes &quot;10.20.30.0/24 192.168.5.2&quot;
+$ sudo nmcli device reapply eth0
+$ ip route | grep -E '10\.(20|99)'
+10.20.30.0/24 via 192.168.5.2 dev eth0 proto static metric 100
+10.99.0.0/16 via 192.168.5.2 dev eth0
+…after a reboot:
+10.20.30.0/24 via 192.168.5.2 dev eth0 proto static metric 100
+</code></pre>
+<p>The two lines even look different before the reboot: NetworkManager’s route carries <code>proto static metric 100</code>; the hand-added one has neither. That is how to spot a runtime-only route in a table before a reboot
+finds it for you.</p>
+<h2>A failure, walked through</h2>
+<p>An application on this server is configured to use <code>db.internal</code>. A new monitoring host cannot reach the
+application’s API on port 8601. On the server, the team says, “everything works”.</p>
+<p><strong>1. Reproduce the claim, then reproduce the client.</strong></p>
+<pre><code class="language-console">$ curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8601/
+200
+$ curl -s -o /dev/null -m 2 -w '%{http_code} exit=%{exitcode}\n' http://192.168.5.15:8601/
+000 exit=7
+</code></pre>
+<p>Works on loopback, refused on the address clients use.</p>
+<p><strong>2. Ask what is listening, and on which address.</strong></p>
+<pre><code class="language-console">$ ss -lntp | grep 8601
+LISTEN 0      5          127.0.0.1:8601      0.0.0.0:*
+</code></pre>
+<p>Bound to loopback only. The fix is in the application’s configuration (bind <code>0.0.0.0</code> or the specific
+address), and then the firewall has to allow the port — a separate step, because a local test cannot
+see the firewall.</p>
+<p><strong>3. Meanwhile, someone “found a DNS problem”.</strong></p>
+<pre><code class="language-console">$ dig +short db.internal ; echo &quot;exit=$?&quot;
+exit=0
+$ host db.internal
+Host db.internal not found: 3(NXDOMAIN)
+</code></pre>
+<p>Empty output with a zero exit, and NXDOMAIN. But the application does not ask DNS:</p>
+<pre><code class="language-console">$ grep '^hosts' /etc/nsswitch.conf
+hosts:      files  dns myhostname
+$ getent hosts db.internal
+10.20.30.40     db.internal
+</code></pre>
+<p>The name comes from <code>/etc/hosts</code>, and the application resolves it correctly. There is no DNS problem —
+there is a name that exists only on this one machine, which is its own risk: move the application and
+the name goes nowhere. If it should exist everywhere, it belongs in DNS.</p>
+<p><strong>4. Check the fixes from last week are real.</strong> The DNS server was “changed” by editing
+<code>/etc/resolv.conf</code>, and a route to the database network was “added”:</p>
+<pre><code class="language-console">$ head -1 /etc/resolv.conf
+# Generated by NetworkManager
+$ nmcli -g ipv4.dns,ipv4.ignore-auto-dns connection show &quot;$con&quot;
+…
+$ ip route | grep 10.20.30
+10.20.30.0/24 via 192.168.5.2 dev eth0
+</code></pre>
+<p>No <code>proto static</code> on the route: it was added with <code>ip</code>, and the next reboot removes it. Put both in the
+profile (<code>ipv4.dns</code>, <code>ipv4.ignore-auto-dns</code>, <code>+ipv4.routes</code>), reapply, and confirm the route now shows
+<code>proto static</code>.</p>
+<p><strong>5. Prove it with the restarts that matter.</strong> Restart NetworkManager and check <code>/etc/resolv.conf</code>; reboot
+and check <code>ip route</code>. On the lab machine the profile’s DNS servers and route survived both, the hand edit
+did not survive the NetworkManager restart, and the <code>ip</code>-added route did not survive the reboot.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Testing a name with <code>dig</code> or <code>host</code> and concluding the application cannot resolve it.</strong> They bypass
+<code>/etc/hosts</code> and NSS. <code>getent hosts NAME</code> resolves the way the application does.</p>
+<p><strong>Treating <code>dig</code>’s exit status as “the name exists”.</strong> It exits 0 on NXDOMAIN. Check <code>status:</code> in the
+header, or that <code>+short</code> printed something.</p>
+<p><strong>Editing <code>/etc/resolv.conf</code> on a NetworkManager machine.</strong> It lasts until NetworkManager rewrites the file
+— which on the lab machine was the next <code>systemctl restart NetworkManager</code>. Set <code>ipv4.dns</code> in the
+profile.</p>
+<p><strong>Forgetting <code>ipv4.ignore-auto-dns</code>.</strong> Your servers are added to the DHCP ones, not substituted for them,
+and which one answers depends on order.</p>
+<p><strong>Testing a service with <code>curl localhost</code>.</strong> A loopback-bound service passes that test and refuses every
+real client. Test with the address a client uses, and read the local-address column of <code>ss -lnt</code>.</p>
+<p><strong>Assuming a local test proves the firewall.</strong> Traffic to the machine’s own address goes over loopback.
+Test from another host, or read the zone’s rules.</p>
+<p><strong><code>ip route add</code> as a fix.</strong> It survives more than you might expect (a NetworkManager restart, on the lab
+machine) and not the reboot. <code>nmcli connection modify … +ipv4.routes</code>, and look for <code>proto static</code>.</p>
+<p><strong>Reading the route table instead of asking.</strong> <code>ip route get DEST</code> applies metrics, policy rules and the
+source-address choice for you.</p>
+<p><strong>Keeping important names in one machine’s <code>/etc/hosts</code>.</strong> They resolve on that machine only, and the next
+server built for the same job cannot find its database.</p>
+<h2>Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dig name</code> answers, <code>curl name</code> says it cannot resolve</td>
+<td>the name is in <code>/etc/hosts</code>, or NSS asks another source first or not at all</td>
+<td><code>getent hosts name</code>; the <code>hosts:</code> line of <code>/etc/nsswitch.conf</code></td>
+</tr>
+<tr>
+<td><code>curl name</code> works, <code>dig name</code> gets <code>NXDOMAIN</code></td>
+<td>the name exists only in <code>/etc/hosts</code> or a local resolver’s zone</td>
+<td><code>getent hosts name</code>; <code>dig @server name</code></td>
+</tr>
+<tr>
+<td>a DNS server you set by hand is gone after a reboot or a reconnect</td>
+<td>something else owns <code>/etc/resolv.conf</code> — NetworkManager or systemd-resolved</td>
+<td><code>ls -l /etc/resolv.conf</code>; <code>nmcli -f ipv4.dns connection show NAME</code></td>
+</tr>
+<tr>
+<td>a service answers <code>curl localhost:PORT</code> and times out from other machines</td>
+<td>it listens on <code>127.0.0.1</code>, or a firewall drops the port</td>
+<td><code>ss -ltnp 'sport = :PORT'</code>; the firewall’s rules</td>
+</tr>
+<tr>
+<td>connections to one network go out the wrong interface</td>
+<td>a more specific or lower-metric route elsewhere</td>
+<td><code>ip route get ADDRESS</code></td>
+</tr>
+<tr>
+<td>a route added with <code>ip route add</code> is gone the next day</td>
+<td>it was never in the connection profile</td>
+<td><code>nmcli -f ipv4.routes connection show NAME</code></td>
+</tr>
+<tr>
+<td>“connection refused” versus a timeout</td>
+<td>refused: something answered with a reset (nothing listens); timeout: nothing answered at all (a drop, or no route)</td>
+<td><code>ss -ltn</code>; the firewall; <code>ip route get</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># names, the way applications resolve them
+grep '^hosts' /etc/nsswitch.conf          # files dns myhostname — the order
+getent hosts NAME ; getent ahosts NAME    # through NSS: /etc/hosts, then DNS, …
+dig NAME ; dig +short NAME                # DNS only — exit 0 even for NXDOMAIN
+dig NAME | grep status:                   # NOERROR / NXDOMAIN / SERVFAIL
+dig @192.168.5.3 NAME                     # ask one specific server
+host NAME                                 # DNS only, exit 1 on NXDOMAIN
+
+# who configures DNS
+head -1 /etc/resolv.conf                  # &quot;Generated by NetworkManager&quot; = do not edit
+systemctl is-active systemd-resolved
+nmcli connection modify &quot;$con&quot; ipv4.dns &quot;A B&quot; ipv4.ignore-auto-dns yes ipv4.dns-search DOMAIN
+nmcli device reapply eth0
+
+# listening
+ss -lntp                                  # local address: 127.0.0.1 = loopback only, 0.0.0.0 = all IPv4
+ss -lnup                                  # UDP
+curl -m 2 http://CLIENT_FACING_ADDRESS:PORT/    # not localhost
+# curl exit: 6 cannot resolve, 7 refused, 28 timeout
+
+# routes
+ip route ; ip -6 route
+ip route get DEST                         # gateway, interface and source the kernel will use
+ip route add NET via GW                   # runtime only (gone at reboot)
+nmcli connection modify &quot;$con&quot; +ipv4.routes &quot;NET GW&quot; ; nmcli device reapply eth0
+# NetworkManager's routes show &quot;proto static metric N&quot;; hand-added ones do not
+
+# addresses
+ip -4 -br addr ; nmcli -g GENERAL.CONNECTION device show eth0
+</code></pre>
+<h2>Exercises</h2>
+<ol>
+<li>On a lab machine, add a name to <code>/etc/hosts</code> and compare <code>getent hosts</code>, <code>ping -c1</code>, <code>dig +short</code>
+and <code>host</code> for it. Which ones read the file, and why?</li>
+<li>Start <code>python3 -m http.server 8000 --bind 127.0.0.1</code>, then with <code>--bind 0.0.0.0</code>; read <code>ss -ltn</code> for
+each and connect from another machine or container. What does each state look like in <code>ss</code>?</li>
+<li>Set a DNS server with <code>nmcli connection modify … ipv4.dns</code>, then <code>nmcli connection up</code>, and read
+<code>/etc/resolv.conf</code> before and after. Then edit the file by hand and reconnect.</li>
+<li>Run <code>ip route get</code> for an address on the local network, for <code>1.1.1.1</code>, and for an address a more
+specific route covers. Which interface and source address does the kernel pick each time?</li>
+<li>Make a port refuse and a port time out (stop a service; drop a port in the firewall) and time
+<code>curl</code> against both. Which error does each produce?</li>
+</ol>
+<h2>Sources</h2>
+<ul>
+<li><code>man 5 nsswitch.conf</code>, <code>man 3 getaddrinfo</code> — how programs resolve names.</li>
+<li><code>man 5 resolv.conf</code> — the resolver’s configuration, and who is meant to write it.</li>
+<li><code>man 8 ss</code>, <code>man 8 ip-route</code> — sockets and routes, asked of the kernel.</li>
+<li><code>man 1 nmcli</code>, <code>man 5 nm-settings-nmcli</code> — connection profiles, and the properties that persist.</li>
+<li>NetworkManager’s nmcli reference: https://networkmanager.dev/docs/api/latest/nmcli.html</li>
+<li>The Linux man-pages project online: https://www.man7.org/linux/man-pages/man5/nsswitch.conf.5.html</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A name is in <code>/etc/hosts</code>. <code>ping NAME</code> works and <code>host NAME</code> says NXDOMAIN. Which one tells you what an
+application will do, and why do they differ?</p>
+<blockquote>
+<p><code>ping</code> — like <code>curl</code> and any program using <code>getaddrinfo</code> — resolves through NSS, which reads
+<code>/etc/hosts</code> first according to <code>/etc/nsswitch.conf</code>. <code>host</code> and <code>dig</code> query a DNS server directly and
+never read <code>/etc/hosts</code>. <code>getent hosts NAME</code> is the dedicated tool for the application’s view.</p>
+</blockquote>
+</li>
+<li>
+<p>A health script runs <code>dig +short db.example.com &amp;&amp; echo ok</code>. What does it actually test?</p>
+<blockquote>
+<p>That a DNS server answered. <code>dig</code> exits 0 even for NXDOMAIN, and <code>+short</code> then prints nothing, so the
+script prints <code>ok</code> for a name that does not exist. Check the <code>status:</code> line or test for non-empty
+output.</p>
+</blockquote>
+</li>
+<li>
+<p>You edit <code>/etc/resolv.conf</code> on a NetworkManager-managed machine. How long does the change last, and
+where should it be made?</p>
+<blockquote>
+<p>Until NetworkManager regenerates the file — on the lab machine it survived <code>nmcli device reapply</code> and
+was overwritten by the next NetworkManager restart; DHCP renewals and reboots do the same. Set
+<code>ipv4.dns</code> (and usually <code>ipv4.ignore-auto-dns yes</code>) in the connection profile and reapply.</p>
+</blockquote>
+</li>
+<li>
+<p><code>ss -lnt</code> shows <code>127.0.0.1:8601</code>. What does <code>curl http://127.0.0.1:8601/</code> prove, and what do clients on
+other machines get?</p>
+<blockquote>
+<p>It proves the service works over loopback only. The socket accepts connections to 127.0.0.1, so
+connections to the machine’s network address are refused (curl exit 7) — which is what every remote
+client gets.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is a test from the server to its own network address not a test of the firewall?</p>
+<blockquote>
+<p>Traffic from a machine to its own address is delivered over the loopback interface, so it never
+arrives on the external interface where the zone’s rules apply. It tests the service’s binding, not
+the firewall.</p>
+</blockquote>
+</li>
+<li>
+<p>A route was added with <code>ip route add</code> and a route was added with <code>nmcli connection modify +ipv4.routes</code>. How can you tell them apart in <code>ip route</code>, and which survives a reboot?</p>
+<blockquote>
+<p>The NetworkManager route shows <code>proto static metric 100</code>; the hand-added one shows neither. Only the
+profile’s route survives a reboot. (On the lab machine the <code>ip</code> route even survived a NetworkManager
+restart — which is why restarting NetworkManager is not a test of persistence.)</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>ip route get 10.20.30.40</code> tell you that reading <code>ip route</code> might not?</p>
+<blockquote>
+<p>The result of the kernel’s actual lookup for that destination — the gateway, the outgoing interface
+and the source address — after metrics, more specific routes and policy rules are applied.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

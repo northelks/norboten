@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The space that belongs to a file with no name</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>The space that belongs to a file with no name</h1>
+  <div class="meta">storage-lvm, logging-journald · 30 minutes · 3727 words</div>
+</header>
+<p>A colleague saw a full disk, deleted the biggest file on it, and went home. <code>df</code> still says the
+filesystem is nearly full; <code>du</code> says it is nearly empty. Nothing about that is a contradiction, and
+nothing about it is unusual — it is the single most common shape of “the disk is full” on a Unix
+machine, and the reason is a detail of how files are deleted that most people learn the hard way, at
+some inconvenient hour.</p>
+<p>The second half of the lab is the part the colleague did not get to: the log had no rotation rule, so
+whatever you free will be consumed again. Rotating a log that a running daemon is holding open has
+its own trap, and it is a close cousin of the first one.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Explain why <code>df</code> and <code>du</code> disagree, in terms of what each one actually measures.</li>
+<li>Find the process holding space that no directory entry points at, with <code>lsof</code> or with <code>/proc</code>
+alone.</li>
+<li>Get that space back without rebooting and without stopping the service.</li>
+<li>Read the other reasons a filesystem can be “full” — inodes, reserved blocks, a directory hidden
+under a mount point — and tell them apart in one command each.</li>
+<li>Write a logrotate rule that has a limit, keeps a sensible history, and does not leave the daemon
+writing into a rotated file.</li>
+<li>Choose between <code>copytruncate</code> and <code>postrotate</code>+<code>HUP</code> deliberately, knowing what each one risks.</li>
+<li>Test rotation now instead of waiting a day for it.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Deleting a file does not delete a file</h3>
+<p><code>unlink()</code> — which is what <code>rm</code> calls — removes a <strong>name</strong>. The data lives in an inode, and the
+inode is freed when two counts both reach zero:</p>
+<pre><code>  link count   how many directory entries point at this inode   (ls -l shows it)
+  open count   how many file descriptors the kernel holds on it (invisible to ls)
+</code></pre>
+<p><code>rm</code> decrements the first. If a process still has the file open, the second is not zero, and the
+inode — with every block it owns — stays exactly where it was. The file now has no name, so nothing
+that walks the directory tree can see it, and it keeps its blocks until the last descriptor closes.</p>
+<p>That is the whole explanation for the disagreement:</p>
+<pre><code class="language-console">$ df -h /var/log/app
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vdb        974M  882M   25M  98% /var/log/app
+
+$ sudo du -sh /var/log/app
+181M    /var/log/app
+</code></pre>
+<p><strong><code>du</code> walks the tree and adds up the files it can find. <code>df</code> asks the filesystem how many blocks
+are free.</strong> Seven hundred megabytes are in blocks that belong to an inode with no name, and the only
+place that relationship is still recorded is the file-descriptor table of the process holding it.</p>
+<p>It is worth being clear that this is a feature, not a bug. It is what makes a temporary file that
+cannot be left behind (open it, unlink it, keep using it — it disappears when your process dies, even
+if you crash), and it is what makes replacing a running program’s file safe.</p>
+<h3>Finding the holder</h3>
+<p><code>lsof +L1</code> means “open files with fewer than one link” — which is precisely the definition:</p>
+<pre><code class="language-console">$ sudo lsof -a +L1 /var/log/app
+COMMAND PID USER FD   TYPE DEVICE  SIZE/OFF NLINK NODE NAME
+python3 833 root 3w   REG 254,16 734003968     0   13 /var/log/app/ledger.log (deleted)
+</code></pre>
+<p><code>NLINK 0</code> and the <code>(deleted)</code> suffix are the two things to read. The <code>-a</code> matters: lsof <strong>ORs</strong> its
+selection options by default, so <code>lsof +L1 /var/log/app</code> without it means “files with no links
+anywhere, <em>or</em> anything open on this filesystem” — which looks right while the deleted file is the
+only thing open there, and quietly lists every healthy open file once it is not. <code>-a</code> makes the
+options AND together. Note also that <code>COMMAND</code> is <code>python3</code>, not <code>ledger</code>: lsof shows the name of
+the executable that is running, and ledger is a script run by the interpreter.
+<code>systemctl status 833</code> maps the PID back to <code>ledger.service</code>. And when <code>lsof</code> is not installed —
+which on a minimal image is most of the time — <code>/proc</code> has the same answer, because
+<code>/proc/&lt;pid&gt;/fd/&lt;n&gt;</code> is a symlink to whatever that descriptor points at:</p>
+<pre><code class="language-console">$ sudo sh -c 'ls -l /proc/[0-9]*/fd/* 2&gt;/dev/null | grep deleted'
+l-wx------ 1 root root 64 Sep 13 04:15 /proc/833/fd/3 -&gt; /var/log/app/ledger.log (deleted)
+
+$ sudo stat -L /proc/833/fd/3 | head -2       # the real size, through the descriptor
+  File: /proc/833/fd/3
+  Size: 734005152       Blocks: 1433616    IO Block: 4096   regular file
+</code></pre>
+<p>Why <code>sudo sh -c '…'</code> rather than the tempting <code>sudo ls -l /proc/*/fd/* | grep deleted</code>? Because the
+<code>*</code> in that command is expanded by <strong>your</strong> shell, as you, before <code>sudo</code> runs — and you may only look
+inside <code>/proc/&lt;pid&gt;/fd</code> for your own processes. The glob silently expands to your own shell’s
+descriptors, <code>ls</code> runs as root over that short list, and <code>grep</code> finds nothing. Inside <code>sh -c</code> the glob
+is expanded by root’s shell. (It is the same trap as <code>sudo echo &gt; file</code>: sudo elevates the command,
+not what your shell did to its arguments first.) GNU <code>find /proc/[0-9]*/fd -lname '*(deleted)'</code> also
+works on Ubuntu, but not with Alpine’s BusyBox <code>find</code>, which has no <code>-lname</code>.</p>
+<p>Two useful relatives: <code>fuser -vm /var/log/app</code> lists every process with anything open on that
+filesystem — the command for “why can I not unmount this” — and <code>lsof +D /var/log/app</code> walks the
+directory for all open files, deleted or not.</p>
+<h3>Getting the space back</h3>
+<p>The descriptor has to close. In order of how much you should like them:</p>
+<p><strong>1. Tell the daemon to reopen its log.</strong> Many write-a-log-forever programs handle <code>SIGHUP</code> by
+closing and reopening — <code>ledger</code> here does, and so do nginx, rsyslog and most others. It is the
+cheapest fix and it never loses a line:</p>
+<pre><code class="language-console">$ sudo kill -HUP 833
+$ df -h /var/log/app       # the space is back, immediately
+</code></pre>
+<p><strong>2. Restart the service.</strong> Honest, obvious, one command, and it costs whatever the restart costs:</p>
+<pre><code class="language-console">$ sudo systemctl restart ledger          # systemd
+$ sudo rc-service ledger restart         # OpenRC (Alpine)
+</code></pre>
+<p><strong>3. Truncate through the descriptor</strong> — and understand what you are doing first:</p>
+<pre><code class="language-console">$ sudo truncate -s 0 /proc/833/fd/3      # know why before you type this
+</code></pre>
+<p>This frees the blocks without the process noticing, and the process keeps writing <strong>at its old
+offset</strong>. With a file it appends to, the result is a sparse file that reports the old size again
+immediately (the blocks are not allocated until written, so you do get the space, but every tool
+reporting sizes now lies to you). With a program that seeks, or one that reads its own log back, the
+result is corruption. It is the right tool for “a runaway log on a production box at 3 a.m. and I
+cannot restart the service”, and the wrong tool any time option 1 or 2 is available.</p>
+<p><strong>What is not on the list: rebooting.</strong> It works — every process dies and every descriptor closes —
+and it destroys the evidence. The one thing you know about a disk that filled up is that it will
+fill up again, and after a reboot you no longer know which process was responsible. <strong>Also not on
+the list: <code>rm</code> again.</strong> There is no name left to remove; the second <code>rm</code> fails, or removes the <em>new</em>
+file the daemon has since created, which puts you right back in this state with one more deleted
+inode.</p>
+<h3>The other reasons a filesystem is “full”</h3>
+<p>Four causes, four one-line diagnostics. Run them in this order before you start theorising:</p>
+<pre><code class="language-console">$ df -h /var/log/app      # blocks: the ordinary case
+$ df -i /var/log/app      # INODES: &quot;No space left on device&quot; with 60% free blocks
+$ sudo du -sh /var/log/app    # what the visible files add up to
+$ sudo lsof -a +L1 /var/log/app  # deleted-but-open
+</code></pre>
+<p><strong>Inode exhaustion</strong> is the one that surprises people: a filesystem formatted with a fixed number of
+inodes (ext4 does this at <code>mkfs</code> time) can run out of them while blocks remain, and every write
+fails with <code>ENOSPC</code> exactly as if the disk were full. Millions of tiny files — a mail queue, a
+session directory, a cache — is the usual cause. There is no way to add inodes to an existing ext4
+filesystem; you delete files or rebuild it.</p>
+<p><strong>Reserved blocks</strong>: ext4 reserves 5% for root by default, so <code>df</code> can show <code>100%</code> and <code>0 Avail</code>
+while root can still write. That is deliberate — it leaves room to repair a full machine — and on a
+1 GiB log volume it is 50 MiB you are not using:</p>
+<pre><code class="language-console">$ sudo tune2fs -l /dev/vdb | grep -i reserved
+Reserved block count:     13107
+$ sudo tune2fs -m 1 /dev/vdb       # reduce the reservation to 1%
+</code></pre>
+<p><strong>A directory hidden under a mount point</strong>: files written to <code>/var/log/app</code> <em>before</em> the filesystem
+was mounted there are still on the parent filesystem, invisible while the mount is in place, and
+they explain a <code>df</code>/<code>du</code> mismatch in the other direction — the parent’s space is gone and nothing can
+be found. Look underneath:</p>
+<pre><code class="language-console">$ sudo mkdir /mnt/root &amp;&amp; sudo mount --bind / /mnt/root
+$ sudo du -sh /mnt/root/var/log/app          # what is hidden beneath the mount
+$ sudo umount /mnt/root
+</code></pre>
+<p>And one measurement trap worth knowing, because this lab’s files are made with <code>fallocate</code>: <code>du</code>
+reports <strong>blocks allocated</strong>, <code>ls -l</code> reports the <strong>apparent size</strong>. For a sparse file those differ
+wildly in one direction; for a preallocated file they agree while the file contains nothing.
+<code>du --apparent-size -sh</code> is how you ask the other question.</p>
+<h3>logrotate: what it actually does</h3>
+<p><code>logrotate</code> is not a daemon. It is a program that runs on a schedule — a systemd timer on Ubuntu and
+most systemd distributions, <code>/etc/periodic/daily</code> on Alpine, historically <code>/etc/cron.daily</code> — reads
+its configuration, and for every rule decides whether the rotation condition is met:</p>
+<pre><code class="language-console">$ systemctl list-timers logrotate.timer         # systemd distributions
+$ ls /etc/periodic/daily/                       # Alpine
+$ cat /var/lib/logrotate/status                 # when each path was last rotated (after the first run)
+</code></pre>
+<p>That has two consequences. <code>daily</code> does not mean midnight — it means “the first time logrotate runs
+after a day has passed since the last rotation of this path”, which is why rotation happens whenever
+the timer fires. And the state file, not the filesystem, is what logrotate consults for “when did I
+last do this”.</p>
+<p>A rule lives in <code>/etc/logrotate.d/&lt;name&gt;</code> (a drop-in, included by <code>/etc/logrotate.conf</code>) and is a
+path glob followed by a block of directives:</p>
+<pre><code>/var/log/app/*.log {
+    size 20M          # rotate when it exceeds 20 MiB (a condition, not a schedule)
+    rotate 4          # keep four old copies, then discard
+    compress          # gzip the old ones (delaycompress defers by one round)
+    missingok         # do not complain if the file is absent
+    notifempty        # do not rotate an empty file
+    copytruncate      # …or a postrotate script: see below
+}
+</code></pre>
+<p>Two directives are doing the real work, and a rule missing either is a rule that does not solve the
+problem:</p>
+<ul>
+<li><strong>A limit</strong>: <code>size 20M</code>, or <code>daily</code>/<code>weekly</code>/<code>hourly</code>, or <code>maxsize</code> (which means “this schedule,
+but sooner if it gets this big”). <code>rotate 4</code> is <em>not</em> a limit — it says how many to keep, not when
+to act. A rule with only <code>rotate</code> never fires.</li>
+<li><strong>A way for the writer to follow the rotation</strong>, which is the next section.</li>
+</ul>
+<p><code>su root root</code> becomes necessary when the log directory is writable by a non-root user (logrotate
+refuses for good reasons), and <code>create 0640 root adm</code> sets the mode of the new file. Globs are
+useful — <code>/var/log/app/*.log</code> catches the next log this service invents — but they also catch the
+rotated files themselves if you are careless with names.</p>
+<h3><code>copytruncate</code> versus <code>postrotate</code></h3>
+<p>Default rotation is <code>rename + create</code>: <code>ledger.log</code> becomes <code>ledger.log.1</code>, a new empty
+<code>ledger.log</code> appears. But a rename does not change the inode, and the daemon’s descriptor points at
+the <strong>inode</strong>, not the name. So without further instruction:</p>
+<ul>
+<li>the daemon keeps appending to what is now <code>ledger.log.1</code>;</li>
+<li>the new <code>ledger.log</code> stays empty forever;</li>
+<li>the next rotation renames again, compresses a file being actively written, and eventually deletes
+it — at which point you are back to the first half of this lab, with space held by a nameless
+inode, permanently, until the service restarts.</li>
+</ul>
+<p>That failure is quiet and it is why “we set up logrotate” is not the same as “logs are rotated”. Two
+ways to fix it:</p>
+<pre><code>    postrotate
+        /bin/kill -HUP $(cat /run/ledger.pid) 2&gt;/dev/null || true
+    endscript
+</code></pre>
+<p><strong><code>postrotate</code></strong> runs a command after the rotation — conventionally a <code>HUP</code> to make the daemon
+reopen its log by name. Nothing is lost: the daemon writes to the old inode until the signal, then
+to the new file. Add <code>sharedscripts</code> when the glob matches several files, or the script runs once per
+file. This is the better mechanism whenever the program supports it, and it is what distribution
+packages do.</p>
+<pre><code>    copytruncate
+</code></pre>
+<p><strong><code>copytruncate</code></strong> does not rename. It copies the file’s contents to the archive name and then
+truncates the original <strong>in place</strong>, so the inode — and therefore the daemon’s descriptor — is
+retained, and the daemon carries on writing at offset zero without being told anything. It works
+with programs that cannot be signalled, which is its reason for existing. Its cost is a race: any
+line written between the copy and the truncate is lost, and the copy needs room for a second copy of
+the file while it runs. For a log that matters to an auditor, use <code>postrotate</code>. For a
+stand-in daemon like this one, or a program you do not control, <code>copytruncate</code> is the pragmatic
+answer.</p>
+<p>Test it, always, and do not wait a day:</p>
+<pre><code class="language-console">$ sudo logrotate -d /etc/logrotate.d/ledger    # dry run: says what it WOULD do, changes nothing
+$ sudo logrotate -f /etc/logrotate.d/ledger    # force a rotation now, whatever the condition says
+$ ls -l /var/log/app/
+$ sudo tail -1 /var/log/app/ledger.log ; sleep 2 ; sudo tail -1 /var/log/app/ledger.log
+</code></pre>
+<p>Those last two commands are the important ones, and they are the test almost nobody runs: after a
+forced rotation, <strong>is the new file growing?</strong> If the timestamp does not move, the daemon is still
+writing into the rotated inode and your rule is broken in the quiet way.</p>
+<h3>Two init systems</h3>
+<p>This lab runs on Ubuntu (systemd) and on Alpine (OpenRC), and the mechanisms above are identical on
+both — only the service commands differ:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>systemd</th>
+<th>OpenRC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>restart</td>
+<td><code>systemctl restart ledger</code></td>
+<td><code>rc-service ledger restart</code></td>
+</tr>
+<tr>
+<td>running?</td>
+<td><code>systemctl is-active ledger</code></td>
+<td><code>rc-service ledger status</code></td>
+</tr>
+<tr>
+<td>at boot?</td>
+<td><code>systemctl is-enabled ledger</code></td>
+<td><code>rc-update show default</code></td>
+</tr>
+<tr>
+<td>enable</td>
+<td><code>systemctl enable ledger</code></td>
+<td><code>rc-update add ledger default</code></td>
+</tr>
+<tr>
+<td>logs</td>
+<td><code>journalctl -u ledger</code></td>
+<td><code>/var/log/messages</code> (syslog)</td>
+</tr>
+</tbody>
+</table>
+<p>Worth noticing in passing: the systemd unit declares <code>RequiresMountsFor=/var/log/app</code>, which makes
+systemd pull in and order the mount for that path automatically — the tidy way to say “do not start
+me before my filesystem is there”. The OpenRC service says the same thing as <code>need localmount</code>.</p>
+<h2>A failure, walked through</h2>
+<p>The ledger service is up. <code>/var/log/app</code> is 98% full.</p>
+<p><strong>1. Ask the two questions that disagree.</strong></p>
+<pre><code class="language-console">$ df -h /var/log/app
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vdb        974M  881M   26M  98% /var/log/app
+$ sudo du -sh /var/log/app
+181M    /var/log/app
+$ df -i /var/log/app          # rule out inodes while you are here
+Filesystem     Inodes IUsed IFree IUse% Mounted on
+/dev/vdb        65536    16 65520    1% /var/log/app
+</code></pre>
+<p>700 MiB unaccounted for, and it is not inodes. <strong>2. Look at what is visible first</strong>, because part of
+the answer is ordinary:</p>
+<pre><code class="language-console">$ sudo ls -lhR /var/log/app
+/var/log/app:
+total 20K
+drwxr-xr-x 2 root root 4.0K Sep 13 04:15 archive
+drwx------ 2 root root  16K Sep 13 04:15 lost+found
+
+/var/log/app/archive:
+total 180M
+-rw-r--r-- 1 root root 90M Sep 13 04:15 ledger-2023.log
+-rw-r--r-- 1 root root 90M Sep 13 04:15 ledger-2024.log
+
+/var/log/app/lost+found:
+total 0
+</code></pre>
+<p>Look at what is <em>not</em> there: <code>ledger.log</code>. The service is running and writing, and the file it writes
+has no name. Two old archives, 180 MiB, are exactly what <code>du</code> reported. (<code>lost+found</code> is ext4’s own
+directory for fsck to put orphaned files in; leave it.) They are real files with real names;
+nothing clever is needed:</p>
+<pre><code class="language-console">$ sudo rm -r /var/log/app/archive
+$ df -h /var/log/app
+/dev/vdb        974M  701M  206M  78% /var/log/app
+</code></pre>
+<p><strong>3. Chase the rest, which has no name.</strong></p>
+<pre><code class="language-console">$ sudo lsof -a +L1 /var/log/app
+COMMAND PID USER FD   TYPE DEVICE  SIZE/OFF NLINK NODE NAME
+python3 833 root 3w   REG 254,16 734003968     0   13 /var/log/app/ledger.log (deleted)
+$ systemctl status 833 --no-pager | head -1
+● ledger.service - ledger transaction logger
+</code></pre>
+<p><code>NLINK 0</code>: the colleague’s <code>rm</code> removed the name and ledger still holds the inode, appending to it
+twice a second. That is also why this lab’s fourth check fails on the broken machine even though
+ledger is “running”: a service writing into a file nobody can see is not doing its job.</p>
+<p><strong>4. Make the process let go, without stopping it.</strong> ledger reopens on <code>SIGHUP</code>:</p>
+<pre><code class="language-console">$ sudo kill -HUP $(systemctl show -p MainPID --value ledger)
+$ df -h /var/log/app
+/dev/vdb        974M  284K  906M   1% /var/log/app
+$ sudo lsof -a +L1 /var/log/app    # silence
+$ ls -l /var/log/app/ledger.log    # reopened by name: the file exists again
+-rw-r--r-- 1 root root 74 Sep 13 04:16 /var/log/app/ledger.log
+$ sudo systemctl is-active ledger  # still running — nothing was stopped
+active
+</code></pre>
+<p>A restart would have done the same thing; the <code>HUP</code> did it without a gap in the log.</p>
+<p><strong>5. Now stop it happening again.</strong> Nothing limits the log:</p>
+<pre><code class="language-console">$ ls /etc/logrotate.d/
+alternatives  apt  btmp  cloud-init  dpkg  unattended-upgrades  wtmp  wtmpdb
+</code></pre>
+<p>No rule mentions <code>/var/log/app</code>. Write one:</p>
+<pre><code class="language-console">$ sudo tee /etc/logrotate.d/ledger &gt;/dev/null &lt;&lt;'CONF'
+/var/log/app/*.log {
+    size 20M
+    rotate 4
+    compress
+    missingok
+    notifempty
+    copytruncate
+}
+CONF
+</code></pre>
+<p><strong>6. Test it rather than believing it.</strong> First a dry run, which parses the rule and explains its
+reasoning; then a forced rotation; then — the step that matters — check that the <em>new</em> file is
+growing:</p>
+<pre><code class="language-console">$ sudo logrotate -d /etc/logrotate.d/ledger
+warning: logrotate in debug mode does nothing except printing debug messages! …
+reading config file /etc/logrotate.d/ledger
+Reading state from file: /var/lib/logrotate/status
+state file /var/lib/logrotate/status does not exist
+…
+rotating pattern: /var/log/app/*.log 20971520 bytes empty log files are not rotated,
+  (4 rotations), old logs are removed
+considering log /var/log/app/ledger.log
+  log does not need rotating (log size is below the 'size' threshold)
+
+$ sudo logrotate -f /etc/logrotate.d/ledger
+$ ls -l /var/log/app/
+-rw-r--r-- 1 root root     0 Sep 13 04:16 ledger.log
+-rw-r--r-- 1 root root   275 Sep 13 04:16 ledger.log.1.gz
+drwx------ 2 root root 16384 Sep 13 04:15 lost+found
+
+$ sleep 2 ; sudo tail -1 /var/log/app/ledger.log ; sleep 2 ; sudo tail -1 /var/log/app/ledger.log
+2026-09-13T04:16:52 txn=114 status=ok
+2026-09-13T04:16:54 txn=118 status=ok
+</code></pre>
+<p>Immediately after a <code>copytruncate</code> the live file is empty — that is the truncate — so wait a moment
+before the first <code>tail</code>, or it prints nothing and looks like a failure.</p>
+<p>The count moved, in the new file: <code>copytruncate</code> kept ledger’s descriptor pointed at the inode it is
+still writing to. Had this been a <code>rename+create</code> rule with no <code>postrotate</code>, the second <code>tail</code> would
+have printed the same line as the first — the quiet failure.</p>
+<p><strong>7. Check the schedule exists at all.</strong> A perfect rule that nothing runs is not rotation:</p>
+<pre><code class="language-console">$ systemctl list-timers logrotate.timer          # systemd
+NEXT                         LEFT LAST                        PASSED UNIT            ACTIVATES
+Sun 2026-09-13 04:29:16 UTC 13min Sat 2026-09-12 16:37:54 UTC      - logrotate.timer logrotate.service
+$ systemctl cat logrotate.timer | grep -A3 '\[Timer\]'
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=1h
+Persistent=true
+$ ls /etc/periodic/daily/                        # Alpine
+logrotate
+</code></pre>
+<p><strong>8. Reboot and confirm all four requirements.</strong> The rotation rule is a file, the archive deletion is
+permanent, and the freed space cannot come back — but “ledger starts at boot and writes its log” is a
+claim about the boot, so test the boot:</p>
+<pre><code class="language-console">$ sudo reboot
+$ df -h /var/log/app ; sudo lsof -a +L1 /var/log/app
+$ systemctl is-enabled ledger ; systemctl is-active ledger
+$ sudo tail -1 /var/log/app/ledger.log ; sleep 2 ; sudo tail -1 /var/log/app/ledger.log
+</code></pre>
+<h2>Common wrong turns</h2>
+<p><strong>Stopping or removing ledger.</strong> The disk empties instantly and the service the disk exists for is
+gone. This lab grades ledger still running and enabled, which is not artificial: “free up space by
+stopping the thing that needed the space” is a real outage, reported as a fix.</p>
+<p><strong><code>rm</code> on the file again.</strong> There is no name left to remove. What you will actually delete is the
+<em>new</em> log the daemon created after the first deletion — leaving a second nameless inode, held open,
+and a service writing into nothing.</p>
+<p><strong>Rebooting to reclaim the space.</strong> It works, and it throws away the only record of which process
+held the file. You will be back tomorrow with no more information than today.</p>
+<p><strong><code>truncate -s 0 /proc/&lt;pid&gt;/fd/3</code> as a first resort.</strong> It frees the blocks and leaves a sparse file
+that reports its old size, so every subsequent measurement misleads you; with a program that seeks or
+re-reads, it corrupts. Reach for <code>SIGHUP</code> or a restart first, and keep this for the case where
+neither is possible.</p>
+<p><strong>Assuming every <code>df</code>/<code>du</code> gap is a deleted file.</strong> Check inodes (<code>df -i</code>), check for a directory
+buried under a mount point (<code>mount --bind / /mnt/root</code>), and check whether the 5% ext4 reservation is
+what you are calling “full”. Each is one command.</p>
+<p><strong>Writing a logrotate rule with <code>rotate 4</code> and no limit.</strong> <code>rotate</code> says how many to keep, not when
+to rotate. With no <code>size</code>/<code>daily</code>/<code>weekly</code>/<code>maxsize</code>, the condition is never met and the rule does
+nothing at all — while looking, to a quick reader, exactly like a rule that works.</p>
+<p><strong>Rotating a daemon’s log with neither <code>copytruncate</code> nor <code>postrotate</code>.</strong> The default is
+rename-then-create, and the daemon’s descriptor follows the inode, not the name. The new file stays
+empty, the renamed one keeps growing, and a couple of rotations later logrotate deletes a file that
+is still being written — recreating the problem you started with, permanently.</p>
+<p><strong>Reaching for <code>copytruncate</code> without knowing its cost.</strong> Lines written between the copy and the
+truncate are lost, and the copy needs room for a second copy of the log. Where the program handles
+<code>SIGHUP</code> — which is most of them — <code>postrotate</code> loses nothing.</p>
+<p><strong><code>postrotate</code> with a glob and no <code>sharedscripts</code>.</strong> The script runs once per matched file, so a
+five-file glob sends five <code>HUP</code>s. Harmless here, not always.</p>
+<p><strong>Believing a rule because it parses.</strong> <code>logrotate -d</code> shows what it would do, <code>-f</code> makes it do it,
+and then <code>tail</code> twice a few seconds apart shows whether the daemon followed. The last step is the one
+that catches the silent failure.</p>
+<p><strong>Fixing rotation and never checking that logrotate runs.</strong> On systemd it is <code>logrotate.timer</code>; on
+Alpine it is <code>/etc/periodic/daily/logrotate</code>. If neither is in place, the rule is documentation.</p>
+<p><strong>Forgetting that <code>daily</code> is not midnight.</strong> logrotate compares against its state file
+(<code>/var/lib/logrotate/status</code>) when it happens to run. A rule can be correct and still not have
+rotated yet, which is what <code>-f</code> is for while you are testing.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># is it really full, and of what?
+df -h /path                    # blocks
+df -i /path                    # inodes — ENOSPC with free blocks
+du -sh /path                   # what the visible files add up to
+du -sh --apparent-size /path   # …ignoring sparseness/preallocation
+du -xh --max-depth=1 /path | sort -h   # where it went, one level at a time (-x: one filesystem)
+sudo tune2fs -l /dev/vdb | grep -i reserved     # the 5% root reservation (ext4)
+sudo tune2fs -m 1 /dev/vdb                      # …make it 1%
+
+# space with no name
+lsof -a +L1 /path              # open files with no remaining link, on that fs  ← the command
+                               # (-a: AND the options; lsof ORs them by default)
+lsof +D /path                  # everything open under a directory
+fuser -vm /path                # every process with anything open on that filesystem
+sudo sh -c 'ls -l /proc/[0-9]*/fd/* 2&gt;/dev/null | grep deleted'   # without lsof
+                               # (not `sudo ls /proc/*/fd/*`: that glob expands as YOU, first)
+stat -L /proc/PID/fd/N         # the real size through the descriptor
+
+# giving it back
+kill -HUP PID                  # ask the daemon to reopen its log  ← cheapest, loses nothing
+systemctl restart UNIT         # honest and obvious
+rc-service NAME restart        # OpenRC
+truncate -s 0 /proc/PID/fd/N   # last resort; leaves a sparse file and may corrupt
+
+# hidden under a mount point
+mount --bind / /mnt/root ; du -sh /mnt/root/var/log/app ; umount /mnt/root
+
+# logrotate
+logrotate -d /etc/logrotate.d/x    # dry run: what it would do
+logrotate -f /etc/logrotate.d/x    # force it now
+cat /var/lib/logrotate/status      # when each path last rotated
+systemctl list-timers logrotate.timer   # what runs it (systemd)
+ls /etc/periodic/daily/                 # what runs it (Alpine)
+
+# a rule that works
+# /etc/logrotate.d/ledger
+#   /var/log/app/*.log {
+#       size 20M            ← a limit: size|maxsize|hourly|daily|weekly|monthly
+#       rotate 4            ← how many to keep (NOT a limit)
+#       compress            ← delaycompress to defer by one round
+#       missingok notifempty
+#       copytruncate        ← keeps the inode: for daemons that cannot be signalled
+#       # or:
+#       # postrotate
+#       #     /bin/kill -HUP $(cat /run/ledger.pid) 2&gt;/dev/null || true
+#       # endscript
+#       # sharedscripts     ← run the script once, not once per matched file
+#   }
+
+# after a forced rotation, the test that matters
+tail -1 /var/log/app/ledger.log ; sleep 2 ; tail -1 /var/log/app/ledger.log
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>logrotate does exactly what it is told, and refuses what it cannot trust</em> (lab journal <code>linux-06-log-that-never-rotates</code>) — Who runs logrotate, and what it remembers</li>
+<li><em>Active, green, and not working</em> (topic journal <code>monitoring</code>) — is-active is about the process, not the service</li>
+</ul>
+<p>Manual pages: <code>man 1 df</code>, <code>man 1 du</code>, <code>man 8 lsof</code>, <code>man 5 proc</code>, <code>man 8 logrotate</code>.</p>
+<p>The whole subject, end to end: the topic journal <em>The log lines that were never written down</em> (<code>logging-journald</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p><code>df</code> says a filesystem is 98% full and <code>du</code> on its mount point says 181 MiB of 974 MiB. What is
+each command measuring, and where is the difference?</p>
+<blockquote>
+<p><code>du</code> walks the directory tree and sums the files it can reach; <code>df</code> asks the filesystem how many
+blocks are free. The difference is in inodes whose link count has reached zero but which are
+still held open by a process — deleted files, invisible to a tree walk, still owning their
+blocks.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>rm</code> on a large file sometimes free no space at all, and what has to happen before the
+blocks come back?</p>
+<blockquote>
+<p><code>rm</code> calls <code>unlink()</code>, which removes a <em>name</em>. The inode survives while any process holds a
+descriptor on it. The blocks are freed when both the link count and the open count reach zero —
+so the holder must close it, by reopening its log (<code>SIGHUP</code>), by restarting, or by exiting.</p>
+</blockquote>
+</li>
+<li>
+<p>Name the three ways to make a daemon release a deleted log, and the specific risk of the third.</p>
+<blockquote>
+<p><code>kill -HUP &lt;pid&gt;</code> if it reopens on that signal — cheapest, loses nothing; restarting the
+service — honest, costs a gap; and <code>truncate -s 0 /proc/&lt;pid&gt;/fd/&lt;n&gt;</code>, which frees the blocks
+behind the daemon’s back and leaves it writing at its old offset — a sparse file that misreports
+its size, and corruption for any program that seeks or re-reads.</p>
+</blockquote>
+</li>
+<li>
+<p>A filesystem reports <em>No space left on device</em> while <code>df -h</code> shows 40% free. What is the second
+thing to check, and can it be fixed in place?</p>
+<blockquote>
+<p>Inodes: <code>df -i</code>. An ext4 filesystem has a fixed inode count set at <code>mkfs</code> time, and millions of
+tiny files can exhaust it while blocks remain. It cannot be increased on an existing ext4
+filesystem — delete files, or rebuild the filesystem.</p>
+</blockquote>
+</li>
+<li>
+<p>A logrotate rule contains <code>rotate 4</code>, <code>compress</code> and <code>missingok</code>, and the log has never been
+rotated. Why not?</p>
+<blockquote>
+<p>There is no rotation condition. <code>rotate</code> is how many old copies to keep, not when to act. The
+rule needs <code>size</code>, <code>maxsize</code>, or one of <code>hourly</code>/<code>daily</code>/<code>weekly</code>/<code>monthly</code> before logrotate
+will ever act on it.</p>
+</blockquote>
+</li>
+<li>
+<p>Explain what goes wrong when a daemon’s log is rotated with the default rename-and-create and no
+<code>postrotate</code> script.</p>
+<blockquote>
+<p>The daemon’s descriptor points at the inode, and a rename does not change the inode — so it
+keeps appending to the rotated file while the new one stays empty. A few rotations later
+logrotate compresses and deletes a file that is still being written, and the space is held by a
+nameless inode until the service restarts.</p>
+</blockquote>
+</li>
+<li>
+<p><code>copytruncate</code> and a <code>postrotate</code> <code>HUP</code> solve the same problem. What does each cost, and when do
+you need <code>copytruncate</code>?</p>
+<blockquote>
+<p><code>postrotate</code> loses nothing but requires a program that reopens its log on a signal.
+<code>copytruncate</code> copies then truncates in place, keeping the inode — so it works with programs
+that cannot be signalled, at the price of losing any line written during the copy and needing
+room for a second copy of the file.</p>
+</blockquote>
+</li>
+<li>
+<p>You have written a rotation rule and run <code>logrotate -f</code>. Which single check tells you whether it
+actually works?</p>
+<blockquote>
+<p><code>tail -1</code> on the live log, twice, a couple of seconds apart: if the new file is growing, the
+writer followed the rotation. If the last line does not change, the daemon is still writing into
+the rotated inode — the rule is broken in the way that produces no error message.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

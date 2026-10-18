@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Token for Someone Else · Norboten</title>
+<meta name="description" content="Make an MCP server accept only tokens issued for it">
+<link rel="canonical" href="https://norboten.org/labs/mcp-03-the-token-for-someone-else/"><meta property="og:title" content="The Token for Someone Else · Norboten">
+<meta property="og:description" content="Make an MCP server accept only tokens issued for it">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/labs/mcp-03-the-token-for-someone-else/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Token for Someone Else · Norboten">
+<meta name="twitter:description" content="Make an MCP server accept only tokens issued for it">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "The Token for Someone Else",
+  "description": "Make an MCP server accept only tokens issued for it",
+  "url": "https://norboten.org/labs/mcp-03-the-token-for-someone-else/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "teaches": ["Make an MCP server accept only tokens issued for it", "Give an MCP client a token for the server it talks to"],
+  "timeRequired": "PT35M",
+  "provider": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"},
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "online",
+    "courseWorkload": "PT35M"
+  }
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="mcp-03-the-token-for-someone-else">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" aria-current="page">Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">mcp · lab mcp-03</div>
+    <h1>The Token for Someone Else</h1>
+    <p class="muted">
+      <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span> ·
+      about 35 minutes ·
+      runs on <span class="mono">ubuntu-26.04-claude</span>
+      · <span class="tag">unrated</span>    </p>
+    <div class="cta">
+      <a class="btn solid" href="../../journals/mcp-03-the-token-for-someone-else/">Read the journal</a>
+      <a class="btn" href="https://github.com/northelks/norboten/tree/main/labs/mcp/mcp-03-the-token-for-someone-else" rel="noopener">Read its source</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="note prose">
+      <strong>An unrated lab.</strong> It runs on your machine with no account and no network, and
+      everything about it — the faults, the checks, the hints and the reference solution — is in
+      the repository. An attempt on it is recorded on your profile and never moves a rating: only
+      rated labs do.
+      <a href="../../docs/rated-labs/">Rated and unrated labs</a>.
+    </p>
+    <div class="grid two" style="gap:2.5rem; align-items:start">
+      <div>
+        <h2>The briefing</h2>
+        <div class="prose">
+<p>The weekly fleet report, <code>~/bin/inventory-report</code>, has Claude Code, in <code>~/inventory-report</code>, ask
+the <code>inventory</code> MCP server at <code>http://127.0.0.1:8931/mcp</code> for the host list. The server wants a
+bearer token signed by this machine's identity provider, <code>lab-idp</code>; the job reads its token from
+<code>~/.config/inventory/env</code>. The server's settings are in <code>/etc/inventory-mcp/config.json</code>, and
+<code>sudo inventory-mcp restart</code> makes it read them again.</p>
+<p>The report works. An audit found out why: the job's token is a copy of the billing sync's, and the
+inventory server takes it — along with any other token the provider ever signed, expired or not.
+One leaked token opens every service that trusts the provider.</p>
+<p>This lab runs in a container, as <code>learner</code> with <code>sudo</code>. <code>claude</code> here is the real Claude Code
+2.1.270, talking to a scripted model on this machine; it connects to the server and calls it for
+real. The job's JSON result is <code>~/inventory-report.json</code>.</p>
+<p>What is expected, and graded — the grader mints tokens of its own with <code>lab-idp</code>:</p>
+<ol>
+<li>A token issued for another service is refused.</li>
+<li>A token past its expiry is refused.</li>
+<li>The job runs on a token issued for the inventory server, and gets the host list.</li>
+</ol>
+</div>
+      </div>
+      <div>
+        <h2>What is graded</h2>
+        <p class="muted">This lab runs in a container — Docker or Podman, no VM — so there is no boot
+          to survive: the checks run once, against the state you left.</p>
+        <table>
+          <tr><th>Check</th><th>Objective</th></tr>
+          <tr><td class="mono">01_a_token_for_another_service_is_refused</td><td class="muted">Make an MCP server accept only tokens issued for it</td></tr>
+          <tr><td class="mono">02_an_expired_token_is_refused</td><td class="muted">Make an MCP server accept only tokens issued for it</td></tr>
+          <tr><td class="mono">03_the_job_uses_its_own_token</td><td class="muted">Give an MCP client a token for the server it talks to</td></tr>
+        </table>
+        <h3>Start it</h3>
+        <ol class="keysteps">
+          <li><kbd>2</kbd><span>Labs</span></li>
+          <li><span class="mono pick">mcp-03</span><span>select this one</span></li>
+          <li><kbd>u</kbd><span>download it</span></li>
+          <li><kbd>s</kbd><span>start the machine</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>Reading</h2>
+    <p class="muted">Where the lab's hints send you, level by level, as you ask for them
+      (<kbd>h</kbd>, then <kbd>l</kbd> opens a journal section in the TUI).</p>
+    <ul class="prose">
+<li><a href="https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization" rel="noopener">https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization</a></li>
+<li><a href="../../journals/mcp/#authorization-for-remote-servers">The Model Context Protocol › Authorization for remote servers</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9068" rel="noopener">https://www.rfc-editor.org/rfc/rfc9068</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8707" rel="noopener">https://www.rfc-editor.org/rfc/rfc8707</a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>Theory for this lab</h2>
+    <p class="prose muted">3 questions on the same topic, in the lab's Theory
+      tab. They never affect the lab's grade.
+Here they are, to answer in place:</p>
+    <div class="quiz-grid">
+      <div class="quiz" data-answer="a" data-type="single">
+<div class="kicker">Question 1</div>  <p class="prompt">An MCP server verifies that bearer tokens are signed by the company&#39;s identity provider and not expired, and nothing else. What can an attacker who stole the billing API&#39;s token do?</p>
+  <div class="choices">
+    <button type="button" class="choice" data-choice="a">
+      <span class="mark mono">a</span><span class="text">Call the MCP server with it, because the server never checks which service the token was issued for</span>
+    </button>
+    <button type="button" class="choice" data-choice="b">
+      <span class="mark mono">b</span><span class="text">Mint new tokens with the provider&#39;s key</span>
+    </button>
+    <button type="button" class="choice" data-choice="c">
+      <span class="mark mono">c</span><span class="text">Only call the billing API</span>
+    </button>
+    <button type="button" class="choice" data-choice="d">
+      <span class="mark mono">d</span><span class="text">Nothing: a signed, unexpired token from the right issuer is safe everywhere</span>
+    </button>
+  </div>
+  <div class="verdict" hidden>
+    <p class="answer"><strong>Call the MCP server with it, because the server never checks which service the token was issued for</strong>
+</p>
+    <p class="muted">Every service trusting the issuer accepts its signature; only the audience (aud) says which service a token is for. The MCP authorization specification requires servers to accept only tokens issued for themselves, so that one leaked token does not open every service.</p>
+    <p class="mono muted refs">https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization · https://www.rfc-editor.org/rfc/rfc8707</p>
+  </div>
+</div>
+
+      <div class="quiz" data-answer="a" data-type="single">
+<div class="kicker">Question 2</div>  <p class="prompt">What does this print — the audience of a JWT, read without its signing key?</p>
+<pre><code>import base64, json
+claims = {&#34;iss&#34;: &#34;https://idp.lab&#34;, &#34;aud&#34;: &#34;https://billing.example/api&#34;, &#34;sub&#34;: &#34;sync&#34;}
+part = base64.urlsafe_b64encode(json.dumps(claims).encode()).rstrip(b&#34;=&#34;).decode()
+token = &#34;eyJhbGciOiJIUzI1NiJ9.&#34; + part + &#34;.c2ln&#34;
+payload = token.split(&#34;.&#34;)[1]
+print(json.loads(base64.urlsafe_b64decode(payload + &#34;=&#34; * (-len(payload) % 4)))[&#34;aud&#34;])
+</code></pre>  <div class="choices">
+    <button type="button" class="choice" data-choice="a">
+      <span class="mark mono">a</span><span class="text">https://billing.example/api</span>
+    </button>
+    <button type="button" class="choice" data-choice="b">
+      <span class="mark mono">b</span><span class="text">sync</span>
+    </button>
+    <button type="button" class="choice" data-choice="c">
+      <span class="mark mono">c</span><span class="text">https://idp.lab</span>
+    </button>
+    <button type="button" class="choice" data-choice="d">
+      <span class="mark mono">d</span><span class="text">an error: the claims are encrypted</span>
+    </button>
+  </div>
+  <div class="verdict" hidden>
+    <p class="answer"><strong>https://billing.example/api</strong>
+</p>
+    <p class="muted">A JWT&#39;s claims are base64url-encoded JSON, signed but not encrypted: anyone holding the token can read them. That is how a client or an operator checks which service a token was issued for — and why a token&#39;s claims must never hold secrets.</p>
+    <p class="mono muted refs">https://www.rfc-editor.org/rfc/rfc9068 · executed in a sandbox</p>
+  </div>
+</div>
+
+      <div class="quiz" data-answer="d" data-type="single">
+<div class="kicker">Question 3</div>  <p class="prompt">A Claude Code job&#39;s remote MCP server starts answering 401 to its token. What does the job&#39;s model see?</p>
+  <div class="choices">
+    <button type="button" class="choice" data-choice="a">
+      <span class="mark mono">a</span><span class="text">An automatic retry with a new token</span>
+    </button>
+    <button type="button" class="choice" data-choice="b">
+      <span class="mark mono">b</span><span class="text">A tool result saying the audience is wrong</span>
+    </button>
+    <button type="button" class="choice" data-choice="c">
+      <span class="mark mono">c</span><span class="text">The server&#39;s tools, each failing with 401 when called</span>
+    </button>
+    <button type="button" class="choice" data-choice="d">
+      <span class="mark mono">d</span><span class="text">None of the server&#39;s tools: the server is not connected, so calling one reports no such tool</span>
+    </button>
+  </div>
+  <div class="verdict" hidden>
+    <p class="answer"><strong>None of the server&#39;s tools: the server is not connected, so calling one reports no such tool</strong>
+</p>
+    <p class="muted">A 401 at connection time makes Claude Code treat the server as needing authentication; it does not connect and offers the model none of its tools. The reason is in the server&#39;s WWW-Authenticate header and its log, not in anything the model receives.</p>
+    <p class="mono muted refs">https://code.claude.com/docs/en/mcp</p>
+  </div>
+</div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script src="../../quiz.js"></script></body>
+</html>

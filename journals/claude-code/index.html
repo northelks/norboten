@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code in a job — what it loads, what it may do, and what it costs · Norboten</title>
+<meta name="description" content="Claude Code is usually met as an interactive assistant in a terminal. This journal is about the other way it runs: as a program started by a script, a cron job ">
+<link rel="canonical" href="https://norboten.org/journals/claude-code/"><meta property="og:title" content="Claude Code in a job — what it loads, what it may do, and what it costs · Norboten">
+<meta property="og:description" content="Claude Code is usually met as an interactive assistant in a terminal. This journal is about the other way it runs: as a program started by a script, a cron job ">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/claude-code/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Claude Code in a job — what it loads, what it may do, and what it costs · Norboten">
+<meta name="twitter:description" content="Claude Code is usually met as an interactive assistant in a terminal. This journal is about the other way it runs: as a program started by a script, a cron job ">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Claude Code in a job \u2014 what it loads, what it may do, and what it costs",
+  "description": "Claude Code is usually met as an interactive assistant in a terminal. This journal is about the other way it runs: as a program started by a script, a cron job ",
+  "url": "https://norboten.org/journals/claude-code/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2476,
+  "timeRequired": "PT45M",
+  "about": ["Claude Code", "AI Services", "AI Agents"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal</div>
+    <h1>Claude Code in a job — what it loads, what it may do, and what it costs</h1>
+    <p class="muted">
+      45 minutes' reading · 2476 words ·<span class="tag">Claude Code</span><span class="tag">AI Services</span><span class="tag">AI Agents</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 113 words</title><rect x="0.0" y="0" width="30.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 809 words</title><rect x="33.9" y="0" width="221.5" height="30" rx="4" fill="#1d2a23"/><text x="41.9" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 634 words</title><rect x="258.5" y="0" width="173.6" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 202 words</title><rect x="435.0" y="0" width="55.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#symptoms-and-causes"><title>Symptoms and causes — 182 words</title><rect x="493.4" y="0" width="49.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 179 words</title><rect x="546.2" y="0" width="49.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#exercises"><title>Exercises — 107 words</title><rect x="598.2" y="0" width="29.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#sources"><title>Sources — 23 words</title><rect x="630.5" y="0" width="6.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 439 words</title><rect x="639.8" y="0" width="120.2" height="30" rx="4" fill="#1d2a23"/><text x="647.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#symptoms-and-causes">Symptoms and causes</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#exercises">Exercises</a></li>
+          <li><a href="#sources">Sources</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Claude Code is usually met as an interactive assistant in a terminal. This journal is about the other
+way it runs: as a program started by a script, a cron job or a CI workflow, with nobody watching. In
+that role it is a small operating environment of its own. It reads configuration from five levels,
+loads instructions from <code>CLAUDE.md</code> files, starts MCP servers, runs hooks, can hand work to
+subagents, and executes tool calls a model chooses — each of which is either allowed, refused or
+never offered. A job is safe and cheap when every one of those is decided on purpose.</p>
+<p>Everything below was run with Claude Code 2.1.270 in Norboten's claude lab image, where the model is a
+local script and every other decision is Claude Code's own — before that image moved to Ubuntu 26.04
+(<code>ubuntu-26.04-claude</code>), where the six claude labs built on the same behaviour pass again. The six labs of the claude
+track each take one of these mechanisms apart; this journal puts them together into one job.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Start a headless run and read what it loaded: model, permission mode, tools, agents, MCP servers.</li>
+<li>Say which settings level a key comes from, and why permission rules behave differently from other keys.</li>
+<li>Shape a job's permissions: a strict mode, the fewest tools, narrow allow rules, and deny rules that
+still apply in an untrusted checkout.</li>
+<li>Use a hook as a guard, a subagent to keep work cheap and contained, and an MCP server for outside data.</li>
+<li>Bound a run's cost with a trigger, a turn cap, a model choice and structured output.</li>
+<li>Find the evidence afterwards: the JSON result, the init event, transcripts and subagent logs.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="one-run-from-the-outside">One run, from the outside</h3>
+<p><code>claude -p &quot;&lt;prompt&gt;&quot;</code> runs one session and exits. Three outputs matter:</p>
+<ul>
+<li><code>--output-format json</code> prints one result object: <code>result</code>, <code>num_turns</code>, <code>is_error</code> and <code>subtype</code>
+(<code>success</code>, <code>error_max_turns</code>, …), <code>permission_denials</code>, <code>total_cost_usd</code> and <code>modelUsage</code> per model.</li>
+<li><code>--output-format stream-json --verbose</code> prints events as they happen; the first, <code>system/init</code>,
+records what the session loaded.</li>
+<li>The session transcript, <code>~/.claude/projects/&lt;cwd with / as -&gt;/&lt;session&gt;.jsonl</code>, with every tool
+result, and a <code>subagents/</code> directory beside it when work was delegated. <code>--no-session-persistence</code>
+writes none.</li>
+</ul>
+<p>A run authenticates with, in order, a cloud provider, <code>ANTHROPIC_AUTH_TOKEN</code>, <code>ANTHROPIC_API_KEY</code> (in
+<code>-p</code>, always used when present), an <code>apiKeyHelper</code>, <code>CLAUDE_CODE_OAUTH_TOKEN</code> (a one-year subscription
+token from <code>claude setup-token</code>), then a login. <code>--bare</code> skips every kind of auto-discovery and reads
+only API keys, so a subscription-token job cannot use it — and therefore always loads the repository's
+<code>.claude/</code>, which is part of what the job runs.</p>
+<h3 id="what-a-session-loads">What a session loads</h3>
+<table>
+<thead>
+<tr>
+<th>what</th>
+<th>from</th>
+<th>loaded by <code>-p</code> in an untrusted checkout?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>settings</td>
+<td>managed → command line → <code>.claude/settings.local.json</code> → <code>.claude/settings.json</code> → <code>~/.claude/settings.json</code></td>
+<td>yes, <strong>except allow rules from <code>.claude/settings.json</code></strong></td>
+</tr>
+<tr>
+<td>memory</td>
+<td>managed, <code>~/.claude/CLAUDE.md</code>, every <code>CLAUDE.md</code> from the cwd upward, <code>CLAUDE.local.md</code>, <code>@</code> imports</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>hooks</td>
+<td>the <code>hooks</code> key of every settings level (merged)</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>subagents</td>
+<td><code>.claude/agents/</code>, <code>~/.claude/agents/</code>, <code>--agents</code>, managed, plugins</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>MCP servers</td>
+<td><code>.mcp.json</code>, <code>claude mcp add</code> scopes, <code>--mcp-config</code></td>
+<td>yes, unless disabled</td>
+</tr>
+<tr>
+<td>skills</td>
+<td><code>.claude/skills/</code>, <code>~/.claude/skills/</code>, built-in and plugin skills</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p>Scalar settings (<code>model</code>, <code>permissions.defaultMode</code>) come from the highest level that sets them.
+Lists (<code>permissions.allow</code>, <code>permissions.deny</code>, hooks) merge across levels. A deny anywhere wins over an
+allow anywhere.</p>
+<p>The trust exception is the one that surprises CI authors. A repository could ship a settings file that
+allows everything, so a headless run in a workspace nobody has trusted <strong>ignores allow rules from the
+shared project file</strong> and warns on stderr, while honouring its deny rules. Put a job's allow rules on
+its command line.</p>
+<h3 id="what-the-model-may-do">What the model may do</h3>
+<p>For each tool call the model asks for, Claude Code decides before running anything:</p>
+<ol>
+<li>Is the tool in the session at all? <code>--tools</code> limits the built-in set; a deny rule naming a tool
+without a specifier (<code>WebFetch</code>) removes it. A missing tool fails as &quot;No such tool available&quot;.</li>
+<li>Deny rules, then ask rules, then allow rules, from every level.</li>
+<li>A <code>PreToolUse</code> hook, which can refuse with exit status 2 (stderr is the reason) or JSON.</li>
+<li>The permission mode, for anything no rule decided: <code>default</code> prompts, <code>acceptEdits</code> lets edits
+through, <code>dontAsk</code> refuses, <code>bypassPermissions</code> lets everything through. In <code>-p</code> a prompt cannot be
+answered, so <code>dontAsk</code> is the honest mode for a job.</li>
+</ol>
+<p>Rules for Bash match command text and are not a security boundary: <code>Bash(rm *)</code> does not match
+<code>find -delete</code> or <code>/bin/rm</code>. Read-only commands run without asking; a <code>Read</code> deny stops <code>cat .env</code> but
+not <code>grep -r TOKEN .</code>. When a job needs no shell, the only reliable answer is not to offer one.</p>
+<h3 id="guards-helpers-and-outside-data">Guards, helpers and outside data</h3>
+<p><strong>Hooks</strong> are commands Claude Code runs on events, with the event as JSON on stdin. Matchers are exact,
+case-sensitive tool names (<code>Edit|Write</code>) or regular expressions. A <code>PreToolUse</code> hook blocks only with
+exit 2 or a JSON <code>deny</code>; exit 1 — and a script that cannot be executed — are non-blocking errors.</p>
+<p><strong>Subagents</strong> are Markdown files with <code>name</code>, <code>description</code>, and optionally <code>tools</code> and <code>model</code>. Their
+work happens in their own context, which keeps the main conversation short; a narrow subagent on Haiku
+is one of the documented cost levers. Without a <code>tools</code> line a subagent inherits every tool.</p>
+<p><strong>MCP servers</strong> bring outside tools, named <code>mcp__&lt;server&gt;__&lt;tool&gt;</code>. A server has to be enabled,
+startable, allowed by that name, and given its credentials — <code>${VAR}</code> in <code>.mcp.json</code> expands from the
+environment, and an unset variable is passed literally.</p>
+<h3 id="what-a-run-costs">What a run costs</h3>
+<p>Four things multiply:</p>
+<ul>
+<li><strong>how often it runs</strong> — the trigger (<code>issues: types: [opened]</code>, not every issue activity);</li>
+<li><strong>how many turns</strong> — no limit by default; <code>--max-turns</code> and <code>--max-budget-usd</code> set one;</li>
+<li><strong>what each turn costs</strong> — the model, the system prompt and tool definitions sent every turn, the
+context that grows with each tool result, and thinking tokens;</li>
+<li><strong>how much output</strong> — structured output (<code>--json-schema</code>) instead of prose.</li>
+</ul>
+<p>Norboten's own jobs, measured on real runs (docs/claude-code-in-norboten.md): a triage label on Haiku
+with no tools and thinking off costs $0.0028–0.0038; release notes for 40 commits dropped from 111 s and
+$0.070 to 9 s and $0.021 when thinking was turned off for runs without tools; the Sonnet lab-author job
+took 15 turns and $0.33, three quarters of its 163,802 input tokens read from cache. The cost figures are
+Claude Code's list-price estimate; on a subscription token they count against the plan.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>The job: write release notes for a repository into <code>NOTES.md</code>. It must not push; a person does. Start
+with an empty repository and ask the session what it loaded:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span>hi<span class="hl-w"> </span>--output-format<span class="hl-w"> </span>stream-json<span class="hl-w"> </span>--verbose<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{model, permissionMode, agents, tools: (.tools|length)}'</span>
+<span class="hl-go">{"model":"claude-opus-5[1m]","permissionMode":"default","agents":["claude","Explore","general-purpose","Plan","statusline-setup"],"tools":21}</span>
+</code></pre>
+
+<p>No model was named, so the account default — Opus — with 21 tools and the default mode. The project
+adds what a team would commit: a <code>CLAUDE.md</code> with the rule, a Haiku subagent that only reads, a
+<code>PreToolUse</code> hook that refuses pushes, and a deny rule for <code>.env</code>:</p>
+<pre><code class="language-markdown"># .claude/agents/summariser.md
+---
+name: summariser
+description: Summarises commit messages into user-facing release-note bullets. Use for release notes.
+tools: Read, Grep, Glob
+model: haiku
+---
+You turn commit messages into one short, user-facing bullet each. You never edit files.
+</code></pre>
+<pre class="hl"><code class="language-sh"><span class="hl-ch">#!/bin/sh</span>
+<span class="hl-c1"># .claude/hooks/no-push.sh — PreToolUse, matcher Bash</span>
+<span class="hl-k">if</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'.tool_input.command // ""'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-Eq<span class="hl-w"> </span><span class="hl-s1">'git([[:space:]].*)?[[:space:]]push'</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span>
+<span class="hl-w">    </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"Blocked: a person pushes release notes."</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span>
+<span class="hl-w">    </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span>
+<span class="hl-k">fi</span>
+</code></pre>
+
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span>hi<span class="hl-w"> </span>--output-format<span class="hl-w"> </span>stream-json<span class="hl-w"> </span>--verbose<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{agents}'</span>
+<span class="hl-go">{"agents":["claude","Explore","general-purpose","Plan","statusline-setup","summariser"]}</span>
+</code></pre>
+
+<p>The scripted model plays the job the way a model plausibly would: read the log, ask the summariser,
+write <code>NOTES.md</code>, then commit and push. First with no flags at all:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"Write the release notes."</span><span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{num_turns, denials: [.permission_denials[] | .tool_name], models: (.modelUsage|keys)}'</span>
+<span class="hl-go">{"num_turns":5,"denials":["Write","Bash"],"models":["claude-haiku-4-5-20251001","claude-opus-5[1m]"]}</span>
+<span class="hl-gp">$ </span>ls
+<span class="hl-go">CLAUDE.md  README.md</span>
+</code></pre>
+
+<p>Nothing was harmed — and nothing was done. In <code>default</code> mode the Write would have needed a prompt, and a
+headless run cannot answer one, so it was refused; the push was refused too. The subagent did
+run on Haiku; the main agent ran on Opus. A job that silently produces nothing is the first failure mode.</p>
+<p>Now the job's own command line: a strict mode, an explicit model, allow rules for exactly the calls the
+task needs, a cap:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"Write the release notes for the last five commits into NOTES.md."</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>--permission-mode<span class="hl-w"> </span>dontAsk<span class="hl-w"> </span>--model<span class="hl-w"> </span>sonnet<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>--allowedTools<span class="hl-w"> </span><span class="hl-s2">"Bash(git *),Write(./NOTES.md),Edit(./NOTES.md),Agent"</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>--max-turns<span class="hl-w"> </span><span class="hl-m">12</span><span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{num_turns, denials: [.permission_denials[] | .tool_name], models: (.modelUsage|keys)}'</span>
+<span class="hl-go">{"num_turns":5,"denials":["Bash"],"models":["claude-haiku-4-5-20251001","claude-sonnet-5"]}</span>
+</code></pre>
+
+<p><code>Bash(git *)</code> is broader than the task needs — it allows <code>git push</code> — and it is what a hurried job
+author writes. The hook is what stopped it. The transcript shows each tool result in order:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-err">'</span><span class="hl-k">select</span><span class="hl-o">(</span>.type<span class="hl-o">==</span><span class="hl-s2">"user"</span><span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>.message.content<span class="hl-o">[]</span>?<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-k">select</span><span class="hl-o">(</span>.type<span class="hl-o">==</span><span class="hl-s2">"tool_result"</span><span class="hl-o">)</span>
+<span class="hl-go">         | .content | if type=="array" then .[0].text else . end' "$s" | cut -c1-90</span>
+<span class="hl-go">a8008cb init</span>
+<span class="hl-go">Async agent launched successfully. (This tool result is internal metadata — never quote or paste</span>
+<span class="hl-go">File created successfully at: /home/learner/notes/NOTES.md (file state is current in your context</span>
+<span class="hl-go">PreToolUse:Bash hook error: [$CLAUDE_PROJECT_DIR/.claude/hooks/no-push.sh]: Blocked: a person pushes</span>
+<span class="hl-gp">$ </span>cat<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">s</span><span class="hl-p">%.jsonl</span><span class="hl-si">}</span><span class="hl-s2">"</span>/subagents/*.meta.json<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{agentType}'</span>
+<span class="hl-go">{"agentType":"summariser"}</span>
+<span class="hl-gp">$ </span>git<span class="hl-w"> </span>log<span class="hl-w"> </span>--oneline<span class="hl-w"> </span>-1<span class="hl-w"> </span>origin/main
+<span class="hl-go">a8008cb init</span>
+</code></pre>
+
+<p>The log was read, the summariser ran, the notes were written, and the whole compound command
+<code>git add … &amp;&amp; git commit … &amp;&amp; git push</code> was refused before any part of it ran — so nothing was committed
+either. Two layers did two jobs: the allow rules defined the task, the hook enforced the one rule that
+must hold even when the rules are written loosely. With <code>Bash(git log *)</code> instead of <code>Bash(git *)</code> the
+push is refused by the permission check itself, and the hook becomes the second line rather than the
+only one.</p>
+<p>What is left is cost and evidence. For CI the same command gains <code>--no-session-persistence</code> (or keeps
+transcripts as an artifact on purpose), a trigger that runs it once per release, and a workflow
+<code>timeout-minutes</code>. If the notes are consumed by a script rather than read by a person, <code>--json-schema</code>
+turns them into fields.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Reading the result and not the denials.</strong> A run that was refused everything still ends with
+<code>is_error: false</code> and a cheerful <code>result</code>. <code>permission_denials</code> and the transcript's tool results say
+what happened.</p>
+<p><strong><code>--dangerously-skip-permissions</code> because &quot;it kept asking&quot;.</strong> It was asking because the job had not said
+what it needs. Say it with allow rules and <code>dontAsk</code>.</p>
+<p><strong>Committing allow rules to <code>.claude/settings.json</code> for a CI job.</strong> An untrusted checkout ignores them.
+Deny rules and hooks there are fine; allows go on the command line.</p>
+<p><strong><code>Bash(rm *)</code> as a safety measure.</strong> It matches text. If the job needs no shell, <code>--tools</code> without Bash.</p>
+<p><strong>Hooks that exit 1.</strong> Every shell script's &quot;error&quot; is a hook's &quot;carry on&quot;. Exit 2, reason on stderr.</p>
+<p><strong>A subagent with no <code>tools</code> line.</strong> It inherits everything, including what the main session was given.</p>
+<p><strong>Forgetting what is sent every turn.</strong> <code>CLAUDE.md</code>, tool definitions and the default system prompt ride
+along on each request. Short <code>CLAUDE.md</code>, few tools, and <code>--system-prompt</code> for jobs that need none of
+Claude Code's own instructions.</p>
+<p><strong>No turn cap.</strong> A model that keeps calling tools keeps billing. In the lab image an endless scripted
+model drove 1,186 turns in 25 seconds.</p>
+<p><strong><code>--bare</code> with a subscription token.</strong> Not logged in.</p>
+<h2 id="symptoms-and-causes">Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a headless job does things nobody allowed</td>
+<td><code>bypassPermissions</code>, or allow rules broader than the task</td>
+<td>the job's flags; <code>permission_denials</code> in the JSON result</td>
+</tr>
+<tr>
+<td>allow rules in the project are ignored in CI</td>
+<td>the checkout is untrusted: project allow rules need trust</td>
+<td>the run's stderr; <code>--allowedTools</code> on the command line</td>
+</tr>
+<tr>
+<td>a hook never runs</td>
+<td>the matcher does not name the tool exactly, or the script is not executable</td>
+<td><code>--debug</code>; <code>ls -l .claude/hooks</code>; the matcher's case</td>
+</tr>
+<tr>
+<td>a PreToolUse hook sees the call and does not stop it</td>
+<td>it exits 1 instead of 2, or writes its reason to stdout</td>
+<td>the hook's exit status and stderr</td>
+</tr>
+<tr>
+<td>a subagent is never used</td>
+<td>its file is misnamed, its tools misspelled, or it is not where Claude Code looks</td>
+<td>the session transcript; <code>.claude/agents/</code></td>
+</tr>
+<tr>
+<td>a job's bill keeps growing</td>
+<td>no <code>--max-turns</code>, no <code>--max-budget-usd</code>, a large model for a small task</td>
+<td>the result's <code>num_turns</code> and <code>total_cost_usd</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># what a session loaded</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span>hi<span class="hl-w"> </span>--output-format<span class="hl-w"> </span>stream-json<span class="hl-w"> </span>--verbose<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">  </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span><span class="hl-s1">'{model, permissionMode, apiKeySource, agents, mcp_servers, tools, claude_code_version}'</span>
+
+<span class="hl-c1"># a job-shaped run</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w"> </span>--permission-mode<span class="hl-w"> </span>dontAsk<span class="hl-w"> </span>--model<span class="hl-w"> </span>sonnet<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">  </span>--tools<span class="hl-w"> </span><span class="hl-s2">"Read,Edit,Glob,Grep"</span><span class="hl-w"> </span>--allowedTools<span class="hl-w"> </span><span class="hl-s2">"Edit(./docs/**)"</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">  </span>--max-turns<span class="hl-w"> </span><span class="hl-m">10</span><span class="hl-w"> </span>--max-budget-usd<span class="hl-w"> </span><span class="hl-m">1</span>.00<span class="hl-w"> </span>--no-session-persistence<span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json
+
+<span class="hl-c1"># a classification: no tools, structured answer, no thinking</span>
+<span class="hl-nv">MAX_THINKING_TOKENS</span><span class="hl-o">=</span><span class="hl-m">0</span><span class="hl-w"> </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w"> </span>--model<span class="hl-w"> </span>haiku<span class="hl-w"> </span>--tools<span class="hl-w"> </span><span class="hl-s2">""</span><span class="hl-w"> </span>--max-turns<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">  </span>--json-schema<span class="hl-w"> </span><span class="hl-s1">'{"type":"object","properties":{"label":{"type":"string"}},"required":["label"]}'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">  </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'.structured_output.label'</span>
+
+<span class="hl-c1"># afterwards</span>
+jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{subtype, num_turns, is_error, permission_denials, total_cost_usd, models: (.modelUsage|keys)}'</span><span class="hl-w"> </span>run.json
+<span class="hl-nv">s</span><span class="hl-o">=</span><span class="hl-k">$(</span>ls<span class="hl-w"> </span>-t<span class="hl-w"> </span>~/.claude/projects/&lt;project&gt;/*.jsonl<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-k">)</span>
+jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'select(.type=="user") | .message.content[]? | select(.type=="tool_result") | .content'</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$s</span><span class="hl-s2">"</span>
+ls<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">s</span><span class="hl-p">%.jsonl</span><span class="hl-si">}</span><span class="hl-s2">"</span>/subagents/
+
+<span class="hl-c1"># levels, highest first: managed, command line, .claude/settings.local.json, .claude/settings.json, ~/.claude/settings.json</span>
+cat<span class="hl-w"> </span>/etc/claude-code/managed-settings.json<span class="hl-w">     </span><span class="hl-c1"># Linux; must be readable (0644)</span>
+
+<span class="hl-c1"># hooks: JSON on stdin; exit 2 blocks PreToolUse</span>
+jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'.tool_input.command // .tool_input.file_path // ""'</span>
+<span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"reason"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span>
+
+<span class="hl-c1"># subagent: .claude/agents/&lt;name&gt;.md with name, description, tools, model</span>
+<span class="hl-c1"># MCP: .mcp.json; tools are mcp__&lt;server&gt;__&lt;tool&gt;; "${VAR}" from the environment</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span>hi<span class="hl-w"> </span>--output-format<span class="hl-w"> </span>stream-json<span class="hl-w"> </span>--verbose<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span><span class="hl-s1">'.mcp_servers'</span>
+</code></pre>
+
+<h2 id="exercises">Exercises</h2>
+<ol>
+<li>Run <code>claude -p</code> in a fresh directory with a deny rule and a scripted request for the denied tool;
+read <code>permission_denials</code>.</li>
+<li>Write a PreToolUse hook that blocks <code>git push</code>, and test it with exit status 1 and with 2.</li>
+<li>Put the same setting at three levels (user, shared project, local project) and find which one wins
+with a run that prints it.</li>
+<li>Define a subagent with a <code>tools:</code> list and a <code>model:</code>, invoke it, and confirm from the transcript
+which model and tools it ran with.</li>
+<li>Run the same job with <code>--max-turns 2</code> and without, against a scripted model that never stops.</li>
+</ol>
+<h2 id="sources">Sources</h2>
+<ul>
+<li>Settings and their precedence: https://code.claude.com/docs/en/settings</li>
+<li>Permissions: https://code.claude.com/docs/en/permissions</li>
+<li>Hooks: https://code.claude.com/docs/en/hooks</li>
+<li>Subagents: https://code.claude.com/docs/en/sub-agents</li>
+<li>Headless runs and the CLI: https://code.claude.com/docs/en/headless, https://code.claude.com/docs/en/cli-reference</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>A <code>claude -p</code> run ends with <code>is_error: false</code> and did none of its work. Where do you look first, and
+what is the likeliest cause?</p>
+<blockquote>
+<p>At <code>permission_denials</code> in the JSON result (and the tool results in the transcript). The likeliest
+cause is a mode in which the calls would have prompted — <code>default</code> in <code>-p</code> — or allow rules that were
+never honoured, such as ones in an untrusted checkout's <code>.claude/settings.json</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Which one field of the init event tells you which authentication a run used, and why does it matter
+for a CI job on a subscription?</p>
+<blockquote>
+<p><code>apiKeySource</code>. A stray <code>ANTHROPIC_API_KEY</code> is used in <code>-p</code> whenever present, so a job meant to run on
+a subscription token may be billing an API key instead.</p>
+</blockquote>
+</li>
+<li>
+<p>List the settings levels in precedence order and explain why a deny rule in the lowest level still
+blocks a call allowed on the command line.</p>
+<blockquote>
+<p>Managed, command line, local project, shared project, user. Permission rules are lists that merge
+across levels, and deny is evaluated before allow, so a deny at any level wins.</p>
+</blockquote>
+</li>
+<li>
+<p>Name the four steps a tool call passes before it runs.</p>
+<blockquote>
+<p>Whether the tool exists in the session (<code>--tools</code>, bare deny rules); deny, ask and allow rules;
+<code>PreToolUse</code> hooks; the permission mode for anything left undecided.</p>
+</blockquote>
+</li>
+<li>
+<p>In the walkthrough, <code>Bash(git *)</code> was allowed and the push was still refused. By what, and what would
+have refused it without that?</p>
+<blockquote>
+<p>The <code>PreToolUse</code> hook, exiting 2. With a narrower allow such as <code>Bash(git log *)</code>, <code>dontAsk</code> would have
+refused the compound command because no rule allowed it.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is a subagent a cost lever as well as an organisation tool?</p>
+<blockquote>
+<p>Its reading and tool results stay in its own context; only its result returns, so the main
+conversation — resent every turn — stays short. It can also be pinned to a cheaper model.</p>
+</blockquote>
+</li>
+<li>
+<p>Give four independent ways to bound a job's cost.</p>
+<blockquote>
+<p>A narrow trigger, a turn cap (<code>--max-turns</code>) or budget (<code>--max-budget-usd</code>), a smaller model with
+fewer tools and less context (and thinking off where nothing needs thinking), structured output
+instead of prose. A workflow timeout is the backstop.</p>
+</blockquote>
+</li>
+<li>
+<p>Why can a CI job authenticated with <code>CLAUDE_CODE_OAUTH_TOKEN</code> not use <code>--bare</code>, and what follows for
+the repository it runs in?</p>
+<blockquote>
+<p>Bare mode never reads OAuth tokens, only API keys. So the job loads the repository's <code>.claude/</code>
+(hooks, subagents, MCP servers, <code>CLAUDE.md</code>) — which runs as part of the job and must be reviewed like
+code.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automation that needs a person is not automation</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Automation that needs a person is not automation</h1>
+  <div class="meta">ansible, users-permissions · 40 minutes · 2518 words</div>
+</header>
+<p><code>deploy.service</code> runs a playbook at every boot to render the application’s database settings. The
+password comes from an Ansible Vault file, and the project’s <code>ansible.cfg</code> says <code>ask_vault_pass = true</code>. That works perfectly when a person runs the playbook from a terminal, types the password, and
+watches. At boot there is no terminal and no person, Ansible’s prompt reads end-of-file, and the
+application starts with no database settings. Someone “fixed” it on another machine by running the
+playbook by hand — which proves the playbook works and fixes nothing about the service.</p>
+<p>While debugging, the same person saved a decrypted copy of the vault next to the encrypted one, to
+read it, and the playbook has a debug task that prints the password into whatever log captures its
+output. So the machine had three secret-handling problems at once: the secret could not be reached by
+the automation that needed it, it could be reached by anyone who could read the project directory, and
+it would be written to the journal the moment the automation worked.</p>
+<p>This journal is about running Ansible Vault unattended without weakening it: who holds the vault
+password, where it lives, what else must never contain the secret, and how to check each of those
+claims on the machine.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Explain what Ansible Vault encrypts, what the vault password protects, and why whoever can read the
+password file can read every secret.</li>
+<li>Run a playbook that uses vault content from a service, with <code>vault_password_file</code> (or its
+equivalents), and no prompt.</li>
+<li>Give an unattended account exactly the access it needs: its own copy of the password, owned by it,
+mode 0400 or 0600, not executable.</li>
+<li>Find plaintext copies of a secret on disk, and understand why Ansible ignored the one in
+<code>group_vars</code> while a person could still read it.</li>
+<li>Keep secrets out of logs: debug output, module arguments and diffs, and <code>no_log</code>.</li>
+<li>Read a single run of a systemd service in the journal with its invocation ID.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>What Vault is, and what it is not</h3>
+<p>Ansible Vault encrypts data at rest with a symmetric key derived from a password: a whole file
+(<code>ansible-vault encrypt file.yml</code>) or single values (<code>ansible-vault encrypt_string</code>). An encrypted
+file starts with a header such as <code>$ANSIBLE_VAULT;1.1;AES256</code>. When a playbook loads vault content,
+Ansible decrypts it in memory with the vault password and uses the values like any other variable.</p>
+<p>Two consequences follow, and both matter here:</p>
+<ul>
+<li><strong>The vault password is the secret now.</strong> Encryption moves the problem from “protect the database
+password” to “protect the vault password”. Anyone who has it can decrypt every vault file encrypted
+with it.</li>
+<li><strong>Decrypted values are ordinary variables at run time.</strong> Vault does nothing to stop them from being
+printed, templated into a world-readable file, or logged.</li>
+</ul>
+<h3>How Ansible gets the vault password</h3>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Unattended?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--ask-vault-pass</code> on the command line, or <code>ask_vault_pass = true</code> in <code>ansible.cfg</code></td>
+<td>no: prompts on the terminal</td>
+</tr>
+<tr>
+<td><code>--vault-password-file PATH</code>, or <code>vault_password_file = PATH</code> in <code>ansible.cfg</code></td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>ANSIBLE_VAULT_PASSWORD_FILE=PATH</code> in the environment</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>--vault-id label@PATH</code> (several vaults, several passwords)</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p>A password file holds the password on its first line. <strong>If the file is executable, Ansible runs it</strong>
+and uses its output — the hook for password managers and secret stores (<code>vault-keyring-client</code>, a
+script that calls an API). A plain password file must therefore <em>not</em> be executable, or Ansible will
+try to execute a line of random characters.</p>
+<p>Under systemd, <code>ask_vault_pass</code> cannot work: the service’s standard input is <code>/dev/null</code> and there is
+no controlling terminal. Python’s <code>getpass</code> warns that it cannot control echo, reads end-of-file, and
+Ansible fails with <code>EOFError (ctrl-d) on prompt</code>. That message is the signature of an interactive
+setting in unattended automation.</p>
+<h3>Who may read the password file</h3>
+<p>The playbook runs as <code>deploy</code>. The only copy of the password was <code>/root/vault-password.txt</code>, mode
+0600, owned by root: correct for root, unreadable for <code>deploy</code>. The fix is not to loosen root’s file;
+it is to give the account that runs the automation its own copy, with the same protection:</p>
+<pre><code class="language-console">$ sudo install -o deploy -g deploy -m 0400 /root/vault-password.txt /var/lib/deploy/.vault-password
+</code></pre>
+<p><code>install</code> copies the file and sets owner, group and mode as part of the same command, instead of
+leaving a window in which a <code>cp</code> copy sits with default permissions until someone remembers <code>chmod</code>. <code>0400</code> (or <code>0600</code>) means no access for group or others, and no
+execute bit. The home directory of a system account is a natural place: it belongs to that account and
+is outside the project directory, so the password is not committed, synced or backed up with the code.</p>
+<p>Then tell Ansible about it in the project’s configuration:</p>
+<pre><code class="language-ini">[defaults]
+inventory = inventory.ini
+vault_password_file = /var/lib/deploy/.vault-password
+</code></pre>
+<p>Putting it in <code>ansible.cfg</code> means every run in the project — the service, a person running with
+<code>sudo -u deploy</code>, a test — uses the same source. The alternative for a service-only setup is
+<code>Environment=ANSIBLE_VAULT_PASSWORD_FILE=…</code> in the unit.</p>
+<h3>Plaintext copies, and why Ansible ignored this one</h3>
+<p><code>group_vars/app/</code> is a directory of variable files for the <code>app</code> group. Ansible loads the files in it
+whose names end in <code>.yml</code>, <code>.yaml</code> or <code>.json</code> (or have no extension), and ignores others. So
+<code>vault.yml.plain</code> was never used by the playbook — and it was mode 0644, readable by every account on
+the machine, with the database password in it. “The automation does not use it” and “it is harmless”
+are different statements.</p>
+<p>Plaintext secrets turn up in predictable places: files named <code>*.dec</code>, <code>*.plain</code>, <code>*.bak</code> or <code>*.orig</code>
+next to vault files; editor swap files; shell history (<code>ansible-vault view</code> output pasted into a file);
+<code>--diff</code> output saved from a CI run. The honest check is to search the tree for the secret itself,
+which only someone who already knows it can do — a small, deliberate use of the secret to prove its
+absence elsewhere.</p>
+<p><code>ansible-vault edit</code> and <code>ansible-vault view</code> decrypt to memory or a temporary file and clean up; they
+are how you read or change vault content without leaving a copy.</p>
+<h3>Secrets in logs</h3>
+<p>A playbook’s output goes wherever the runner’s standard output goes. Under systemd that is the journal,
+readable by administrators and often shipped off the machine. Three sources of leaks:</p>
+<ul>
+<li><strong>Explicit output.</strong> <code>debug: msg: &quot;… {{ db_password }}&quot;</code> prints it. Remove such tasks, or print only
+non-secret facts.</li>
+<li><strong>Module arguments and results.</strong> On the managed host, Ansible modules log their arguments to syslog
+(<code>Invoked with …</code> lines in the journal). Parameters that modules declare as secret — a <code>password</code>
+option — are masked automatically; values you pass in ordinary parameters are not. <code>--diff</code> prints
+file contents, templated secrets included.</li>
+<li><strong>Errors.</strong> A failing task prints its arguments and results.</li>
+</ul>
+<p><code>no_log: true</code> on a task suppresses its arguments, results and diff in the output and in those logs:</p>
+<pre><code class="language-yaml">- name: Database settings
+  ansible.builtin.template:
+    src: templates/db.conf.j2
+    dest: /srv/app/config/db.conf
+    mode: &quot;0640&quot;
+  no_log: true
+</code></pre>
+<p>It also hides the details you need when the task fails, so use it on tasks that handle secrets, not on
+whole plays. Here the template task’s arguments are only paths; the leak was the debug task.</p>
+<h3>Reading exactly one run</h3>
+<p>A service can run many times per boot. systemd gives every activation an <strong>invocation ID</strong>, and
+journald records it with each line the run writes:</p>
+<pre><code class="language-console">$ systemctl show deploy.service -p InvocationID --value
+$ journalctl -u deploy.service _SYSTEMD_INVOCATION_ID=&lt;id&gt; -o cat
+</code></pre>
+<p>That is precisely “what did the last run print”, independent of what earlier runs printed. Past leaks
+remain in older runs; the persistent journal keeps them until rotation, and removing them means
+rotating and vacuuming the journal (<code>journalctl --rotate</code>, <code>--vacuum-time=</code>). Once a secret has been
+logged, rotating the secret itself is the real fix.</p>
+<h3>The rendered file</h3>
+<p>The playbook writes <code>/srv/app/config/db.conf</code> with mode 0640 into a directory owned by <code>deploy</code>, group
+<code>app</code>, with the setgid bit. The walkthrough shows the file ended up <code>deploy:deploy</code> anyway: setgid on a
+directory gives its group to files <em>created</em> in it, but Ansible writes a temporary file and renames it
+into place, and a rename keeps the group the temporary file already had. If the application’s account
+must read the settings through the <code>app</code> group, the task has to say <code>group: app</code>. A secret rendered by
+automation needs the same care as the password file: owner, group and mode stated in the task, not
+inherited by accident.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the track’s lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed. The database
+password is generated per lab VM; where it would appear in the output of a working deploy, the journal
+text is redacted.</p>
+<p><strong>1. Read the failed boot run.</strong></p>
+<pre><code class="language-console">$ systemctl status deploy.service --no-pager | head -n 6
+× deploy.service - Render the application's configuration with Ansible
+     Loaded: loaded (/etc/systemd/system/deploy.service; enabled; preset: enabled)
+     Active: failed (Result: exit-code) since Mon 2026-09-14 03:51:30 UTC; 130ms ago
+ Invocation: 6c0b5299b44646fea2e3ed3c6a9f9c72
+    Process: 841 ExecStart=/usr/bin/ansible-playbook deploy.yml (code=exited, status=1/FAILURE)
+   Main PID: 841 (code=exited, status=1/FAILURE)
+$ sudo journalctl -u deploy.service -b --no-pager -o cat | tail -n 8
+/usr/lib/python3.13/getpass.py:90: GetPassWarning: Can not control echo on the terminal.
+  passwd = fallback_getpass(prompt, stream)
+Warning: Password input may be echoed.
+Vault password: [WARNING]: Error in vault password prompt (default): EOFError (ctrl-d) on prompt for (default)
+[ERROR]: EOFError (ctrl-d) on prompt for (default)
+deploy.service: Main process exited, code=exited, status=1/FAILURE
+deploy.service: Failed with result 'exit-code'.
+Failed to start deploy.service - Render the application's configuration with Ansible.
+$ cat /srv/deploy/ansible.cfg
+[defaults]
+inventory = inventory.ini
+retry_files_enabled = false
+interpreter_python = /usr/bin/python3
+ask_vault_pass = true
+</code></pre>
+<p><code>Vault password:</code> followed by <code>EOFError</code> — a prompt with nobody to answer it. <code>ask_vault_pass = true</code>
+is the cause.</p>
+<p><strong>2. Look at the secrets on disk.</strong></p>
+<pre><code class="language-console">$ ls -la /srv/deploy/group_vars/app/
+total 20
+drwxr-xr-x 2 deploy deploy 4096 Sep 14 03:51 .
+drwxr-xr-x 3 deploy deploy 4096 Sep 13 19:40 ..
+-rw-r--r-- 1 deploy deploy   65 Sep 13 19:40 vars.yml
+-rw------- 1 deploy deploy  484 Sep 14 03:51 vault.yml
+-rw-r--r-- 1 deploy deploy   42 Sep 14 03:51 vault.yml.plain
+$ head -c 120 /srv/deploy/group_vars/app/vault.yml; echo
+head: cannot open '/srv/deploy/group_vars/app/vault.yml' for reading: Permission denied
+$ cat /srv/deploy/group_vars/app/vault.yml.plain
+---
+db_password: ykpNDZxzPGA6oqGGVpPBcxou
+$ ls -l /root/vault-password.txt 2&gt;&amp;1; sudo ls -l /root/vault-password.txt
+ls: cannot access '/root/vault-password.txt': Permission denied
+-rw------- 1 root root 33 Sep 14 03:51 /root/vault-password.txt
+$ sudo -u deploy cat /root/vault-password.txt
+cat: /root/vault-password.txt: Permission denied
+</code></pre>
+<p>The encrypted vault is protected (0600) and even its ciphertext is unreadable to an ordinary user. Its
+decrypted copy is world-readable, and an unprivileged account just printed the database password. The
+vault password exists, but only root can read it — not <code>deploy</code>, which runs the playbook.</p>
+<p><strong>3. Give <code>deploy</code> its own password file and stop prompting.</strong></p>
+<pre><code class="language-console">$ sudo install -o deploy -g deploy -m 0400 /root/vault-password.txt /var/lib/deploy/.vault-password &amp;&amp; sudo ls -l /var/lib/deploy/.vault-password
+-r-------- 1 deploy deploy 33 Sep 14 03:51 /var/lib/deploy/.vault-password
+$ sudo sed -i 's#^ask_vault_pass = true#vault_password_file = /var/lib/deploy/.vault-password#' /srv/deploy/ansible.cfg &amp;&amp; cat /srv/deploy/ansible.cfg
+[defaults]
+inventory = inventory.ini
+retry_files_enabled = false
+interpreter_python = /usr/bin/python3
+vault_password_file = /var/lib/deploy/.vault-password
+$ cd /srv/deploy &amp;&amp; sudo -u deploy env HOME=/var/lib/deploy ansible-vault view group_vars/app/vault.yml | sed 's/db_password: .*/db_password: &lt;redacted&gt;/'
+---
+db_password: &lt;redacted&gt;
+$ sudo rm /srv/deploy/group_vars/app/vault.yml.plain
+</code></pre>
+<p><code>ansible-vault view</code>, run as <code>deploy</code> from the project directory, found the password file through
+<code>ansible.cfg</code> and decrypted the vault without asking: the configuration works for that account. Then
+the plaintext copy goes.</p>
+<p><strong>4. Run the service the way the boot does.</strong></p>
+<pre><code class="language-console">$ sudo systemctl start deploy.service; systemctl show deploy.service -p Result -p ExecMainStatus
+Result=success
+ExecMainStatus=0
+$ sudo cat /srv/app/config/db.conf | sed 's/^password = .*/password = &lt;redacted&gt;/'; sudo ls -l /srv/app/config/db.conf
+# managed by Ansible — /srv/deploy
+[database]
+host = 127.0.0.1
+name = inventory
+user = inventory_app
+password = &lt;redacted&gt;
+-rw-r----- 1 deploy deploy 139 Sep 14 03:51 /srv/app/config/db.conf
+$ sudo journalctl -u deploy.service _SYSTEMD_INVOCATION_ID=$(systemctl show deploy.service -p InvocationID --value) --no-pager -o cat | grep -A3 'Show what' | sed -E 's/with password [^&quot;]+/with password &lt;REDACTED BY THE JOURNAL AUTHOR&gt;/'
+TASK [Show what is being deployed] *********************************************
+ok: [localhost] =&gt; {
+    &quot;msg&quot;: &quot;database inventory on 127.0.0.1 as inventory_app with password &lt;REDACTED BY THE JOURNAL AUTHOR&gt;&quot;
+}
+</code></pre>
+<p>The deploy works unattended. And the journal of that very run now contains the database password in
+clear text — the <code>sed</code> in the last command is only there so it does not appear in this document.</p>
+<p><strong>5. Remove the task that prints it, and read the next run.</strong></p>
+<pre><code class="language-console">$ sed -n 1,12p /srv/deploy/deploy.yml
+---
+- name: Render the application's database settings
+  hosts: app
+  gather_facts: false
+  tasks:
+    - name: Show what is being deployed
+      ansible.builtin.debug:
+        msg: &quot;database {{ db_name }} on {{ db_host }} as {{ db_user }} with password {{ db_password }}&quot;
+
+    - name: Database settings
+      ansible.builtin.template:
+        src: templates/db.conf.j2
+</code></pre>
+<p>The debug task was replaced by writing a <code>deploy.yml</code> with only the template task (as <code>sudo tee</code>, then
+<code>chown deploy:deploy</code>):</p>
+<pre><code class="language-console">$ sudo chown deploy:deploy /srv/deploy/deploy.yml &amp;&amp; sudo systemctl start deploy.service; systemctl show deploy.service -p Result
+Result=success
+$ sudo journalctl -u deploy.service _SYSTEMD_INVOCATION_ID=$(systemctl show deploy.service -p InvocationID --value) --no-pager -o cat
+PLAY [Render the application's database settings] ******************************
+TASK [Database settings] *******************************************************
+Invoked with path=/srv/app/config/db.conf follow=False get_checksum=True get_size=False checksum_algorithm=sha1 get_mime=True get_attributes=True
+Invoked with mode=0640 dest=/srv/app/config/db.conf _original_basename=db.conf.j2 recurse=False state=file path=/srv/app/config/db.conf force=False follow=True modification_time_format=%Y%m%d%H%M.%S access_time_format=%Y%m%d%H%M.%S unsafe_writes=False _diff_peek=None src=None modification_time=None access_time=None owner=None group=None seuser=None serole=None selevel=None setype=None attributes=None
+ok: [localhost]
+PLAY RECAP *********************************************************************
+localhost                  : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+</code></pre>
+<p>That is the whole log of the last run, unredacted. The <code>Invoked with</code> lines are the module arguments
+Ansible logs on the managed host: paths and modes, no secret. (Earlier runs in this boot still contain
+the leak; after a real leak, rotate the database password.)</p>
+<p><strong>6. Prove there is no plaintext copy left in the project.</strong></p>
+<pre><code class="language-console">$ PW=$(sudo sed -n 's/^password = //p' /srv/app/config/db.conf); sudo grep -rl -- &quot;$PW&quot; /srv/deploy; echo &quot;grep exit=$?&quot;
+grep exit=1
+</code></pre>
+<p><code>grep -l</code> lists files that contain the password; exit status 1 means none.</p>
+<p><strong>7. Grade.</strong> The service ran at boot, the vault stayed encrypted with no plain copy, the password file
+belonged to <code>deploy</code> with no access for anyone else, and the last run’s log was clean — before and
+after the reboot.</p>
+<h2>Common wrong turns</h2>
+<p><strong><code>chmod 644 /root/vault-password.txt</code></strong> (or adding <code>deploy</code> to root’s group). It makes the key to every
+vault readable by more than the one account that needs it, and root’s home is the wrong place for a
+service’s credential anyway.</p>
+<p><strong>Putting the vault password file inside <code>/srv/deploy</code>.</strong> It then travels with the project: into Git,
+into backups of the code, into every copy a colleague makes. Keep it with the account, outside the
+tree, and add a <code>.gitignore</code> entry if someone insists on keeping it nearby.</p>
+<p><strong><code>chmod 755</code> on the password file “so Ansible can read it”.</strong> An executable password file is run as a
+script. Ansible fails with an exec error or, worse, executes whatever the first line happens to be.</p>
+<p><strong>Decrypting the vault permanently</strong> (<code>ansible-vault decrypt vault.yml</code>) to make the service work. The
+prompt disappears because there is nothing left to decrypt. The machine now has the secret in plain
+text in a variables file.</p>
+<p><strong>Deleting <code>vault.yml.plain</code> and considering the job done.</strong> It removes one exposure; the service still
+prompts, and once it works it prints the password.</p>
+<p><strong><code>no_log: true</code> on the whole play.</strong> It hides the leak, and also every error message the next time the
+deploy fails at boot, when nobody is watching and the journal is all you have. Remove the debug task,
+and use <code>no_log</code> on the specific tasks that handle secrets.</p>
+<p><strong>Checking <code>journalctl -u deploy.service</code> without an invocation ID and concluding it is still leaking.</strong>
+Older runs of the same boot keep their output. Look at the run that matters.</p>
+<p><strong>Testing with <code>sudo ansible-playbook</code>.</strong> Root can read root’s password file. The service runs as
+<code>deploy</code>; test as <code>deploy</code> (<code>sudo -u deploy env HOME=/var/lib/deploy …</code>) or by starting the service.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console">$ ansible-vault create|edit|view FILE             # work on vault content without leaving copies
+$ ansible-vault encrypt FILE / decrypt FILE       # in place
+$ ansible-vault encrypt_string 'value' --name 'db_password'
+$ ansible-vault rekey FILE                        # change the vault password
+$ head -1 FILE                                    # $ANSIBLE_VAULT;1.1;AES256 when encrypted
+$ ansible-playbook site.yml --vault-password-file PATH
+$ ANSIBLE_VAULT_PASSWORD_FILE=PATH ansible-playbook site.yml
+$ sudo install -o deploy -g deploy -m 0400 SRC DST   # copy with owner and mode in one step
+$ sudo -u deploy env HOME=/var/lib/deploy CMD     # test as the service account
+$ systemctl show UNIT -p InvocationID --value
+$ journalctl -u UNIT _SYSTEMD_INVOCATION_ID=ID -o cat    # one run's output
+$ sudo grep -rl -- &quot;$SECRET&quot; DIR; echo $?         # 1 = no file contains it
+</code></pre>
+<pre><code class="language-ini"># ansible.cfg
+[defaults]
+vault_password_file = /var/lib/deploy/.vault-password    # not ask_vault_pass in automation
+</code></pre>
+<pre><code class="language-yaml">- name: Task that handles a secret
+  ansible.builtin.template: {src: db.conf.j2, dest: /srv/app/config/db.conf, mode: &quot;0640&quot;}
+  no_log: true
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Nine letters and a refusal</em> (lab journal <code>hello</code>) — How the kernel picks a triad</li>
+<li><em>The log lines that were never written down</em> (topic journal <code>logging-journald</code>) — Everything a service prints becomes a journal entry</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.ansible.com/ansible/latest/vault_guide/vault_managing_passwords.html</li>
+<li>https://docs.ansible.com/ansible/latest/vault_guide/index.html</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>A green run is not a correct machine</em> (<code>ansible</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>What does <code>EOFError (ctrl-d) on prompt</code> in a service’s journal tell you about the Ansible configuration?</p>
+<blockquote>
+<p>Ansible tried to prompt for the vault password (<code>ask_vault_pass</code> or <code>--ask-vault-pass</code>), and the service has no terminal, so the prompt read end-of-file.</p>
+</blockquote>
+</li>
+<li>
+<p>What must be true of a vault password file for an unattended run as <code>deploy</code>?</p>
+<blockquote>
+<p>It holds the password, is readable by <code>deploy</code>, is not readable by group or others (0400/0600), is not executable, and is named by <code>vault_password_file</code>, <code>ANSIBLE_VAULT_PASSWORD_FILE</code> or <code>--vault-password-file</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>What happens if a vault password file has the execute bit set?</p>
+<blockquote>
+<p>Ansible runs it as a program and uses its output as the password, which is meant for password-manager scripts and fails or misbehaves for a plain file.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did the playbook ignore <code>group_vars/app/vault.yml.plain</code>, and why was it still a problem?</p>
+<blockquote>
+<p>Ansible only loads variable files with <code>.yml</code>, <code>.yaml</code>, <code>.json</code> or no extension; the file was world-readable and contained the password in plain text.</p>
+</blockquote>
+</li>
+<li>
+<p>After encrypting secrets with Vault, what remains your responsibility at run time?</p>
+<blockquote>
+<p>Everything that happens to the decrypted values: not printing them (debug, diffs, errors), rendering them into files with the right owner and mode, and keeping them out of logs with <code>no_log</code> where tasks handle them.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you read only the output of the most recent run of a oneshot service?</p>
+<blockquote>
+<p>Take its invocation ID with <code>systemctl show UNIT -p InvocationID --value</code> and filter the journal with <code>journalctl -u UNIT _SYSTEMD_INVOCATION_ID=&lt;id&gt;</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>sudo install -o deploy -g deploy -m 0400 SRC DST</code> better than <code>cp</code> followed by <code>chown</code> and <code>chmod</code>?</p>
+<blockquote>
+<p>It sets owner, group and mode as part of the copy, so there is no forgotten or delayed <code>chmod</code> leaving the secret with default permissions.</p>
+</blockquote>
+</li>
+<li>
+<p>A secret was printed to the journal before the leak was fixed. What is the complete remedy?</p>
+<blockquote>
+<p>Stop the leak, then rotate the secret itself; purging old journal files (rotate and vacuum) only reduces exposure of a value that must be considered disclosed.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

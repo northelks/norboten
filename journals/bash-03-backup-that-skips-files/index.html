@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A file name is any byte but slash and NUL — a backup has to believe it · Norboten</title>
+<meta name="description" content="backup-docs looks like the most boring script on the machine: find every file, make its directory in the backup, copy it, count it, say how many. It ran every n">
+<link rel="canonical" href="https://norboten.org/journals/bash-03-backup-that-skips-files/"><meta property="og:title" content="A file name is any byte but slash and NUL — a backup has to believe it · Norboten">
+<meta property="og:description" content="backup-docs looks like the most boring script on the machine: find every file, make its directory in the backup, copy it, count it, say how many. It ran every n">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/bash-03-backup-that-skips-files/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A file name is any byte but slash and NUL — a backup has to believe it · Norboten">
+<meta name="twitter:description" content="backup-docs looks like the most boring script on the machine: find every file, make its directory in the backup, copy it, count it, say how many. It ran every n">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A file name is any byte but slash and NUL \u2014 a backup has to believe it",
+  "description": "backup-docs looks like the most boring script on the machine: find every file, make its directory in the backup, copy it, count it, say how many. It ran every n",
+  "url": "https://norboten.org/journals/bash-03-backup-that-skips-files/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1593,
+  "timeRequired": "PT30M",
+  "about": ["Bash", "Linux basics"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Backup That Skips Files</div>
+    <h1>A file name is any byte but slash and NUL — a backup has to believe it</h1>
+    <p class="muted">
+      30 minutes' reading · 1593 words ·<span class="tag">Bash</span><span class="tag">Linux basics</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 128 words</title><rect x="0.0" y="0" width="53.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 611 words</title><rect x="56.4" y="0" width="254.7" height="30" rx="4" fill="#1d2a23"/><text x="64.4" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 392 words</title><rect x="314.1" y="0" width="163.4" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 189 words</title><rect x="480.5" y="0" width="78.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 126 words</title><rect x="562.2" y="0" width="52.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 82 words</title><rect x="617.8" y="0" width="34.2" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 252 words</title><rect x="655.0" y="0" width="105.0" height="30" rx="4" fill="#1d2a23"/><text x="663.0" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/bash-03-backup-that-skips-files/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p><code>backup-docs</code> looks like the most boring script on the machine: find every file, make its directory
+in the backup, copy it, count it, say how many. It ran every night for months and systemd marked
+every run as a success. It had also been copying almost nothing, because the loop that reads the file
+names takes them apart three different ways before <code>cp</code> ever sees them, and the one number it reports
+is lost on the way out of a subshell.</p>
+<p>The lesson is not &quot;quote your variables&quot;, although you should. It is that a shell script which
+handles file names has to treat a name as opaque data from the moment it is produced to the moment it
+is used, and that every convenience in between — word splitting, <code>read</code>'s trimming, a pipeline — is
+a transformation you did not ask for.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Say which bytes a Linux file name may contain, and why newline-separated lists of names are unsafe.</li>
+<li>Walk a tree with <code>find -print0</code> and <code>read -r -d ''</code>, and explain each part of that incantation.</li>
+<li>Recognise the three things that mangle a name in a naive loop: <code>read</code> without <code>-r</code>, <code>read</code> without
+<code>IFS=</code>, and an unquoted expansion.</li>
+<li>Explain why a variable changed inside <code>cmd | while …</code> is unchanged after the loop, and fix it with
+process substitution.</li>
+<li>Use <code>--</code> so that a name beginning with a dash is never taken for an option.</li>
+<li>Make a partial failure visible: a message on standard error and a non-zero exit status.</li>
+<li>Tell a oneshot service that succeeded from one that did its job.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="what-a-file-name-can-be">What a file name can be</h3>
+<p>To the kernel a file name is a string of bytes. The only bytes it refuses are <code>/</code>, which separates
+path components, and NUL, which ends a C string. Spaces, tabs, a leading dash, a backslash, quotes,
+and a newline are all legal, and all of them turn up in real directories: documents saved by people,
+files unpacked from archives made on other systems, uploads.</p>
+<p>Any format that separates names with a byte a name can contain is therefore ambiguous. <code>find</code>'s
+default output separates names with newlines. NUL is the one separator that cannot be ambiguous, which
+is why <code>find -print0</code>, <code>xargs -0</code>, <code>sort -z</code> and <code>read -d ''</code> exist.</p>
+<h3 id="what-read-does-to-a-line">What <code>read</code> does to a line</h3>
+<p><code>while read f</code> is the loop everyone writes first. Without options, <code>read</code>:</p>
+<ol>
+<li>treats a backslash as an escape character and removes it (<code>Q3\forecast.csv</code> becomes
+<code>Q3forecast.csv</code>) — <code>-r</code> turns that off;</li>
+<li>strips leading and trailing characters that are in <code>IFS</code>, spaces and tabs by default —
+<code>IFS=</code> for that one command turns that off;</li>
+<li>stops at a newline, so a name that contains one arrives as two &quot;names&quot; — only <code>-d ''</code> (read up to
+a NUL) fixes that, together with <code>find -print0</code>.</li>
+</ol>
+<p><code>while IFS= read -r -d '' f</code> is not ritual: each of the three parts undoes one of those.</p>
+<h3 id="what-an-unquoted-expansion-does">What an unquoted expansion does</h3>
+<p>After <code>read</code> hands over the name, <code>cp $f $dest/$rel</code> expands the variables <strong>unquoted</strong>. The shell
+then splits each expansion into words at spaces, tabs and newlines, and expands any <code>*</code>, <code>?</code> or <code>[</code>
+in the pieces as glob patterns. <code>Contract - ACME.pdf</code> becomes three arguments. With more than two
+arguments, <code>cp</code> expects the last one to be a directory, so it fails with a message about a target it
+cannot find. Double quotes — <code>&quot;$f&quot;</code> — keep an expansion as exactly one argument, whatever it holds.</p>
+<h3 id="a-name-that-looks-like-an-option">A name that looks like an option</h3>
+<p>A relative name such as <code>-rf.txt</code> is read by most commands as options. <code>cp -rf.txt copy.txt</code> does
+not copy anything: <code>cp</code> parses <code>-r</code>, <code>-f</code>, then chokes on <code>.</code>. The end-of-options marker <code>--</code> tells
+the command that everything after it is an operand. In this backup the names from <code>find</code> are
+absolute (<code>/srv/docs/hr/-onboarding.md</code>), so the dash is harmless there — but the script builds
+relative names too, and the habit costs two characters.</p>
+<h3 id="why-the-count-is-always-zero">Why the count is always zero</h3>
+<p>In <code>find … | while read f; do count=$((count + 1)); done</code>, each side of the pipe runs in its own
+subshell: a separate process with a copy of the variables. The loop counts faithfully in its copy,
+and that copy disappears when the loop ends. The parent shell's <code>count</code> was never touched, so
+<code>echo &quot;backed up $count files&quot;</code> prints the value from before the loop.</p>
+<p>Feeding the loop from a <strong>process substitution</strong> — <code>done &lt; &lt;(find … -print0)</code> — keeps the loop in
+the current shell, so its variables survive. (Bash's <code>shopt -s lastpipe</code> does the same for the last
+command of a pipeline in a non-interactive shell; the redirection form works everywhere and says what
+it means.)</p>
+<h3 id="failures-that-nobody-hears-about">Failures that nobody hears about</h3>
+<p>The loop ignores <code>cp</code>'s exit status, and the script's last command is an <code>echo</code>, which succeeds. A
+script's exit status is the status of its last command unless it chooses otherwise, so a backup that
+copied two files out of six exits 0, and a oneshot unit whose process exits 0 is <code>Result=success</code>.
+To make a partial backup visible, count the failures, name each one on standard error, and end with
+a status that says whether there were any.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Run on the lab's own machine: <code>ubuntu-26.04-devops</code>, GNU bash 5.3.9, before any change.</p>
+<p>Running the backup by hand shows everything that goes wrong, in order:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>/usr/local/bin/backup-docs<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">cp: cannot stat '/srv/docs/finance/Q3forecast.csv': No such file or directory</span>
+<span class="hl-go">cp: target 'board.txt': No such file or directory</span>
+<span class="hl-go">cp: target 'agenda.txt': No such file or directory</span>
+<span class="hl-go">cp: target 'ACME.pdf': No such file or directory</span>
+<span class="hl-go">backed up 0 files</span>
+<span class="hl-go">exit status: 0</span>
+</code></pre>
+
+<p>Four errors, a count of zero, and a successful exit. The first error has already lost the backslash.
+Looking at exactly what the loop receives — each name between brackets — shows where:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>find<span class="hl-w"> </span>/srv/docs<span class="hl-w"> </span>-type<span class="hl-w"> </span>f<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-k">while</span><span class="hl-w"> </span><span class="hl-nb">read</span><span class="hl-w"> </span>f<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'[%s]\n'</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$f</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span>
+<span class="hl-go">[/srv/docs/finance/Q3forecast.csv]</span>
+<span class="hl-go">[/srv/docs/minutes/2026-09-01 board.txt]</span>
+<span class="hl-go">[/srv/docs/minutes/  draft agenda.txt]</span>
+<span class="hl-go">[/srv/docs/hr/-onboarding.md]</span>
+<span class="hl-go">[/srv/docs/Contract - ACME.pdf]</span>
+<span class="hl-go">[/srv/docs/notes/readme.txt]</span>
+</code></pre>
+
+<p><code>read</code> removed the backslash; the rest survived the read. The spaces are lost in the next step, the
+unquoted expansion:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">f</span><span class="hl-o">=</span><span class="hl-s1">'/srv/docs/Contract - ACME.pdf'</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'&lt;%s&gt; '</span><span class="hl-w"> </span><span class="hl-nv">$f</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span>
+<span class="hl-go">&lt;/srv/docs/Contract&gt; &lt;-&gt; &lt;ACME.pdf&gt;</span>
+</code></pre>
+
+<p>Three arguments for <code>cp</code>, which is why it complained about a target called <code>ACME.pdf</code>. Two files did
+copy — <code>-onboarding.md</code> and <code>readme.txt</code> — and the script still reported zero. The subshell explains
+that, and a two-line experiment proves it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">count</span><span class="hl-o">=</span><span class="hl-m">0</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'a\nb\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-k">while</span><span class="hl-w"> </span><span class="hl-nb">read</span><span class="hl-w"> </span>x<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span><span class="hl-nv">count</span><span class="hl-o">=</span><span class="hl-k">$((</span><span class="hl-nv">count</span><span class="hl-o">+</span><span class="hl-m">1</span><span class="hl-k">))</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"count=</span><span class="hl-nv">$count</span><span class="hl-s2">"</span>
+<span class="hl-go">count=0</span>
+<span class="hl-gp">$ </span><span class="hl-nv">count</span><span class="hl-o">=</span><span class="hl-m">0</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">while</span><span class="hl-w"> </span><span class="hl-nb">read</span><span class="hl-w"> </span>x<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span><span class="hl-nv">count</span><span class="hl-o">=</span><span class="hl-k">$((</span><span class="hl-nv">count</span><span class="hl-o">+</span><span class="hl-m">1</span><span class="hl-k">))</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span><span class="hl-w"> </span>&lt;<span class="hl-w"> </span>&lt;<span class="hl-o">(</span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'a\nb\n'</span><span class="hl-o">)</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"count=</span><span class="hl-nv">$count</span><span class="hl-s2">"</span>
+<span class="hl-go">count=2</span>
+</code></pre>
+
+<p>A relative name with a leading dash fails differently, as an option:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/tmp<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span>x<span class="hl-w"> </span>&gt;<span class="hl-w"> </span><span class="hl-s1">'-rf.txt'</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>cp<span class="hl-w"> </span>-rf.txt<span class="hl-w"> </span>copy.txt<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>cp<span class="hl-w"> </span>--<span class="hl-w"> </span>-rf.txt<span class="hl-w"> </span>copy.txt<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>--<span class="hl-w"> </span>copy.txt
+<span class="hl-go">cp: invalid option -- '.'</span>
+<span class="hl-go">Try 'cp --help' for more information.</span>
+<span class="hl-go">exit status: 1</span>
+<span class="hl-go">copy.txt</span>
+</code></pre>
+
+<p>After rewriting the loop — NUL-separated names read by <code>IFS= read -r -d ''</code> in the current shell,
+every expansion quoted, <code>--</code> before operands, failures counted and reported — the same run copies
+all six documents and the timer's service reports a real success:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>/usr/local/bin/backup-docs<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">backed up 6 files</span>
+<span class="hl-go">exit status: 0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>find<span class="hl-w"> </span>/var/backups/docs<span class="hl-w"> </span>-type<span class="hl-w"> </span>f
+<span class="hl-go">/var/backups/docs/2026-09-16/finance/Q3\forecast.csv</span>
+<span class="hl-go">/var/backups/docs/2026-09-16/minutes/2026-09-01 board.txt</span>
+<span class="hl-go">/var/backups/docs/2026-09-16/minutes/  draft agenda.txt</span>
+<span class="hl-go">/var/backups/docs/2026-09-16/hr/-onboarding.md</span>
+<span class="hl-go">/var/backups/docs/2026-09-16/Contract - ACME.pdf</span>
+<span class="hl-go">/var/backups/docs/2026-09-16/notes/readme.txt</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>backup-docs.service<span class="hl-w"> </span>-p<span class="hl-w"> </span>Result<span class="hl-w"> </span>-p<span class="hl-w"> </span>ExecMainStatus
+<span class="hl-go">Result=success</span>
+<span class="hl-go">ExecMainStatus=0</span>
+</code></pre>
+
+<p>The backslash, the two leading blanks and the spaces are all intact.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong>Quoting the variables and stopping.</strong> Quotes fix the spaces. The backslash is already gone by
+then, a newline still splits a name in two, and the count is still zero.</li>
+<li><strong><code>for f in $(find …)</code>.</strong> The command substitution is split into words exactly like an unquoted
+variable, so every name with a space breaks, and the whole list is built in memory first.</li>
+<li><strong>Setting <code>IFS=$'\n'</code>.</strong> Handles spaces, not newlines in names, and changes word splitting for
+every other command in the script.</li>
+<li><strong>Making the count a file</strong> (<code>echo &gt;&gt; /tmp/count</code>). It works around the subshell by adding shared
+state, a temporary file, and a new way to fail. Keep the loop in the current shell instead.</li>
+<li><strong><code>set -e</code> as the error handling.</strong> A failing <code>cp</code> inside <code>if</code> or <code>&amp;&amp;</code> does not stop the script,
+and one that does stop it leaves the rest of the documents uncopied. A backup wants every file it
+can get, and a list of the ones it could not.</li>
+<li><strong>Checking that the unit succeeded.</strong> systemd knows the exit status and nothing else. Compare the
+backup with the source.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># every file, whatever its name, read in the current shell</span>
+<span class="hl-k">while</span><span class="hl-w"> </span><span class="hl-nv">IFS</span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nb">read</span><span class="hl-w"> </span>-r<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">''</span><span class="hl-w"> </span>f<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span>
+<span class="hl-w">    </span><span class="hl-nv">rel</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">f</span><span class="hl-p">#</span><span class="hl-s2">"</span><span class="hl-nv">$DOCS_DIR</span><span class="hl-s2">"</span><span class="hl-p">/</span><span class="hl-si">}</span><span class="hl-w">                         </span><span class="hl-c1"># quoted pattern: taken literally</span>
+<span class="hl-w">    </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$dest</span><span class="hl-s2">/</span><span class="hl-k">$(</span>dirname<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$rel</span><span class="hl-s2">"</span><span class="hl-k">)</span><span class="hl-s2">"</span>
+<span class="hl-w">    </span>cp<span class="hl-w"> </span>-p<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$f</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$dest</span><span class="hl-s2">/</span><span class="hl-nv">$rel</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"could not copy </span><span class="hl-nv">$rel</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span>
+<span class="hl-k">done</span><span class="hl-w"> </span>&lt;<span class="hl-w"> </span>&lt;<span class="hl-o">(</span>find<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$DOCS_DIR</span><span class="hl-s2">"</span><span class="hl-w"> </span>-type<span class="hl-w"> </span>f<span class="hl-w"> </span>-print0<span class="hl-o">)</span>
+
+<span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'[%s]\n'</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$name</span><span class="hl-s2">"</span><span class="hl-w">            </span><span class="hl-c1"># see exactly what a variable holds</span>
+cmd<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-k">while</span><span class="hl-w"> </span>…<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span><span class="hl-w">                </span><span class="hl-c1"># the loop's variables vanish afterwards</span>
+<span class="hl-k">while</span><span class="hl-w"> </span>…<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span><span class="hl-w"> </span>&lt;<span class="hl-w"> </span>&lt;<span class="hl-o">(</span>cmd<span class="hl-o">)</span><span class="hl-w">             </span><span class="hl-c1"># they survive</span>
+cp<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$f</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$dest</span><span class="hl-s2">"</span><span class="hl-w">                  </span><span class="hl-c1"># names starting with - are operands</span>
+find<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$dir</span><span class="hl-s2">"</span><span class="hl-w"> </span>-type<span class="hl-w"> </span>f<span class="hl-w"> </span>-print0<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span>-0<span class="hl-w"> </span>cmd<span class="hl-w">      </span><span class="hl-c1"># NUL-separated all the way</span>
+<span class="hl-o">[</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$failed</span><span class="hl-s2">"</span><span class="hl-w"> </span>-eq<span class="hl-w"> </span><span class="hl-m">0</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w">                </span><span class="hl-c1"># last command = the script's exit status</span>
+systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>unit<span class="hl-w"> </span>-p<span class="hl-w"> </span>Result<span class="hl-w"> </span>-p<span class="hl-w"> </span>ExecMainStatus
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<ul>
+<li><code>man 1 bash</code>, <em>Word Splitting</em>, <em>Pathname Expansion</em> and the <code>read</code> builtin, for the three
+transformations this lab turns off.</li>
+<li><code>man 1 find</code>, <code>-print0</code>, and <code>man 1 xargs</code>, <code>-0</code>, for passing names between programs.</li>
+<li>The monitoring journal, <a href="../../journals/monitoring/#a-check-is-an-exit-status">a check is an exit status</a>,
+for why a script that exits 0 is a script that reports success.</li>
+<li>David A. Wheeler, <em>Filenames and Pathnames in Shell: How to do it Correctly</em>, for the long list of
+cases this lab only samples.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Which two bytes can never appear in a Linux file name component, and which one of them makes a
+safe separator for a list of names?</p>
+<blockquote>
+<p><code>/</code> and NUL. NUL is the safe separator, because <code>/</code> separates path components inside a name.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>read</code> without <code>-r</code> do to <code>Q3\forecast.csv</code>?</p>
+<blockquote>
+<p>It treats the backslash as an escape and removes it, so the name becomes <code>Q3forecast.csv</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>count</code> stay 0 after <code>find … | while read f; do count=$((count+1)); done</code>?</p>
+<blockquote>
+<p>The loop is part of a pipeline and runs in a subshell, which increments its own copy of the
+variable; the parent shell's copy is untouched.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>cp $f dest/</code> do when <code>f</code> is <code>Contract - ACME.pdf</code>?</p>
+<blockquote>
+<p>The unquoted expansion is split into three words, so <code>cp</code> receives three source operands and a
+target, and tries to copy files called <code>Contract</code>, <code>-</code> and <code>ACME.pdf</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>A backup copied four files of six and printed an error for the other two. What exit status should
+it have, and why does it matter to systemd?</p>
+<blockquote>
+<p>Non-zero. systemd's <code>Result=success</code> means only that the main process exited 0; a non-zero
+status is how the failed unit, and any alert on it, finds out.</p>
+</blockquote>
+</li>
+<li>
+<p>When is <code>--</code> needed before a file name?</p>
+<blockquote>
+<p>When the name could begin with a dash, which is always possible for a relative name taken from
+data; <code>--</code> ends option parsing so the name is an operand.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

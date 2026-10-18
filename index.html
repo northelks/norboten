@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/"><meta property="og:title" content="Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="./">[ norboten ]</a>
+    <nav class="site">
+      <a href="features/" >Features</a>
+      <a href="labs/" >Labs</a>
+      <a href="how-it-works/" >How it works</a>
+      <a href="journals/" >Journals</a>
+      <a href="docs/" >Docs</a>
+      <a class="group" href="players/" >Ratings</a>
+      <a class="live" href="live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+
+<section class="hero">
+  <div class="wrap">
+    <div class="grid two" style="align-items:center; gap:3rem">
+      <div>
+        <h1>Learn Linux<br>by fixing it.</h1>
+        <p class="lede">
+          Norboten boots a real Linux VM on your machine with something genuinely wrong with it.
+          A service will not start. A disk will not mount. SELinux is quietly denying a request.
+          You find it and fix it — and then the machine is graded, rebooted, and graded again.
+        </p>
+        <div class="install">
+          <span class="prompt">$</span>
+          <span id="installcmd">curl -fsSL https://norboten.org/install.sh | sh</span>
+          <button type="button" data-copy="#installcmd">copy</button>
+        </div>
+        <div class="cta">
+          <a class="btn solid" href="install/">Install</a>
+          <a class="btn" href="labs/">See the labs</a>
+          <a class="btn" href="how-it-works/">How it works</a>
+        </div>
+      </div>
+      <figure class="capture hero-capture">
+        <img src="captures/tui-system.svg" alt="The Norboten TUI's System section: doctor's findings with the fix for each, and the base images on this machine">
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">What it is</div>
+    <h2>A broken machine, not a quiz</h2>
+    <div class="prose">
+      <p>
+        You do not learn systemd by reading about systemd. You learn it at 2 a.m., when a unit
+        will not start and the journal is the only thing that knows why. Norboten is that moment,
+        on demand: <strong>51 labs</strong> that each break a real virtual machine
+        in a specific, realistic way, and grade you on the state of the machine afterwards.
+      </p>
+      <p>
+        Nothing is multiple choice about the lab itself. There is no answer field. The lab is
+        passed when the system behaves, and it only counts when the fix is still there after a
+        reboot — the way the RHCSA exam does it, and the way production does it.
+      </p>
+      <p>
+        Most of the catalogue is <a class="accent" href="docs/rated-labs/"><strong>unrated</strong></a>: those labs run entirely
+        on your machine, need no account, and their faults, checks and reference solutions are in
+        the repository for you to read — for learning, the solution is often the clearest
+        explanation a lab has. <a class="accent" href="docs/rated-labs/"><strong>Rated</strong></a> labs are the other half: they
+        are graded by the server, their answers are not published, and they are what the boards
+        are made of. The first ones are still being
+        written, so today every lab is unrated.
+        <a href="docs/rated-labs/">How that works</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">The terminal</div>
+    <h2>Everything is a key</h2>
+    <p class="prose muted">
+      <span class="mono">norboten</span> opens one full-screen interface: labs, theory, journals,
+      recordings and your profile, eight sections along the top on the keys 1 to 8 (the arrows
+      walk them too). These are the real screens, rendered by the app itself.
+    </p>
+    <div class="grid three capture-grid">
+      <figure class="capture">
+        <img src="captures/tui-home.svg" alt="Home" loading="lazy">
+        <figcaption><strong>Home</strong> <span class="muted">Doctor runs as it opens. The labs you left half-done come first.</span></figcaption>
+      </figure>
+      <figure class="capture">
+        <img src="captures/tui-play.svg" alt="Play" loading="lazy">
+        <figcaption><strong>Play</strong> <span class="muted">Recorded sessions through a real terminal emulator, with ±3-command skips.</span></figcaption>
+      </figure>
+      <figure class="capture">
+        <img src="captures/tui-you.svg" alt="You" loading="lazy">
+        <figcaption><strong>You</strong> <span class="muted">A year of work, then by topic, then attempts — a sample account&#39;s profile.</span></figcaption>
+      </figure>
+    </div>
+    <p style="margin-top:2rem"><a class="btn" href="features/">Every screen, on the features page</a></p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="grid two" style="gap:2.5rem; align-items:center">
+      <div>
+        <div class="kicker">For authors</div>
+        <h2>An idea in, a proven lab out</h2>
+        <p class="muted">
+          Norboten's labs, questions and journals are written with <code>norboten-author</code>, a
+          Claude Code plugin in the same repository. Give it an idea: it asks what the lab
+          specification needs and the idea leaves open, shows a plan, and after your yes drafts it —
+          in your session, or in a subagent. It is finished when the solvability gate or the
+          question pipeline says so, not when the files look right.
+        </p>
+        <p>
+          <a class="btn" href="docs/claude-code-plugin/">The plugin</a>
+          <a class="btn" href="how-it-works/#plugin">How it fits</a>
+        </p>
+      </div>
+      <div>
+        <ol class="pipeline">
+          <li class="pipe-step" style="--step:var(--violet)">
+            <span class="num">1</span>
+            <div><strong>Your idea</strong>
+              <span class="what">one line — "the backup cron job runs as the wrong user"</span></div>
+          </li>
+          <li class="pipe-step" style="--step:var(--blue)">
+            <span class="num">2</span>
+            <div><strong>Its questions</strong>
+              <span class="what">which image, which objectives, what the learner is allowed to see</span></div>
+          </li>
+          <li class="pipe-step" style="--step:var(--amber)">
+            <span class="num">3</span>
+            <div><strong>A plan, before a file</strong>
+              <span class="what">the faults, the checks and the reboot they must survive</span></div>
+          </li>
+          <li class="pipe-step" style="--step:var(--text)">
+            <span class="num">4</span>
+            <div><strong>The draft</strong>
+              <span class="what">lab.yaml, break/, check/, hints.yaml, solution/, journal.md, theory.yaml</span></div>
+          </li>
+          <li class="pipe-step" style="--step:var(--green)">
+            <span class="num">5</span>
+            <div><strong>The proof</strong>
+              <span class="what">the solvability gate on a real VM — or it is not a lab yet</span></div>
+          </li>
+        </ol>
+        <pre class="small"><code>/plugin marketplace add northelks/norboten
+/plugin install norboten-author@norboten</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Tracks · 51 labs</div>
+    <h2>Pick the machine you want to break</h2>
+    <div class="grid two" style="margin-top:1.5rem">
+      <div class="card track-card">
+        <h3><a href="labs/#intro">Start here</a></h3>
+        <p class="muted">One lab that runs on every base image — the whole path, in five minutes.</p>
+        <ul class="lablist">
+          <li>
+            <a href="labs/hello/"><span class="mono">hello</span> A Message You Are Not Allowed to Read</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 1 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+        </ul>
+        <p class="mono muted" style="font-size:0.85rem">1 lab · alpine · rocky-10 · ubuntu-26.04</p>
+      </div>
+      <div class="card track-card">
+        <h3><a href="labs/#linux">Linux</a></h3>
+        <p class="muted">General troubleshooting and shell work on lighter images: Ubuntu 26.04 and Alpine.</p>
+        <ul class="lablist">
+          <li>
+            <a href="labs/linux-01-disk-full/"><span class="mono">linux-01</span> The Disk That Stays Full</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 1 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/linux-02-service-wont-stay-up/"><span class="mono">linux-02</span> The Service That Won&#39;t Stay Up</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/linux-03-backup-script-lies/"><span class="mono">linux-03</span> The Backup Script That Lies</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/linux-04-write-the-report/"><span class="mono">linux-04</span> Write the Report</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/linux-05-shared-folder-locks-people-out/"><span class="mono">linux-05</span> The Shared Folder That Locks People Out</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/linux-06-log-that-never-rotates/"><span class="mono">linux-06</span> The Log That Never Rotates</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+        </ul>
+        <p class="mono muted" style="font-size:0.85rem">6 labs · alpine · ubuntu-26.04 · ubuntu-26.04-container</p>
+      </div>
+      <div class="card track-card">
+        <h3><a href="labs/#rhcsa">RHCSA</a></h3>
+        <p class="muted">Five labs on Rocky Linux 10, grounded in the current EX200 objectives, ending in a timed exam simulation.</p>
+        <ul class="lablist">
+          <li>
+            <a href="labs/rhcsa-01-users-and-permissions/"><span class="mono">rhcsa-01</span> The Contractor Who Cannot Write</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 1 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/rhcsa-02-systemd-and-boot/"><span class="mono">rhcsa-02</span> The API That Vanishes on Reboot</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/rhcsa-03-storage-and-lvm/"><span class="mono">rhcsa-03</span> The Volume That Filled Overnight</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/rhcsa-04-selinux-firewall-network/"><span class="mono">rhcsa-04</span> The Site Nobody Can Reach</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 4 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#4ade80"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/rhcsa-05-exam-simulation/"><span class="mono">rhcsa-05</span> The Server You Inherited</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 5 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#4ade80"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#4ade80"/></svg></span>
+          </li>
+        </ul>
+        <p class="mono muted" style="font-size:0.85rem">5 labs · rocky-10</p>
+      </div>
+      <div class="card track-card">
+        <h3><a href="labs/#bash">Bash</a></h3>
+        <p class="muted">Two deploy-day scripts, graded by running them against the grader&#39;s own directories: error handling, quoting, atomic switches, safe deletion.</p>
+        <ul class="lablist">
+          <li>
+            <a href="labs/bash-01-deploy-took-the-site-down/"><span class="mono">bash-01</span> The Deploy That Took the Site Down</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/bash-02-cleanup-deleted-the-wrong-releases/"><span class="mono">bash-02</span> The Cleanup That Kept the Wrong Releases</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/bash-03-backup-that-skips-files/"><span class="mono">bash-03</span> The Backup That Skips Files</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/bash-04-job-that-works-only-by-hand/"><span class="mono">bash-04</span> The Job That Works Only by Hand</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/bash-05-export-that-leaves-its-mess/"><span class="mono">bash-05</span> The Export That Leaves Its Mess Behind</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/bash-06-report-that-dies-on-a-quiet-night/"><span class="mono">bash-06</span> The Report That Dies on a Quiet Night</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/bash-07-config-that-breaks-on-a-password/"><span class="mono">bash-07</span> The Config That Breaks on a Password</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+        </ul>
+        <p class="mono muted" style="font-size:0.85rem">7 labs · ubuntu-26.04-devops</p>
+      </div>
+      <div class="card track-card">
+        <h3><a href="labs/#python">Python</a></h3>
+        <p class="muted">A sync job that lied about its failures and a tool only root could run: exit status, timeouts, atomic writes, virtual environments.</p>
+        <ul class="lablist">
+          <li>
+            <a href="labs/python-01-sync-that-says-it-worked/"><span class="mono">python-01</span> The Sync That Says It Worked</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/python-02-tool-only-root-can-run/"><span class="mono">python-02</span> The Tool Only Root Can Run</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/python-03-report-that-crashes-on-one-name/"><span class="mono">python-03</span> The Report That Crashes on One Name</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/python-04-worker-that-goes-silent/"><span class="mono">python-04</span> The Worker That Goes Silent</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/python-05-module-that-shadows-the-stdlib/"><span class="mono">python-05</span> The Module That Shadows the Standard Library</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/python-06-job-that-runs-twice/"><span class="mono">python-06</span> The Job That Runs Twice</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 4 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#4ade80"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/python-07-client-that-leaks-its-token/"><span class="mono">python-07</span> The Client That Leaks Its Token</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 4 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#4ade80"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+        </ul>
+        <p class="mono muted" style="font-size:0.85rem">7 labs · ubuntu-26.04-devops</p>
+      </div>
+      <div class="card track-card">
+        <h3><a href="labs/#automation">Automation &amp; AI</a></h3>
+        <p class="muted">A Python job, an AI gateway, an agent that never stopped, and Ollama four ways — deployed, exposed, starved of context and memory, and secured.</p>
+        <ul class="lablist">
+          <li>
+            <a href="labs/ai-01-model-server-unreachable/"><span class="mono">ai-01</span> The Model Server Nobody Can Reach</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/ai-02-chatbot-leaks-key/"><span class="mono">ai-02</span> The Chatbot That Leaks Its Key</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/ai-03-the-agent-that-never-stops/"><span class="mono">ai-03</span> The Agent That Never Stops</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/ollama-01-the-model-server-anyone-can-use/"><span class="mono">ollama-01</span> The Model Server Anyone Can Use</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/ollama-02-the-assistant-that-forgets-its-rules/"><span class="mono">ollama-02</span> The Assistant That Forgets Its Rules</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/ollama-03-the-model-that-will-not-load/"><span class="mono">ollama-03</span> The Model That Will Not Load</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/py-01-works-on-my-machine/"><span class="mono">py-01</span> The Job That Works on My Machine</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 1 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+        </ul>
+        <p class="mono muted" style="font-size:0.85rem">7 labs · ubuntu-26.04-automation</p>
+      </div>
+      <div class="card track-card">
+        <h3><a href="labs/#claude">Claude Code</a></h3>
+        <p class="muted">Headless Claude Code as a machine runs it: permission rules, hooks, subagents, MCP servers and CI jobs that stay inside a budget.</p>
+        <ul class="lablist">
+          <li>
+            <a href="labs/claude-01-the-bot-that-deleted-the-drafts/"><span class="mono">claude-01</span> The Bot That Deleted the Drafts</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/claude-02-the-hooks-that-never-fire/"><span class="mono">claude-02</span> The Hooks That Never Fire</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/claude-03-the-reviewer-nobody-calls/"><span class="mono">claude-03</span> The Reviewer Nobody Calls</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/claude-04-the-mcp-server-that-never-connects/"><span class="mono">claude-04</span> The MCP Server That Never Connects</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/claude-05-the-triage-job-that-spends/"><span class="mono">claude-05</span> The Triage Job That Spends Without Limit</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/claude-06-the-settings-that-disagree/"><span class="mono">claude-06</span> The Settings That Disagree</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 4 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#4ade80"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+        </ul>
+        <p class="mono muted" style="font-size:0.85rem">6 labs · ubuntu-26.04-claude</p>
+      </div>
+      <div class="card track-card">
+        <h3><a href="labs/#mcp">MCP</a></h3>
+        <p class="muted">Model Context Protocol servers as Claude Code meets them: what a server exposes, tool results that give orders, tokens for someone else, a chatty stdio server, a proxy that holds the stream, and scopes that disagree.</p>
+        <ul class="lablist">
+          <li>
+            <a href="labs/mcp-01-the-file-server-that-shows-everything/"><span class="mono">mcp-01</span> The File Server That Shows Everything</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/mcp-02-the-page-that-gave-orders/"><span class="mono">mcp-02</span> The Page That Gave Orders</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/mcp-03-the-token-for-someone-else/"><span class="mono">mcp-03</span> The Token for Someone Else</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/mcp-04-the-server-that-talks-too-much/"><span class="mono">mcp-04</span> The Server That Talks Too Much</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/mcp-05-the-stream-that-stops/"><span class="mono">mcp-05</span> The Stream That Stops</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/mcp-06-the-answers-from-last-year/"><span class="mono">mcp-06</span> The Answers From Last Year</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+        </ul>
+        <p class="mono muted" style="font-size:0.85rem">6 labs · ubuntu-26.04-claude</p>
+      </div>
+      <div class="card track-card">
+        <h3><a href="labs/#ansible">Ansible</a></h3>
+        <p class="muted">A playbook that never converges and a deploy stuck at a vault prompt: idempotence, variable precedence, Vault without a keyboard.</p>
+        <ul class="lablist">
+          <li>
+            <a href="labs/ansible-01-playbook-changes-everything/"><span class="mono">ansible-01</span> The Playbook That Changes Everything, Every Time</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/ansible-02-deploy-waits-for-a-password/"><span class="mono">ansible-02</span> The Deploy That Waits for a Password</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+        </ul>
+        <p class="mono muted" style="font-size:0.85rem">2 labs · ubuntu-26.04-devops</p>
+      </div>
+      <div class="card track-card">
+        <h3><a href="labs/#docker">Docker</a></h3>
+        <p class="muted">A queue that lost its jobs at every reboot and a Compose stack that could not find its API: volumes, published ports, networks, restart policies.</p>
+        <ul class="lablist">
+          <li>
+            <a href="labs/docker-01-queue-forgets-every-reboot/"><span class="mono">docker-01</span> The Queue That Forgets Every Reboot</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/docker-02-stack-cannot-find-its-api/"><span class="mono">docker-02</span> The Stack That Cannot Find Its API</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+        </ul>
+        <p class="mono muted" style="font-size:0.85rem">2 labs · ubuntu-26.04-devops</p>
+      </div>
+      <div class="card track-card">
+        <h3><a href="labs/#terraform">Terraform</a></h3>
+        <p class="muted">A rename that would regenerate a secret and a site removed from the middle of a list: moved blocks, drift, for_each, state hygiene.</p>
+        <ul class="lablist">
+          <li>
+            <a href="labs/terraform-01-rename-that-wants-to-destroy/"><span class="mono">terraform-01</span> The Rename That Wants to Destroy</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+          <li>
+            <a href="labs/terraform-02-site-removed-from-the-middle/"><span class="mono">terraform-02</span> The Site Removed From the Middle</a>
+            <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 4 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#4ade80"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          </li>
+        </ul>
+        <p class="mono muted" style="font-size:0.85rem">2 labs · ubuntu-26.04-devops</p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:1.2rem">
+      Base images are downloaded only when a lab needs one, and cached after that: Alpine
+      110 MiB, Rocky 10 814 MiB, Ubuntu 26.04 663 MiB — 932 MiB with the devops tools, 1141 MiB
+      with the automation and AI ones. Measured on the images the gate runs, 2026-09-16.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Theory · 610 questions · 62 journals</div>
+    <h2>And the reading that goes with it</h2>
+    <div class="prose">
+      <p>
+        10 topic banks and a bank for each of 51 labs —
+        610 questions in all, each with an explanation and a reference. Questions
+        about what a command prints are <strong>executed</strong> in a sandbox before they are
+        allowed into a bank (96 so far). And 62 journals, one
+        for every lab and for the topics no lab covers, each walked through on a real machine.
+      </p>
+    </div>
+    <div class="grid three" style="margin-top:1.2rem">
+      <a class="card" href="labs/#theory">
+        <h3>Ansible</h3>
+        <p class="muted">Idempotence, modules, variables and handlers — configuration you can run twice.</p>
+        <p class="mono muted" style="font-size:0.85rem">41 questions</p>
+      </a>
+      <a class="card" href="labs/#theory">
+        <h3>Bash</h3>
+        <p class="muted">Expansion, quoting, exit status and the traps that make scripts lie.</p>
+        <p class="mono muted" style="font-size:0.85rem">42 questions · 34 executed</p>
+      </a>
+      <a class="card" href="labs/#theory">
+        <h3>Claude Code</h3>
+        <p class="muted">Claude Code as a machine runs it — headless runs, permissions, settings levels, hooks, subagents, MCP servers, CLAUDE.md, CI jobs and what they cost — and the habits that keep any AI agent on a short leash.</p>
+        <p class="mono muted" style="font-size:0.85rem">42 questions · 4 executed</p>
+      </a>
+      <a class="card" href="labs/#theory">
+        <h3>Linux fundamentals</h3>
+        <p class="muted">Users, permissions, processes, files and boot — the everyday mechanics of a Linux system.</p>
+        <p class="mono muted" style="font-size:0.85rem">42 questions · 7 executed</p>
+      </a>
+      <a class="card" href="labs/#theory">
+        <h3>The Model Context Protocol</h3>
+        <p class="muted">MCP as a machine runs it — the two transports, the stateless 2026-07-28 revision, what a server exposes, tool results as untrusted input, OAuth 2.1 for remote servers, and the way Claude Code picks which server to run.</p>
+        <p class="mono muted" style="font-size:0.85rem">40 questions</p>
+      </a>
+      <a class="card" href="labs/#theory">
+        <h3>Memory and CS in Linux</h3>
+        <p class="muted">Virtual memory, the page cache, processes and scheduling — computer science as Linux shows it.</p>
+        <p class="mono muted" style="font-size:0.85rem">43 questions · 7 executed</p>
+      </a>
+      <a class="card" href="labs/#theory">
+        <h3>Networking</h3>
+        <p class="muted">Addresses, routes, sockets, name resolution and firewalls — from a Linux shell.</p>
+        <p class="mono muted" style="font-size:0.85rem">41 questions · 6 executed</p>
+      </a>
+      <a class="card" href="labs/#theory">
+        <h3>Ollama</h3>
+        <p class="muted">Running language models on your own machine with Ollama — the service, the API, Modelfiles, context windows, memory, keep-alive, embeddings and exposing it safely — and what local models are good for.</p>
+        <p class="mono muted" style="font-size:0.85rem">40 questions · 3 executed</p>
+      </a>
+      <a class="card" href="labs/#theory">
+        <h3>Python for automation</h3>
+        <p class="muted">The Python that automation scripts are made of — and the surprises in it.</p>
+        <p class="mono muted" style="font-size:0.85rem">42 questions · 34 executed</p>
+      </a>
+      <a class="card" href="labs/#theory">
+        <h3>Terraform</h3>
+        <p class="muted">State, plans and the lifecycle of infrastructure described as code.</p>
+        <p class="mono muted" style="font-size:0.85rem">41 questions · 1 executed</p>
+      </a>
+      <a class="card" href="journals/">
+        <h3>Journals</h3>
+        <p class="muted">The mechanism, one failure walked through, the wrong turns people take, a
+          cheat sheet and review questions.</p>
+        <p class="mono muted" style="font-size:0.85rem">62 journals · 138,905 words</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Why it is different</div>
+    <h2>Six decisions that shape everything</h2>
+    <div class="grid three" style="margin-top:1.5rem">
+      <div class="card">
+        <h3>A real virtual machine</h3>
+        <p class="muted">QEMU through Lima, a real kernel, real LVM, real SELinux. Root recovery from the bootloader and a fix that has to survive a reboot are impossible in a container, so Norboten does not pretend otherwise.</p>
+      </div>
+      <div class="card">
+        <h3>Graded by machine state</h3>
+        <p class="muted">No answer box. Check scripts run as root inside the guest and report what they observed — &#34;nothing is listening on port 8090&#34;, not &#34;wrong&#34;.</p>
+      </div>
+      <div class="card">
+        <h3>The reboot check</h3>
+        <p class="muted">Every VM lab is checked, rebooted, and checked again. A fix that works until the next boot is not a fix, and this is the single detail most practice platforms skip.</p>
+      </div>
+      <div class="card">
+        <h3>A tutor that will not tell you</h3>
+        <p class="muted">It sees the same evidence you do, never the solution, and points at the tool you have not used yet — on your own Claude Code, key or Ollama. You choose when the hints get more specific.</p>
+      </div>
+      <div class="card">
+        <h3>Proven solvable in CI</h3>
+        <p class="muted">Every lab, on every base image it supports, must break every check and then be fixed by its own reference solution — or it cannot merge.</p>
+      </div>
+      <div class="card">
+        <h3>Yours, offline, and removable</h3>
+        <p class="muted">Images and labs are cached locally; no host directory is ever mounted into a lab VM; everything lives under ~/.norboten and deleting it leaves nothing behind.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Trust</div>
+    <h2>Every lab is proven solvable in CI</h2>
+    <div class="prose">
+      <p>
+        A lab that cannot be solved by its own reference solution cannot merge. For every lab and
+        every base image it supports, CI boots a clean VM, injects the faults, asserts that
+        <em>every check fails</em>, runs the reference solution, then grades the machine, reboots
+        it and grades it again — and every check has to pass in both passes.
+      </p>
+      <p>
+        That gate is the reason the hints can be honest about what is wrong, and the reason a
+        lab that stops working after an upstream update becomes a failing build instead of a
+        frustrated learner.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>Break your first machine</h2>
+    <div class="prose" style="margin-bottom:1.8rem">
+      <p class="muted">
+        The install script puts one command on your machine, <span class="mono">norboten</span>,
+        and its own pinned copy of Lima and QEMU under <span class="mono">~/.norboten</span>. The
+        first lab pulls a 110 MiB Alpine image, boots it, takes a clean snapshot and then breaks
+        the machine: about <strong>27 s</strong> the first time on a clean machine, Lima's own
+        download included, and <strong>21.8 s</strong> for an Ubuntu lab once its image is
+        cached. Both measured, not rounded up from a guess.
+      </p>
+      <p class="muted">
+        You get a briefing with symptoms and no answers, and a root shell on a machine that is
+        genuinely wrong. When you think it is fixed, <kbd>c</kbd> grades the machine, reboots it
+        and grades it again: a fix that does not survive the boot is not a fix. <kbd>r</kbd> puts
+        the machine back to the snapshot in about ten seconds, as often as you like.
+      </p>
+      <p class="muted">
+        Nothing of yours is inside it: no host directory is mounted, no port is forwarded, and
+        everything the tool ever writes is under <span class="mono">~/.norboten</span> — delete
+        that directory and nothing is left behind.
+      </p>
+    </div>
+    <div class="cta">
+      <a class="btn solid" href="install/">Install Norboten</a>
+      <a class="btn" href="https://github.com/northelks/norboten" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="features/">Features</a><br>
+        <a href="labs/">Labs</a><br>
+        <a href="journals/">Journals</a><br>
+        <a href="how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="live/">Live</a><br>
+        <a href="players/">Ratings</a><br>
+        <a href="analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="install/">Install</a><br>
+        <a href="docs/">Docs</a><br>
+        <a href="docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="about/">About</a><br>
+        <a href="community/">Community</a><br>
+        <a href="privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="totop.js"></script>
+<script src="ask-engine.js"></script>
+<script src="chat.js"></script>
+<script src="copy.js"></script>
+</body>
+</html>

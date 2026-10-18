@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labs · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/labs/"><meta property="og:title" content="Labs · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/labs/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Labs · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../features/" >Features</a>
+      <a href="../labs/" aria-current="page">Labs</a>
+      <a href="../how-it-works/" >How it works</a>
+      <a href="../journals/" >Journals</a>
+      <a href="../docs/" >Docs</a>
+      <a class="group" href="../players/" >Ratings</a>
+      <a class="live" href="../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Labs</div>
+    <h1>51 machines, each broken on purpose</h1>
+    <p class="lede prose">
+      Every lab states its symptoms, never its causes. The faults are listed here for people
+      choosing what to learn next — inside the lab you only ever see what the machine shows you.
+    </p>
+    <p class="muted" style="font-size:0.9rem">
+      Every lab here is <strong class="accent">unrated</strong>: it runs on your own machine, needs no account,
+      and its faults, checks and reference solution are in the repository. <strong class="accent">Rated</strong> labs — the ones a
+      rating is made of — are graded by the server and their answers are not published.
+      <a href="../docs/rated-labs/">What that means</a>.
+    </p>
+    <div class="grid three" style="margin-top:1.8rem">
+      <a class="card lab-card first-lab" href="../labs/hello/">
+        <div class="tags"><span class="tag track">start here</span><span class="tag">5 min</span></div>
+        <h3>A Message You Are Not Allowed to Read</h3>
+        <p class="muted">Read file permissions and use sudo</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 1 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">alpine, ubuntu-26.04, rocky-10</span>
+        </p>
+      </a>
+    </div>
+    <nav class="switcher" aria-label="Practice or theory">
+      <a class="pill" href="#linux" aria-current="true">Practice · 51 labs</a>
+      <a class="pill" href="#theory">Theory · 610 questions</a>
+    </nav>
+  </div>
+</section>
+
+<section class="section" id="linux">
+  <div class="wrap">
+    <div class="kicker">6 labs</div>
+    <h2>Linux</h2>
+    <p class="prose muted">General troubleshooting and shell work on lighter images: Ubuntu 26.04 and Alpine.</p>
+    <div class="grid three" style="margin-top:1.5rem">
+      <a class="card lab-card" href="../labs/linux-01-disk-full/">
+        <div class="tags"><span class="tag track">linux</span><span class="tag">20 min</span></div>
+        <h3>The Disk That Stays Full</h3>
+        <p class="muted">Find what is using disk space when df and du disagree</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 1 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04, alpine</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/linux-02-service-wont-stay-up/">
+        <div class="tags"><span class="tag track">linux</span><span class="tag">30 min</span></div>
+        <h3>The Service That Won&#39;t Stay Up</h3>
+        <p class="muted">Keep a systemd service running across crashes and reboots</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/linux-03-backup-script-lies/">
+        <div class="tags"><span class="tag track">linux</span><span class="tag">30 min</span></div>
+        <h3>The Backup Script That Lies</h3>
+        <p class="muted">Quote variables so file names with spaces survive</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04, alpine</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/linux-04-write-the-report/">
+        <div class="tags"><span class="tag track">linux</span><span class="tag">40 min</span></div>
+        <h3>Write the Report</h3>
+        <p class="muted">Process text with pipelines: filter, count, sort</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04, alpine</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/linux-05-shared-folder-locks-people-out/">
+        <div class="tags"><span class="tag track">linux</span><span class="tag">25 min</span></div>
+        <h3>The Shared Folder That Locks People Out</h3>
+        <p class="muted">Put exactly the right people in a group</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-container</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/linux-06-log-that-never-rotates/">
+        <div class="tags"><span class="tag track">linux</span><span class="tag">30 min</span></div>
+        <h3>The Log That Never Rotates</h3>
+        <p class="muted">Find out why logrotate ignores or skips a configuration</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-container</span>
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="section" id="rhcsa">
+  <div class="wrap">
+    <div class="kicker">5 labs</div>
+    <h2>RHCSA</h2>
+    <p class="prose muted">Five labs on Rocky Linux 10, grounded in the current EX200 objectives, ending in a timed exam simulation.</p>
+    <div class="grid three" style="margin-top:1.5rem">
+      <a class="card lab-card" href="../labs/rhcsa-01-users-and-permissions/">
+        <div class="tags"><span class="tag track">rhcsa</span><span class="tag">25 min</span></div>
+        <h3>The Contractor Who Cannot Write</h3>
+        <p class="muted">Create, delete, and modify local groups and memberships</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 1 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">rocky-10</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/rhcsa-02-systemd-and-boot/">
+        <div class="tags"><span class="tag track">rhcsa</span><span class="tag">30 min</span></div>
+        <h3>The API That Vanishes on Reboot</h3>
+        <p class="muted">Start and stop services; configure automatic startup</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">rocky-10</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/rhcsa-03-storage-and-lvm/">
+        <div class="tags"><span class="tag track">rhcsa</span><span class="tag">45 min</span></div>
+        <h3>The Volume That Filled Overnight</h3>
+        <p class="muted">Configure systems to mount file systems at boot by UUID or label</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">rocky-10</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/rhcsa-04-selinux-firewall-network/">
+        <div class="tags"><span class="tag track">rhcsa</span><span class="tag">50 min</span></div>
+        <h3>The Site Nobody Can Reach</h3>
+        <p class="muted">Restore default file contexts</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 4 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#4ade80"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">rocky-10</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/rhcsa-05-exam-simulation/">
+        <div class="tags"><span class="tag track">rhcsa</span><span class="tag">90 min</span></div>
+        <h3>The Server You Inherited</h3>
+        <p class="muted">Interrupt the boot process to gain system access</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 5 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#4ade80"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#4ade80"/></svg></span>
+          <span class="mono muted">rocky-10</span>
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="section" id="bash">
+  <div class="wrap">
+    <div class="kicker">7 labs</div>
+    <h2>Bash</h2>
+    <p class="prose muted">Two deploy-day scripts, graded by running them against the grader&#39;s own directories: error handling, quoting, atomic switches, safe deletion.</p>
+    <div class="grid three" style="margin-top:1.5rem">
+      <a class="card lab-card" href="../labs/bash-01-deploy-took-the-site-down/">
+        <div class="tags"><span class="tag track">bash</span><span class="tag">30 min</span></div>
+        <h3>The Deploy That Took the Site Down</h3>
+        <p class="muted">Stop a script at the first failure and report it with a non-zero exit status</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/bash-02-cleanup-deleted-the-wrong-releases/">
+        <div class="tags"><span class="tag track">bash</span><span class="tag">35 min</span></div>
+        <h3>The Cleanup That Kept the Wrong Releases</h3>
+        <p class="muted">Select files by the data in their names, not by incidental metadata</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/bash-03-backup-that-skips-files/">
+        <div class="tags"><span class="tag track">bash</span><span class="tag">30 min</span></div>
+        <h3>The Backup That Skips Files</h3>
+        <p class="muted">Walk a directory tree in a shell script without breaking on any file name</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/bash-04-job-that-works-only-by-hand/">
+        <div class="tags"><span class="tag track">bash</span><span class="tag">30 min</span></div>
+        <h3>The Job That Works Only by Hand</h3>
+        <p class="muted">Write a script that does not depend on the caller&#39;s environment or working directory</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/bash-05-export-that-leaves-its-mess/">
+        <div class="tags"><span class="tag track">bash</span><span class="tag">35 min</span></div>
+        <h3>The Export That Leaves Its Mess Behind</h3>
+        <p class="muted">Publish a file only when it is complete, in one step</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/bash-06-report-that-dies-on-a-quiet-night/">
+        <div class="tags"><span class="tag track">bash</span><span class="tag">30 min</span></div>
+        <h3>The Report That Dies on a Quiet Night</h3>
+        <p class="muted">Tell &#39;nothing matched&#39; from &#39;something failed&#39; in a pipeline under set -e and pipefail</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/bash-07-config-that-breaks-on-a-password/">
+        <div class="tags"><span class="tag track">bash</span><span class="tag">35 min</span></div>
+        <h3>The Config That Breaks on a Password</h3>
+        <p class="muted">Substitute any value into a template literally, whatever characters it contains</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="section" id="python">
+  <div class="wrap">
+    <div class="kicker">7 labs</div>
+    <h2>Python</h2>
+    <p class="prose muted">A sync job that lied about its failures and a tool only root could run: exit status, timeouts, atomic writes, virtual environments.</p>
+    <div class="grid three" style="margin-top:1.5rem">
+      <a class="card lab-card" href="../labs/python-01-sync-that-says-it-worked/">
+        <div class="tags"><span class="tag track">python</span><span class="tag">30 min</span></div>
+        <h3>The Sync That Says It Worked</h3>
+        <p class="muted">Turn errors into a non-zero exit status instead of a false success</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/python-02-tool-only-root-can-run/">
+        <div class="tags"><span class="tag track">python</span><span class="tag">35 min</span></div>
+        <h3>The Tool Only Root Can Run</h3>
+        <p class="muted">Install a Python application into its own virtual environment for every user of the machine</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/python-03-report-that-crashes-on-one-name/">
+        <div class="tags"><span class="tag track">python</span><span class="tag">35 min</span></div>
+        <h3>The Report That Crashes on One Name</h3>
+        <p class="muted">Read and write text files with the encoding stated, not the machine&#39;s</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/python-04-worker-that-goes-silent/">
+        <div class="tags"><span class="tag track">python</span><span class="tag">35 min</span></div>
+        <h3>The Worker That Goes Silent</h3>
+        <p class="muted">Make a long-running program&#39;s output appear while it runs, not when it ends</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/python-05-module-that-shadows-the-stdlib/">
+        <div class="tags"><span class="tag track">python</span><span class="tag">35 min</span></div>
+        <h3>The Module That Shadows the Standard Library</h3>
+        <p class="muted">Know where Python looks for a module, and in which order</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/python-06-job-that-runs-twice/">
+        <div class="tags"><span class="tag track">python</span><span class="tag">40 min</span></div>
+        <h3>The Job That Runs Twice</h3>
+        <p class="muted">Keep two copies of the same job from running at once</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 4 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#4ade80"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/python-07-client-that-leaks-its-token/">
+        <div class="tags"><span class="tag track">python</span><span class="tag">40 min</span></div>
+        <h3>The Client That Leaks Its Token</h3>
+        <p class="muted">Keep a credential out of the log, whatever is logged</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 4 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#4ade80"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="section" id="automation">
+  <div class="wrap">
+    <div class="kicker">7 labs</div>
+    <h2>Automation &amp; AI</h2>
+    <p class="prose muted">A Python job, an AI gateway, an agent that never stopped, and Ollama four ways — deployed, exposed, starved of context and memory, and secured.</p>
+    <div class="grid three" style="margin-top:1.5rem">
+      <a class="card lab-card" href="../labs/ai-01-model-server-unreachable/">
+        <div class="tags"><span class="tag track">automation</span><span class="tag">35 min</span></div>
+        <h3>The Model Server Nobody Can Reach</h3>
+        <p class="muted">Run a local model server as a service account that can read its models</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-automation</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/ai-02-chatbot-leaks-key/">
+        <div class="tags"><span class="tag track">automation</span><span class="tag">40 min</span></div>
+        <h3>The Chatbot That Leaks Its Key</h3>
+        <p class="muted">Keep an upstream API key out of unit files and out of other accounts&#39; reach</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-automation</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/ai-03-the-agent-that-never-stops/">
+        <div class="tags"><span class="tag track">automation</span><span class="tag">40 min</span></div>
+        <h3>The Agent That Never Stops</h3>
+        <p class="muted">Give an agent only the tools its task needs</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-automation</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/ollama-01-the-model-server-anyone-can-use/">
+        <div class="tags"><span class="tag track">automation</span><span class="tag">30 min</span></div>
+        <h3>The Model Server Anyone Can Use</h3>
+        <p class="muted">Keep an unauthenticated model server off the network</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-automation</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/ollama-02-the-assistant-that-forgets-its-rules/">
+        <div class="tags"><span class="tag track">automation</span><span class="tag">35 min</span></div>
+        <h3>The Assistant That Forgets Its Rules</h3>
+        <p class="muted">Build a custom model from a Modelfile and read back what the server really holds</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-automation</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/ollama-03-the-model-that-will-not-load/">
+        <div class="tags"><span class="tag track">automation</span><span class="tag">35 min</span></div>
+        <h3>The Model That Will Not Load</h3>
+        <p class="muted">Size a model server&#39;s context and parallelism to the memory it has</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-automation</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/py-01-works-on-my-machine/">
+        <div class="tags"><span class="tag track">automation</span><span class="tag">25 min</span></div>
+        <h3>The Job That Works on My Machine</h3>
+        <p class="muted">Run a Python job from systemd with the project&#39;s own virtual environment</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 1 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-automation</span>
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="section" id="claude">
+  <div class="wrap">
+    <div class="kicker">6 labs</div>
+    <h2>Claude Code</h2>
+    <p class="prose muted">Headless Claude Code as a machine runs it: permission rules, hooks, subagents, MCP servers and CI jobs that stay inside a budget.</p>
+    <div class="grid three" style="margin-top:1.5rem">
+      <a class="card lab-card" href="../labs/claude-01-the-bot-that-deleted-the-drafts/">
+        <div class="tags"><span class="tag track">claude</span><span class="tag">30 min</span></div>
+        <h3>The Bot That Deleted the Drafts</h3>
+        <p class="muted">Recover work an agent deleted from a git working tree</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-claude</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/claude-02-the-hooks-that-never-fire/">
+        <div class="tags"><span class="tag track">claude</span><span class="tag">35 min</span></div>
+        <h3>The Hooks That Never Fire</h3>
+        <p class="muted">Make a PostToolUse hook run on the tools it is meant for, with the input Claude Code gives it</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-claude</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/claude-03-the-reviewer-nobody-calls/">
+        <div class="tags"><span class="tag track">claude</span><span class="tag">25 min</span></div>
+        <h3>The Reviewer Nobody Calls</h3>
+        <p class="muted">Define a project subagent Claude Code can find and delegate to</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-claude</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/claude-04-the-mcp-server-that-never-connects/">
+        <div class="tags"><span class="tag track">claude</span><span class="tag">35 min</span></div>
+        <h3>The MCP Server That Never Connects</h3>
+        <p class="muted">Configure a project MCP server that starts for a headless run</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-claude</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/claude-05-the-triage-job-that-spends/">
+        <div class="tags"><span class="tag track">claude</span><span class="tag">40 min</span></div>
+        <h3>The Triage Job That Spends Without Limit</h3>
+        <p class="muted">Trigger a CI agent job only on the event it is for</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-claude</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/claude-06-the-settings-that-disagree/">
+        <div class="tags"><span class="tag track">claude</span><span class="tag">40 min</span></div>
+        <h3>The Settings That Disagree</h3>
+        <p class="muted">Enforce a machine-wide policy no project, user or flag can loosen</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 4 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#4ade80"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-claude</span>
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="section" id="mcp">
+  <div class="wrap">
+    <div class="kicker">6 labs</div>
+    <h2>MCP</h2>
+    <p class="prose muted">Model Context Protocol servers as Claude Code meets them: what a server exposes, tool results that give orders, tokens for someone else, a chatty stdio server, a proxy that holds the stream, and scopes that disagree.</p>
+    <div class="grid three" style="margin-top:1.5rem">
+      <a class="card lab-card" href="../labs/mcp-01-the-file-server-that-shows-everything/">
+        <div class="tags"><span class="tag track">mcp</span><span class="tag">30 min</span></div>
+        <h3>The File Server That Shows Everything</h3>
+        <p class="muted">Let an MCP server share exactly the folder a job needs, and only for reading</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-claude</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/mcp-02-the-page-that-gave-orders/">
+        <div class="tags"><span class="tag track">mcp</span><span class="tag">35 min</span></div>
+        <h3>The Page That Gave Orders</h3>
+        <p class="muted">Limit what a fetching MCP server can reach</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-claude</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/mcp-03-the-token-for-someone-else/">
+        <div class="tags"><span class="tag track">mcp</span><span class="tag">35 min</span></div>
+        <h3>The Token for Someone Else</h3>
+        <p class="muted">Make an MCP server accept only tokens issued for it</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-claude</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/mcp-04-the-server-that-talks-too-much/">
+        <div class="tags"><span class="tag track">mcp</span><span class="tag">25 min</span></div>
+        <h3>The Server That Talks Too Much</h3>
+        <p class="muted">Keep a stdio MCP server&#39;s stdout for the protocol alone</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-claude</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/mcp-05-the-stream-that-stops/">
+        <div class="tags"><span class="tag track">mcp</span><span class="tag">35 min</span></div>
+        <h3>The Stream That Stops</h3>
+        <p class="muted">Proxy a remote MCP server&#39;s event stream without holding it back or cutting it off</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-claude</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/mcp-06-the-answers-from-last-year/">
+        <div class="tags"><span class="tag track">mcp</span><span class="tag">30 min</span></div>
+        <h3>The Answers From Last Year</h3>
+        <p class="muted">Find which of Claude Code&#39;s MCP scopes a server&#39;s definition comes from</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-claude</span>
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="section" id="ansible">
+  <div class="wrap">
+    <div class="kicker">2 labs</div>
+    <h2>Ansible</h2>
+    <p class="prose muted">A playbook that never converges and a deploy stuck at a vault prompt: idempotence, variable precedence, Vault without a keyboard.</p>
+    <div class="grid three" style="margin-top:1.5rem">
+      <a class="card lab-card" href="../labs/ansible-01-playbook-changes-everything/">
+        <div class="tags"><span class="tag track">ansible</span><span class="tag">35 min</span></div>
+        <h3>The Playbook That Changes Everything, Every Time</h3>
+        <p class="muted">Know where a variable&#39;s value comes from, and set it where it belongs</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/ansible-02-deploy-waits-for-a-password/">
+        <div class="tags"><span class="tag track">ansible</span><span class="tag">40 min</span></div>
+        <h3>The Deploy That Waits for a Password</h3>
+        <p class="muted">Run a playbook that uses Ansible Vault without a person at the keyboard</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="section" id="docker">
+  <div class="wrap">
+    <div class="kicker">2 labs</div>
+    <h2>Docker</h2>
+    <p class="prose muted">A queue that lost its jobs at every reboot and a Compose stack that could not find its API: volumes, published ports, networks, restart policies.</p>
+    <div class="grid three" style="margin-top:1.5rem">
+      <a class="card lab-card" href="../labs/docker-01-queue-forgets-every-reboot/">
+        <div class="tags"><span class="tag track">docker</span><span class="tag">30 min</span></div>
+        <h3>The Queue That Forgets Every Reboot</h3>
+        <p class="muted">Move a container&#39;s data onto a volume without losing what is already in it</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/docker-02-stack-cannot-find-its-api/">
+        <div class="tags"><span class="tag track">docker</span><span class="tag">35 min</span></div>
+        <h3>The Stack That Cannot Find Its API</h3>
+        <p class="muted">Connect Compose services by name over a shared network</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="section" id="terraform">
+  <div class="wrap">
+    <div class="kicker">2 labs</div>
+    <h2>Terraform</h2>
+    <p class="prose muted">A rename that would regenerate a secret and a site removed from the middle of a list: moved blocks, drift, for_each, state hygiene.</p>
+    <div class="grid three" style="margin-top:1.5rem">
+      <a class="card lab-card" href="../labs/terraform-01-rename-that-wants-to-destroy/">
+        <div class="tags"><span class="tag track">terraform</span><span class="tag">35 min</span></div>
+        <h3>The Rename That Wants to Destroy</h3>
+        <p class="muted">Refactor Terraform configuration without replacing what already exists</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+      <a class="card lab-card" href="../labs/terraform-02-site-removed-from-the-middle/">
+        <div class="tags"><span class="tag track">terraform</span><span class="tag">40 min</span></div>
+        <h3>The Site Removed From the Middle</h3>
+        <p class="muted">Remove one instance of a repeated resource without disturbing the others</p>
+        <p class="meta">
+          <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 4 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#4ade80"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span>
+          <span class="mono muted">ubuntu-26.04-devops</span>
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section no-line" id="theory">
+  <div class="wrap">
+    <div class="kicker">Theory</div>
+    <h2>610 questions, each with a reference</h2>
+    <p class="prose muted">
+      These are the <strong class="accent">unrated</strong> banks: their answers and explanations are in the
+      repository, and the site draws the questions from it. Rated banks are served by the API, a
+      question at a time, and graded there.
+      Single answer or several; every one explains why the tempting wrong choices are wrong.
+      Questions about program output are executed in a sandbox before they are accepted — the
+      answer key has to match what the machine actually printed.
+    </p>
+    <div class="grid three" style="margin-top:1.5rem">
+      <div class="card">
+        <h3>Ansible</h3>
+        <p class="muted">Idempotence, modules, variables and handlers — configuration you can run twice.</p>
+        <p class="mono muted" style="font-size:0.85rem">
+          41 questions        </p>
+      </div>
+      <div class="card">
+        <h3>Bash</h3>
+        <p class="muted">Expansion, quoting, exit status and the traps that make scripts lie.</p>
+        <p class="mono muted" style="font-size:0.85rem">
+          42 questions · 34 executable        </p>
+      </div>
+      <div class="card">
+        <h3>Claude Code</h3>
+        <p class="muted">Claude Code as a machine runs it — headless runs, permissions, settings levels, hooks, subagents, MCP servers, CLAUDE.md, CI jobs and what they cost — and the habits that keep any AI agent on a short leash.</p>
+        <p class="mono muted" style="font-size:0.85rem">
+          42 questions · 4 executable        </p>
+      </div>
+      <div class="card">
+        <h3>Linux fundamentals</h3>
+        <p class="muted">Users, permissions, processes, files and boot — the everyday mechanics of a Linux system.</p>
+        <p class="mono muted" style="font-size:0.85rem">
+          42 questions · 7 executable        </p>
+      </div>
+      <div class="card">
+        <h3>The Model Context Protocol</h3>
+        <p class="muted">MCP as a machine runs it — the two transports, the stateless 2026-07-28 revision, what a server exposes, tool results as untrusted input, OAuth 2.1 for remote servers, and the way Claude Code picks which server to run.</p>
+        <p class="mono muted" style="font-size:0.85rem">
+          40 questions        </p>
+      </div>
+      <div class="card">
+        <h3>Memory and CS in Linux</h3>
+        <p class="muted">Virtual memory, the page cache, processes and scheduling — computer science as Linux shows it.</p>
+        <p class="mono muted" style="font-size:0.85rem">
+          43 questions · 7 executable        </p>
+      </div>
+      <div class="card">
+        <h3>Networking</h3>
+        <p class="muted">Addresses, routes, sockets, name resolution and firewalls — from a Linux shell.</p>
+        <p class="mono muted" style="font-size:0.85rem">
+          41 questions · 6 executable        </p>
+      </div>
+      <div class="card">
+        <h3>Ollama</h3>
+        <p class="muted">Running language models on your own machine with Ollama — the service, the API, Modelfiles, context windows, memory, keep-alive, embeddings and exposing it safely — and what local models are good for.</p>
+        <p class="mono muted" style="font-size:0.85rem">
+          40 questions · 3 executable        </p>
+      </div>
+      <div class="card">
+        <h3>Python for automation</h3>
+        <p class="muted">The Python that automation scripts are made of — and the surprises in it.</p>
+        <p class="mono muted" style="font-size:0.85rem">
+          42 questions · 34 executable        </p>
+      </div>
+      <div class="card">
+        <h3>Terraform</h3>
+        <p class="muted">State, plans and the lifecycle of infrastructure described as code.</p>
+        <p class="mono muted" style="font-size:0.85rem">
+          41 questions · 1 executable        </p>
+      </div>
+    </div>
+    <h3 style="margin-top:2.5rem">One of them</h3>
+    <div class="quiz-grid one"><div class="quiz" data-answer="c" data-type="single">
+  <p class="prompt">What does this print?</p>
+<pre><code>x=5
+x+=1
+echo &#34;$x&#34;
+</code></pre>  <div class="choices">
+    <button type="button" class="choice" data-choice="a">
+      <span class="mark mono">a</span><span class="text">5+1</span>
+    </button>
+    <button type="button" class="choice" data-choice="b">
+      <span class="mark mono">b</span><span class="text">6</span>
+    </button>
+    <button type="button" class="choice" data-choice="c">
+      <span class="mark mono">c</span><span class="text">51</span>
+    </button>
+    <button type="button" class="choice" data-choice="d">
+      <span class="mark mono">d</span><span class="text">an error</span>
+    </button>
+  </div>
+  <div class="verdict" hidden>
+    <p class="answer"><strong>51</strong>
+</p>
+    <p class="muted">On an ordinary variable, += appends a string: &#34;5&#34; followed by &#34;1&#34;. Arithmetic needs an arithmetic context — ((x+=1)) or x=$((x+1)) — or a variable declared with declare -i.</p>
+    <p class="mono muted refs">man 1 bash (Parameters) · executed in a sandbox</p>
+  </div>
+</div>
+</div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../features/">Features</a><br>
+        <a href="../labs/">Labs</a><br>
+        <a href="../journals/">Journals</a><br>
+        <a href="../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../live/">Live</a><br>
+        <a href="../players/">Ratings</a><br>
+        <a href="../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../install/">Install</a><br>
+        <a href="../docs/">Docs</a><br>
+        <a href="../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../about/">About</a><br>
+        <a href="../community/">Community</a><br>
+        <a href="../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../totop.js"></script>
+<script src="../ask-engine.js"></script>
+<script src="../chat.js"></script>
+<script src="../copy.js"></script>
+<script src="../quiz.js"></script></body>
+</html>

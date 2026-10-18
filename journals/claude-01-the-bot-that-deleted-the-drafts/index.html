@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A headless agent gets the permissions you write down, and nothing asks twice · Norboten</title>
+<meta name="description" content="A nightly job asks Claude Code to fix typos. It &amp;quot;kept stopping to ask for permission&amp;quot;, so someone added --dangerously-skip-permissions, and for weeks ">
+<link rel="canonical" href="https://norboten.org/journals/claude-01-the-bot-that-deleted-the-drafts/"><meta property="og:title" content="A headless agent gets the permissions you write down, and nothing asks twice · Norboten">
+<meta property="og:description" content="A nightly job asks Claude Code to fix typos. It &amp;quot;kept stopping to ask for permission&amp;quot;, so someone added --dangerously-skip-permissions, and for weeks ">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/claude-01-the-bot-that-deleted-the-drafts/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A headless agent gets the permissions you write down, and nothing asks twice · Norboten">
+<meta name="twitter:description" content="A nightly job asks Claude Code to fix typos. It &amp;quot;kept stopping to ask for permission&amp;quot;, so someone added --dangerously-skip-permissions, and for weeks ">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A headless agent gets the permissions you write down, and nothing asks twice",
+  "description": "A nightly job asks Claude Code to fix typos. It \u0026quot;kept stopping to ask for permission\u0026quot;, so someone added --dangerously-skip-permissions, and for weeks ",
+  "url": "https://norboten.org/journals/claude-01-the-bot-that-deleted-the-drafts/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2378,
+  "timeRequired": "PT35M",
+  "about": ["Claude Code", "AI Agents"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Bot That Deleted the Drafts</div>
+    <h1>A headless agent gets the permissions you write down, and nothing asks twice</h1>
+    <p class="muted">
+      35 minutes' reading · 2378 words ·<span class="tag">Claude Code</span><span class="tag">AI Agents</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 129 words</title><rect x="0.0" y="0" width="35.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 851 words</title><rect x="38.7" y="0" width="235.7" height="30" rx="4" fill="#1d2a23"/><text x="46.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 613 words</title><rect x="277.4" y="0" width="169.8" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 253 words</title><rect x="450.2" y="0" width="70.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 216 words</title><rect x="523.3" y="0" width="59.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 111 words</title><rect x="586.1" y="0" width="30.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 506 words</title><rect x="619.9" y="0" width="140.1" height="30" rx="4" fill="#1d2a23"/><text x="627.9" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/claude-01-the-bot-that-deleted-the-drafts/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>A nightly job asks Claude Code to fix typos. It &quot;kept stopping to ask for permission&quot;, so someone
+added <code>--dangerously-skip-permissions</code>, and for weeks nothing bad happened. Then the model decided
+that a directory of unpublished drafts was clutter, deleted it, and opened the file holding the
+publishing token while it was looking around. Nothing in Claude Code malfunctioned: it did what the
+job told it it was allowed to do.</p>
+<p>The fix is not &quot;take the flag out&quot;. Take the flag out and a user setting still skips every check;
+switch to a strict mode and put the allow rule in the project's settings file and a headless run
+ignores it; forbid <code>rm</code> and the model has <code>/bin/rm</code>, <code>find -delete</code>, <code>git rm</code> and the Write tool.
+There are really four questions: <strong>what mode decides a call no rule mentions</strong>, <strong>which tools the
+session has at all</strong>, <strong>where an allow rule is honoured</strong>, and <strong>what a tool result carries to the
+model</strong> — plus, first, getting the drafts back.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Restore files an agent deleted from a git working tree, index and working tree both.</li>
+<li>Say what each permission mode does with a call no rule mentions, and why <code>dontAsk</code> is the mode for
+unattended jobs.</li>
+<li>Explain the difference between removing a tool (<code>--tools</code>) and refusing a call (a deny rule), and
+what the model sees in each case.</li>
+<li>Know every place a permission mode and an allow rule can come from, and which of them a <code>claude -p</code>
+run honours in a repository nobody has trusted.</li>
+<li>Predict which ways of reading a secret a <code>Read</code> deny rule stops, and which it does not.</li>
+<li>Find what a past run sent to the model on disk, and keep a job from writing it there.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="every-tool-call-passes-one-decision">Every tool call passes one decision</h3>
+<p>When the model asks for a tool call, Claude Code decides before running anything. Rules are
+evaluated <strong>deny first, then ask, then allow</strong>, across every settings level, and a deny anywhere
+cannot be allowed anywhere else — not even by <code>--allowedTools</code> on the command line. A call that
+matches no rule is decided by the <strong>permission mode</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>mode</th>
+<th>a call no rule mentions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>default</code> (Manual)</td>
+<td>reads in the working directory run; anything else prompts</td>
+</tr>
+<tr>
+<td><code>acceptEdits</code></td>
+<td>file edits and simple filesystem commands (<code>mkdir</code>, <code>touch</code>, <code>mv</code>, <code>cp</code>) run; the rest prompts</td>
+</tr>
+<tr>
+<td><code>plan</code></td>
+<td>nothing that changes anything runs</td>
+</tr>
+<tr>
+<td><code>dontAsk</code></td>
+<td>anything that would prompt is <strong>denied</strong></td>
+</tr>
+<tr>
+<td><code>bypassPermissions</code></td>
+<td>everything runs, except ask and deny rules and a few protected paths</td>
+</tr>
+</tbody>
+</table>
+<p>In <code>-p</code> there is nobody to answer a prompt, so a prompt is a denial there too; <code>dontAsk</code> makes that
+explicit and tells the model so. The denied call comes back to the model as a tool error, and the
+run's JSON result lists it in <code>permission_denials</code> — the single most useful field when a job &quot;does
+nothing&quot;.</p>
+<p><code>--dangerously-skip-permissions</code> is <code>bypassPermissions</code> on the command line. The documentation
+reserves it for isolated containers and VMs, and that is the right reading: it is for a machine you
+are happy for the model to wreck.</p>
+<h3 id="settings-come-from-five-places">Settings come from five places</h3>
+<p>A permission mode (<code>permissions.defaultMode</code>) and rules can be set in any of these, highest
+precedence first:</p>
+<ol>
+<li>managed settings (<code>/etc/claude-code/managed-settings.json</code> on Linux);</li>
+<li>the command line (<code>--permission-mode</code>, <code>--allowedTools</code>, <code>--settings</code>);</li>
+<li><code>.claude/settings.local.json</code> in the project;</li>
+<li><code>.claude/settings.json</code> in the project, usually committed;</li>
+<li><code>~/.claude/settings.json</code>, the user's.</li>
+</ol>
+<p>Scalar keys such as <code>defaultMode</code> are taken from the highest level that sets them; lists such as
+<code>permissions.allow</code> and <code>permissions.deny</code> <strong>merge</strong> across levels. So removing a flag from a
+script does not remove a <code>defaultMode</code> two levels down, which is exactly what happens in this lab.</p>
+<h3 id="an-untrusted-project-cannot-grant-itself-permissions">An untrusted project cannot grant itself permissions</h3>
+<p>Interactive Claude Code asks whether you trust a folder the first time you open it. A headless run
+cannot ask, and a repository can ship any <code>.claude/settings.json</code> it likes — including one that
+allows <code>Bash</code>. Claude Code 2.1.270 resolves this by <strong>ignoring allow rules from the shared project
+settings file</strong> when <code>claude -p</code> runs in a workspace that has not been trusted, and saying so on
+stderr:</p>
+<pre><code>Ignoring 1 permissions.allow entry from .claude/settings.json: this workspace has not been trusted.
+</code></pre>
+<p>Deny rules from the same file still apply: a repository may restrict itself, not unlock itself.
+The same allow rule works from <code>--allowedTools</code>, <code>--settings &lt;file&gt;</code>, the user settings or
+<code>.claude/settings.local.json</code>. In a CI job, where nobody will ever accept the trust dialog, put what
+the job needs on its command line, next to the prompt it applies to. (Hooks, <code>CLAUDE.md</code>, subagents
+and <code>.mcp.json</code> servers do load in an untrusted <code>-p</code> run; allow rules are the exception.)</p>
+<h3 id="removing-a-tool-is-not-the-same-as-refusing-a-call">Removing a tool is not the same as refusing a call</h3>
+<p><code>--tools &quot;Read,Edit&quot;</code> limits the built-in tools the session has. A tool outside the list is not
+offered to the model, and a call to it fails before any permission check:</p>
+<pre><code>Error: No such tool available: Bash. Bash is disabled for this session, in subagents as well as here.
+</code></pre>
+<p>A deny rule leaves the tool in place and refuses particular calls. Rules for Bash match the command
+text, and they are <strong>not a security boundary</strong>: <code>Bash(rm *)</code> does not match <code>/bin/rm -rf drafts</code>,
+<code>find drafts -delete</code>, <code>python3 -c &quot;shutil.rmtree('drafts')&quot;</code> or <code>git rm -r drafts</code>. In <code>dontAsk</code>
+those still fail — not because of the rule but because nothing allows them. The robust shape for a
+job is therefore: a strict mode, the fewest tools that do the task, and narrow allow rules for the
+calls the task makes.</p>
+<h3 id="what-a-tool-returns-goes-to-the-model">What a tool returns goes to the model</h3>
+<p>A tool result is part of the next request. If the Read tool opens <code>.env</code>, the token is in the
+conversation, in Anthropic's request logs for that run, and in the session transcript Claude Code
+writes to <code>~/.claude/projects/&lt;project&gt;/&lt;session&gt;.jsonl</code> unless the run passes
+<code>--no-session-persistence</code>.</p>
+<p>A <code>Read</code> deny rule for <code>.env</code> covers more than the Read tool, and less than it seems:</p>
+<table>
+<thead>
+<tr>
+<th>the model runs</th>
+<th>with <code>deny: [&quot;Read(./.env)&quot;]</code> in <code>dontAsk</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read <code>/home/learner/handbook/.env</code></td>
+<td>refused</td>
+</tr>
+<tr>
+<td>Grep for <code>TOKEN</code> in the whole directory</td>
+<td>the file is skipped: &quot;No matches found&quot;</td>
+</tr>
+<tr>
+<td>Grep in <code>.env</code> itself</td>
+<td>refused</td>
+</tr>
+<tr>
+<td>Bash <code>cat .env</code>, <code>head -1 .env</code>, <code>tail .env</code>, <code>sort .env</code>, <code>cat /abs/path/.env</code></td>
+<td>refused</td>
+</tr>
+<tr>
+<td>Bash <code>grep -r TOKEN .</code></td>
+<td><strong>prints the token</strong></td>
+</tr>
+<tr>
+<td>Bash <code>cat .e*</code></td>
+<td><strong>prints the token</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Read-only commands run without asking, and the rule catches one only when the command text names
+the denied path. The lesson is the same as for deleting: if the job does not need a shell, do not
+give it one. And a token that must exist should not live in the directory an agent works in.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed in the lab container (Claude Code 2.1.270, the scripted model). Start with what changed.
+Nobody has committed since the run, so git knows exactly what it destroyed:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>~/handbook<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>git<span class="hl-w"> </span>log<span class="hl-w"> </span>--oneline<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>git<span class="hl-w"> </span>status<span class="hl-w"> </span>--short
+<span class="hl-go">8648d84 Handbook as of August</span>
+<span class="hl-go"> M docs/getting-started.md</span>
+<span class="hl-go"> D drafts/2026-q4-roadmap.md</span>
+<span class="hl-go"> D drafts/incident-2026-08-30.md</span>
+<span class="hl-go"> D drafts/pricing-v2.md</span>
+</code></pre>
+
+<p>The deletions are in the working tree only. <code>git restore</code> takes the files from <code>HEAD</code>; with
+<code>--staged --worktree</code> it also resets the index, in case anything staged the deletion (the grader
+tries <code>git rm</code>):</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>git<span class="hl-w"> </span>restore<span class="hl-w"> </span>--source<span class="hl-o">=</span>HEAD<span class="hl-w"> </span>--staged<span class="hl-w"> </span>--worktree<span class="hl-w"> </span>--<span class="hl-w"> </span>drafts<span class="hl-w"> </span>docs
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>drafts
+<span class="hl-go">2026-q4-roadmap.md  incident-2026-08-30.md  pricing-v2.md</span>
+</code></pre>
+
+<p>The job's log is its JSON result. <code>permission_denials</code> is empty — nothing was refused, because
+nothing was checked:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>jq<span class="hl-w"> </span><span class="hl-s1">'{result, num_turns, permission_denials}'</span><span class="hl-w"> </span>~/tidy-handbook.log
+<span class="hl-go">{</span>
+<span class="hl-go">  "result": "Tidied the handbook: fixed a typo in docs/getting-started.md and removed drafts/.",</span>
+<span class="hl-go">  "num_turns": 5,</span>
+<span class="hl-go">  "permission_denials": []</span>
+<span class="hl-go">}</span>
+</code></pre>
+
+<p>The obvious fix is to delete the flag. The run behaves exactly as before — five turns, no denials,
+the drafts gone again — because <code>~/.claude/settings.json</code> sets the same mode a second time:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'/dangerously-skip-permissions/d'</span><span class="hl-w"> </span>~/bin/tidy-handbook<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>~/bin/tidy-handbook
+<span class="hl-gp">$ </span>tail<span class="hl-w"> </span>-n1<span class="hl-w"> </span>~/tidy-handbook.log<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{num_turns, permission_denials}'</span>
+<span class="hl-go">{"num_turns":5,"permission_denials":[]}</span>
+<span class="hl-gp">$ </span>cat<span class="hl-w"> </span>~/.claude/settings.json
+<span class="hl-go">{</span>
+<span class="hl-go">  "permissions": {</span>
+<span class="hl-go">    "defaultMode": "bypassPermissions"</span>
+<span class="hl-go">  }</span>
+<span class="hl-go">}</span>
+</code></pre>
+
+<p>Next attempt: restore again, empty the user settings, run the job with <code>--permission-mode dontAsk</code>,
+and write the policy where the team will review it — the project's <code>.claude/settings.json</code>,
+allowing edits in <code>docs/</code> and denying <code>.env</code>. The drafts survive, and so do the typos:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>~/bin/tidy-handbook
+<span class="hl-gp">$ </span>head<span class="hl-w"> </span>-n<span class="hl-w"> </span>-1<span class="hl-w"> </span>~/tidy-handbook.log
+<span class="hl-go">Ignoring 1 permissions.allow entry from .claude/settings.json: this workspace has not been trusted. …</span>
+<span class="hl-gp">$ </span>tail<span class="hl-w"> </span>-n1<span class="hl-w"> </span>~/tidy-handbook.log<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'[.permission_denials[] | {tool_name, tool_input}]'</span>
+<span class="hl-go">[{"tool_name":"Edit","tool_input":{"file_path":"/home/learner/handbook/docs/getting-started.md",…}},</span>
+<span class="hl-go"> {"tool_name":"Bash","tool_input":{"command":"rm -rf drafts","description":"Remove clutter"}},</span>
+<span class="hl-go"> {"tool_name":"Read","tool_input":{"file_path":"/home/learner/handbook/.env"}}]</span>
+</code></pre>
+
+<p>All three calls were refused: the <code>rm</code> and the <code>.env</code> read as intended, and the edit because its allow
+rule was ignored. The stderr line says why. The allow belongs on the job's command line; the deny
+rules can stay in the project file, where they are honoured and reviewed. The job becomes:</p>
+<pre class="hl"><code class="language-sh"><span class="hl-nb">cd</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$HOME</span><span class="hl-s2">/handbook"</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"Fix the typos in docs/."</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>--permission-mode<span class="hl-w"> </span>dontAsk<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>--tools<span class="hl-w"> </span><span class="hl-s2">"Read,Edit,Glob,Grep"</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>--allowedTools<span class="hl-w"> </span><span class="hl-s2">"Edit(./docs/**)"</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>--max-turns<span class="hl-w"> </span><span class="hl-m">10</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span>&gt;<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$HOME</span><span class="hl-s2">/tidy-handbook.log"</span><span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span>
+</code></pre>
+
+<p>with <code>.claude/settings.json</code> denying <code>Read(./.env)</code>, <code>Read(./.env.*)</code> and <code>Edit(./drafts/**)</code>, and
+<code>~/.claude/settings.json</code> reduced to <code>{}</code>. The model replays last night's plan once more:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>~/bin/tidy-handbook
+<span class="hl-gp">$ </span>tail<span class="hl-w"> </span>-n1<span class="hl-w"> </span>~/tidy-handbook.log<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{num_turns, denials: [.permission_denials[] | .tool_name]}'</span>
+<span class="hl-go">{"num_turns":5,"denials":["Read"]}</span>
+<span class="hl-gp">$ </span>git<span class="hl-w"> </span>status<span class="hl-w"> </span>--short
+<span class="hl-go"> M docs/getting-started.md</span>
+<span class="hl-go">?? .claude/</span>
+</code></pre>
+
+<p>The typo is fixed, the <code>rm</code> failed as &quot;No such tool available: Bash&quot; (it is not a denial — Bash is
+not in the session), and the read of <code>.env</code> was refused. The grader then tries harder than last
+night's model did:</p>
+<pre><code>PASS 02_the_job_fixes_typos_and_deletes_nothing: The job fixed a typo in docs/ and refused all 7
+     attempts to delete or overwrite.
+PASS 03_the_token_never_reaches_the_model: None of the ways the model tried to read the token got it.
+     Read /home/learner/handbook/.env: File is in a directory that is denied by your permission settings.
+     Bash cat .env: Error: No such tool available: Bash. …
+     Grep TOKEN: No matches found
+</code></pre>
+<p>One thing the grader cannot undo: the transcript of last night's run is still on disk with the
+token in it, and so is the run where only the flag was removed.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>grep<span class="hl-w"> </span>-l<span class="hl-w"> </span>hbk_live<span class="hl-w"> </span>~/.claude/projects/*/*.jsonl<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>wc<span class="hl-w"> </span>-l
+<span class="hl-go">2</span>
+</code></pre>
+
+<p>In real life the token is now compromised — it was sent to a model provider — and has to be rotated
+at the service that issued it. Delete those transcripts, and give the job <code>--no-session-persistence</code>
+if nobody reads its sessions.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Removing the flag and calling it done.</strong> A <code>defaultMode</code> in any settings file still applies; the
+job's behaviour did not change at all. Look at <code>permission_denials</code> after every change: an empty
+list on a run that tried to delete something means nothing is being checked.</p>
+<p><strong>Putting the allow rules in the project's <code>.claude/settings.json</code> for a CI job.</strong> Nobody ever
+trusts a CI checkout, so <code>claude -p</code> ignores them and the job quietly does nothing. The warning is on
+stderr — which the job redirects into its log, so read it.</p>
+<p><strong>Answering with <code>acceptEdits</code>.</strong> Edits run without asking — including the Write tool emptying a
+draft and rewriting <code>README.md</code>. It is a mode for a person watching, not for a job.</p>
+<p><strong>Denying <code>Bash(rm *)</code> and keeping Bash.</strong> The model has <code>/bin/rm</code>, <code>find -delete</code>, <code>python3</code>,
+<code>git rm</code> and a dozen more. Bash rules match text, not intent.</p>
+<p><strong>Denying <code>Read(./.env)</code> and keeping Bash.</strong> <code>grep -r TOKEN .</code> and <code>cat .e*</code> still print it.</p>
+<p><strong>Exporting the token into the job's environment so the model &quot;doesn't need the file&quot;.</strong> Anything
+the job's process can see, <code>env</code> shows the model the moment Bash is available.</p>
+<p><strong>Restoring with <code>git checkout -- drafts</code> after something staged the deletion.</strong> <code>checkout --</code> takes
+files from the index; if <code>git rm</code> already removed them from the index, there is nothing there.
+<code>git restore --source=HEAD --staged --worktree</code> restores both from the commit.</p>
+<p><strong>Deleting the job.</strong> The typo fixes were the point. The goal is a job that can do its one task and
+nothing else.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># what a run did and what was refused</span>
+jq<span class="hl-w"> </span><span class="hl-s1">'{result, num_turns, is_error, permission_denials}'</span><span class="hl-w"> </span>run.json
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span><span class="hl-m">2</span>&gt;run.err<span class="hl-w"> </span>&gt;run.json<span class="hl-w">   </span><span class="hl-c1"># keep stderr: trust and config warnings</span>
+
+<span class="hl-c1"># the modes, strict to loose</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w"> </span>--permission-mode<span class="hl-w"> </span>dontAsk<span class="hl-w">        </span><span class="hl-c1"># unattended: anything not allowed is refused</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w"> </span>--permission-mode<span class="hl-w"> </span>acceptEdits<span class="hl-w">    </span><span class="hl-c1"># edits run without asking — not for jobs</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w"> </span>--dangerously-skip-permissions<span class="hl-w">   </span><span class="hl-c1"># = bypassPermissions: disposable machines only</span>
+
+<span class="hl-c1"># fewest tools, narrowest allow, caps</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w"> </span>--tools<span class="hl-w"> </span><span class="hl-s2">"Read,Edit,Glob,Grep"</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>--allowedTools<span class="hl-w"> </span><span class="hl-s2">"Edit(./docs/**)"</span><span class="hl-w"> </span>--max-turns<span class="hl-w"> </span><span class="hl-m">10</span><span class="hl-w"> </span>--no-session-persistence
+
+<span class="hl-c1"># where modes and rules come from (highest first)</span>
+cat<span class="hl-w"> </span>/etc/claude-code/managed-settings.json<span class="hl-w">        </span><span class="hl-c1"># managed</span>
+<span class="hl-c1">#   command line flags / --settings file</span>
+cat<span class="hl-w"> </span>.claude/settings.local.json<span class="hl-w">                   </span><span class="hl-c1"># local project (honoured untrusted)</span>
+cat<span class="hl-w"> </span>.claude/settings.json<span class="hl-w">                         </span><span class="hl-c1"># shared project: allow ignored by untrusted -p</span>
+cat<span class="hl-w"> </span>~/.claude/settings.json<span class="hl-w">                       </span><span class="hl-c1"># user</span>
+grep<span class="hl-w"> </span>-rn<span class="hl-w"> </span><span class="hl-s1">'bypassPermissions\|dangerously'</span><span class="hl-w"> </span>~/.claude<span class="hl-w"> </span>.claude<span class="hl-w"> </span>~/bin
+
+<span class="hl-c1"># a deny rule for a secret — and why it is not enough with Bash</span>
+<span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-s2">"permissions"</span>:<span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-s2">"deny"</span>:<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-s2">"Read(./.env)"</span>,<span class="hl-w"> </span><span class="hl-s2">"Read(./.env.*)"</span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">}</span><span class="hl-w"> </span><span class="hl-o">}</span>
+<span class="hl-c1">#   stops: Read, Grep on the file, cat/head/tail .env   does not stop: grep -r ., cat .e*</span>
+
+<span class="hl-c1"># get deleted files back from the last commit</span>
+git<span class="hl-w"> </span>status<span class="hl-w"> </span>--short
+git<span class="hl-w"> </span>restore<span class="hl-w"> </span>--source<span class="hl-o">=</span>HEAD<span class="hl-w"> </span>--staged<span class="hl-w"> </span>--worktree<span class="hl-w"> </span>--<span class="hl-w"> </span>drafts
+
+<span class="hl-c1"># what past runs sent the model</span>
+ls<span class="hl-w"> </span>~/.claude/projects/*/<span class="hl-w">                 </span><span class="hl-c1"># one .jsonl transcript per session</span>
+grep<span class="hl-w"> </span>-l<span class="hl-w"> </span><span class="hl-s1">'SECRET_PATTERN'</span><span class="hl-w"> </span>~/.claude/projects/*/*.jsonl
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>Claude Code in a job</em> (topic journal <code>claude-code</code>) — What the model may do</li>
+<li><em>Claude Code in a job</em> (topic journal <code>claude-code</code>) — Guards, helpers and outside data</li>
+<li><em>Claude Code in a job</em> (topic journal <code>claude-code</code>) — What a session loads</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://git-scm.com/docs/git-restore</li>
+<li>https://code.claude.com/docs/en/permissions</li>
+<li>https://code.claude.com/docs/en/settings</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>Claude Code in a job</em> (<code>claude-code</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>A job runs <code>claude -p</code> with <code>--permission-mode dontAsk</code> and no allow rules. The model calls Edit on
+a file in the working directory. What happens, and where do you see it?</p>
+<blockquote>
+<p>The edit is refused, because in dontAsk anything that would prompt is denied. The model gets a
+tool error and carries on; the JSON result lists the call in <code>permission_denials</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Someone removes <code>--dangerously-skip-permissions</code> from a job and the model still deletes files
+without a single denial. Name the likeliest cause.</p>
+<blockquote>
+<p>A <code>permissions.defaultMode</code> of <code>bypassPermissions</code> in a settings file — here the user's
+<code>~/.claude/settings.json</code>. Scalar settings come from the highest level that sets them, and the
+command line no longer sets one.</p>
+</blockquote>
+</li>
+<li>
+<p>Why are allow rules in a committed <code>.claude/settings.json</code> ignored by <code>claude -p</code> in a fresh CI
+checkout, while its deny rules still apply?</p>
+<blockquote>
+<p>The workspace has not been trusted, and a repository must not be able to grant itself
+permissions; restricting itself is harmless. Claude Code 2.1.270 ignores project allow entries
+there and warns on stderr. Put the allow on the command line (<code>--allowedTools</code>) or in
+<code>--settings</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference, as the model experiences it, between <code>--tools &quot;Read,Edit&quot;</code> and a deny rule
+<code>Bash</code>?</p>
+<blockquote>
+<p>With <code>--tools</code>, Bash is not in the session: it is not offered, and a call fails as &quot;No such tool
+available&quot;. With a deny rule the tool is offered and each call is refused as a permission denial.
+Both stop the call; removing the tool also keeps it out of the model's plan.</p>
+</blockquote>
+</li>
+<li>
+<p>A job keeps Bash and denies <code>Bash(rm *)</code>. Give three commands that still delete a directory.</p>
+<blockquote>
+<p><code>/bin/rm -rf drafts</code>, <code>find drafts -delete</code>, <code>git rm -r drafts</code> (or <code>python3 -c &quot;import shutil; shutil.rmtree('drafts')&quot;</code>). Bash rules match command text; they are not a
+security boundary. In dontAsk mode with no allow for them they are refused anyway.</p>
+</blockquote>
+</li>
+<li>
+<p>With <code>deny: [&quot;Read(./.env)&quot;]</code> and Bash available, which of <code>cat .env</code>, <code>grep -r TOKEN .</code> and the
+Read tool on <code>.env</code> show the model the token?</p>
+<blockquote>
+<p>Only <code>grep -r TOKEN .</code>. Read is refused, and <code>cat .env</code> names the denied path so it is refused;
+a read-only command that does not name it runs without asking.</p>
+</blockquote>
+</li>
+<li>
+<p>Once a model has read a secret, where else does it exist besides the provider's side of the
+request, and what should happen to it?</p>
+<blockquote>
+<p>In the session transcript under <code>~/.claude/projects/&lt;project&gt;/&lt;session&gt;.jsonl</code> (unless the run
+used <code>--no-session-persistence</code>) and in any log of the job's output. The secret is compromised:
+rotate it where it was issued, then delete the transcripts.</p>
+</blockquote>
+</li>
+<li>
+<p>The drafts were removed with <code>git rm -r drafts</code> and not committed. Why does
+<code>git checkout -- drafts</code> not bring them back, and what does?</p>
+<blockquote>
+<p><code>checkout -- &lt;path&gt;</code> copies from the index, and <code>git rm</code> already removed them from it.
+<code>git restore --source=HEAD --staged --worktree -- drafts</code> restores the index and the working
+tree from the last commit.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

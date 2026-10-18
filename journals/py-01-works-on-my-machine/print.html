@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your shell is not the environment</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Your shell is not the environment</h1>
+  <div class="meta">python, boot-systemd · 35 minutes · 3012 words</div>
+</header>
+<p>The author is telling the truth: the job works on their machine. They <code>cd /opt/etl</code>, they <code>source .venv/bin/activate</code>, they run <code>python report.py</code>, and a report appears. What they are actually
+describing is a job that depends on four things their shell provides and systemd does not — a current
+directory, a Python interpreter with the right libraries, the privileges of whoever is typing, and
+somebody remembering to type it.</p>
+<p>That is the most common failure in automation, and the name “works on my machine” undersells it. The
+job is not broken. <strong>The job has undeclared inputs</strong>, and an interactive shell supplies them silently.
+systemd starts a process with almost nothing: working directory <code>/</code>, a minimal <code>PATH</code>, no activated
+virtualenv, and exactly the user and permissions the unit says. Everything the job needs has to be
+written in the unit — and once it is, the job works everywhere, including after a reboot with nobody
+logged in.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Say what activating a virtualenv actually changes, and run a venv’s code without activating anything.</li>
+<li>Recognise the three failures of a relative path under systemd, and fix them with
+<code>WorkingDirectory=</code> or by making the program independent of its current directory.</li>
+<li>Run a scheduled job as a dedicated account, with ownership of its data and nothing else.</li>
+<li>Choose between <code>OnBootSec</code>/<code>OnUnitActiveSec</code> and <code>OnCalendar</code>, and enable the right unit.</li>
+<li>Reproduce systemd’s environment on demand, instead of reading the journal after each timer tick.</li>
+<li>Protect a token the job reads, and name systemd’s cleaner alternatives (<code>StateDirectory=</code>,
+<code>LoadCredential=</code>).</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>What a virtualenv is, and what <code>activate</code> does</h3>
+<p>A virtual environment is a directory containing a Python interpreter link, a <code>site-packages</code> directory,
+and a <code>pyvenv.cfg</code> file:</p>
+<pre><code class="language-console">$ ls /opt/etl/.venv
+bin  include  lib  lib64  pyvenv.cfg
+$ ls -l /opt/etl/.venv/bin/python /opt/etl/.venv/bin/python3
+lrwxrwxrwx 1 root root  7 Sep 13 05:42 /opt/etl/.venv/bin/python -&gt; python3
+lrwxrwxrwx 1 root root 16 Sep 13 05:42 /opt/etl/.venv/bin/python3 -&gt; /usr/bin/python3
+$ cat /opt/etl/.venv/pyvenv.cfg
+home = /usr/bin
+include-system-site-packages = false
+version = 3.13.5
+executable = /usr/bin/python3.13
+command = /usr/bin/python3 -m venv /opt/etl/.venv
+</code></pre>
+<p>The interpreter is a symlink to the system Python. What makes it <em>the venv’s</em> Python is <code>pyvenv.cfg</code>
+next to it: when Python starts, it looks for that file beside (or one directory above) the executable
+it was started as, and if it finds one, sets <code>sys.prefix</code> to the venv and puts the venv’s
+<code>site-packages</code> on the import path instead of the system’s.</p>
+<p>So the venv is selected by <strong>which executable you run</strong> — nothing else. <code>source .venv/bin/activate</code> is a
+convenience for interactive shells, and all it does is:</p>
+<ul>
+<li>prepend <code>.venv/bin</code> to <code>PATH</code>, so a bare <code>python</code> finds the venv’s first;</li>
+<li>set <code>VIRTUAL_ENV</code>, and change your prompt;</li>
+<li>define a <code>deactivate</code> function to undo it.</li>
+</ul>
+<p>It does not change anything about Python itself. Which means that in a unit — or a cron job, or a
+Dockerfile — you never need to activate anything. Call the venv’s interpreter by path:</p>
+<pre><code class="language-ini">ExecStart=/opt/etl/.venv/bin/python /opt/etl/report.py
+</code></pre>
+<p>and the job runs with the venv’s packages. Compare with the unit as found:</p>
+<pre><code class="language-ini">ExecStart=/usr/bin/python3 /opt/etl/report.py
+</code></pre>
+<p><code>/usr/bin/python3</code> has no <code>pyvenv.cfg</code> beside it, so it uses the system <code>site-packages</code>, where <code>httpx</code>
+is not installed:</p>
+<pre><code class="language-console">$ /usr/bin/python3 -c 'import httpx'
+ModuleNotFoundError: No module named 'httpx'
+$ /opt/etl/.venv/bin/python -c 'import httpx, sys; print(httpx.__version__, sys.prefix)'
+0.28.1 /opt/etl/.venv
+</code></pre>
+<p>The shebang has the same trap in a different place. <code>#!/usr/bin/env python3</code> means “the first
+<code>python3</code> on <code>PATH</code>” — the venv’s when the author’s shell is activated, the system’s everywhere else.
+So <code>./report.py</code> also behaves differently depending on who runs it. Naming the interpreter in
+<code>ExecStart=</code> makes the shebang irrelevant.</p>
+<p>And the fix is not to install the library system-wide. On Ubuntu 23.04 and later, <code>sudo pip install httpx</code> is refused outright:</p>
+<pre><code>error: externally-managed-environment
+× This environment is externally managed
+</code></pre>
+<p>That is PEP 668, and it is protecting you: <code>pip</code> writing into <code>/usr/lib/python3</code> competes with the
+package manager for the same files, and the next <code>apt upgrade</code> breaks one or the other. Project
+dependencies live in the project’s venv; system Python belongs to the system.</p>
+<h3>The current directory is an input</h3>
+<pre><code class="language-python">settings = json.loads(pathlib.Path(&quot;config/settings.json&quot;).read_text())
+</code></pre>
+<p><code>config/settings.json</code> is relative, so it is resolved against the process’s <strong>current working
+directory</strong> — not the directory the script lives in. The author runs from <code>/opt/etl</code>, where it
+resolves to <code>/opt/etl/config/settings.json</code>. A system unit with no <code>WorkingDirectory=</code> starts in <code>/</code>,
+where it resolves to <code>/config/settings.json</code>:</p>
+<pre><code>FileNotFoundError: [Errno 2] No such file or directory: 'config/settings.json'
+</code></pre>
+<p>Two ways to fix it, and they are not equivalent:</p>
+<pre><code class="language-ini"># tell systemd where to start the process
+WorkingDirectory=/opt/etl
+</code></pre>
+<pre><code class="language-python">HERE = pathlib.Path(__file__).resolve().parent
+settings = json.loads((HERE / &quot;config&quot; / &quot;settings.json&quot;).read_text())  # independent of cwd
+</code></pre>
+<p><code>WorkingDirectory=</code> is the operational fix, needs no code change, and is what this lab expects. The code
+fix is the better engineering: a program that finds its own files relative to itself works from cron,
+from a test runner, from another script, and from a colleague’s shell in <code>/tmp</code>. Where you control the
+code, do both — the unit documents where the job lives, and the code no longer cares.</p>
+<p>(With <code>User=</code> set and no <code>WorkingDirectory=</code>, systemd uses <code>/</code> for system services — not the user’s home.
+<code>WorkingDirectory=~</code> asks for the home explicitly.)</p>
+<h3>Running as the right account</h3>
+<p>The unit has no <code>User=</code>, so the job runs as <strong>root</strong>. That is a finding on its own — a report generator
+that talks to an API over the network does not need to be able to rewrite <code>/etc/shadow</code> — and it hides
+other bugs: root can read the world-readable token, root can write the root-owned output directory, so
+nothing complains. Set the account, and the permission model becomes honest:</p>
+<pre><code class="language-ini">[Service]
+User=etl
+</code></pre>
+<p>and now the data layout has to be right for <code>etl</code>:</p>
+<pre><code class="language-console">$ ls -ld /var/lib/etl/reports
+drwxr-xr-x 2 root root 4096 Sep 12 09:02 /var/lib/etl/reports
+$ sudo chown -R etl:etl /var/lib/etl
+</code></pre>
+<p>The shape to aim for is the usual one: the account <strong>owns what it writes</strong> (<code>/var/lib/etl</code>), <strong>can read
+what it needs</strong> (<code>/opt/etl</code>, readable by all is fine for code), and <strong>owns nothing else</strong>. In
+particular the code directory should <em>not</em> be writable by the service account — a job that can rewrite
+its own code is one exploited dependency away from persistence.</p>
+<p>systemd can create and own the state directory for you, which is tidier than a <code>chown</code> in a runbook:</p>
+<pre><code class="language-ini">[Service]
+User=etl
+# creates /var/lib/etl, owned by etl, before starting
+StateDirectory=etl
+</code></pre>
+<p><code>StateDirectory=</code>, <code>CacheDirectory=</code>, <code>LogsDirectory=</code> and <code>RuntimeDirectory=</code> create
+<code>/var/lib/&lt;name&gt;</code>, <code>/var/cache/&lt;name&gt;</code>, <code>/var/log/&lt;name&gt;</code> and <code>/run/&lt;name&gt;</code> with the right owner, and
+they compose with <code>DynamicUser=yes</code> — a transient UID allocated per run, for jobs that need no stable
+identity at all.</p>
+<p>And a little hardening is nearly free for a job like this:</p>
+<pre><code class="language-ini"># no setuid escalation from inside the job
+NoNewPrivileges=yes
+# the whole filesystem read-only…
+ProtectSystem=strict
+# …except where the job writes
+ReadWritePaths=/var/lib/etl
+# its own /tmp
+PrivateTmp=yes
+</code></pre>
+<p><code>systemd-analyze security etl-report.service</code> scores a unit’s exposure and lists what else could be
+tightened, which is a good way to learn what the options do. On this machine, with <code>User=etl</code> and no
+hardening at all, it ends with <em>Overall exposure level for etl-report.service: 9.2 UNSAFE</em> — a score
+out of 10, where lower is better, and a long table of what each option would buy.</p>
+<h3>The token</h3>
+<pre><code class="language-console">$ ls -l /etc/etl/token
+-rw-r--r-- 1 root root 33 Sep 12 09:02 /etc/etl/token
+</code></pre>
+<p>Every account on the machine can read the metrics API token. Once the job runs as <code>etl</code>, the file
+needs to be readable by <code>etl</code> and nobody else:</p>
+<pre><code class="language-console">$ sudo chown etl:etl /etc/etl/token
+$ sudo chmod 600 /etc/etl/token
+</code></pre>
+<p>Two refinements worth knowing. <code>0640 root:etl</code> is equally private and stops the job rewriting its own
+token. And systemd’s credential mechanism removes the need for the account to read <code>/etc</code> at all:</p>
+<pre><code class="language-ini"># the file can then stay 0600 root:root
+LoadCredential=token:/etc/etl/token
+</code></pre>
+<p>The job reads <code>$CREDENTIALS_DIRECTORY/token</code> — a private in-memory copy only this unit can see. (The
+ai-02 journal covers where secrets leak and the options in more depth.)</p>
+<h3>Timers: monotonic or calendar, and which unit to enable</h3>
+<pre><code class="language-ini">[Timer]
+OnBootSec=5s
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target
+</code></pre>
+<p>This is a <strong>monotonic</strong> timer — relative to events rather than to the wall clock. <code>OnBootSec=5s</code> fires
+five seconds after boot; <code>OnUnitActiveSec=5min</code> fires five minutes after the service was last
+<em>activated</em>. Together they mean “shortly after boot, then every five minutes”, which is exactly the
+requirement. The combination matters: <code>OnUnitActiveSec=</code> on its own has nothing to count from until the
+service has run once, so a timer with only that directive may never fire at all.</p>
+<p>The alternative is <code>OnCalendar=*:0/5</code> — at :00, :05, :10 of every hour, on the wall clock, with
+<code>Persistent=true</code> to catch up after downtime. The differences are real:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>OnBootSec</code> + <code>OnUnitActiveSec</code></th>
+<th><code>OnCalendar=*:0/5</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>anchored to</td>
+<td>boot, and the last run</td>
+<td>the clock</td>
+</tr>
+<tr>
+<td>after downtime</td>
+<td>resumes from boot</td>
+<td><code>Persistent=true</code> runs a missed one once</td>
+</tr>
+<tr>
+<td>drift</td>
+<td>intervals slide if runs are slow</td>
+<td>fixed times</td>
+</tr>
+<tr>
+<td>many machines</td>
+<td>naturally staggered</td>
+<td>all fire at once (add <code>RandomizedDelaySec=</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>For “every five minutes, whenever” the monotonic form is the natural choice; for “at 02:15” it is
+calendar.</p>
+<p>Whichever form, <strong>the timer is the unit you enable</strong>. The service is <code>static</code> — it has no <code>[Install]</code>
+section — and is started by the timer. Enabling the timer links it into <code>timers.target</code>, which is how it
+comes back after a reboot:</p>
+<pre><code class="language-console">$ sudo systemctl enable --now etl-report.timer
+Created symlink /etc/systemd/system/timers.target.wants/etl-report.timer → …
+$ systemctl list-timers etl-report.timer
+NEXT                        LEFT     LAST                        PASSED  UNIT
+Sat 2026-09-12 12:14:02 UTC 4min 51s Sat 2026-09-12 12:09:02 UTC 8s ago  etl-report.timer
+</code></pre>
+<p><code>Type=oneshot</code> on the service is what makes the timer’s notion of “active” meaningful: the service is
+activating while the job runs and inactive afterwards, so <code>OnUnitActiveSec</code> counts from a real run, and
+<code>systemctl show -p Result -p ExecMainStatus</code> records how the last run ended.</p>
+<h3>Reproduce systemd’s environment instead of waiting for it</h3>
+<p>The slow way to debug a timer job is to change something, wait five minutes, and read the journal. The
+fast way is to run the service now:</p>
+<pre><code class="language-console">$ sudo systemctl start etl-report.service       # the real unit, with its real environment
+$ sudo journalctl -u etl-report.service -n 20 --no-pager
+$ systemctl show -p Result -p ExecMainStatus etl-report.service
+</code></pre>
+<p>For a <em>proposed</em> configuration, before you write it into the unit, <code>systemd-run</code> starts a transient unit
+with whatever properties you pass:</p>
+<pre><code class="language-console">$ sudo systemd-run --wait --pipe -p User=etl -p WorkingDirectory=/opt/etl \
+    /opt/etl/.venv/bin/python /opt/etl/report.py
+wrote /var/lib/etl/reports/latest.json: 3 metrics
+Finished with result: success
+</code></pre>
+<p><code>--wait</code> blocks until it finishes and prints the result, <code>--pipe</code> connects its output to your terminal,
+and the process runs under systemd’s environment, not your shell’s. It is the most direct test of “will
+this work from a unit”, and it answers in seconds.</p>
+<p><code>sudo -u etl env -i /opt/etl/.venv/bin/python /opt/etl/report.py</code> is the poorer relative — same account,
+empty environment — but it inherits your current directory, which is exactly the variable you are trying
+to eliminate.</p>
+<h2>A failure, walked through</h2>
+<p>No report has ever appeared. The author insists the script works.</p>
+<p><strong>1. Is the timer even running?</strong></p>
+<pre><code class="language-console">$ systemctl list-timers --all etl-report.timer
+NEXT LEFT LAST PASSED UNIT ACTIVATES
+
+0 timers listed.
+$ systemctl is-enabled etl-report.timer
+disabled
+</code></pre>
+<p>The timer is not even listed — nothing has ever enabled or started it, so systemd has not loaded it,
+and the job has never been run by systemd at all. Before enabling it,
+find out whether the job would work — run the service directly:</p>
+<p><strong>2. Run the service now, and read the first failure.</strong></p>
+<pre><code class="language-console">$ sudo systemctl start etl-report.service
+Job for etl-report.service failed because the control process exited with error code.
+See &quot;systemctl status etl-report.service&quot; and &quot;journalctl -xeu etl-report.service&quot; for details.
+$ sudo journalctl -u etl-report.service -n 4 --no-pager
+… python3[976]: ModuleNotFoundError: No module named 'httpx'
+… systemd[1]: etl-report.service: Main process exited, code=exited, status=1/FAILURE
+… systemd[1]: etl-report.service: Failed with result 'exit-code'.
+… systemd[1]: Failed to start etl-report.service - ETL metrics report.
+</code></pre>
+<p>(Unlike a <code>Type=simple</code> service, a <code>Type=oneshot</code> start waits for the job to finish, so <code>start</code>
+itself reports the failure. And <code>journalctl</code> needs <code>sudo</code> — an ordinary account cannot read the system
+journal.)</p>
+<p>The unit runs <code>/usr/bin/python3</code>. The library lives in the venv:</p>
+<pre><code class="language-console">$ systemctl cat etl-report.service | grep ExecStart
+ExecStart=/usr/bin/python3 /opt/etl/report.py
+$ /opt/etl/.venv/bin/python -c 'import httpx; print(&quot;ok&quot;)'
+ok
+</code></pre>
+<p><strong>3. Try the corrected command under systemd’s conditions, before touching the unit.</strong></p>
+<pre><code class="language-console">$ sudo systemd-run --wait --pipe /opt/etl/.venv/bin/python /opt/etl/report.py
+Running as unit: run-p1030-i1330.service; invocation ID: …
+Traceback (most recent call last):
+  …
+FileNotFoundError: [Errno 2] No such file or directory: 'config/settings.json'
+Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+Service runtime: 59ms
+</code></pre>
+<p>The next undeclared input: the current directory. The author always runs from <code>/opt/etl</code>; systemd starts
+in <code>/</code>.</p>
+<pre><code class="language-console">$ sudo systemd-run --wait --pipe -p WorkingDirectory=/opt/etl \
+    /opt/etl/.venv/bin/python /opt/etl/report.py
+Running as unit: run-p1040-i1340.service; invocation ID: 9e5737abcd9d41cc9737fb002d9f1dbb
+wrote /var/lib/etl/reports/latest.json: 3 metrics
+Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+</code></pre>
+<p>It works — as root, which is the third problem, and the reason nothing else has complained yet.</p>
+<p><strong>4. Run it as the account it should run as.</strong></p>
+<pre><code class="language-console">$ sudo systemd-run --wait --pipe -p User=etl -p WorkingDirectory=/opt/etl \
+    /opt/etl/.venv/bin/python /opt/etl/report.py
+PermissionError: [Errno 13] Permission denied: '/var/lib/etl/reports/latest.json'
+Finished with result: exit-code
+$ ls -ld /var/lib/etl/reports ; ls -l /etc/etl/token
+drwxr-xr-x 2 root root 4096 Sep 13 05:42 /var/lib/etl/reports
+-rw-r--r-- 1 root root   33 Sep 13 05:42 /etc/etl/token
+</code></pre>
+<p>The output directory belongs to root. Note what did <em>not</em> fail: reading the token, because it is
+world-readable — the security finding, hiding behind a working read. Fix both:</p>
+<pre><code class="language-console">$ sudo chown -R etl:etl /var/lib/etl
+$ sudo chown etl:etl /etc/etl/token &amp;&amp; sudo chmod 600 /etc/etl/token
+$ sudo systemd-run --wait --pipe -p User=etl -p WorkingDirectory=/opt/etl \
+    /opt/etl/.venv/bin/python /opt/etl/report.py
+wrote /var/lib/etl/reports/latest.json: 3 metrics
+Finished with result: success
+</code></pre>
+<p><strong>5. Write what worked into the unit</strong>, as a drop-in, with the empty <code>ExecStart=</code> to replace rather
+than append (see the rhcsa-02 journal):</p>
+<pre><code class="language-console">$ sudo mkdir -p /etc/systemd/system/etl-report.service.d
+$ sudo tee /etc/systemd/system/etl-report.service.d/run.conf &gt;/dev/null &lt;&lt;'UNIT'
+[Service]
+User=etl
+WorkingDirectory=/opt/etl
+ExecStart=
+ExecStart=/opt/etl/.venv/bin/python /opt/etl/report.py
+UNIT
+$ sudo systemctl daemon-reload
+$ sudo systemctl start etl-report.service
+$ systemctl show -p Result -p ExecMainStatus -p User etl-report.service
+Result=success
+ExecMainStatus=0
+User=etl
+$ cat /var/lib/etl/reports/latest.json
+{&quot;generated_at&quot;: &quot;2026-09-13T05:42:57+00:00&quot;, &quot;count&quot;: 3, &quot;total&quot;: 478}
+</code></pre>
+<p><strong>6. Enable the timer — not the service.</strong></p>
+<pre><code class="language-console">$ sudo systemctl enable etl-report.service
+The unit files have no installation config (WantedBy=, RequiredBy=, UpheldBy=,
+Also=, or Alias= settings in the [Install] section, and DefaultInstance= for
+template units). This means they are not meant to be enabled or disabled using systemctl.
+$ sudo systemctl enable --now etl-report.timer
+Created symlink '/etc/systemd/system/timers.target.wants/etl-report.timer' → '/etc/systemd/system/etl-report.timer'.
+$ systemctl list-timers etl-report.timer
+NEXT LEFT LAST                         PASSED UNIT             ACTIVATES
+-       - Sun 2026-09-13 05:42:57 UTC 7ms ago etl-report.timer etl-report.service
+</code></pre>
+<p>The first command is the wrong turn, shown so you recognise its answer. The second is the fix. Note
+what the timer did the moment it started: <code>OnBootSec=5s</code> had long since elapsed, so it fired
+immediately — <code>LAST</code> is 7 ms ago, and <code>NEXT</code> stays <code>-</code> until that run finishes and
+<code>OnUnitActiveSec=5min</code> has something to count from.</p>
+<p><strong>7. Reboot, log nothing in, and let the timer prove it.</strong> The requirement is “without anyone logged in”,
+so the test is a boot followed by patience, not a manual start:</p>
+<pre><code class="language-console">$ sudo reboot
+  (wait ~30 seconds)
+$ systemctl list-timers etl-report.timer          # LAST: a few seconds after boot
+$ systemctl show -p Result -p ExecMainStatus etl-report.service
+Result=success
+ExecMainStatus=0
+$ stat -c '%y' /var/lib/etl/reports/latest.json ; uptime -s    # the report must be the younger
+$ stat -c '%a %U' /etc/etl/token
+600 etl
+</code></pre>
+<p>A report newer than the boot, written by systemd as <code>etl</code>, is the proof — which is exactly what the
+grader’s post-reboot pass checks, and on this machine it passed.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Putting <code>source /opt/etl/.venv/bin/activate</code> in <code>ExecStart=</code>.</strong> <code>ExecStart=</code> is not a shell: <code>source</code>
+is a shell builtin, and systemd will look for an executable called <code>source</code>. Wrapping it in
+<code>/bin/bash -c 'source … &amp;&amp; python report.py'</code> works and is pointless — activating only changes <code>PATH</code>.
+Run <code>/opt/etl/.venv/bin/python</code> directly.</p>
+<p><strong><code>sudo pip install httpx</code> system-wide.</strong> On Ubuntu 26.04 pip refuses (<code>externally-managed-environment</code>),
+and <code>--break-system-packages</code> is named that way for a reason: it puts pip and apt in charge of the same
+files. Project dependencies belong in the project’s venv.</p>
+<p><strong>Relying on the shebang.</strong> <code>#!/usr/bin/env python3</code> picks whichever <code>python3</code> is first on <code>PATH</code>, which
+is the venv only in an activated shell. Name the interpreter in <code>ExecStart=</code>.</p>
+<p><strong>Fixing the relative path by <code>cd</code> in a wrapper script.</strong> It works, and it adds a file whose only job is
+what <code>WorkingDirectory=</code> does in one line. Better still, make the program resolve paths relative to
+<code>__file__</code>.</p>
+<p><strong>Testing as root.</strong> Root reads the world-readable token and writes the root-owned directory, so every
+permission problem stays hidden until the unit gets <code>User=</code>. Test with <code>-p User=etl</code> from the start.</p>
+<p><strong><code>chmod 777 /var/lib/etl/reports</code>.</strong> It fixes the write, and lets every account on the machine replace
+the report that something downstream presumably trusts. <code>chown</code> the directory to the account that
+writes it.</p>
+<p><strong>Making <code>/opt/etl</code> owned by <code>etl</code>.</strong> The job needs to <em>read</em> its code, not rewrite it. A service
+account that can modify its own code gives any compromise of the job a way to persist.</p>
+<p><strong><code>chmod 600</code> on the token without <code>chown</code>.</strong> A <code>0600 root:root</code> token is private and unreadable by
+<code>etl</code>: the job now fails with <code>PermissionError</code> on the token instead of the report. Own it by the
+account (or <code>0640 root:etl</code>, or <code>LoadCredential=</code>).</p>
+<p><strong>Enabling <code>etl-report.service</code>.</strong> It has no <code>[Install]</code> section, so <code>enable</code> fails with a warning about
+a static unit — or, if someone adds <code>WantedBy=multi-user.target</code> to make the warning go away, it runs
+once at boot and never again. The timer is what you enable.</p>
+<p><strong>A timer with only <code>OnUnitActiveSec=</code>.</strong> It counts from the service’s last activation, and after a
+boot there is none, so the timer may never fire. Pair it with <code>OnBootSec=</code> (or <code>OnActiveSec=</code>), or use
+<code>OnCalendar=</code>.</p>
+<p><strong>Waiting five minutes after every change.</strong> <code>systemctl start etl-report.service</code> runs the job now with
+its real environment, and <code>systemd-run --wait --pipe -p …</code> tries a configuration before you commit it
+to a file.</p>
+<p><strong>Forgetting <code>daemon-reload</code> after writing the drop-in.</strong> The next start uses the old definition and
+fails exactly as before, which makes a correct fix look wrong.</p>
+<p><strong>Declaring success after a manual start.</strong> The requirement is an unattended run after a reboot. A
+report written by your <code>systemctl start</code> proves the unit, not the timer — check that the report is newer
+than the boot and that <code>list-timers</code> shows a <code>LAST</code> you did not cause.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># the venv
+/opt/etl/.venv/bin/python -c 'import sys, httpx; print(sys.prefix)'   # the venv is chosen by the EXECUTABLE
+cat /opt/etl/.venv/pyvenv.cfg                    # what makes that symlink &quot;the venv's python&quot;
+/opt/etl/.venv/bin/pip install -r requirements.txt    # dependencies go here, never into /usr
+# activate = PATH + VIRTUAL_ENV + prompt. Not needed in units, cron or containers.
+
+# a unit for a Python job
+# [Service]
+# Type=oneshot
+# User=etl
+# WorkingDirectory=/opt/etl                        (default for system units is /)
+# ExecStart=/opt/etl/.venv/bin/python /opt/etl/report.py
+# StateDirectory=etl                               (creates /var/lib/etl owned by etl)
+# LoadCredential=token:/etc/etl/token              (→ $CREDENTIALS_DIRECTORY/token)
+# NoNewPrivileges=yes  ProtectSystem=strict  ReadWritePaths=/var/lib/etl  PrivateTmp=yes
+systemd-analyze security etl-report.service
+
+# the timer
+# [Timer] OnBootSec=5s  OnUnitActiveSec=5min      (monotonic: after boot, then after each run)
+#         OnCalendar=*:0/5  Persistent=true        (wall clock; RandomizedDelaySec= on fleets)
+# [Install] WantedBy=timers.target
+systemctl enable --now etl-report.timer          # the TIMER; the service is static
+systemctl list-timers --all etl-report.timer     # NEXT / LAST (a never-started timer is not listed)
+
+# run it the way systemd runs it
+systemctl start etl-report.service               # now, with the unit's real environment
+systemd-run --wait --pipe -p User=etl -p WorkingDirectory=/opt/etl CMD   # try a config first
+sudo journalctl -u etl-report.service -b -n 20 --no-pager
+systemctl show -p Result -p ExecMainStatus -p User etl-report.service
+
+# ownership
+chown -R etl:etl /var/lib/etl                    # what it writes
+chown etl:etl /etc/etl/token ; chmod 600 /etc/etl/token   # what only it reads
+# code in /opt/etl: readable, NOT writable by the service account
+
+# proving &quot;unattended&quot;
+stat -c '%y' /var/lib/etl/reports/latest.json ; uptime -s    # report newer than the boot
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Nine letters and a refusal</em> (lab journal <code>hello</code>) — How the kernel picks a triad</li>
+</ul>
+<p>Manual pages: <code>man 5 systemd.timer</code>, <code>man 5 systemd.exec</code>.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.python.org/3/library/venv.html</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>What does <code>source .venv/bin/activate</code> change, and why does that make it unnecessary in a systemd
+unit?</p>
+<blockquote>
+<p>It prepends <code>.venv/bin</code> to <code>PATH</code>, sets <code>VIRTUAL_ENV</code>, changes the prompt and defines <code>deactivate</code> —
+nothing about Python itself. The venv is selected by which interpreter executable is started, via
+the <code>pyvenv.cfg</code> beside it, so <code>ExecStart=/opt/etl/.venv/bin/python …</code> gets the venv’s packages with
+no activation.</p>
+</blockquote>
+</li>
+<li>
+<p>The script’s shebang is <code>#!/usr/bin/env python3</code>. Why does <code>./report.py</code> behave differently for the
+author and for systemd?</p>
+<blockquote>
+<p><code>env</code> runs the first <code>python3</code> on <code>PATH</code>. In the author’s activated shell that is the venv’s; for
+systemd, with a minimal <code>PATH</code>, it is <code>/usr/bin/python3</code>, which lacks the project’s libraries. Naming
+the interpreter explicitly removes the dependency on <code>PATH</code>.</p>
+</blockquote>
+</li>
+<li>
+<p><code>Path(&quot;config/settings.json&quot;)</code> works from the author’s shell and fails under systemd. Give the unit
+fix and the code fix, and say which is better engineering.</p>
+<blockquote>
+<p>The unit fix is <code>WorkingDirectory=/opt/etl</code>, since a system unit otherwise starts in <code>/</code>. The code fix
+is to resolve relative to the script — <code>Path(__file__).resolve().parent / &quot;config&quot; / &quot;settings.json&quot;</code> —
+which makes the program independent of its current directory wherever it is run from. The code fix
+is better; doing both is best.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does running the job as root hide bugs, beyond being a security finding?</p>
+<blockquote>
+<p>Root bypasses permission checks, so a world-readable token and a root-owned output directory both
+“work”. The moment the unit gets <code>User=</code>, those problems appear. Testing as the real account from
+the start surfaces them before they become a failed night.</p>
+</blockquote>
+</li>
+<li>
+<p>Which unit do you enable for a scheduled job, and what goes wrong if you enable the other one?</p>
+<blockquote>
+<p>The <code>.timer</code>, which is <code>WantedBy=timers.target</code>. The service has no <code>[Install]</code> section and is
+<code>static</code>; enabling it fails, and adding <code>WantedBy=multi-user.target</code> to force it makes the job run
+once at boot and never again.</p>
+</blockquote>
+</li>
+<li>
+<p>Why might a timer with only <code>OnUnitActiveSec=5min</code> never fire, and what pairs with it?</p>
+<blockquote>
+<p>It counts from the service’s last activation, and after boot there has been none, so there is
+nothing to count from. Pair it with <code>OnBootSec=</code> (or <code>OnActiveSec=</code>) for the first run, or use
+<code>OnCalendar=</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you test a proposed unit configuration without editing the unit or waiting for the timer?</p>
+<blockquote>
+<p><code>systemd-run --wait --pipe -p User=etl -p WorkingDirectory=/opt/etl &lt;command&gt;</code> runs it as a
+transient unit under systemd’s environment, streams the output and reports the result. For the unit
+as written, <code>systemctl start &lt;service&gt;</code> runs it immediately.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>StateDirectory=etl</code> do, and why is it preferable to a <code>chown</code> step in a runbook?</p>
+<blockquote>
+<p>systemd creates <code>/var/lib/etl</code> before starting the service, owned by the unit’s <code>User=</code>, and keeps
+the ownership correct across restarts. The requirement lives in the unit itself rather than in a
+manual step someone must remember — and it also works with <code>DynamicUser=yes</code>.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The plan says three to destroy, and you only removed one · Norboten</title>
+<meta name="description" content="Terraform&#39;s contract is simple to state: you describe what should exist, it compares that with what its state file says exists, and a plan tells you the differe">
+<link rel="canonical" href="https://norboten.org/journals/terraform/"><meta property="og:title" content="The plan says three to destroy, and you only removed one · Norboten">
+<meta property="og:description" content="Terraform&#39;s contract is simple to state: you describe what should exist, it compares that with what its state file says exists, and a plan tells you the differe">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/terraform/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The plan says three to destroy, and you only removed one · Norboten">
+<meta name="twitter:description" content="Terraform&#39;s contract is simple to state: you describe what should exist, it compares that with what its state file says exists, and a plan tells you the differe">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "The plan says three to destroy, and you only removed one",
+  "description": "Terraform\u0027s contract is simple to state: you describe what should exist, it compares that with what its state file says exists, and a plan tells you the differe",
+  "url": "https://norboten.org/journals/terraform/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2507,
+  "timeRequired": "PT40M",
+  "about": ["Terraform"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal</div>
+    <h1>The plan says three to destroy, and you only removed one</h1>
+    <p class="muted">
+      40 minutes' reading · 2507 words ·<span class="tag">Terraform</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 110 words</title><rect x="0.0" y="0" width="24.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 1349 words</title><rect x="27.6" y="0" width="302.0" height="30" rx="4" fill="#1d2a23"/><text x="35.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 513 words</title><rect x="332.6" y="0" width="114.8" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 294 words</title><rect x="450.4" y="0" width="65.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#symptoms-and-causes"><title>Symptoms and causes — 171 words</title><rect x="519.2" y="0" width="38.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 224 words</title><rect x="560.5" y="0" width="50.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#exercises"><title>Exercises — 87 words</title><rect x="613.6" y="0" width="19.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#sources"><title>Sources — 25 words</title><rect x="636.1" y="0" width="6.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 515 words</title><rect x="645.1" y="0" width="115.3" height="30" rx="4" fill="#1d2a23"/><text x="653.1" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#symptoms-and-causes">Symptoms and causes</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#exercises">Exercises</a></li>
+          <li><a href="#sources">Sources</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Terraform's contract is simple to state: you describe what should exist, it compares that with what
+its state file says exists, and a plan tells you the difference before anything happens. The whole
+safety of the tool rests on that plan being <em>read</em> — because the difference Terraform computes is
+between addresses in a state file, not between the things you had in mind. Remove one user from a
+list and the plan can say three objects will be destroyed. It is not a bug. It is Terraform being
+exact about a model you were vague about.</p>
+<p>Every example in this journal was run locally with Terraform 1.15.6 and the <code>hashicorp/random</code> and
+<code>hashicorp/local</code> providers, so the passwords and files are stand-ins for anything with an identity —
+a database, a bucket, a DNS record — and the plans are real plans. What they show generalises
+directly: the dangerous moment is never <code>apply</code>, it is the plan you did not read.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Explain what a resource address is, and why Terraform tracks objects by address rather than by
+what they are.</li>
+<li>Predict what <code>count</code> does when an item is removed from the middle of a list, and use <code>for_each</code> to
+stop it.</li>
+<li>Refactor a configuration — rename a resource, change <code>count</code> to <code>for_each</code> — without destroying
+anything, using <code>moved</code> blocks.</li>
+<li>Say exactly what <code>lifecycle { prevent_destroy = true }</code> protects against, and what it does not.</li>
+<li>Know where sensitive values still live in plain text, and treat the state file accordingly.</li>
+<li>Use saved plans, and recognise the error that says a plan no longer matches reality.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="state-maps-addresses-to-real-objects">State maps addresses to real objects</h3>
+<p>After an apply, Terraform records every object it manages in its state, keyed by <strong>address</strong>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>state<span class="hl-w"> </span>list
+<span class="hl-go">local_file.credentials["alice"]</span>
+<span class="hl-go">local_file.credentials["carol"]</span>
+<span class="hl-go">random_password.db["alice"]</span>
+<span class="hl-go">random_password.db["carol"]</span>
+</code></pre>
+
+<p><code>random_password.db[&quot;alice&quot;]</code> is resource type, resource name, and an instance key. Every plan is a
+three-way comparison — configuration, state, and (after a refresh) the real object — and every
+decision is made per address. If an address is in the configuration and not in state, Terraform
+creates it. If it is in state and no longer in the configuration, Terraform destroys it. It has no
+notion that &quot;this address used to mean Carol&quot;: the address <em>is</em> the identity.</p>
+<p>That one rule explains nearly every surprising plan.</p>
+<h3 id="count-gives-instances-numbers-and-numbers-shift"><code>count</code> gives instances numbers, and numbers shift</h3>
+<pre class="hl"><code class="language-hcl"><span class="hl-kr">variable</span><span class="hl-w"> </span><span class="hl-nv">"users"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">type</span><span class="hl-w">    </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">list</span><span class="hl-p">(</span><span class="hl-kt">string</span><span class="hl-p">)</span>
+<span class="hl-w">  </span><span class="hl-na">default</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-p">[</span><span class="hl-s2">"alice", "bob", "carol"</span><span class="hl-p">]</span>
+<span class="hl-p">}</span>
+
+<span class="hl-kr">resource</span><span class="hl-w"> </span><span class="hl-nc">"random_password"</span><span class="hl-w"> </span><span class="hl-nv">"db"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">count</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">length</span><span class="hl-p">(</span><span class="hl-nv">var.users</span><span class="hl-p">)</span>
+<span class="hl-w">  </span><span class="hl-na">length</span><span class="hl-w">  </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-m">20</span>
+<span class="hl-w">  </span><span class="hl-na">special</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-no">false</span>
+<span class="hl-p">}</span>
+
+<span class="hl-kr">resource</span><span class="hl-w"> </span><span class="hl-nc">"local_file"</span><span class="hl-w"> </span><span class="hl-nv">"credentials"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">count</span><span class="hl-w">           </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">length</span><span class="hl-p">(</span><span class="hl-nv">var.users</span><span class="hl-p">)</span>
+<span class="hl-w">  </span><span class="hl-na">filename</span><span class="hl-w">        </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-s2">"${path.module}/out/${var.users[count.index]}.env"</span>
+<span class="hl-w">  </span><span class="hl-na">content</span><span class="hl-w">         </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-s2">"DB_USER=${var.users[count.index]}\nDB_PASSWORD=${random_password.db[count.index].result}\n"</span>
+<span class="hl-w">  </span><span class="hl-na">file_permission</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-s2">"0600"</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<p>With <code>count</code>, the instances are <code>random_password.db[0]</code>, <code>[1]</code>, <code>[2]</code> — and the only thing tying index
+<code>2</code> to Carol is her position in a list. Remove Bob and Carol moves from position 2 to position 1:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-var<span class="hl-w"> </span><span class="hl-s1">'users=["alice","carol"]'</span>
+<span class="hl-gp">  # </span>local_file.credentials<span class="hl-o">[</span><span class="hl-m">1</span><span class="hl-o">]</span><span class="hl-w"> </span>must<span class="hl-w"> </span>be<span class="hl-w"> </span>replaced
+<span class="hl-go">      ~ content              = (sensitive value) # forces replacement</span>
+<span class="hl-go">      ~ filename             = "./out/bob.env" -&gt; "./out/carol.env" # forces replacement</span>
+<span class="hl-gp">  # </span>local_file.credentials<span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>index<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>is<span class="hl-w"> </span>out<span class="hl-w"> </span>of<span class="hl-w"> </span>range<span class="hl-w"> </span><span class="hl-k">for</span><span class="hl-w"> </span>count<span class="hl-o">)</span>
+<span class="hl-gp">  # </span>random_password.db<span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>index<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>is<span class="hl-w"> </span>out<span class="hl-w"> </span>of<span class="hl-w"> </span>range<span class="hl-w"> </span><span class="hl-k">for</span><span class="hl-w"> </span>count<span class="hl-o">)</span>
+<span class="hl-go">Plan: 1 to add, 0 to change, 3 to destroy.</span>
+</code></pre>
+
+<p>Read it address by address. Index <code>[1]</code> — which was Bob — survives as a password and is re-pointed at
+Carol's file. Index <code>[2]</code> — which was Carol — is destroyed, <em>including her password</em>. Applied, the
+effect on the lab directory was precise:</p>
+<pre><code>carol before: GLMGbE…   bob before: KWOR0s…   carol after: KWOR0s…
+</code></pre>
+<p>Carol now has Bob's old password, and her own is gone. Substitute a database, a volume or a DNS record
+for the password and &quot;we removed a user&quot; becomes &quot;we destroyed someone else's data and handed their
+successor the wrong credentials&quot;. The plan said so, in plain English, before anything happened.</p>
+<h3 id="for_each-gives-instances-names"><code>for_each</code> gives instances names</h3>
+<pre class="hl"><code class="language-hcl"><span class="hl-kr">resource</span><span class="hl-w"> </span><span class="hl-nc">"random_password"</span><span class="hl-w"> </span><span class="hl-nv">"db"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">for_each</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">toset</span><span class="hl-p">(</span><span class="hl-nv">var.users</span><span class="hl-p">)</span>
+<span class="hl-w">  </span><span class="hl-na">length</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-m">20</span>
+<span class="hl-w">  </span><span class="hl-na">special</span><span class="hl-w">  </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-no">false</span>
+<span class="hl-p">}</span>
+
+<span class="hl-kr">resource</span><span class="hl-w"> </span><span class="hl-nc">"local_file"</span><span class="hl-w"> </span><span class="hl-nv">"credentials"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">for_each</span><span class="hl-w">        </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">toset</span><span class="hl-p">(</span><span class="hl-nv">var.users</span><span class="hl-p">)</span>
+<span class="hl-w">  </span><span class="hl-na">filename</span><span class="hl-w">        </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-s2">"${path.module}/out/${each.key}.env"</span>
+<span class="hl-w">  </span><span class="hl-na">content</span><span class="hl-w">         </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-s2">"DB_USER=${each.key}\nDB_PASSWORD=${random_password.db[each.key].result}\n"</span>
+<span class="hl-w">  </span><span class="hl-na">file_permission</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-s2">"0600"</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<p>Now the addresses are <code>random_password.db[&quot;alice&quot;]</code>, <code>[&quot;bob&quot;]</code>, <code>[&quot;carol&quot;]</code>, and removing Bob touches
+only Bob:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-var<span class="hl-w"> </span><span class="hl-s1">'users=["alice","carol"]'</span>
+<span class="hl-gp">  # </span>local_file.credentials<span class="hl-o">[</span><span class="hl-s2">"bob"</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>key<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-s2">"bob"</span><span class="hl-o">]</span><span class="hl-w"> </span>is<span class="hl-w"> </span>not<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>for_each<span class="hl-w"> </span>map<span class="hl-o">)</span>
+<span class="hl-gp">  # </span>random_password.db<span class="hl-o">[</span><span class="hl-s2">"bob"</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>key<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-s2">"bob"</span><span class="hl-o">]</span><span class="hl-w"> </span>is<span class="hl-w"> </span>not<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>for_each<span class="hl-w"> </span>map<span class="hl-o">)</span>
+<span class="hl-go">Plan: 0 to add, 0 to change, 2 to destroy.</span>
+</code></pre>
+
+<p>The rule of thumb: <code>count</code> for <em>how many</em> identical things (<code>count = var.enabled ? 1 : 0</code> is its best
+use), <code>for_each</code> for <em>which</em> things, whenever each one has an identity of its own.</p>
+<h3 id="refactoring-without-destroying-moved">Refactoring without destroying: <code>moved</code></h3>
+<p>Changing <code>count</code> to <code>for_each</code> changes every address, and without further instruction Terraform does
+exactly what the address rule says — destroy the old ones, create the new ones:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan
+<span class="hl-go">Plan: 6 to add, 0 to change, 6 to destroy.</span>
+</code></pre>
+
+<p>A <code>moved</code> block tells Terraform that an address has been renamed, so the object in state is carried
+over rather than replaced:</p>
+<pre class="hl"><code class="language-hcl"><span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_password.db[0</span><span class="hl-p">]</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_password.db</span><span class="hl-p">[</span><span class="hl-s2">"alice"</span><span class="hl-p">]</span>
+<span class="hl-p">}</span>
+<span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_password.db[1</span><span class="hl-p">]</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_password.db</span><span class="hl-p">[</span><span class="hl-s2">"bob"</span><span class="hl-p">]</span>
+<span class="hl-p">}</span>
+<span class="hl-c1"># … one per instance, for each resource</span>
+</code></pre>
+
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan
+<span class="hl-gp">  # </span>random_password.db<span class="hl-o">[</span><span class="hl-m">0</span><span class="hl-o">]</span><span class="hl-w"> </span>has<span class="hl-w"> </span>moved<span class="hl-w"> </span>to<span class="hl-w"> </span>random_password.db<span class="hl-o">[</span><span class="hl-s2">"alice"</span><span class="hl-o">]</span>
+<span class="hl-gp">  # </span>random_password.db<span class="hl-o">[</span><span class="hl-m">1</span><span class="hl-o">]</span><span class="hl-w"> </span>has<span class="hl-w"> </span>moved<span class="hl-w"> </span>to<span class="hl-w"> </span>random_password.db<span class="hl-o">[</span><span class="hl-s2">"bob"</span><span class="hl-o">]</span>
+<span class="hl-go">  …</span>
+<span class="hl-go">Plan: 0 to add, 0 to change, 0 to destroy.</span>
+</code></pre>
+
+<p>The same block handles renaming a resource (<code>from = aws_instance.web</code>, <code>to = aws_instance.frontend</code>)
+and moving it into a module. It is reviewed in a pull request like any other code, which is its
+advantage over the older <code>terraform state mv</code>: the refactoring and its safety net land together.
+Keep <code>moved</code> blocks until every copy of the state has been applied with them, then they can go.</p>
+<h3 id="prevent_destroy-and-the-hole-in-it"><code>prevent_destroy</code>, and the hole in it</h3>
+<pre class="hl"><code class="language-hcl"><span class="hl-kr">resource</span><span class="hl-w"> </span><span class="hl-nc">"random_password"</span><span class="hl-w"> </span><span class="hl-nv">"db"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">for_each</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">toset</span><span class="hl-p">(</span><span class="hl-nv">var.users</span><span class="hl-p">)</span>
+<span class="hl-w">  </span><span class="hl-na">length</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-m">20</span>
+<span class="hl-w">  </span><span class="hl-na">special</span><span class="hl-w">  </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-no">false</span>
+
+<span class="hl-w">  </span><span class="hl-nb">lifecycle</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">    </span><span class="hl-na">prevent_destroy</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-no">true</span>
+<span class="hl-w">  </span><span class="hl-p">}</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<p>Any plan that would destroy one of these instances now fails before anything is applied:</p>
+<pre><code>Error: Instance cannot be destroyed
+
+  on main.tf line 13:
+  13: resource &quot;random_password&quot; &quot;db&quot; {
+
+Resource random_password.db[&quot;erin&quot;] has lifecycle.prevent_destroy set, but
+the plan calls for this resource to be destroyed. To avoid this error and
+continue with the plan, either disable lifecycle.prevent_destroy or reduce
+the scope of the plan using the -target option.
+</code></pre>
+<p>It also refuses <code>terraform plan -destroy</code>. What it cannot do is protect a resource whose <strong>block has
+been deleted</strong>: the <code>lifecycle</code> setting lives inside the block, so deleting the block deletes the
+protection with it. Verified with a small resource: applied with <code>prevent_destroy = true</code>, block
+removed, and the next plan read</p>
+<pre><code>  # random_pet.keep will be destroyed
+  # (because random_pet.keep is not in configuration)
+Plan: 0 to add, 0 to change, 1 to destroy.
+</code></pre>
+<p>with no error at all. <code>prevent_destroy</code> guards against a plan that replaces or removes something by
+accident while the resource is still written down. For the objects you cannot afford to lose, the
+real protection lives in the provider — deletion protection on a database, versioning on a bucket —
+where deleting a line of HCL cannot switch it off.</p>
+<h3 id="sensitive-is-a-display-setting">Sensitive is a display setting</h3>
+<pre class="hl"><code class="language-hcl"><span class="hl-kr">output</span><span class="hl-w"> </span><span class="hl-nv">"first_password"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">value</span><span class="hl-w">     </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_password.db</span><span class="hl-p">[</span><span class="hl-s2">"alice"</span><span class="hl-p">].</span><span class="hl-err">result</span>
+<span class="hl-w">  </span><span class="hl-na">sensitive</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-no">true</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<p><code>sensitive = true</code> hides a value in plans, apply output and the bulk <code>terraform output</code> listing:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>output
+<span class="hl-go">first_password = &lt;sensitive&gt;</span>
+</code></pre>
+
+<p>It does not encrypt anything, and it does not hide the value from someone who asks for it by name:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>output<span class="hl-w"> </span>first_password
+<span class="hl-go">"7xK9s5oXE32bAfyfgvWc"</span>
+</code></pre>
+
+<p>And the state file holds every attribute of every resource in plain text — the generated passwords
+included. On the lab machine the password appeared in <code>terraform.tfstate</code> and again in
+<code>terraform.tfstate.backup</code>, and both files had been written <code>0644</code>. State is a secret. It does not go in
+git; a shared state lives in a backend with encryption at rest, access control and locking (so two
+applies cannot write it at once); and the people who can read state can read everything in it.</p>
+<h3 id="saved-plans-and-what-stale-protects">Saved plans, and what &quot;stale&quot; protects</h3>
+<p><code>terraform plan -out=FILE</code> saves the exact plan; <code>terraform apply FILE</code> applies that plan and nothing
+else, without re-planning — which is what makes a reviewed plan meaningful. If the state changes after
+the plan was saved, the saved plan is refused:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-out<span class="hl-o">=</span>add-dave.plan<span class="hl-w"> </span>-var<span class="hl-w"> </span><span class="hl-s1">'users=["alice","carol","dave"]'</span>
+<span class="hl-go">Plan: 2 to add, 0 to change, 0 to destroy.</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>apply<span class="hl-w"> </span>-auto-approve<span class="hl-w"> </span>-var<span class="hl-w"> </span><span class="hl-s1">'users=["alice","carol","erin"]'</span><span class="hl-w">      </span><span class="hl-c1"># someone else applies</span>
+<span class="hl-go">Apply complete! Resources: 2 added, 0 changed, 0 destroyed.</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>apply<span class="hl-w"> </span>add-dave.plan
+<span class="hl-go">Error: Saved plan is stale</span>
+<span class="hl-go">The given plan file can no longer be applied because the state was changed by</span>
+<span class="hl-go">another operation after the plan was created.</span>
+</code></pre>
+
+<p>That error is a feature: the plan you reviewed described a world that no longer exists. Plan again.</p>
+<h3 id="drift">Drift</h3>
+<p>Change a managed object outside Terraform and the next plan's refresh notices. What it does about it
+depends on the provider. For <code>local_file</code>, a file whose content no longer matches is treated as gone:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"DB_PASSWORD=edited-by-hand"</span><span class="hl-w"> </span>&gt;<span class="hl-w"> </span>out/carol.env
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-var<span class="hl-w"> </span><span class="hl-s1">'users=["alice","carol"]'</span>
+<span class="hl-gp">  # </span>local_file.credentials<span class="hl-o">[</span><span class="hl-s2">"carol"</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>created
+<span class="hl-go">Plan: 1 to add, 0 to change, 0 to destroy.</span>
+</code></pre>
+
+<p>Cloud providers more often show an in-place update, or a replacement if the drifted attribute cannot be
+changed in place. Either way the plan is the only place drift is reported, which is one more reason to
+plan regularly even when nobody has changed the code: <code>terraform plan -detailed-exitcode</code> exits <code>2</code>
+when there are changes, which makes a drift check a one-line scheduled job.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>A configuration creates database credentials for a list of users. Bob has left; someone removes him
+from the list and runs <code>terraform apply -auto-approve</code> in CI. The next morning Carol cannot log in.</p>
+<p><strong>1. Reconstruct the plan the pipeline did not show anyone.</strong> Put the list back as it was and plan the
+change again:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-var<span class="hl-w"> </span><span class="hl-s1">'users=["alice","carol"]'</span>
+<span class="hl-gp">  # </span>local_file.credentials<span class="hl-o">[</span><span class="hl-m">1</span><span class="hl-o">]</span><span class="hl-w"> </span>must<span class="hl-w"> </span>be<span class="hl-w"> </span>replaced
+<span class="hl-go">      ~ filename             = "./out/bob.env" -&gt; "./out/carol.env" # forces replacement</span>
+<span class="hl-gp">  # </span>local_file.credentials<span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>index<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>is<span class="hl-w"> </span>out<span class="hl-w"> </span>of<span class="hl-w"> </span>range<span class="hl-w"> </span><span class="hl-k">for</span><span class="hl-w"> </span>count<span class="hl-o">)</span>
+<span class="hl-gp">  # </span>random_password.db<span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>index<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>is<span class="hl-w"> </span>out<span class="hl-w"> </span>of<span class="hl-w"> </span>range<span class="hl-w"> </span><span class="hl-k">for</span><span class="hl-w"> </span>count<span class="hl-o">)</span>
+<span class="hl-go">Plan: 1 to add, 0 to change, 3 to destroy.</span>
+</code></pre>
+
+<p><em>3 to destroy</em> for removing one person. The address explains it: <code>count</code> instances are numbered, and
+Carol was number 2.</p>
+<p><strong>2. Confirm what actually happened to Carol.</strong></p>
+<pre><code>carol before: GLMGbE…   bob before: KWOR0s…   carol after: KWOR0s…
+</code></pre>
+<p>Her credential file now carries Bob's old password, and her own password object was destroyed. That is
+the incident: not an outage in Terraform, but an exact execution of an ambiguous design.</p>
+<p><strong>3. Stop it happening again: move to <code>for_each</code>, without destroying anything.</strong> Change both resources
+to <code>for_each = toset(var.users)</code> and plan first:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan
+<span class="hl-go">Plan: 6 to add, 0 to change, 6 to destroy.</span>
+</code></pre>
+
+<p>Every address changed, so everything would be rebuilt — every user's password regenerated. Add a
+<code>moved</code> block per instance, mapping <code>[0]</code> → <code>[&quot;alice&quot;]</code>, <code>[1]</code> → <code>[&quot;bob&quot;]</code>, <code>[2]</code> → <code>[&quot;carol&quot;]</code> for both
+resources, and plan again:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan
+<span class="hl-gp">  # </span>local_file.credentials<span class="hl-o">[</span><span class="hl-m">0</span><span class="hl-o">]</span><span class="hl-w"> </span>has<span class="hl-w"> </span>moved<span class="hl-w"> </span>to<span class="hl-w"> </span>local_file.credentials<span class="hl-o">[</span><span class="hl-s2">"alice"</span><span class="hl-o">]</span>
+<span class="hl-go">  …</span>
+<span class="hl-gp">  # </span>random_password.db<span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>has<span class="hl-w"> </span>moved<span class="hl-w"> </span>to<span class="hl-w"> </span>random_password.db<span class="hl-o">[</span><span class="hl-s2">"carol"</span><span class="hl-o">]</span>
+<span class="hl-go">Plan: 0 to add, 0 to change, 0 to destroy.</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>apply<span class="hl-w"> </span>-auto-approve
+<span class="hl-go">Apply complete! Resources: 0 added, 0 changed, 0 destroyed.</span>
+</code></pre>
+
+<p>(The mapping has to reflect the list <em>at the time</em>; here Bob had been re-added before the migration so
+that indices matched names. Get it wrong and the moved blocks faithfully swap two people.)</p>
+<p><strong>4. Remove Bob again, and read the plan.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-var<span class="hl-w"> </span><span class="hl-s1">'users=["alice","carol"]'</span>
+<span class="hl-gp">  # </span>local_file.credentials<span class="hl-o">[</span><span class="hl-s2">"bob"</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>key<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-s2">"bob"</span><span class="hl-o">]</span><span class="hl-w"> </span>is<span class="hl-w"> </span>not<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>for_each<span class="hl-w"> </span>map<span class="hl-o">)</span>
+<span class="hl-gp">  # </span>random_password.db<span class="hl-o">[</span><span class="hl-s2">"bob"</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>key<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-s2">"bob"</span><span class="hl-o">]</span><span class="hl-w"> </span>is<span class="hl-w"> </span>not<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>for_each<span class="hl-w"> </span>map<span class="hl-o">)</span>
+<span class="hl-go">Plan: 0 to add, 0 to change, 2 to destroy.</span>
+</code></pre>
+
+<p>Two objects, both Bob's. Applied, Alice and Carol keep their passwords.</p>
+<p><strong>5. Make the pipeline show the plan it applies.</strong> The failure was never <code>count</code>; it was an apply
+nobody reviewed. Save the plan, have a human or a policy check read it, and apply that file:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-out<span class="hl-o">=</span>change.plan<span class="hl-w"> </span>-var<span class="hl-w"> </span><span class="hl-s1">'users=["alice","carol"]'</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>show<span class="hl-w"> </span>change.plan<span class="hl-w">          </span><span class="hl-c1"># the review</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>apply<span class="hl-w"> </span>change.plan<span class="hl-w">         </span><span class="hl-c1"># exactly what was reviewed — or "Saved plan is stale"</span>
+</code></pre>
+
+<p><strong>6. Add a guard where a mistake is expensive</strong> — <code>prevent_destroy</code> on the password resources turns
+any plan that would destroy one into an error, and the stale-plan check stops a reviewed plan being
+applied to a changed world. Neither replaces reading the plan; both make not reading it fail loudly.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong><code>apply -auto-approve</code> without a saved, reviewed plan.</strong> The plan is the only moment Terraform tells
+you what it is about to destroy. In CI, <code>plan -out</code>, review, <code>apply FILE</code>.</p>
+<p><strong><code>count</code> over a list of named things.</strong> Removing or reordering an item re-keys every instance after
+it. Use <code>for_each</code> over a set or map whenever the things have identities.</p>
+<p><strong>Changing <code>count</code> to <code>for_each</code> (or renaming a resource) and applying.</strong> Every address changes, so
+everything is destroyed and recreated. Add <code>moved</code> blocks and plan until it says <code>0 to destroy</code>.</p>
+<p><strong>Writing <code>moved</code> blocks from memory.</strong> They map old addresses to new ones exactly as you say. Check
+<code>terraform state list</code> and the current list order before writing them.</p>
+<p><strong>Relying on <code>prevent_destroy</code> to protect a resource someone might delete from the code.</strong> The setting
+is deleted with the block. Use provider-side deletion protection for things that must survive a bad
+commit.</p>
+<p><strong>Treating <code>sensitive = true</code> as encryption.</strong> It hides values from plan output and from the bulk
+<code>terraform output</code> listing. <code>terraform output NAME</code> prints it, and the state file stores it in plain
+text.</p>
+<p><strong>Committing <code>terraform.tfstate</code>.</strong> It contains every secret the configuration touches — and so does
+<code>terraform.tfstate.backup</code>. Remote backend, encrypted, access-controlled, locked.</p>
+<p><strong>Re-running <code>apply</code> on a stale saved plan by re-planning silently.</strong> The error means the world changed
+since the review. Plan again and review again.</p>
+<p><strong>Using <code>-target</code> to get past an error.</strong> It applies part of a configuration and leaves state
+inconsistent with the rest; HashiCorp recommends it only for exceptional recovery. The error it is
+tempting to bypass — like <code>Instance cannot be destroyed</code> — is usually the plan working.</p>
+<p><strong>Assuming drift shows up without a plan.</strong> Nothing notices a hand edit until the next refresh. Run a
+scheduled <code>plan -detailed-exitcode</code> if drift matters.</p>
+<h2 id="symptoms-and-causes">Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a rename in the code plans a destroy and a create</td>
+<td>the address changed and state still has the old one</td>
+<td><code>terraform state list</code>; a <code>moved</code> block</td>
+</tr>
+<tr>
+<td>removing one item from a list replaces the items after it</td>
+<td><code>count</code> addresses instances by position</td>
+<td>the plan's <code>[1] -&gt; [0]</code> changes; switch to <code>for_each</code></td>
+</tr>
+<tr>
+<td>a plan shows changes nobody made in the code</td>
+<td>drift: the real object was changed outside Terraform</td>
+<td><code>terraform plan -refresh-only</code></td>
+</tr>
+<tr>
+<td>a secret appears in plain text on disk</td>
+<td>state stores every attribute, <code>sensitive</code> values included</td>
+<td><code>terraform.tfstate</code> and its backup's permissions; a remote backend</td>
+</tr>
+<tr>
+<td>applying a saved plan fails as stale</td>
+<td>state changed since the plan was made</td>
+<td><code>terraform show PLANFILE</code>; plan again</td>
+</tr>
+<tr>
+<td><code>prevent_destroy</code> did not stop a deletion</td>
+<td>the resource block itself was removed, taking the lifecycle rule with it</td>
+<td>the diff of the configuration</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span><span class="hl-nb">read</span><span class="hl-w"> </span>before<span class="hl-w"> </span>you<span class="hl-w"> </span>change
+<span class="hl-go">terraform plan                               # the diff between config, state and reality</span>
+<span class="hl-go">terraform plan -out=change.plan              # save it…</span>
+<span class="hl-go">terraform show change.plan                   # …review it…</span>
+<span class="hl-go">terraform apply change.plan                  # …apply exactly that ("Saved plan is stale" if state moved)</span>
+<span class="hl-go">terraform plan -destroy                      # what destroy would touch</span>
+<span class="hl-go">terraform plan -detailed-exitcode            # exit 0 no changes, 1 error, 2 changes — for drift checks</span>
+
+<span class="hl-gp"># </span>state<span class="hl-w"> </span>is<span class="hl-w"> </span>identity
+<span class="hl-go">terraform state list                         # every managed address</span>
+<span class="hl-go">terraform state show 'random_password.db["alice"]'</span>
+<span class="hl-gp"># </span><span class="hl-nv">address</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span>TYPE.NAME<span class="hl-o">[</span>index<span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">(</span>count<span class="hl-o">)</span><span class="hl-w"> </span>or<span class="hl-w"> </span>TYPE.NAME<span class="hl-o">[</span><span class="hl-s2">"key"</span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">(</span>for_each<span class="hl-o">)</span>
+
+<span class="hl-gp"># </span>refactoring<span class="hl-w"> </span>safely
+<span class="hl-gp"># </span>moved<span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nv">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span>random_password.db<span class="hl-o">[</span><span class="hl-m">0</span><span class="hl-o">]</span><span class="hl-w">  </span><span class="hl-nv">to</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span>random_password.db<span class="hl-o">[</span><span class="hl-s2">"alice"</span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">}</span>
+<span class="hl-gp"># </span>plan<span class="hl-w"> </span><span class="hl-k">until</span>:<span class="hl-w"> </span>Plan:<span class="hl-w"> </span><span class="hl-m">0</span><span class="hl-w"> </span>to<span class="hl-w"> </span>add,<span class="hl-w"> </span><span class="hl-m">0</span><span class="hl-w"> </span>to<span class="hl-w"> </span>change,<span class="hl-w"> </span><span class="hl-m">0</span><span class="hl-w"> </span>to<span class="hl-w"> </span>destroy.
+
+<span class="hl-gp"># </span>count<span class="hl-w"> </span>vs<span class="hl-w"> </span>for_each
+<span class="hl-gp"># </span><span class="hl-nv">count</span><span class="hl-w">    </span><span class="hl-o">=</span><span class="hl-w"> </span>var.enabled<span class="hl-w"> </span>?<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w"> </span>:<span class="hl-w"> </span><span class="hl-m">0</span><span class="hl-w">            </span>←<span class="hl-w"> </span>how<span class="hl-w"> </span>many
+<span class="hl-gp"># </span><span class="hl-nv">for_each</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span>toset<span class="hl-o">(</span>var.users<span class="hl-o">)</span><span class="hl-w">               </span>←<span class="hl-w"> </span>which<span class="hl-w"> </span>ones<span class="hl-w"> </span><span class="hl-o">(</span>each.key<span class="hl-w"> </span>/<span class="hl-w"> </span>each.value<span class="hl-o">)</span>
+
+<span class="hl-gp"># </span>guards
+<span class="hl-gp"># </span>lifecycle<span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nv">prevent_destroy</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nb">true</span><span class="hl-w"> </span><span class="hl-o">}</span><span class="hl-w">       </span>←<span class="hl-w"> </span>fails<span class="hl-w"> </span>any<span class="hl-w"> </span>plan<span class="hl-w"> </span>that<span class="hl-w"> </span>destroys<span class="hl-w"> </span>it<span class="hl-p">;</span><span class="hl-w"> </span>gone<span class="hl-w"> </span><span class="hl-k">if</span><span class="hl-w"> </span>the<span class="hl-w"> </span>block<span class="hl-w"> </span>is<span class="hl-w"> </span>deleted
+<span class="hl-gp"># </span>lifecycle<span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nv">create_before_destroy</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nb">true</span><span class="hl-w"> </span><span class="hl-o">}</span><span class="hl-w"> </span>←<span class="hl-w"> </span>replacement<span class="hl-w"> </span>creates<span class="hl-w"> </span>the<span class="hl-w"> </span>new<span class="hl-w"> </span>one<span class="hl-w"> </span>first
+<span class="hl-gp"># </span>lifecycle<span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nv">ignore_changes</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-o">[</span>tags<span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">}</span><span class="hl-w">      </span>←<span class="hl-w"> </span>tolerate<span class="hl-w"> </span>drift<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>named<span class="hl-w"> </span>attributes
+
+<span class="hl-gp"># </span>secrets
+<span class="hl-go">terraform output                             # sensitive values shown as &lt;sensitive&gt;</span>
+<span class="hl-go">terraform output NAME                        # …but printed in full when asked by name</span>
+<span class="hl-gp"># </span>terraform.tfstate<span class="hl-w"> </span>and<span class="hl-w"> </span>.backup:<span class="hl-w"> </span>plain<span class="hl-w"> </span>text,<span class="hl-w"> </span>every<span class="hl-w"> </span>attribute<span class="hl-w"> </span>—<span class="hl-w"> </span>never<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>git
+</code></pre>
+
+<h2 id="exercises">Exercises</h2>
+<ol>
+<li>Create two resources with <code>count</code>, remove the first from the list, and read the plan; convert to
+<code>for_each</code> with <code>moved</code> blocks so that the conversion plans no change.</li>
+<li>Rename a resource and plan; add a <code>moved</code> block and plan again.</li>
+<li>Change a managed file by hand and compare <code>terraform plan</code> with <code>terraform plan -refresh-only</code>.</li>
+<li>Mark an output <code>sensitive</code>, apply, and search the state file for the value.</li>
+<li>Save a plan, change state with another apply, and try to apply the saved plan.</li>
+</ol>
+<h2 id="sources">Sources</h2>
+<ul>
+<li>State: https://developer.hashicorp.com/terraform/language/state</li>
+<li><code>for_each</code>: https://developer.hashicorp.com/terraform/language/meta-arguments/for_each</li>
+<li>Refactoring with <code>moved</code>: https://developer.hashicorp.com/terraform/language/modules/develop/refactoring</li>
+<li><code>terraform plan -help</code>, <code>terraform state -help</code> — the flags, on the machine itself.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>A list of three users feeds <code>count</code>. Removing the middle user produces <code>Plan: 1 to add, 0 to change, 3 to destroy</code>. Explain every line of that plan.</p>
+<blockquote>
+<p><code>count</code> instances are identified by index. Removing the middle item moves the last user from index
+2 to index 1: index 1's file must be replaced to point at the new name, and index 2 — the last user's
+password and file — is out of range and destroyed. The surviving index-1 password, which belonged to
+the removed user, is reused for the last user.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>for_each</code> over a set of names avoid that problem?</p>
+<blockquote>
+<p>Instances are keyed by the name itself (<code>[&quot;carol&quot;]</code>), so removing one key destroys only that key's
+objects; the other addresses do not change.</p>
+</blockquote>
+</li>
+<li>
+<p>You change a resource from <code>count</code> to <code>for_each</code> and the plan says <code>6 to add, 6 to destroy</code>. What
+do you add, and what should the plan say afterwards?</p>
+<blockquote>
+<p>One <code>moved</code> block per instance mapping each old indexed address to its new key, e.g. <code>from = random_password.db[0]</code>, <code>to = random_password.db[&quot;alice&quot;]</code>. The plan should then report the moves
+and <code>0 to add, 0 to change, 0 to destroy</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>A resource has <code>lifecycle { prevent_destroy = true }</code>. Name one situation where it is destroyed
+anyway, without any error.</p>
+<blockquote>
+<p>When its resource block is deleted from the configuration: the lifecycle setting is deleted with it,
+and Terraform plans the destroy because the address is no longer in configuration. Protection that
+must survive a bad commit belongs in the provider (deletion protection, versioning).</p>
+</blockquote>
+</li>
+<li>
+<p>An output is marked <code>sensitive = true</code>. Where can its value still be read in plain text?</p>
+<blockquote>
+<p>In <code>terraform output NAME</code> (asking by name prints it), and in the state file and its backup, which
+store every attribute unencrypted. <code>sensitive</code> only suppresses display in plans, applies and the
+bulk output listing.</p>
+</blockquote>
+</li>
+<li>
+<p><code>terraform apply change.plan</code> fails with <em>Saved plan is stale</em>. What happened, and what do you do?</p>
+<blockquote>
+<p>The state changed after the plan was saved — another apply ran — so the reviewed plan describes a
+world that no longer exists. Run <code>plan -out</code> again and review the new plan; do not bypass it.</p>
+</blockquote>
+</li>
+<li>
+<p>Someone edits a managed file by hand. When does Terraform notice, and how does the <code>local_file</code>
+provider represent the change?</p>
+<blockquote>
+<p>Only on the next refresh, which every plan performs. <code>local_file</code> treats a file whose content no
+longer matches as absent and plans to create it; other providers may show an update or a
+replacement. A scheduled <code>plan -detailed-exitcode</code> turns drift into an alert.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>terraform.tfstate</code> a secret even when every sensitive output is marked sensitive?</p>
+<blockquote>
+<p>State stores every attribute of every managed object in plain text — generated passwords, keys,
+connection strings — regardless of <code>sensitive</code>. Anyone who can read the state can read all of them,
+which is why it lives in an encrypted, access-controlled backend and never in version control.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The account that was almost on the team</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>The account that was almost on the team</h1>
+  <div class="meta">users-permissions · 35 minutes · 3093 words</div>
+</header>
+<p>Nothing in this lab is broken in an interesting way. An account was created, a directory was made,
+a sudo rule was written, a umask was set during onboarding — and every one of those five ordinary
+acts was done one character wrong. The result is a contractor who cannot write to the team’s
+directory, whose files nobody else can open, who is refused a command the team was promised, and
+who can read things that are none of their business.</p>
+<p>This is what permission problems actually look like. They are rarely a mystery; they are a
+mismatch between four separate mechanisms that all have to agree: who the kernel thinks you are,
+what the directory allows, what mask your shell applies to new files, and what sudo was told. This
+journal is those four mechanisms, and how to interrogate each one instead of guessing.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Say what a process’s identity actually consists of, and why adding someone to a group does not
+change the session they are already in.</li>
+<li>Choose between <code>usermod -G</code> and <code>usermod -aG</code> deliberately, knowing which one destroys
+membership.</li>
+<li>Read a directory’s mode and predict who can create, delete and rename files in it — including
+what the three special bits do, and which of them only makes sense on a directory.</li>
+<li>Build a shared directory that hands its group to every file created in it, and explain why
+group-write alone is not enough.</li>
+<li>Work out where a login shell’s umask came from, and change it so it survives the next login.</li>
+<li>Grant one exact command to a group with a sudoers drop-in, verify it without becoming the user,
+and never lock yourself out doing it.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Identity is a snapshot, not a lookup</h3>
+<p>A running process carries its identity as numbers: a real and effective UID, a primary GID, and a
+list of supplementary GIDs. Those are set once, when the session is created, from the account
+databases — and then nothing re-reads them. The kernel never asks <code>/etc/group</code> whether you are
+still in <code>devops</code>; it compares the GID list it is already holding.</p>
+<pre><code class="language-console">$ id kmorris
+uid=1002(kmorris) gid=1006(kmorris) groups=1006(kmorris),1002(developers)
+
+$ id -nG kmorris
+kmorris developers
+</code></pre>
+<p>Two things to read out of that. First, <code>gid=1006(kmorris)</code> is the <strong>primary</strong> group — its own
+private group, the RHEL default, and the group new files get when nothing else decides. Everything
+after it is <strong>supplementary</strong>. Second, <code>id kmorris</code> asks the databases, while plain <code>id</code> inside
+kmorris’s shell reports the snapshot that shell is holding. That is the whole explanation for the
+most common support ticket in this area: <em>“I added them to the group and it still does not work.”</em>
+The databases changed; the session did not. Log out and in, or start one shell with the new group:</p>
+<pre><code class="language-console">$ newgrp devops           # new shell, group added, primary group switched
+$ sg devops -c 'command'  # one command with that group
+</code></pre>
+<p><code>getent</code> is the honest way to read the databases, because it goes through NSS and therefore sees
+LDAP, SSSD and anything else configured — where <code>grep devops /etc/group</code> sees only the local file:</p>
+<pre><code class="language-console">$ getent group devops
+devops:x:1001:apatel
+</code></pre>
+<h3><code>-G</code> replaces, <code>-aG</code> appends</h3>
+<p>The single most destructive command in this area is <code>usermod -G</code>:</p>
+<pre><code class="language-console"># usermod -G devops kmorris      # kmorris is now in devops ONLY
+# usermod -aG devops kmorris     # kmorris is in devops IN ADDITION
+</code></pre>
+<p><code>-G</code> sets the complete supplementary list. Run it on a user who was in <code>wheel</code> and you have just
+removed their sudo access, silently, with a command that looks like it adds something. The muscle
+memory to build is <code>-aG</code>, always, unless you have consciously decided to replace the list — which
+is exactly what this lab needs, because the briefing asks for devops <strong>and no other team</strong>. The
+<code>developers</code> membership is not an oversight to leave behind; it is why kmorris can read other
+teams’ files.</p>
+<p>Adjacent flags worth knowing: <code>-g</code> changes the <em>primary</em> group, <code>-G ''</code> empties the supplementary
+list, and <code>gpasswd -d kmorris developers</code> removes one membership without touching the others.</p>
+<h3>The bits on a directory mean something different</h3>
+<p>On a file, <code>r</code> is read, <code>w</code> is write, <code>x</code> is execute. On a directory they are not analogous, and
+the difference is where most permission confusion lives:</p>
+<table>
+<thead>
+<tr>
+<th>bit</th>
+<th>on a file</th>
+<th>on a directory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>r</code></td>
+<td>read the contents</td>
+<td>list the names in it</td>
+</tr>
+<tr>
+<td><code>w</code></td>
+<td>change the contents</td>
+<td><strong>create, delete and rename</strong> entries</td>
+</tr>
+<tr>
+<td><code>x</code></td>
+<td>run it</td>
+<td>traverse it — reach anything inside, by name</td>
+</tr>
+</tbody>
+</table>
+<p>So the right to delete a file has nothing to do with the file’s own permissions: it belongs to
+whoever can write to the directory holding it. And a directory with <code>x</code> but no <code>r</code> is perfectly
+usable if you already know the filenames — that is how <code>/srv</code> and home directories are often
+arranged.</p>
+<p>Above those nine bits sit three more:</p>
+<pre><code>      4000  setuid   run the file as its owner            (meaningless on a directory)
+      2000  setgid   on a file: run as its group
+                     on a directory: NEW ENTRIES INHERIT THE DIRECTORY'S GROUP
+      1000  sticky   on a directory: only the owner may delete their own entries (/tmp)
+</code></pre>
+<p>The middle one is the point of this lab. Without it, a file created in <code>/srv/project</code> gets the
+creator’s primary group — <code>kmorris:kmorris</code> — and the rest of the team cannot touch it no matter
+how generous the directory’s bits are. With it, the directory’s group is stamped on everything
+created inside, and on subdirectories the bit itself is inherited too, so the behaviour continues
+all the way down.</p>
+<pre><code class="language-console"># chmod 2770 /srv/project          # rwxrws---
+# chmod g+s /srv/project           # the same thing, symbolically
+$ ls -ld /srv/project
+drwxrws---. 2 root devops 37 Sep 13 04:40 /srv/project
+</code></pre>
+<p>That <code>s</code> sits where the group’s <code>x</code> would be. Lower case <code>s</code> means setgid <strong>and</strong> group-execute;
+an upper case <code>S</code> means setgid was set while group-execute was not — which is almost always a
+mistake, because a directory nobody can traverse is not shared with anyone.</p>
+<p>Three bits have to agree for a shared workspace, and it is worth stating them separately because
+failing any one produces a different symptom:</p>
+<ol>
+<li>the directory’s <strong>group</strong> is the team’s group — otherwise the group bits grant nothing to them;</li>
+<li>the group has <strong><code>rwx</code></strong> — <code>w</code> to create, <code>x</code> to enter;</li>
+<li><strong>setgid</strong> is on — otherwise each file arrives owned by a group of one.</li>
+</ol>
+<p>Note what this does <em>not</em> fix: files that already exist. <code>/srv/project/README</code> was created before
+the bit was set and keeps whatever group and mode it had. <code>chgrp -R devops /srv/project</code> and
+<code>chmod -R g+w</code> clean up history; setgid only governs the future.</p>
+<h3>umask decides what “new” means</h3>
+<p>A program asks for a mode when it creates a file — <code>0666</code> for a regular file, <code>0777</code> for a
+directory, by near-universal convention — and the kernel removes the bits in the process’s umask:</p>
+<pre><code>requested 666   rw- rw- rw-
+umask     022   --- -w- -w-        →  644   rw- r-- r--
+umask     002   --- --- -w-        →  664   rw- rw- r--
+umask     077   --- rwx rwx        →  600   rw- --- ---
+</code></pre>
+<p>So <code>002</code> is the collaborative mask: the group keeps write, only outsiders lose it. <code>022</code> is the
+default for ordinary users on many systems and is <em>not</em> enough for a shared directory — it strips
+the group’s write bit, and a setgid directory then gives your teammates files they can read and
+not edit. And <code>077</code>, the value set during kmorris’s onboarding, removes everything for everybody
+else. Note that umask can only ever take permissions away; it cannot grant the execute bit that
+<code>0666</code> never asked for, which is why new files are not executable.</p>
+<p>Where does the value come from? In order, last one wins:</p>
+<pre><code>/etc/login.defs        UMASK 022        — used by pam_umask, and by useradd for home directories
+/etc/profile           often sets 002 for UID &gt;= 1000 with a private group, 022 otherwise
+/etc/profile.d/*.sh
+~/.bash_profile        the user's own, read only by a LOGIN shell
+~/.bashrc              read by interactive non-login shells (and sourced by the default
+                       ~/.bash_profile on RHEL-family systems)
+</code></pre>
+<p>That login/non-login split matters here. <code>su kmorris</code> gives a shell that does not read
+<code>.bash_profile</code>; <code>su - kmorris</code> gives a login shell that does. If you test with the first and the
+problem lives in the second, you will conclude the umask is fine. Check it the way the grader
+does, the way a real login does:</p>
+<pre><code class="language-console"># su - kmorris -c umask
+0077
+</code></pre>
+<p>The fix belongs in the same file that broke it, because a <code>umask</code> typed into a running shell dies
+with that shell. And if you add a line without removing the old one, remember the rule: the file
+is a script, it runs top to bottom, and the last <code>umask</code> executed is the one you get.</p>
+<h3>sudo grants commands, not trust</h3>
+<p><code>sudo</code> reads <code>/etc/sudoers</code>, which on any modern system ends with an include of a directory:</p>
+<pre><code>@includedir /etc/sudoers.d
+</code></pre>
+<p>Drop-in files are how you add rules without ever editing the main file — smaller blast radius,
+and easy to remove. Two rules about those files: mode <code>0440</code> and owned by root (sudo <em>ignores</em> a
+file that is group- or world-writable, without saying so out loud), and no dot or tilde in the
+filename, or the include skips it. A rule reads:</p>
+<pre><code>%devops   ALL=(root)   NOPASSWD: /usr/bin/systemctl restart nginx
+└─ who    └─ on which  └─ as     └─ no       └─ exactly this command, with these arguments
+   (% = a    hosts        whom      password
+    group)
+</code></pre>
+<p>The leading <code>%</code> is the difference between a group and a user — <code>ops</code> and <code>%ops</code> are not the same
+rule, and one of them refers to an account that may not exist. The command is matched <strong>with its
+arguments</strong>: this rule permits <code>systemctl restart nginx</code> and refuses <code>systemctl restart sshd</code> and
+<code>systemctl stop nginx</code>. Write it as an absolute path, because sudo matches on the path, and a bare
+<code>systemctl</code> would match nothing.</p>
+<p>Edit these files with <code>visudo</code>, which syntax-checks before it saves:</p>
+<pre><code class="language-console"># visudo -f /etc/sudoers.d/devops     # edit with a check on save
+# visudo -c                           # verify everything, including the drop-ins
+# visudo -cf /etc/sudoers.d/devops    # verify one file
+</code></pre>
+<p>A syntax error in a sudoers file is the one mistake in this lab that can genuinely lock you out:
+sudo refuses to run at all rather than guess, and if sudo was your only route to root you now need
+the console and single-user mode. Keep a second root shell open while you edit, or use <code>visudo</code>
+and let it stop you.</p>
+<p>To ask what sudo would allow, ask sudo — do not try to become the user:</p>
+<pre><code class="language-console">$ sudo -l -U kmorris
+Matching Defaults entries for kmorris on lima-nb-rhcsa-01:
+    !visiblepw, always_set_home, match_group_by_gid, … secure_path=/sbin\:/bin\:/usr/sbin\:/usr/bin
+
+User kmorris may run the following commands on lima-nb-rhcsa-01:
+    (root) NOPASSWD: /usr/bin/systemctl restart nginx
+
+$ sudo -l -U kmorris /usr/bin/systemctl restart nginx    # exit status 0 if permitted
+/usr/bin/systemctl restart nginx
+</code></pre>
+<p>The <code>Defaults</code> block comes first and is worth one glance — <code>secure_path</code> is the <code>PATH</code> sudo gives the
+command, which is why a rule must name <code>/usr/bin/systemctl</code> and not rely on your own <code>PATH</code>.</p>
+<p>That second form is a yes/no question about one command, and it does not run it. It is also what
+the grader uses, which means the rule has to be genuinely correct rather than merely present.</p>
+<h3>Which of these survives a reboot</h3>
+<p>All five, if you did them in the right place, and that is the point of grading after a reboot.
+Group membership lives in <code>/etc/group</code>; modes and the setgid bit live in the filesystem’s inodes;
+the umask lives in a profile file; the sudo rule lives in <code>/etc/sudoers.d</code>. The failures are the
+ones done in memory: <code>newgrp</code> in a shell, <code>umask 002</code> typed at a prompt, a <code>chmod</code> on a tmpfs, an
+<code>export</code> that was never written down. If your fix was a command you typed rather than a file you
+changed, ask where it was saved.</p>
+<h2>A failure, walked through</h2>
+<p>The briefing says kmorris cannot write to <code>/srv/project</code>. Start there, but start by asking who
+kmorris is.</p>
+<p><strong>1. The identity.</strong></p>
+<pre><code class="language-console">$ id -nG kmorris
+kmorris developers
+</code></pre>
+<p>Two problems in one line: <code>devops</code> is absent, so nothing the team’s group permits applies to
+kmorris; and <code>developers</code> is present, which is how kmorris can see other teams’ files. The
+briefing asks for devops and nothing else, so this is a replacement, not an addition:</p>
+<pre><code class="language-console">$ sudo usermod -G devops kmorris
+$ id -nG kmorris
+kmorris devops
+</code></pre>
+<p><strong>2. The directory.</strong> Look at the directory itself, not its contents — <code>-d</code> is the flag people
+forget:</p>
+<pre><code class="language-console">$ ls -ld /srv/project
+drwxr-x---. 2 root devops 37 Sep 13 04:40 /srv/project
+</code></pre>
+<p>The group is right, and the group has <code>r-x</code>: read the names, enter the directory, create nothing.
+And there is no <code>s</code> in the group triad, so even once writing works, new files will belong to their
+creator. Both problems, one command:</p>
+<pre><code class="language-console">$ sudo chmod 2770 /srv/project
+$ ls -ld /srv/project
+drwxrws---. 2 root devops 37 Sep 13 04:40 /srv/project
+</code></pre>
+<p><strong>3. Prove it as the user, not as yourself.</strong> Root ignores permission bits, so testing as root
+proves nothing at all:</p>
+<pre><code class="language-console">$ sudo su - kmorris -c 'touch /srv/project/probe &amp;&amp; stat -c %U:%G /srv/project/probe'
+kmorris:devops
+</code></pre>
+<p><code>kmorris:devops</code> — the setgid bit did its job. Had the group come back as <code>kmorris</code>, the bit is
+missing; had <code>touch</code> failed with <em>Permission denied</em>, either the group write bit is missing or the
+session does not have the group yet.</p>
+<p><strong>4. The mask the file arrives with.</strong> The file exists and belongs to the right group; can the
+team edit it?</p>
+<pre><code class="language-console">$ sudo su - kmorris -c 'umask; stat -c %A /srv/project/probe'
+0077
+-rw-------
+</code></pre>
+<p>There it is: mode <code>600</code>, nobody but kmorris. A umask of <code>077</code> came from somewhere in the login
+path, and since the system-wide files are shared with everyone, look in the account’s own:</p>
+<pre><code class="language-console">$ sudo tail -3 /home/kmorris/.bash_profile
+# set during onboarding
+umask 077
+</code></pre>
+<p>Change it in place rather than appending a second line, so the file has one answer:</p>
+<pre><code class="language-console">$ sudo sed -i 's/^umask 077$/umask 002/' /home/kmorris/.bash_profile
+$ sudo su - kmorris -c umask
+0002
+</code></pre>
+<p><strong>5. The sudo rule.</strong> Ask sudo, then read the file it is reading:</p>
+<pre><code class="language-console">$ sudo -l -U kmorris
+User kmorris is not allowed to run sudo on lima-nb-rhcsa-01.
+
+$ sudo cat /etc/sudoers.d/devops
+%ops ALL=(root) NOPASSWD: /usr/bin/systemctl restart nginx
+</code></pre>
+<p>The rule is for <code>%ops</code> — a real group, with rsingh in it, and no kmorris. One word wrong:</p>
+<pre><code class="language-console">$ sudo visudo -f /etc/sudoers.d/devops      # %ops → %devops
+$ sudo visudo -c
+/etc/sudoers: parsed OK
+/etc/sudoers.d/00-norboten-grader: parsed OK
+/etc/sudoers.d/90-cloud-init-users: parsed OK
+/etc/sudoers.d/devops: parsed OK
+$ sudo -l -U kmorris | tail -2
+User kmorris may run the following commands on lima-nb-rhcsa-01:
+    (root) NOPASSWD: /usr/bin/systemctl restart nginx
+</code></pre>
+<p><strong>6. Reboot, then check the same six things again.</strong> Every fix above was written to a file, so it
+should all hold — but “should” is not a grade:</p>
+<pre><code class="language-console">$ sudo reboot
+$ id -nG kmorris; ls -ld /srv/project; sudo su - kmorris -c umask; sudo -l -U kmorris
+</code></pre>
+<h2>Common wrong turns</h2>
+<p><strong><code>usermod -aG devops kmorris</code>.</strong> The reflex is correct in general and wrong here: it leaves
+<code>developers</code> in place, which the briefing explicitly rules out and which is the reason kmorris can
+read other teams’ files. Read the requirement — <em>devops and no other team</em> — and replace the list.</p>
+<p><strong><code>chmod 770</code> without the setgid bit.</strong> Now kmorris can create files, and each one arrives owned
+by group <code>kmorris</code>. The symptom moves from “cannot write” to “nobody else can open what I wrote”,
+which feels like a new problem and is the same one.</p>
+<p><strong><code>chown -R kmorris:devops /srv/project</code> and calling it done.</strong> That fixes every file that exists
+right now and nothing created after. The setgid bit is the mechanism; chowning is the cleanup.</p>
+<p><strong>Testing as root.</strong> <code>sudo touch /srv/project/x</code> succeeds on a directory nobody else can write to,
+because root is exempt from the checks. Every permission test has to run as the user in question —
+<code>su - user -c '…'</code> — or it tests nothing.</p>
+<p><strong>Fixing the umask with <code>umask 002</code> at a prompt.</strong> It works for exactly as long as that shell
+lives. The graded question is what a <em>login</em> gets, which means a file in the login path.</p>
+<p><strong>Putting the umask in <code>~/.bashrc</code> and leaving <code>.bash_profile</code> alone.</strong> On RHEL-family systems the
+default <code>.bash_profile</code> sources <code>.bashrc</code> near the top — and the broken <code>umask 077</code> is appended at
+the bottom, so it runs last and wins. Two <code>umask</code> lines in the login path is one too many; fix the
+line that is wrong.</p>
+<p><strong>Editing sudoers with <code>vi</code>.</strong> It usually works, and the once it does not you have a machine where
+<code>sudo</code> refuses every command, including the one that would fix the file. <code>visudo</code> costs nothing
+and checks the syntax before saving.</p>
+<p><strong>Writing <code>ops</code> instead of <code>%ops</code>, or a relative command path.</strong> Without the <code>%</code> the rule names a
+user; without the absolute path the command matches nothing. Both produce a rule that parses
+cleanly and grants nothing, which is the worst kind.</p>
+<p><strong>Granting <code>%devops ALL=(ALL) ALL</code> because it definitely works.</strong> It does, and it hands a
+contractor full root to satisfy a requirement for one command. The check would pass; the review
+would not.</p>
+<p><strong>Forgetting that an open session keeps its old groups.</strong> After <code>usermod</code>, kmorris’s existing SSH
+session still cannot write. Nothing is wrong — log in again. <code>id</code> inside the old session and
+<code>id kmorris</code> from outside disagreeing is the tell.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># identity
+id [user]                       # uid, primary gid, supplementary groups
+id -nG user                     # just the group names
+getent passwd user              # through NSS, so LDAP/SSSD are included
+getent group devops             # who is in the group
+groups user                     # the same, shorter
+newgrp devops                   # a new shell with the group, without logging out
+
+# membership
+usermod -aG devops user         # ADD a supplementary group   ← the safe one
+usermod -G devops user          # REPLACE the whole list      ← the destructive one
+usermod -g devops user          # change the primary group
+gpasswd -d user developers      # remove one membership
+useradd -m -s /bin/bash user    # with a home and a real shell
+
+# permissions
+ls -ld /srv/project             # the directory itself, not its contents
+stat -c '%A %a %U:%G' PATH      # symbolic mode, octal mode, owner:group
+chmod 2770 DIR                  # rwxrws--- : group may create, files inherit the group
+chmod g+s DIR                   # setgid, symbolically
+chmod 1777 DIR                  # sticky: only the owner deletes their own (like /tmp)
+chgrp -R devops DIR             # fix the files that already exist
+chmod -R g+w DIR                # …and their modes
+find DIR \! -group devops       # what setgid did not catch
+
+# umask
+umask                           # the mask in this shell
+su - user -c umask              # the mask a LOGIN shell gets  ← what matters
+umask 002                       # files 664, dirs 775 (collaborative)
+umask 022                       # files 644, dirs 755 (default; no group write)
+grep -r umask /etc/profile /etc/profile.d/ /etc/login.defs ~/.bash_profile ~/.bashrc
+
+# sudo
+sudo -l -U user                 # what sudo would allow that user
+sudo -l -U user /usr/bin/cmd    # one exact command: exit 0 if permitted
+visudo -f /etc/sudoers.d/devops # edit a drop-in, checked on save
+visudo -c                       # verify sudoers and every drop-in
+sudo ls -l /etc/sudoers.d/      # must be 0440 root:root, no dots in the name (the dir itself is 0750)
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>A folder is shared by its group, not by its permissions alone</em> (lab journal <code>linux-05-shared-folder-locks-people-out</code>) — Directories: read lists, write changes, execute enters</li>
+<li><em>A folder is shared by its group, not by its permissions alone</em> (lab journal <code>linux-05-shared-folder-locks-people-out</code>) — What decides a new file’s mode</li>
+</ul>
+<p>Manual pages: <code>man 1 id</code>, <code>man 8 usermod</code>, <code>man 1 chmod</code>, <code>man 8 pam_umask</code>, <code>man 5 sudoers</code>, <code>man 8 sudo</code>.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p><code>usermod -G devops kmorris</code> and <code>usermod -aG devops kmorris</code> differ by one letter. What does
+each do to a user who is currently in <code>wheel</code> and <code>developers</code>?</p>
+<blockquote>
+<p><code>-aG</code> appends: the user ends up in wheel, developers and devops. <code>-G</code> replaces the entire
+supplementary list: the user ends up in devops alone, having silently lost wheel — and with
+it, sudo.</p>
+</blockquote>
+</li>
+<li>
+<p>You added a user to a group and their open SSH session still cannot write to the group’s
+directory. What is wrong, and what is the cheapest fix?</p>
+<blockquote>
+<p>Nothing is wrong. A process’s supplementary groups are a snapshot taken when the session
+started, and nothing re-reads <code>/etc/group</code>. Log in again, or run <code>newgrp devops</code> for a new
+shell. No reboot is involved.</p>
+</blockquote>
+</li>
+<li>
+<p>A shared directory is <code>drwxrwx---  root devops</code>. Group members can create files, but nobody
+else on the team can edit what they create. Which bit is missing, and what exactly does it do?</p>
+<blockquote>
+<p>The setgid bit (<code>chmod g+s</code>, or <code>2770</code>). On a directory it makes new entries take the
+directory’s group instead of the creator’s primary group — and subdirectories inherit the bit
+as well. Files that already exist are unaffected; those need <code>chgrp</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>umask 022</code> the wrong mask for a shared directory, and what does <code>002</code> give you?</p>
+<blockquote>
+<p><code>022</code> removes the group’s write bit, so new files come out <code>644</code>: your teammates can read your
+files and not change them. <code>002</code> removes only other’s write bit — files <code>664</code>, directories
+<code>775</code> — which is read and write for the group.</p>
+</blockquote>
+</li>
+<li>
+<p>You fix a umask by typing <code>umask 002</code>, and the check still fails after a reboot. Where should it
+have gone, and how do you test it the way the grader does?</p>
+<blockquote>
+<p>Into a file the login path reads — here <code>~/.bash_profile</code>, whose existing <code>umask 077</code> line is
+the cause. Test with <code>su - user -c umask</code>: the <code>-</code> makes it a login shell, which is the only
+kind that reads <code>.bash_profile</code>.</p>
+</blockquote>
+</li>
+<li>
+<p><code>sudo -l -U kmorris</code> shows no rules, yet <code>/etc/sudoers.d/devops</code> clearly contains a rule for
+restarting nginx. Name three separate reasons sudo might be ignoring it.</p>
+<blockquote>
+<p>The rule names the wrong principal (<code>%ops</code> rather than <code>%devops</code>, or <code>ops</code> with no <code>%</code> at all,
+which means a user); the file’s permissions are wrong, since sudo silently skips a drop-in
+that is not <code>0440 root:root</code>; or the filename contains a dot or tilde, which <code>@includedir</code>
+skips. A syntax error is the fourth, but that one breaks sudo loudly.</p>
+</blockquote>
+</li>
+<li>
+<p>What makes <code>vi /etc/sudoers</code> a materially riskier command than <code>visudo</code>, on a machine whose only
+root access is through sudo?</p>
+<blockquote>
+<p>A syntax error makes sudo refuse every invocation rather than guess — including the one you
+would use to repair the file. Recovery then needs the console and single-user mode. <code>visudo</code>
+parses before it saves and hands the file back to you instead.</p>
+</blockquote>
+</li>
+<li>
+<p>You are asked to let a group restart nginx. Why is <code>%devops ALL=(ALL) ALL</code> the wrong way to
+satisfy that, even though it works?</p>
+<blockquote>
+<p>It grants unrestricted root to everyone in the group in order to permit one command. The rule
+should name the exact command with its arguments and an absolute path —
+<code>%devops ALL=(root) NOPASSWD: /usr/bin/systemctl restart nginx</code> — which permits that and
+nothing adjacent, not even <code>systemctl stop nginx</code>.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

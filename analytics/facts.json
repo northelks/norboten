@@ -1,0 +1,50 @@
+{
+  "pass_by_lab": {
+    "hardest": "rhcsa-05 (21%)",
+    "easiest": "hello (93%)",
+    "overall": "66%"
+  },
+  "pass_by_difficulty": {
+    "rated_gap": "4 points"
+  },
+  "time_to_solve": {
+    "median_1": "3 min",
+    "median_5": "58 min"
+  },
+  "over_the_clock": {
+    "late": "26%"
+  },
+  "theory_by_topic": {
+    "weakest": "Model Context Protocol",
+    "strongest": "Bash"
+  },
+  "quiz_time_vs_score": {
+    "correlation": "+0.01"
+  },
+  "retention": {
+    "third_month": "69%"
+  },
+  "relations": {
+    "nodes": "141",
+    "text_edges": "248",
+    "hub": "Users and permissions"
+  },
+  "rating_distribution": {
+    "median": "1570",
+    "spread": "150"
+  },
+  "rating_drift": {},
+  "clusters": {
+    "groups": "4"
+  },
+  "summary": {
+    "source": "sample",
+    "learners": 100,
+    "attempts": 6431,
+    "lab_attempts": 5378,
+    "theory_runs": 1053,
+    "pass_rate": "66%",
+    "first": "Oct 2025",
+    "last": "Oct 2026"
+  }
+}

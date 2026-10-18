@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The limits nobody set, and the numbers everybody misreads</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>The limits nobody set, and the numbers everybody misreads</h1>
+  <div class="meta">kernel-performance · 40 minutes · 2729 words</div>
+</header>
+<p>A service falls over under load with <em>Too many open files</em>. Somebody raises the limit in
+<code>/etc/security/limits.conf</code>, logs in, runs <code>ulimit -n</code>, sees the new number, and closes the ticket. The
+next busy afternoon it falls over again, at exactly the same point. Nothing they did was wrong, exactly
+— they changed a real limit, for a place the service never runs.</p>
+<p>Performance problems on a Linux server are mostly this: not exotic kernel behaviour, but limits and
+counters that apply somewhere other than where you looked, and numbers — “free memory”, “load
+average”, a sysctl value — whose meaning is narrower than their name. This journal takes the ones that
+cause real incidents, and every figure in it was measured on a Rocky Linux 10 lab machine with one
+vCPU and 1.4 GiB of RAM.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Find the resource limits a <em>running process</em> actually has, and set them for a systemd service in the
+place that applies to it.</li>
+<li>Read <code>free</code> and say how much memory the machine can really still give out.</li>
+<li>Recognise an OOM kill, tell a cgroup’s limit from the whole machine running out, and read the kernel’s
+report.</li>
+<li>Explain what load average counts, and what it means relative to the number of CPUs.</li>
+<li>Make a sysctl change that survives a reboot, on a machine where <code>tuned</code> also sets sysctls.</li>
+<li>Know which pressure and memory statistics exist on RHEL by default, and which do not.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Limits belong to processes, and are inherited</h3>
+<p>Every process carries a set of resource limits — open files, processes, locked memory, core size — as a
+<strong>soft</strong> value (what is enforced) and a <strong>hard</strong> value (the ceiling the soft value may be raised to
+without privilege). They are inherited from the parent at <code>fork</code>, which is the whole explanation for
+the ticket above: the limit a process has depends on <em>who started it</em>.</p>
+<p>The only reliable way to know is to ask the process:</p>
+<pre><code class="language-console">$ grep &quot;open files&quot; /proc/$(systemctl show -p MainPID --value fdhog)/limits
+Max open files            8192                 8192                 files
+</code></pre>
+<p>On the lab machine, a login shell and a systemd service started with the same numbers:</p>
+<pre><code class="language-console">$ ulimit -n ; ulimit -Hn
+1024
+524288
+$ systemctl show -p LimitNOFILE -p LimitNOFILESoft fdhog
+LimitNOFILE=524288
+LimitNOFILESoft=1024
+</code></pre>
+<p>A soft limit of 1024 open files. A small stand-in server that opens one file per “connection” stopped
+at the same point in both places:</p>
+<pre><code>after 1021 open files: [Errno 24] Too many open files: '/dev/null'
+</code></pre>
+<p>1021, not 1024, because standard input, output and error are three of them.</p>
+<h3>Where each limit is set</h3>
+<p>Two separate systems set limits, for two separate kinds of process:</p>
+<ul>
+<li><strong>PAM</strong> (<code>pam_limits</code>) applies <code>/etc/security/limits.conf</code> and <code>/etc/security/limits.d/*.conf</code> when a
+<em>session</em> starts — an SSH login, <code>su -</code>, <code>sudo -i</code>, a console login.</li>
+<li><strong>systemd</strong> sets the limits of the services it starts, from <code>LimitNOFILE=</code>, <code>LimitNPROC=</code> and friends
+in the unit (and <code>DefaultLimitNOFILE=</code> in <code>/etc/systemd/system.conf</code>). Services are not PAM sessions,
+and <code>limits.conf</code> never touches them.</li>
+</ul>
+<p>Verified on the lab machine, with the service running as <code>webapp</code>:</p>
+<pre><code class="language-console">$ echo &quot;webapp soft nofile 8192&quot; | sudo tee /etc/security/limits.d/90-webapp.conf
+$ sudo su - webapp -c 'ulimit -n'
+8192
+$ sudo systemctl restart fdhog            # User=webapp
+$ sudo journalctl -u fdhog -n 1
+fdhog[3288]: after 1021 open files: [Errno 24] Too many open files: '/dev/null'
+</code></pre>
+<p>The account’s sessions got 8192; the account’s service still stopped at 1021. The limit belongs in the
+unit:</p>
+<pre><code class="language-ini"># /etc/systemd/system/fdhog.service.d/limits.conf
+[Service]
+LimitNOFILE=8192
+</code></pre>
+<pre><code class="language-console">$ sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart fdhog
+$ sudo journalctl -u fdhog -n 1
+fdhog[3371]: held 5000 files fine
+$ grep &quot;open files&quot; /proc/$(systemctl show -p MainPID --value fdhog)/limits
+Max open files            8192                 8192                 files
+</code></pre>
+<p><code>LimitNOFILE=8192</code> sets soft and hard together; <code>LimitNOFILE=8192:524288</code> sets them separately. A
+restart is required: limits are applied when the process starts, and a running process keeps the ones
+it was born with (<code>prlimit --pid PID --nofile=…</code> can change them live, which is a repair, not a
+configuration).</p>
+<h3><code>free</code>: the column that matters is <code>available</code></h3>
+<pre><code>               total        used        free      shared  buff/cache   available
+Mem:            1449         328         992           0         197        1121
+</code></pre>
+<p><code>free</code> is memory doing nothing at all. Linux does not like idle memory and fills it with page cache —
+recently read files — which it gives back the moment a process needs it. So <code>free</code> shrinks on a healthy
+machine, and <code>available</code> is the kernel’s estimate of what could be handed out right now without
+swapping. Measured: reading a 600 MiB file</p>
+<pre><code>Mem:            1449         325         395           0         797        1123
+</code></pre>
+<p>took <code>free</code> from 992 to 395 MiB and left <code>available</code> where it was. Deleting the file gave the cache
+straight back:</p>
+<pre><code>Mem:            1449         325         995           0         197        1123
+</code></pre>
+<p>A machine “down to 395 MiB free” was, in every sense that matters, exactly as healthy as before. Alert
+on <code>available</code>, never on <code>free</code>. (The lab machine has no swap — <code>Swap: 0B 0B 0B</code> — which means there is
+nowhere to push idle anonymous memory, and the OOM killer is the next step after <code>available</code> reaches
+zero.)</p>
+<h3>OOM: the machine’s, or the cgroup’s</h3>
+<p>When memory cannot be found, the kernel’s OOM killer picks a process and kills it with <code>SIGKILL</code>. There
+are two very different situations that produce it, and the kernel’s report says which.</p>
+<p>systemd services run in their own cgroup, and <code>MemoryMax=</code> caps that cgroup. A stand-in service that
+grows a cache by 10 MiB a second, capped at 100 MiB:</p>
+<pre><code class="language-ini">[Service]
+ExecStart=/usr/local/bin/memhog
+MemoryMax=100M
+</code></pre>
+<pre><code class="language-console">$ systemctl status memhog
+× memhog.service
+     Active: failed (Result: oom-kill) since Sun 2026-09-13 08:27:08 UTC; 4s ago
+   Duration: 9.114s
+    Process: 3530 ExecStart=/usr/local/bin/memhog (code=killed, signal=KILL)
+$ sudo journalctl -u memhog -b
+memhog[3530]: cache 90 MiB
+systemd[1]: memhog.service: A process of this unit has been killed by the OOM killer.
+systemd[1]: memhog.service: Main process exited, code=killed, status=9/KILL
+systemd[1]: memhog.service: Failed with result 'oom-kill'.
+systemd[1]: memhog.service: Consumed 45ms CPU time, 100M memory peak.
+</code></pre>
+<p><code>Result: oom-kill</code> and <code>signal=KILL</code>: the program never had a chance to log anything — its last line is
+a normal progress message. The kernel’s own account is in the kernel log:</p>
+<pre><code class="language-console">$ sudo journalctl -k -b | grep -i 'out of memory\|oom-kill'
+kernel: oom-kill:constraint=CONSTRAINT_MEMCG,…,oom_memcg=/system.slice/memhog.service,
+  task_memcg=/system.slice/memhog.service,task=memhog,…
+kernel: Memory cgroup out of memory: Killed process 3530 (memhog) total-vm:115040kB,
+  anon-rss:101988kB, file-rss:5232kB, shmem-rss:0kB, UID:0 …
+</code></pre>
+<p>Read two things. <code>constraint=CONSTRAINT_MEMCG</code> and <em>Memory cgroup out of memory</em> mean a cgroup limit
+was hit — the machine as a whole had plenty (<code>available</code> was over a gigabyte). The same service with no
+<code>MemoryMax=</code>, growing 100 MiB a second, took the whole machine to the edge instead:</p>
+<pre><code>kernel: oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=/,mems_allowed=0,global_oom,
+  task_memcg=/system.slice/memhog.service,task=memhog,pid=1745,uid=0
+kernel: Out of memory: Killed process 1745 (memhog) total-vm:1343852kB, anon-rss:1262068kB, …
+</code></pre>
+<p><code>CONSTRAINT_NONE</code>, <code>global_oom</code>, <em>Out of memory</em>: the machine ran out. Here the killer chose the right
+process because it was by far the biggest; it picks by size and <code>oom_score_adj</code>, not by who is to
+blame, and on a machine with a large, innocent database it can choose that instead. <code>anon-rss:101988kB</code> is the resident
+anonymous memory at the moment of death — the real size of the leak.</p>
+<p>A limit turns “the machine fell over” into “one service was killed and reported why”. Pair it with
+<code>Restart=on-failure</code> and an alert on <code>Result=oom-kill</code>, and a slow leak becomes a restart every few hours
+and a ticket, instead of an outage.</p>
+<h3>Load average counts waiting, not busy</h3>
+<pre><code class="language-console">$ cat /proc/loadavg
+2.25 0.75 0.27 4/147 1599
+$ nproc
+1
+$ vmstat 1 2 | tail -1
+ 3  0      0 1038668   6052 196768    0    0     0     0  109  150 100  0  0  0  0  0
+</code></pre>
+<p>Load average is an exponentially decaying average, over 1, 5 and 15 minutes, of the number of tasks
+that are <strong>running or waiting to run</strong>, plus those in uninterruptible sleep (usually waiting on disk or
+NFS). That snapshot was taken 65 seconds after starting three busy loops on a one-CPU machine:
+<code>vmstat</code>’s first column, <code>r</code>, says three tasks are runnable, CPU is 100% user, and the 1-minute load has
+climbed to 2.25 on its way towards 3 — it lags, by design.</p>
+<p>Two consequences. A load of 3 means something only next to the CPU count: on this machine two tasks are
+always waiting; on a 16-core machine it is idle. And load can be high with idle CPUs, when the tasks are
+stuck in <code>D</code> state on a slow disk — <code>vmstat</code>’s <code>b</code> column and <code>wa</code> counter tell that case apart.</p>
+<h3>sysctls: <code>-w</code> is for now, files are for later, and tuned is also writing</h3>
+<pre><code class="language-console">$ sysctl vm.swappiness
+vm.swappiness = 30
+</code></pre>
+<p>The kernel’s default is 60. On this machine 30 comes from <strong>tuned</strong>, which applies a profile at boot:</p>
+<pre><code class="language-console">$ tuned-adm active
+Current active profile: virtual-guest
+$ grep -v '^#' /usr/lib/tuned/profiles/virtual-guest/tuned.conf | grep -v '^$'
+[main]
+summary=Optimize for running inside a virtual guest
+include=throughput-performance
+[vm]
+dirty_bytes = 30%
+[sysctl]
+vm.swappiness = 30
+</code></pre>
+<p><code>sysctl -w</code> changes the running kernel only. Files in <code>/etc/sysctl.d/</code> are applied at boot, and
+<code>sysctl --system</code> applies them now, in order:</p>
+<pre><code class="language-console">$ sudo sysctl -w vm.dirty_ratio=33
+$ echo &quot;vm.swappiness = 5&quot; | sudo tee /etc/sysctl.d/90-app.conf
+$ sudo sysctl --system
+* Applying /etc/sysctl.d/90-app.conf ...
+* Applying /etc/sysctl.d/99-sysctl.conf ...
+* Applying /etc/sysctl.conf ...
+vm.swappiness = 5
+</code></pre>
+<p>After a reboot:</p>
+<pre><code class="language-console">$ sysctl vm.swappiness vm.dirty_ratio
+vm.swappiness = 5
+vm.dirty_ratio = 30
+</code></pre>
+<p>The file survived; the <code>-w</code> did not — <code>dirty_ratio</code> is back to tuned’s 30, not the kernel’s 20. And the
+file won over tuned because tuned’s <code>reapply_sysctl = 1</code> (in <code>/etc/tuned/tuned-main.conf</code>) re-applies
+the system’s sysctl files after its own profile. On a machine where that has been turned off, the
+profile wins, and a correct <code>sysctl.d</code> file appears to be ignored. When a value will not stick, ask
+<code>tuned-adm active</code> before anything else, and change the profile (a custom profile in
+<code>/etc/tuned/&lt;name&gt;/</code>) rather than fighting it.</p>
+<h3>What is not there by default</h3>
+<p>Pressure stall information (<code>/proc/pressure/cpu|memory|io</code>, and <code>memory.pressure</code> in each cgroup) is the
+best single signal for “is this machine starved” — and on the Rocky 10 lab machine it did not exist:</p>
+<pre><code class="language-console">$ ls /proc/pressure
+ls: cannot access '/proc/pressure': No such file or directory
+</code></pre>
+<p>The kernel config says why: <code>CONFIG_PSI=y</code> and <code>CONFIG_PSI_DEFAULT_DISABLED=y</code> — built in, off unless
+the kernel command line says <code>psi=1</code>.
+Before building monitoring around it, check that it is there; before concluding a guide is wrong, check
+the boot parameter.</p>
+<h2>A failure, walked through</h2>
+<p>A small service opens a file per request. It passed its tests. Under a load test it logs <em>Too many open
+files</em> and stops serving. A colleague has already “raised the limit”.</p>
+<p><strong>1. Look at what the colleague changed.</strong></p>
+<pre><code class="language-console">$ cat /etc/security/limits.d/90-webapp.conf
+webapp soft nofile 8192
+$ sudo su - webapp -c 'ulimit -n'
+8192
+</code></pre>
+<p>Correct, and for sessions. The service is not a session.</p>
+<p><strong>2. Ask the process, not the shell.</strong></p>
+<pre><code class="language-console">$ systemctl show -p User -p LimitNOFILE -p LimitNOFILESoft fdhog
+User=webapp
+LimitNOFILE=524288
+LimitNOFILESoft=1024
+$ sudo journalctl -u fdhog -n 1
+fdhog[3288]: after 1021 open files: [Errno 24] Too many open files: '/dev/null'
+</code></pre>
+<p>Soft limit 1024 from systemd; three descriptors already used for stdio; 1021 more and <code>EMFILE</code>. The
+number in the error log and the number in the unit agree, which is the proof.</p>
+<p><strong>3. Set it where it applies, and restart.</strong></p>
+<pre><code class="language-console">$ sudo mkdir -p /etc/systemd/system/fdhog.service.d
+$ printf '[Service]\nLimitNOFILE=8192\n' | sudo tee /etc/systemd/system/fdhog.service.d/limits.conf
+$ sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart fdhog
+$ sudo journalctl -u fdhog -n 1
+fdhog[3371]: held 5000 files fine
+$ pid=$(systemctl show -p MainPID --value fdhog)
+$ grep &quot;open files&quot; /proc/$pid/limits ; sudo ls /proc/$pid/fd | wc -l
+Max open files            8192                 8192                 files
+5003
+</code></pre>
+<p>5000 held files plus stdio, under a limit of 8192.</p>
+<p><strong>4. Check the next limit before the load test finds it.</strong> Raising one ceiling moves the failure to the
+next one. For this service the next is memory: each connection costs something. Cap it, so a runaway
+becomes a clean kill rather than a machine-wide OOM:</p>
+<pre><code class="language-ini">[Service]
+LimitNOFILE=8192
+MemoryMax=300M
+Restart=on-failure
+</code></pre>
+<p>and confirm what an OOM looks like before production shows you: <code>systemctl status</code> says
+<code>Result: oom-kill</code>, and <code>journalctl -k</code> says <code>Memory cgroup out of memory</code> with the cgroup’s name.</p>
+<p><strong>5. Leave the <code>limits.d</code> file or remove it — but know what it is for.</strong> It is correct for people who
+log in as <code>webapp</code> and run things by hand. It never affected the service.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Raising <code>limits.conf</code> for a service.</strong> PAM applies it to login sessions; systemd services never see
+it. Set <code>LimitNOFILE=</code> in the unit.</p>
+<p><strong>Checking <code>ulimit -n</code> in your shell to verify a service’s limit.</strong> Your shell’s limits came from your
+session. Read <code>/proc/PID/limits</code> of the service’s main process.</p>
+<p><strong>Changing the unit and not restarting.</strong> Limits are fixed when the process starts. <code>daemon-reload</code> plus
+<code>restart</code>, then read <code>/proc/PID/limits</code> again.</p>
+<p><strong>Alerting on <code>free</code> memory.</strong> Page cache makes <code>free</code> fall on every healthy machine. Measured, reading
+one large file cut <code>free</code> by 600 MiB and left <code>available</code> unchanged. Watch <code>available</code>.</p>
+<p><strong>Reading an OOM kill in the application log.</strong> A <code>SIGKILL</code> leaves no last words. The evidence is
+<code>Result: oom-kill</code> in <code>systemctl status</code> and the kernel’s report in <code>journalctl -k</code>.</p>
+<p><strong>Assuming an OOM means the machine ran out.</strong> <code>CONSTRAINT_MEMCG</code> / <em>Memory cgroup out of memory</em> is a
+cgroup limit, often with plenty of memory free elsewhere. Raise the limit or fix the leak — not the
+machine.</p>
+<p><strong>Comparing load average without the CPU count.</strong> 2.25 on one CPU is a queue; on sixteen it is idle.
+And high load with idle CPUs is tasks waiting on I/O — look at <code>vmstat</code>’s <code>b</code> and <code>wa</code>.</p>
+<p><strong><code>sysctl -w</code> as a fix.</strong> Gone at the next boot; measured, <code>dirty_ratio</code> reverted to the tuned profile’s
+value. Put it in <code>/etc/sysctl.d/</code>, apply with <code>sysctl --system</code>.</p>
+<p><strong>Fighting tuned with sysctl files.</strong> It works only while tuned re-applies system sysctls
+(<code>reapply_sysctl = 1</code>). Check <code>tuned-adm active</code>; change or create a profile instead.</p>
+<p><strong>Building alerts on <code>/proc/pressure</code> without checking it exists.</strong> On RHEL-family kernels PSI is off
+unless the command line has <code>psi=1</code>.</p>
+<h2>Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“Too many open files” under load, fine in testing</td>
+<td>the process’s <code>RLIMIT_NOFILE</code>, inherited from the unit or the shell</td>
+<td><code>cat /proc/PID/limits</code>; <code>LimitNOFILE=</code> in the unit</td>
+</tr>
+<tr>
+<td>a limit set in <code>limits.conf</code> has no effect on a service</td>
+<td><code>pam_limits</code> applies to logins; units take limits from their own settings</td>
+<td><code>systemctl show -p LimitNOFILE UNIT</code></td>
+</tr>
+<tr>
+<td>a process is killed with no message in its own log</td>
+<td>the OOM killer — the machine’s, or its cgroup’s <code>memory.max</code></td>
+<td><code>journalctl -k -g oom</code>; <code>memory.events</code> in the unit’s cgroup</td>
+</tr>
+<tr>
+<td><code>free</code> shows almost no free memory on a healthy machine</td>
+<td>page cache: <code>available</code>, not <code>free</code>, is what can be used</td>
+<td><code>free -h</code>, the <code>available</code> column</td>
+</tr>
+<tr>
+<td>load average is high and CPUs are idle</td>
+<td>tasks waiting on I/O count towards load</td>
+<td><code>vmstat 1</code> (<code>b</code>, <code>wa</code>); processes in state <code>D</code> in <code>ps -eo stat,comm</code></td>
+</tr>
+<tr>
+<td>a sysctl reverts after reboot, or after a daemon starts</td>
+<td>set with <code>-w</code> only, or overwritten by a tuned profile</td>
+<td><code>sysctl NAME</code>; <code>/etc/sysctl.d/</code>; <code>tuned-adm active</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># limits
+cat /proc/PID/limits                                  # what a process ACTUALLY has
+prlimit --pid PID                                     # the same, and --nofile=SOFT:HARD to change it live
+systemctl show -p LimitNOFILE -p LimitNOFILESoft UNIT
+# [Service] LimitNOFILE=8192   (soft=hard)   LimitNOFILE=8192:524288   (soft:hard)
+# sessions: /etc/security/limits.d/*.conf (PAM)   services: the unit (systemd)   never both
+ls /proc/PID/fd | wc -l                               # how many it holds now
+
+# memory
+free -m                                               # watch &quot;available&quot;, not &quot;free&quot;
+ps -eo pid,rss,comm --sort=-rss | head                # biggest resident sets
+systemctl show -p MemoryPeak -p MemoryCurrent UNIT
+# [Service] MemoryMax=300M   → Result: oom-kill instead of a machine-wide OOM
+journalctl -k -b | grep -i 'out of memory\|oom-kill'  # CONSTRAINT_MEMCG = a cgroup; CONSTRAINT_NONE = the machine
+
+# CPU and load
+cat /proc/loadavg ; nproc                             # load means nothing without the CPU count
+vmstat 1 5                                            # r runnable, b blocked, us/sy/id/wa
+top -o %CPU ; pidstat 1                               # who
+
+# sysctl
+sysctl KEY ; sysctl -w KEY=VALUE                      # now only
+echo &quot;KEY = VALUE&quot; &gt; /etc/sysctl.d/90-app.conf ; sysctl --system   # at boot, and now
+tuned-adm active ; tuned-adm list                     # tuned sets sysctls too
+grep reapply_sysctl /etc/tuned/tuned-main.conf        # 1: sysctl.d files win after the profile
+
+# pressure (if enabled)
+ls /proc/pressure || grep -o 'psi=[01]' /proc/cmdline
+</code></pre>
+<h2>Exercises</h2>
+<ol>
+<li>Start a program under <code>ulimit -n 64</code> that opens files until it fails; read its <code>/proc/PID/limits</code>
+while it runs.</li>
+<li>Put <code>LimitNOFILE=</code> in a unit’s drop-in and compare <code>systemctl show</code> with <code>/proc/PID/limits</code> of the
+running service.</li>
+<li>Run a memory hog in a transient unit with <code>systemd-run -p MemoryMax=100M</code>; find the kill in the
+kernel log and in the unit’s <code>memory.events</code>.</li>
+<li>Watch <code>free -h</code> while reading a large file twice; which columns move?</li>
+<li>Set a sysctl with <code>-w</code>, reboot, and read it; then set it in <code>/etc/sysctl.d/</code> and reboot again.</li>
+</ol>
+<h2>Sources</h2>
+<ul>
+<li><code>man 2 setrlimit</code>, <code>man 5 limits.conf</code>, <code>man 5 systemd.exec</code> (the <code>Limit*=</code> settings).</li>
+<li><code>man 5 proc</code> — <code>/proc/PID/limits</code>, <code>/proc/meminfo</code>, <code>/proc/loadavg</code>.</li>
+<li><code>man 5 systemd.resource-control</code> — <code>MemoryMax=</code>, <code>MemoryHigh=</code>, <code>TasksMax=</code>.</li>
+<li>The kernel’s cgroup v2 guide: https://docs.kernel.org/admin-guide/cgroup-v2.html</li>
+<li>The kernel’s <code>vm</code> sysctl reference: https://docs.kernel.org/admin-guide/sysctl/vm.html</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A service fails with <em>Too many open files</em> after <code>webapp soft nofile 8192</code> was added to
+<code>/etc/security/limits.d/</code>, and <code>su - webapp -c 'ulimit -n'</code> prints 8192. Why is the service still
+limited, and where does the fix go?</p>
+<blockquote>
+<p><code>limits.d</code> is applied by PAM to login sessions; a systemd service is not a session and inherits its
+limits from systemd. Set <code>LimitNOFILE=</code> in the unit (a drop-in), <code>daemon-reload</code>, restart, and check
+<code>/proc/PID/limits</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>With a soft limit of 1024, why did the test program fail after 1021 open files?</p>
+<blockquote>
+<p>Standard input, output and error already occupy three descriptors, so only 1021 more fit under 1024.</p>
+</blockquote>
+</li>
+<li>
+<p><code>free -m</code> shows 395 MiB free and 1123 MiB available on a 1.4 GiB machine. Is it short of memory?</p>
+<blockquote>
+<p>No. The gap is page cache, which the kernel reclaims on demand; <code>available</code> estimates what can be
+allocated without swapping. On the lab machine reading a 600 MiB file produced exactly this picture
+with <code>available</code> unchanged.</p>
+</blockquote>
+</li>
+<li>
+<p><code>systemctl status</code> shows <code>Result: oom-kill</code> and the application’s log ends with a normal message.
+Where is the evidence of what happened, and how do you tell a cgroup limit from the whole machine
+running out?</p>
+<blockquote>
+<p>The process was killed with <code>SIGKILL</code>, so it logged nothing. The kernel log (<code>journalctl -k</code>) has
+the OOM report: <code>constraint=CONSTRAINT_MEMCG</code> and <em>Memory cgroup out of memory</em> name a cgroup that hit
+its limit (for example <code>MemoryMax=</code>); the machine-wide case reports <code>CONSTRAINT_NONE</code> and <em>Out of
+memory</em>.</p>
+</blockquote>
+</li>
+<li>
+<p>A one-CPU machine shows a 1-minute load average of 2.25. What does that mean, and when can load be
+high while the CPUs are idle?</p>
+<blockquote>
+<p>On average more than two tasks were runnable or in uninterruptible sleep, on a machine that can run
+one at a time — a queue. Load also counts tasks blocked in uninterruptible I/O (<code>D</code> state), so a slow
+disk or NFS mount raises load with idle CPUs; <code>vmstat</code>’s <code>b</code> and <code>wa</code> show it.</p>
+</blockquote>
+</li>
+<li>
+<p>You set <code>vm.dirty_ratio=33</code> with <code>sysctl -w</code> and it is 30 after a reboot. Where did 30 come from, and
+how do you make a value persistent?</p>
+<blockquote>
+<p>From the active tuned profile (virtual-guest sets <code>dirty_bytes = 30%</code>); <code>sysctl -w</code> only changes the
+running kernel. Put the value in a file under <code>/etc/sysctl.d/</code> and apply with <code>sysctl --system</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>A value in <code>/etc/sysctl.d/</code> is correct and still not in effect after boot. What should you check?</p>
+<blockquote>
+<p>Whether tuned is applying a profile that sets the same key after the system files — <code>tuned-adm active</code>, and <code>reapply_sysctl</code> in <code>/etc/tuned/tuned-main.conf</code>. With <code>reapply_sysctl = 1</code> the system
+files win; otherwise change or create a tuned profile.</p>
+</blockquote>
+</li>
+<li>
+<p>A monitoring guide says to alert on <code>/proc/pressure/memory</code>. On a RHEL-family server the file does
+not exist. Is the guide wrong?</p>
+<blockquote>
+<p>Not necessarily: the kernel supports PSI but RHEL-family kernels leave it disabled unless booted with
+<code>psi=1</code>. Check <code>/proc/cmdline</code> and decide whether to enable it before relying on it.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

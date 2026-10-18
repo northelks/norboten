@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Answers From Last Year — Claude Code&#39;s MCP scopes, and which one wins · Norboten</title>
+<meta name="description" content="Claude Code reads MCP server definitions from three places, and the same name can appear in more than one. The repository&#39;s .mcp.json is the one everybody revie">
+<link rel="canonical" href="https://norboten.org/journals/mcp-06-the-answers-from-last-year/"><meta property="og:title" content="The Answers From Last Year — Claude Code&#39;s MCP scopes, and which one wins · Norboten">
+<meta property="og:description" content="Claude Code reads MCP server definitions from three places, and the same name can appear in more than one. The repository&#39;s .mcp.json is the one everybody revie">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/mcp-06-the-answers-from-last-year/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Answers From Last Year — Claude Code&#39;s MCP scopes, and which one wins · Norboten">
+<meta name="twitter:description" content="Claude Code reads MCP server definitions from three places, and the same name can appear in more than one. The repository&#39;s .mcp.json is the one everybody revie">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "The Answers From Last Year \u2014 Claude Code\u0027s MCP scopes, and which one wins",
+  "description": "Claude Code reads MCP server definitions from three places, and the same name can appear in more than one. The repository\u0027s .mcp.json is the one everybody revie",
+  "url": "https://norboten.org/journals/mcp-06-the-answers-from-last-year/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1026,
+  "timeRequired": "PT25M",
+  "about": ["Model Context Protocol", "Claude Code"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Answers From Last Year</div>
+    <h1>The Answers From Last Year — Claude Code&#39;s MCP scopes, and which one wins</h1>
+    <p class="muted">
+      25 minutes' reading · 1026 words ·<span class="tag">Model Context Protocol</span><span class="tag">Claude Code</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 77 words</title><rect x="0.0" y="0" width="47.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 369 words</title><rect x="50.0" y="0" width="225.3" height="30" rx="4" fill="#1d2a23"/><text x="58.0" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 366 words</title><rect x="278.4" y="0" width="223.5" height="30" rx="4" fill="#4ade80"/><text x="286.4" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 89 words</title><rect x="504.9" y="0" width="54.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 60 words</title><rect x="562.2" y="0" width="36.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 81 words</title><rect x="601.9" y="0" width="49.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 173 words</title><rect x="654.3" y="0" width="105.7" height="30" rx="4" fill="#1d2a23"/><text x="662.3" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/mcp-06-the-answers-from-last-year/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Claude Code reads MCP server definitions from three places, and the same name can appear in more than
+one. The repository's <code>.mcp.json</code> is the one everybody reviews; the others live in <code>~/.claude.json</code>,
+outside any repository, where a colleague's experiment from last year can sit unnoticed for ever. When
+two places define <code>docs</code>, one wins, and it is not necessarily the file you are looking at. This lab's
+team kept reading a correct <code>.mcp.json</code> while their answers came from somewhere else — and, while
+looking, found the service key committed in the file they were reading.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Name Claude Code's three MCP scopes, where each is stored, and which wins for a project.</li>
+<li>Find every definition of a server name and the one in effect, with <code>claude mcp</code>.</li>
+<li>Remove a definition from the right scope without touching the others.</li>
+<li>Keep a server's secret out of <code>.mcp.json</code> with variable expansion, and know what it does when unset.</li>
+<li>Say what is left to do when a secret has already been committed.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="three-scopes">Three scopes</h3>
+<ul>
+<li><strong>project</strong> — <code>.mcp.json</code> at the repository's root, committed and shared: what the team agreed on.</li>
+<li><strong>local</strong> — <code>~/.claude.json</code>, under <code>projects[&quot;/path/to/repo&quot;].mcpServers</code>: yours, for this project
+only, never committed. <code>claude mcp add</code> writes here by default.</li>
+<li><strong>user</strong> — <code>~/.claude.json</code>, top-level <code>mcpServers</code>: yours, for every project.</li>
+</ul>
+<h3 id="which-one-wins">Which one wins</h3>
+<p>For a name defined in more than one scope, the more personal definition wins for this project: local,
+then project, then user. Measured with Claude Code 2.1.270 in this lab's image, with a server named
+<code>docs</code> defined in each scope and a tool that says which one it is:</p>
+<pre><code class="language-text">all three defined        → I am LOCAL
+local and project        → I am LOCAL
+project and user         → I am PROJECT
+project only             → I am PROJECT
+</code></pre>
+<p>So a local <code>docs</code> shadows the team's, silently, in every run in that directory — interactive or
+headless, the job included. That is useful when you are testing a new server, and a trap once you forget
+it is there.</p>
+<h3 id="seeing-it">Seeing it</h3>
+<p><code>claude mcp list</code> shows the definitions in effect and their health, and — when a name is defined in
+several scopes with different commands — a <em>Conflicting scopes</em> diagnostic naming both, with the
+command to remove either. <code>claude mcp get docs</code> shows the scope a definition came from.
+<code>claude mcp remove docs -s local</code> removes one scope's definition and leaves the others.</p>
+<h3 id="secrets-var-in-mcpjson">Secrets: <code>${VAR}</code> in <code>.mcp.json</code></h3>
+<p><code>.mcp.json</code> is committed, so a key written into it is published to everyone with the repository, and
+stays in its history. Claude Code expands <code>${VAR}</code> (and <code>${VAR:-default}</code>) in a server's <code>command</code>,
+<code>args</code>, <code>env</code>, <code>url</code> and <code>headers</code> from its own environment. The job loads the key from
+<code>~/.config/handbook/env</code> before starting <code>claude</code>, so the server still gets it. When the variable is
+missing, <code>claude mcp list</code> warns: <em>Missing environment variables: DOCS_API_KEY</em>.</p>
+<h3 id="a-committed-secret-is-a-burned-secret">A committed secret is a burned secret</h3>
+<p>Removing the key from the file and committing fixes the next clone. Every existing clone, fork and
+backup still has it in history; the only real fix is to rotate the key at the service. The grader
+checks the files and the latest commit; a person has to do the rest.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the lab's container (Ubuntu 26.04, Claude Code 2.1.270; JSON compacted, long lines
+trimmed). What the team reviewed:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>~/handbook-bot/.mcp.json
+<span class="hl-go">{"mcpServers": {"docs": {"type": "stdio", "command": "python3",</span>
+<span class="hl-go">  "args": ["/opt/docs-mcp/docs_mcp.py", "--edition", "3"],</span>
+<span class="hl-go">  "env": {"DOCS_API_KEY": "hb_59322a1e5347785048e7a5717df62fcf"}}}}</span>
+</code></pre>
+
+<p>What Claude Code runs, in that directory:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>claude<span class="hl-w"> </span>mcp<span class="hl-w"> </span>list
+<span class="hl-go">docs: python3 /opt/docs-mcp/docs_mcp.py --edition 1 - ✔ Connected</span>
+
+<span class="hl-go">MCP config diagnostics ⚠</span>
+<span class="hl-go">[Conflicting scopes]</span>
+<span class="hl-go">├ Server "docs" is defined in multiple scopes with different endpoints: project (python3</span>
+<span class="hl-go">│ /opt/docs-mcp/docs_mcp.py --edition 3), local (python3 /opt/docs-mcp/docs_mcp.py --edition 1). ...</span>
+<span class="hl-go">└ Keep the correct endpoint and remove the others: `claude mcp remove docs -s project` or</span>
+<span class="hl-go">  `claude mcp remove docs -s local`</span>
+<span class="hl-gp">$ </span>claude<span class="hl-w"> </span>mcp<span class="hl-w"> </span>get<span class="hl-w"> </span>docs
+<span class="hl-go">docs:</span>
+<span class="hl-go">  Scope: Local config (private to you in this project)</span>
+<span class="hl-go">  Args: /opt/docs-mcp/docs_mcp.py --edition 1</span>
+<span class="hl-gp">$ </span>jq<span class="hl-w"> </span><span class="hl-s1">'.projects["/home/learner/handbook-bot"].mcpServers'</span><span class="hl-w"> </span>~/.claude.json
+<span class="hl-go">{"docs": {"type": "stdio", "command": "python3", "args": ["/opt/docs-mcp/docs_mcp.py", "--edition", "1"], ...}}</span>
+</code></pre>
+
+<p>Edition 1 is last year's. Remove the local definition — and only that one:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>claude<span class="hl-w"> </span>mcp<span class="hl-w"> </span>remove<span class="hl-w"> </span>docs<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-nb">local</span>
+<span class="hl-go">Removed MCP server docs from local config</span>
+<span class="hl-go">File modified: /home/learner/.claude.json [project: /home/learner/handbook-bot]</span>
+<span class="hl-gp">$ </span>claude<span class="hl-w"> </span>mcp<span class="hl-w"> </span>list
+<span class="hl-go">docs: python3 /opt/docs-mcp/docs_mcp.py --edition 3 - ⏸ Pending approval (run `claude` to approve)</span>
+</code></pre>
+
+<p>(<em>Pending approval</em> is the interactive prompt for a project server; the headless job starts it.) Then
+the key: <code>&quot;DOCS_API_KEY&quot;: &quot;${DOCS_API_KEY}&quot;</code> in <code>.mcp.json</code>. Without the variable set, Claude Code says
+so:</p>
+<pre><code class="language-text">[Contains warnings] Project config (shared via .mcp.json)
+ └ [Warning] [docs] mcpServers.docs: Missing environment variables: DOCS_API_KEY
+</code></pre>
+<p>and with it loaded the way the job loads it, the warning is gone. Commit, and the latest commit is
+clean — the first one is not:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>git<span class="hl-w"> </span>commit<span class="hl-w"> </span>-qam<span class="hl-w"> </span><span class="hl-s2">"docs: take the key from the environment"</span><span class="hl-p">;</span><span class="hl-w"> </span>git<span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span>hb_<span class="hl-w"> </span>HEAD<span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"no key in HEAD"</span>
+<span class="hl-go">no key in HEAD</span>
+<span class="hl-gp">$ </span>git<span class="hl-w"> </span>log<span class="hl-w"> </span>--oneline<span class="hl-w"> </span>-S<span class="hl-w"> </span>hb_
+<span class="hl-go">5e5327b docs: take the key from the environment</span>
+<span class="hl-go">b45a2eb handbook-bot: the docs server, edition 3</span>
+</code></pre>
+
+<p><code>git log -S</code> lists both commits that changed the key's count — the one that removed it here, and the
+first one that added it. The job, afterwards:</p>
+<pre><code class="language-text">search: [handbook edition 3] Credential rotation: Database credentials are rotated every 90 days; the
+security lead approves each rotation.
+</code></pre>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong>Editing <code>.mcp.json</code> again.</strong> It was right; the answer comes from another scope.</li>
+<li><strong>Changing the local definition to edition 3.</strong> The job answers correctly, and the next change to the
+team's <code>.mcp.json</code> is silently ignored on this machine again.</li>
+<li><strong><code>claude mcp remove docs</code> without <code>-s</code>.</strong> Know which definition you are removing; the diagnostic names
+both.</li>
+<li><strong>Deleting <code>~/.claude.json</code>.</strong> It holds much more than MCP servers: trust decisions, project history.</li>
+<li><strong>Removing the key from the file and calling it done.</strong> It is in the history; rotate it.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre><code class="language-text">claude mcp list                         # in effect, with health and scope conflicts
+claude mcp get NAME                     # one definition and its scope
+claude mcp remove NAME -s local|project|user
+jq '.projects[env.PWD].mcpServers, .mcpServers' ~/.claude.json    # local, then user
+&quot;env&quot;: {&quot;KEY&quot;: &quot;${KEY}&quot;}                # in .mcp.json; ${KEY:-default} for a fallback
+git log --oneline -S SECRET             # every commit that added or removed it
+</code></pre>
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>The Model Context Protocol</em> (topic journal <code>mcp</code>) — Clients, scopes and secrets</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://code.claude.com/docs/en/mcp</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>The Model Context Protocol</em> (<code>mcp</code>), <em>Claude Code in a job</em> (<code>claude-code</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Where are Claude Code's local-scope and user-scope MCP servers stored?</p>
+<blockquote>
+<p>Both in <code>~/.claude.json</code>: local ones under <code>projects[&quot;&lt;project path&gt;&quot;].mcpServers</code>, user ones in the
+top-level <code>mcpServers</code>.</p>
+</blockquote>
+</li>
+<li>
+<p><code>docs</code> is defined in <code>.mcp.json</code> and in the user scope. Which runs in the project?</p>
+<blockquote>
+<p>The project's — project beats user; a local-scope definition would beat both.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you find out that a name is defined in more than one scope?</p>
+<blockquote>
+<p><code>claude mcp list</code> reports a <em>Conflicting scopes</em> diagnostic naming each scope's command, and
+<code>claude mcp get NAME</code> shows the scope of the one in effect.</p>
+</blockquote>
+</li>
+<li>
+<p>What does Claude Code do with <code>${DOCS_API_KEY}</code> in <code>.mcp.json</code> when the variable is not set?</p>
+<blockquote>
+<p>It cannot expand it and warns about a missing environment variable in <code>claude mcp list</code>; set it in
+Claude Code's environment, or give a default with <code>${DOCS_API_KEY:-…}</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>The key is out of the latest commit. What is still to do, and why?</p>
+<blockquote>
+<p>Rotate the key: every clone and the repository's history still contain it.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

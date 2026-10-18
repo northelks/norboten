@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Text is bytes plus an encoding, and nobody else knows which one</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Text is bytes plus an encoding, and nobody else knows which one</h1>
+  <div class="meta">python, linux-basics · 35 minutes · 1460 words</div>
+</header>
+<p>A file on disk is bytes. “Text” is what you get when bytes are decoded with an encoding, and the
+file does not carry that encoding anywhere: not in its bytes, not in its name, not in its metadata.
+Somebody has to know. In this lab the somebody is a README and a naming convention — the old Windows
+tool writes cp1252 and says so in the file name — and the program ignores both, so it decodes
+everything with whatever the machine’s locale happens to be.</p>
+<p>That works for years, because most names are ASCII and ASCII is a subset of both. It stops working
+the day a member called Ruiz Peña joins. The interesting part is what happens next: the quick fix
+everyone reaches for, <code>errors=&quot;ignore&quot;</code>, makes the crash go away and turns the name into <em>Ruiz Pea</em>.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Say what <code>open()</code> uses as an encoding when you do not give it one, and why that is a machine
+property rather than a file property.</li>
+<li>Read a UnicodeDecodeError: which codec, which byte, which position.</li>
+<li>Choose an encoding per file from what is actually known about it, and say why <code>errors=&quot;ignore&quot;</code>
+and <code>errors=&quot;replace&quot;</code> are data loss rather than error handling.</li>
+<li>State the encoding when writing, so that output does not depend on the caller’s locale.</li>
+<li>Write the output file atomically, so a failed run leaves the previous summary in place.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3><code>open()</code> has an encoding, whether or not you name one</h3>
+<p><code>open(path)</code> in text mode decodes bytes with <code>locale.getpreferredencoding(False)</code> — the encoding of
+the machine’s locale at the time the process started. The same program on the same file gives
+different results on a machine with <code>LANG=en_GB.UTF-8</code>, on one with <code>LC_ALL=C</code>, and on a Windows box
+with cp1252. Nothing about the file is involved.</p>
+<p>Modern Linux distributions make this look harmless: Ubuntu’s default locale is UTF-8, and Python
+even coerces the bare <code>C</code> locale to <code>C.UTF-8</code> (PEP 538) so that a service started by systemd without
+<code>LANG</code> still gets UTF-8. Under <code>LC_ALL=C</code> with that coercion turned off, the encoding is ASCII and
+<em>any</em> non-ASCII byte fails. <code>PYTHONUTF8=1</code> (UTF-8 mode) is the other direction: it ignores the locale
+and uses UTF-8 everywhere.</p>
+<p>The lesson is not “which default does my Python use”, but that a default exists at all. A program
+that reads files written by other systems states the encoding for each one.</p>
+<h3>Reading the error</h3>
+<pre><code>UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf1 in position 17: invalid continuation byte
+</code></pre>
+<p>Four facts: the codec that was used (<code>utf-8</code>), the byte it choked on (<code>0xf1</code>), where it is
+(position 17 of that read), and why (in UTF-8, <code>0xf1</code> starts a four-byte sequence and what followed
+was not a continuation byte). <code>0xf1</code> is <code>ñ</code> in cp1252 and in latin-1. <code>file</code> says the same thing
+more loosely: <code>ISO-8859 text</code> for the old export, <code>Unicode text, UTF-8 text</code> for the new one.</p>
+<h3>The <code>errors=</code> argument is a policy, not a fix</h3>
+<p><code>open(..., errors=…)</code> decides what happens to bytes that do not decode:</p>
+<ul>
+<li><code>strict</code> (the default) raises — the program stops and somebody finds out;</li>
+<li><code>ignore</code> drops them — <code>Ruiz Peña</code> becomes <code>Ruiz Pea</code>, silently, for ever;</li>
+<li><code>replace</code> substitutes U+FFFD — <code>Ruiz Pe�a</code>, equally silently;</li>
+<li><code>surrogateescape</code> keeps the raw bytes in a lossless but non-text form, for round-tripping data you
+do not have to interpret (file names, for example).</li>
+</ul>
+<p>None of them makes a wrongly decoded file right. They decide what to lose. The right question is
+which encoding the file is in, and here the file name answers it.</p>
+<h3>Writing has the same problem, in the other direction</h3>
+<p><code>open(path, &quot;w&quot;)</code> encodes with the locale’s encoding too, and raises <code>UnicodeEncodeError</code> on a
+character it cannot represent. So a summary written on a machine with a non-UTF-8 locale is either a
+crash or a file in an encoding nobody expected — and this lab’s grader checks exactly that, by
+running the report with <code>LC_ALL=C</code>. <code>encoding=&quot;utf-8&quot;</code> on the way out makes the output a property of
+the program rather than of the machine.</p>
+<p><code>csv</code> needs one more thing: open the file with <code>newline=&quot;&quot;</code>, so the module controls line endings.
+(The summary here therefore ends up with the CSV standard’s CRLF line terminators, which is what
+<code>file</code> reports.)</p>
+<h3>A failed run should not destroy the last good summary</h3>
+<p><code>open(OUT, &quot;w&quot;)</code> truncates before anything is written, so a run that fails half way leaves an empty
+summary. Writing to a temporary file in the same directory and <code>os.replace()</code>-ing it over the target
+is atomic, so readers see the old file or the new one and never a partial one — the same shape as
+<code>mv</code> in a shell script.</p>
+<h2>A failure, walked through</h2>
+<p>Run on the lab’s own machine: <code>ubuntu-26.04-devops</code>, Python 3.14.4, before any change.</p>
+<p>The unit’s run, and the last lines of its traceback:</p>
+<pre><code class="language-console">$ sudo systemctl start members-report.service; sudo journalctl -u members-report.service -b --no-pager -o cat | tail -5
+  File &quot;&lt;frozen codecs&gt;&quot;, line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf1 in position 17: invalid continuation byte
+members-report.service: Main process exited, code=exited, status=1/FAILURE
+members-report.service: Failed with result 'exit-code'.
+Failed to start members-report.service - Members per city, for the membership office.
+</code></pre>
+<p>What the directory says about itself, and what <code>file</code> sees:</p>
+<pre><code class="language-console">$ ls /srv/members; cat /srv/members/README
+README
+legacy-2026-09.cp1252.csv
+new-2026-09.csv
+Exports in this directory
+-------------------------
+*.cp1252.csv  the old Windows tool (code page 1252)
+*.csv         everything else: UTF-8
+$ file /srv/members/*.csv
+/srv/members/legacy-2026-09.cp1252.csv: ISO-8859 text
+/srv/members/new-2026-09.csv:           Unicode text, UTF-8 text
+</code></pre>
+<p>The same file, read four ways — the default, the right encoding, and the two lenient ones:</p>
+<pre><code class="language-console">$ python3 -c &quot;print(open('/srv/members/legacy-2026-09.cp1252.csv', encoding='utf-8').read())&quot; 2&gt;&amp;1 | tail -2
+  File &quot;&lt;frozen codecs&gt;&quot;, line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf1 in position 17: invalid continuation byte
+$ python3 -c &quot;print(open('/srv/members/legacy-2026-09.cp1252.csv', encoding='cp1252').read())&quot;
+name,city
+Ruiz Peña,Málaga
+Anaïs Fabre,Nîmes
+$ python3 -c &quot;print(open('/srv/members/legacy-2026-09.cp1252.csv', encoding='utf-8', errors='ignore').read())&quot;
+name,city
+Ruiz Pea,Mlaga
+Anas Fabre,Nmes
+$ python3 -c &quot;print(open('/srv/members/legacy-2026-09.cp1252.csv', encoding='utf-8', errors='replace').read())&quot;
+name,city
+Ruiz Pe�a,M�laga
+Ana�s Fabre,N�mes
+</code></pre>
+<p>That third output is the “fix” that shipped once: no error, and every accented letter gone. The
+locale that decides the default is visible from Python, and a service gets the same one here:</p>
+<pre><code class="language-console">$ python3 -c &quot;import locale,sys; print(locale.getpreferredencoding(False), sys.getdefaultencoding())&quot;
+UTF-8 utf-8
+$ sudo systemd-run --wait --pipe -q python3 -c &quot;import locale; print('service locale encoding:', locale.getpreferredencoding(False))&quot;
+service locale encoding: UTF-8
+</code></pre>
+<p>Take the locale away and the same program on the same UTF-8 file fails, in both directions:</p>
+<pre><code class="language-console">$ LC_ALL=C PYTHONCOERCECLOCALE=0 PYTHONUTF8=0 python3 /tmp/show.py /srv/members/new-2026-09.csv 2&gt;&amp;1 | tail -3
+    return codecs.ascii_decode(input, self.errors)[0]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'ascii' codec can't decode byte 0xc3 in position 28: ordinal not in range(128)
+$ LC_ALL=C PYTHONCOERCECLOCALE=0 PYTHONUTF8=0 python3 /tmp/write.py /tmp/out.txt 2&gt;&amp;1 | tail -2
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'ascii' codec can't encode character '\xfc' in position 1: ordinal not in range(128)
+</code></pre>
+<p>(<code>/tmp/show.py</code> prints a line of the file it is given; <code>/tmp/write.py</code> writes <code>München</code> to a file.)</p>
+<p>After the fix — an encoding chosen per file from its name, <code>encoding=&quot;utf-8&quot;</code> on the output, and the
+summary written through a temporary file — both exports are read and every name survives:</p>
+<pre><code class="language-console">$ sudo systemctl start members-report.service; sudo cat /var/lib/members/summary.csv
+city,members
+Kraków,1
+Málaga,1
+München,1
+Nîmes,1
+names,Ruiz Peña Anaïs Fabre Anna Kowalska Jonas Müller
+$ sudo file /var/lib/members/summary.csv
+/var/lib/members/summary.csv: Unicode text, UTF-8 text, with CRLF line terminators
+</code></pre>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong><code>errors=&quot;ignore&quot;</code> or <code>errors=&quot;replace&quot;</code>.</strong> The crash goes away and the data is wrong forever.
+The lab’s second check exists to catch exactly this.</li>
+<li><strong>Decoding everything as latin-1 “because it never fails”.</strong> True and useless: latin-1 maps every
+byte to a character, so a UTF-8 file silently becomes mojibake (<code>MÃ¼nchen</code>).</li>
+<li><strong>Setting <code>LANG</code>/<code>LC_ALL</code> in the unit.</strong> It hides the problem on this machine and moves it to the
+next one; the program still has no idea what its inputs are.</li>
+<li><strong><code>PYTHONUTF8=1</code> as the fix.</strong> It makes the <em>default</em> UTF-8, which is right for the new exports and
+still wrong for the cp1252 one.</li>
+<li><strong>Guessing with <code>chardet</code> and friends.</strong> Reasonable when nothing is known; here the encoding is
+documented in the README and in the file name.</li>
+<li><strong>Forgetting the output.</strong> A run that reads correctly and writes in the locale’s encoding just
+moves the problem downstream.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-python">open(path, encoding=&quot;utf-8&quot;)            # say it, every time, in and out
+open(path, encoding=&quot;cp1252&quot;)           # what the old Windows tool writes
+open(path, &quot;w&quot;, encoding=&quot;utf-8&quot;, newline=&quot;&quot;)   # csv: let the module choose line endings
+# errors=: strict (raise) · ignore (drop) · replace (U+FFFD) · surrogateescape (round-trip bytes)
+
+import locale; locale.getpreferredencoding(False)   # the default open() would use
+python3 -X utf8 …        # or PYTHONUTF8=1: ignore the locale, use UTF-8
+
+# replace the output in one step
+fd, tmp = tempfile.mkstemp(dir=os.path.dirname(out))
+… ; os.replace(tmp, out)
+</code></pre>
+<pre><code class="language-console">file export.csv                  # a first guess at the encoding
+</code></pre>
+<h2>Going deeper</h2>
+<ul>
+<li>The Python documentation on <a href="https://docs.python.org/3/library/functions.html#open"><code>open()</code></a> and
+<a href="https://docs.python.org/3/library/codecs.html#error-handlers">error handlers</a>.</li>
+<li>PEP 538 (C locale coercion) and PEP 540 (UTF-8 mode), for what happens when a service starts with
+no locale.</li>
+<li><code>man 1 file</code>, <code>man 7 charsets</code>.</li>
+<li>Joel Spolsky, <em>The Absolute Minimum Every Software Developer Absolutely, Positively Must Know
+About Unicode and Character Sets</em>.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Where does <code>open(path)</code> get its encoding from?</p>
+<blockquote>
+<p>From the process’s locale (<code>locale.getpreferredencoding(False)</code>), not from the file. The same
+file gives different text on machines with different locales.</p>
+</blockquote>
+</li>
+<li>
+<p>What do the four parts of <code>UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf1 in position 17: invalid continuation byte</code> tell you?</p>
+<blockquote>
+<p>The codec that was used, the offending byte, where it was, and why it is invalid for that codec
+— here a cp1252 <code>ñ</code> in a file being read as UTF-8.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>errors=&quot;ignore&quot;</code> the wrong answer to that error?</p>
+<blockquote>
+<p>It drops every byte that does not decode, so the data is silently changed — <code>Ruiz Peña</code> becomes
+<code>Ruiz Pea</code> — and no one finds out.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does reading everything as latin-1 never raise, and why is that not a solution?</p>
+<blockquote>
+<p>latin-1 maps all 256 byte values to characters, so any byte decodes; a UTF-8 file then decodes
+into the wrong characters, which is worse than an error.</p>
+</blockquote>
+</li>
+<li>
+<p>What breaks when a program that writes UTF-8 text runs with <code>LC_ALL=C</code> and no encoding given?</p>
+<blockquote>
+<p>Writing uses the locale’s encoding — ASCII — so any non-ASCII character raises
+<code>UnicodeEncodeError</code>, or, on a machine with another locale, the file is written in an encoding
+readers do not expect.</p>
+</blockquote>
+</li>
+<li>
+<p>Why write the summary to a temporary file and <code>os.replace()</code> it?</p>
+<blockquote>
+<p>The direct <code>open(out, &quot;w&quot;)</code> truncates the previous summary before the new one is written, so a
+failure destroys it; the replace is atomic and keeps the last good file.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

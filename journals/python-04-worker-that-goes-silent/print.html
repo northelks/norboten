@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A service that nobody can hear, and a stop that lands in the middle</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A service that nobody can hear, and a stop that lands in the middle</h1>
+  <div class="meta">python, logging-journald · 35 minutes · 1524 words</div>
+</header>
+<p>Two properties of a long-running program matter more than its speed: you can see what it is doing,
+and you can stop it without breaking anything. This worker has neither, and both failures come from
+defaults that are right in a terminal and wrong in a service.</p>
+<p>Python chooses its output buffering from what standard output is attached to. On a terminal it is
+line-buffered — you see each line as it is printed. Under systemd, standard output is a pipe to the
+journal, so it is block-buffered: about 8 KiB of progress lines accumulate inside the process before
+anything is written. The worker is not stuck; it is inaudible.</p>
+<p>Stopping is the same story. <code>SIGTERM</code> ends a Python program where it stands. If the work of one item
+spans two writes and a slow call in between, “where it stands” is the middle of a row.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Say how Python chooses buffering for <code>sys.stdout</code>, and what changes under systemd, cron or a pipe.</li>
+<li>Make output appear promptly: <code>line_buffering</code>, <code>flush=True</code>, <code>-u</code>/<code>PYTHONUNBUFFERED</code>, or the
+logging module.</li>
+<li>Handle <code>SIGTERM</code> so a worker finishes its current step and exits, instead of dying inside it.</li>
+<li>Write a record in one operation, so no reader ever sees half of it.</li>
+<li>Order the ledger, the state and the message so that a stop between any two of them is safe.</li>
+<li>Replace a state file atomically with <code>os.replace()</code>.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Where the buffering comes from</h3>
+<p><code>sys.stdout</code> is a <code>TextIOWrapper</code> over a buffered binary writer. Python chooses:</p>
+<ul>
+<li><strong>interactive</strong> (a terminal): line-buffered, flushed at every newline;</li>
+<li><strong>not interactive</strong> (a pipe, a file, the journal): block-buffered, flushed when the buffer fills
+(8 KiB) or the program exits normally;</li>
+<li><strong><code>stderr</code></strong>: always unbuffered-ish — write-through, so error messages appear immediately.</li>
+</ul>
+<p>That is why a program that looks chatty in a terminal goes quiet as a service, and why the last
+lines of a crashed program are sometimes missing altogether: the process died before the buffer was
+flushed.</p>
+<p>Four ways to fix it, in the order they are usually reached for:</p>
+<pre><code class="language-python">print(&quot;…&quot;, flush=True)                      # one call
+sys.stdout.reconfigure(line_buffering=True) # once, at the top of the program
+python3 -u …  /  PYTHONUNBUFFERED=1         # from outside, in the unit
+logging.basicConfig(stream=sys.stdout)      # the logging module flushes each record
+</code></pre>
+<p>A program that belongs in a service should not depend on its caller for this: <code>reconfigure</code> or
+<code>logging</code> in the program, and the unit can still set <code>PYTHONUNBUFFERED=1</code> as a belt.</p>
+<h3>What <code>SIGTERM</code> does to Python</h3>
+<p>By default <code>SIGTERM</code> terminates the process immediately — no <code>finally</code>, no <code>atexit</code>, no flush.
+(<code>SIGINT</code> is the exception: Python turns it into <code>KeyboardInterrupt</code>.) A worker that must stop
+cleanly installs a handler that records the request and returns:</p>
+<pre><code class="language-python">stopping = False
+def stop(signum, frame):
+    global stopping
+    stopping = True
+signal.signal(signal.SIGTERM, stop)
+</code></pre>
+<p>The handler runs between bytecode instructions, sets a flag, and the main loop checks it at a point
+where stopping is safe — after finishing the item in hand, before starting the next. systemd allows
+<code>TimeoutStopSec=</code> (90 s by default) for that, then sends <code>SIGKILL</code>, which no program can catch: the
+work between two safe points must be shorter than the timeout.</p>
+<h3>One record, one write</h3>
+<p>The broken worker writes a row in two parts, with the slow call between them:</p>
+<pre><code class="language-python">ledger.write(f&quot;{name},&quot;)
+ledger.flush()
+time.sleep(...)           # the accounting system
+ledger.write(f&quot;{amount}\n&quot;)
+</code></pre>
+<p>A stop in the middle leaves <code>invoice-002,</code> on disk — a row that is neither there nor not there. Do
+the slow work first, then write the complete row in one call. A single <code>write</code> of a short line to a
+file opened in append mode is not formally atomic, but it is one system call, and the window is a few
+microseconds rather than seconds. When several processes append to the same file, <code>O_APPEND</code> keeps
+each write’s bytes together.</p>
+<h3>The order of the three steps</h3>
+<p>For each item there are three things to do: append the ledger row, record the item as done, and say
+so. The order decides what a stop between them costs:</p>
+<table>
+<thead>
+<tr>
+<th>Order</th>
+<th>A stop in between means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>state, then ledger</td>
+<td>the item is marked done and never ingested — data lost</td>
+</tr>
+<tr>
+<td>ledger, then state</td>
+<td>the item is ingested again after the restart — a duplicate</td>
+</tr>
+<tr>
+<td>ledger, then state, with a complete row and an atomic state file</td>
+<td>the item is ingested once</td>
+</tr>
+</tbody>
+</table>
+<p>Ledger first is the right order — losing work is worse than repeating it — but it only holds when
+<em>neither</em> file can be left half written. That is why the state file is replaced with <code>os.replace()</code>:
+the name points at the old file or the new one, never at a truncated one. A <code>json.dump</code> straight into
+the target truncates it first, so a stop there leaves an unreadable state file and the next start
+re-ingests everything.</p>
+<h3>Make it idempotent when you can</h3>
+<p>Better than any ordering is work that can be repeated harmlessly: an upsert by invoice number, a
+target that ignores a duplicate key, a hash-named file. Then “at least once” is enough and the state
+file is only an optimisation. Not every system offers that; this one does not, so the order and the
+atomicity carry the weight.</p>
+<h2>A failure, walked through</h2>
+<p>Run on the lab’s own machine: <code>ubuntu-26.04-devops</code>, Python 3.14.4, before any change.</p>
+<p>Right after boot, with the service running:</p>
+<pre><code class="language-console">$ systemctl is-active ingest.service; cat /var/lib/ingest/ledger.csv; sudo journalctl -u ingest.service -b --no-pager -o cat | tail -3
+active
+invoice-001.txt,Started ingest.service - Ingest the files dropped into the queue.
+</code></pre>
+<p>That line is two things at once: the ledger’s content, <code>invoice-001.txt,</code> with no amount and no
+newline, and the journal’s line running straight into it. The journal has nothing from the worker
+itself. Dropping a new file in shows the same asymmetry — the ledger grows, the journal stays silent:</p>
+<pre><code class="language-console">$ sudo sh -c 'printf &quot;77.00\n&quot; &gt; /srv/ingest/queue/invoice-009.txt'; sleep 3; cat /var/lib/ingest/ledger.csv; echo &quot;--- journal:&quot;; sudo journalctl -u ingest.service -b --no-pager -o cat | tail -2
+invoice-001.txt,120.00
+invoice-002.txt,45.50
+invoice-003.txt,8.75
+--- journal:
+Started ingest.service - Ingest the files dropped into the queue.
+</code></pre>
+<p>What Python thinks it is writing to, in a pipe and in a service:</p>
+<pre><code class="language-console">$ python3 -c &quot;import sys; print(type(sys.stdout.buffer).__name__, sys.stdout.line_buffering, sys.stdout.write_through)&quot; | cat
+BufferedWriter False False
+$ sudo systemd-run --wait --pipe -q python3 -c &quot;import sys; print('in a service, line_buffering =', sys.stdout.line_buffering)&quot;
+in a service, line_buffering = False
+</code></pre>
+<p>The effect is easiest to see with timestamps: the same loop, buffered and unbuffered, printing three
+lines four tenths of a second apart:</p>
+<pre><code class="language-console">$ (python3 -c &quot;
+import sys, time
+for i in range(3):
+    print('tick', i)
+    time.sleep(0.4)
+&quot; | while read -r line; do echo &quot;$(date +%T.%2N) $line&quot;; done)
+&quot;17:11:54.872492754 tick 0&quot;
+&quot;17:11:54.877795296 tick 1&quot;
+&quot;17:11:54.881644713 tick 2&quot;
+$ (python3 -u -c &quot;
+import sys, time
+for i in range(3):
+    print('tick', i)
+    time.sleep(0.4)
+&quot; | while read -r line; do echo &quot;$(date +%T.%2N) $line&quot;; done)
+&quot;17:11:54.908480963 tick 0&quot;
+&quot;17:11:55.323475391 tick 1&quot;
+&quot;17:11:55.725810478 tick 2&quot;
+</code></pre>
+<p>Buffered, all three lines arrive in the same millisecond — when the program exits. Unbuffered, they
+arrive as they happen.</p>
+<p>After the fix — <code>sys.stdout.reconfigure(line_buffering=True)</code>, a <code>SIGTERM</code> handler that sets a flag,
+the whole row written after the slow call, and the state file replaced atomically:</p>
+<pre><code class="language-console">$ sudo sh -c 'printf &quot;12.00\n&quot; &gt; /srv/ingest/queue/invoice-010.txt'; sleep 3; sudo journalctl -u ingest.service -b --no-pager -o cat | tail -2; tail -2 /var/lib/ingest/ledger.csv
+Started ingest.service - Ingest the files dropped into the queue.
+ingested invoice-010.txt
+invoice-009.txt,77.00
+invoice-010.txt,12.00
+$ sudo systemctl stop ingest.service; systemctl show ingest.service -p Result -p ExecMainStatus; sudo journalctl -u ingest.service -b --no-pager -o cat | tail -2; tail -1 /var/lib/ingest/ledger.csv
+Result=success
+ExecMainStatus=0
+ingest.service: Deactivated successfully.
+Stopped ingest.service - Ingest the files dropped into the queue.
+invoice-010.txt,12.00
+</code></pre>
+<p>The journal reports each file as it is ingested, the stop is a clean success, and the last row is
+complete.</p>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong><code>PYTHONUNBUFFERED=1</code> in the unit and nothing in the program.</strong> It fixes this service and not the
+same program run from cron, from a script, or by hand into a log file.</li>
+<li><strong><code>flush=True</code> on one print.</strong> There is usually more than one place that reports progress, and the
+next one added will not have it.</li>
+<li><strong>Doing the work inside the signal handler.</strong> A handler should set a flag and return; writing files
+from it invites a second signal in the middle, and it can interrupt the very write it is trying to
+protect.</li>
+<li><strong><code>sys.exit()</code> from the handler.</strong> It raises <code>SystemExit</code> at an arbitrary point of the main
+program, which is the problem it was meant to solve.</li>
+<li><strong>Ignoring <code>SIGTERM</code> altogether</strong> to “make sure the work finishes”. systemd sends <code>SIGKILL</code> after
+the stop timeout, and that cannot be caught.</li>
+<li><strong>Writing the state before the ledger row</strong>, to avoid duplicates. Now a stop between them loses the
+invoice instead, which is worse.</li>
+<li><strong><code>json.dump(state, open(path, &quot;w&quot;))</code>.</strong> The file is truncated at the moment of the call; a stop in
+the middle leaves it unreadable, and the next start re-ingests everything.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-python">sys.stdout.reconfigure(line_buffering=True)   # in the program, once
+print(&quot;…&quot;, flush=True)                        # per call
+# from outside: python3 -u, or PYTHONUNBUFFERED=1 in the unit
+
+stopping = False
+def stop(signum, frame):
+    global stopping; stopping = True
+signal.signal(signal.SIGTERM, stop)
+signal.signal(signal.SIGINT, stop)
+while not stopping:
+    ...                                       # check the flag at a safe point
+
+with open(ledger, &quot;a&quot;, encoding=&quot;utf-8&quot;) as f:
+    f.write(f&quot;{name},{amount}\n&quot;)             # one complete record per write
+
+fd, tmp = tempfile.mkstemp(dir=os.path.dirname(state))
+… ; os.fsync(f.fileno()) ; os.replace(tmp, state)
+</code></pre>
+<pre><code class="language-console">journalctl -fu ingest              # follow a service's output
+systemd-run --wait --pipe -q cmd   # run something with a service's stdout
+systemctl show unit -p Result -p ExecMainStatus
+</code></pre>
+<h2>Going deeper</h2>
+<ul>
+<li><code>sys.stdout</code> and <code>io.TextIOWrapper.reconfigure</code> in the Python documentation; <code>python3 -u</code>.</li>
+<li>The <code>signal</code> module, especially “execution of Python signal handlers”.</li>
+<li><code>man 5 systemd.kill</code> (<code>KillSignal=</code>, <code>TimeoutStopSec=</code>) and <code>man 5 systemd.exec</code> (<code>StandardOutput=</code>).</li>
+<li>The logging journal in this repository, for what the journal does with a service’s output.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Why does a Python program print promptly in a terminal and go silent as a systemd service?</p>
+<blockquote>
+<p>Standard output is line-buffered when it is a terminal and block-buffered when it is a pipe, and
+a service’s output is a pipe to the journal.</p>
+</blockquote>
+</li>
+<li>
+<p>Name two ways to make the program’s own output prompt, and one from outside it.</p>
+<blockquote>
+<p>In the program: <code>sys.stdout.reconfigure(line_buffering=True)</code> or <code>print(…, flush=True)</code> (the
+logging module also flushes each record). From outside: <code>python3 -u</code> or <code>PYTHONUNBUFFERED=1</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>What does Python do with <code>SIGTERM</code> by default, and what should a worker do instead?</p>
+<blockquote>
+<p>It ends the process immediately, without <code>finally</code> or flushing. A worker installs a handler that
+sets a flag and checks it at a point where stopping is safe.</p>
+</blockquote>
+</li>
+<li>
+<p>Why write the whole ledger row after the slow call rather than in two parts around it?</p>
+<blockquote>
+<p>A stop between the two writes leaves a row with no amount; one write of the complete row leaves
+either nothing or a whole row.</p>
+</blockquote>
+</li>
+<li>
+<p>The ledger row is written before the state file. What does a stop between them cost, and why is
+that the right order?</p>
+<blockquote>
+<p>The item is ingested again after a restart — a duplicate. The other order would lose the item
+entirely, and losing work is worse than repeating it.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must the state file be replaced with <code>os.replace()</code> rather than rewritten in place?</p>
+<blockquote>
+<p>Rewriting truncates it first, so a stop in the middle leaves an unreadable state and the next
+start repeats everything; a rename is atomic.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

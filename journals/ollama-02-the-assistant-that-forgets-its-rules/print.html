@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A model follows only the instructions that fit in its context window</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A model follows only the instructions that fit in its context window</h1>
+  <div class="meta">ollama, ai-services · 35 minutes · 1523 words</div>
+</header>
+<p>A language model does not remember its instructions. Each request sends them again — the system
+prompt, then the conversation, then the new question — and the model reads that whole text as one
+sequence of tokens, up to a fixed limit called the <strong>context window</strong>. What does not fit is not read.
+With Ollama, nothing in the answer tells you so; the answer is simply written by a model that never
+saw most of its rules.</p>
+<p>The billing team’s assistant is a textbook case, three times over. Its Modelfile gives it a window of
+256 tokens for a system prompt of more than a thousand. Someone raised the window in the file and never
+rebuilt the model, so nothing changed. And the chat backend shrinks the window again on every request,
+“to make answers faster”. Each is invisible from the outside, and each shows up in one number Ollama
+returns with every response: <code>prompt_eval_count</code>.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Build a model from a Modelfile and read back what the server really holds.</li>
+<li>Measure how much of a prompt a model evaluated, and recognise truncation.</li>
+<li>Explain the order in which request options, model parameters and server defaults apply.</li>
+<li>Say what temperature does and what it does not.</li>
+<li>Keep a Modelfile and the model built from it in step.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>A Modelfile builds a model once</h3>
+<pre><code>FROM qwen2.5:0.5b
+PARAMETER num_ctx 4096
+PARAMETER temperature 0.2
+SYSTEM &quot;&quot;&quot;You are the support assistant of Norboten Billing …&quot;&quot;&quot;
+</code></pre>
+<p><code>ollama create support-bot -f Modelfile</code> reads this file and stores a new model on the server: a manifest
+that points at the base model’s weights (nothing is copied) plus the system prompt, template and
+parameters. The file is not referenced again. Editing it afterwards changes nothing until <code>ollama create</code>
+runs again; <code>ollama show support-bot --modelfile</code> (or <code>--parameters</code>, or <code>POST /api/show</code>) prints what the
+server holds.</p>
+<p>The <code>ollama</code> command is only an HTTP client: <code>ollama create</code> sends the Modelfile to the server, which
+writes the model under its own <code>OLLAMA_MODELS</code> as its own user. Any account that can reach the API can
+create or overwrite models.</p>
+<h3>Tokens, windows and truncation</h3>
+<p>Models read tokens — pieces of words, about four characters of English each on average. <code>num_ctx</code> is the
+number of tokens one request may hold, prompt and answer together. Ollama’s default is 4096 (or
+<code>OLLAMA_CONTEXT_LENGTH</code>); a Modelfile parameter overrides it for that model.</p>
+<p>Every response reports <code>prompt_eval_count</code>, the prompt tokens the model processed. For this assistant’s
+rules and one question that is 1,388 tokens. When the prompt does not fit, Ollama 0.34 cuts it and logs
+it:</p>
+<pre><code>level=WARN source=llama_server.go:317 msg=&quot;truncating input prompt&quot; limit=130 prompt=1388 keep=4 new=130
+</code></pre>
+<p>Measured on the lab VM with the same 1,388-token prompt:</p>
+<table>
+<thead>
+<tr>
+<th><code>num_ctx</code></th>
+<th><code>prompt_eval_count</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>256</td>
+<td>130</td>
+</tr>
+<tr>
+<td>512</td>
+<td>258</td>
+</tr>
+<tr>
+<td>1024</td>
+<td>514</td>
+</tr>
+<tr>
+<td>1500</td>
+<td>1,388</td>
+</tr>
+<tr>
+<td>2048, 4096, 8192</td>
+<td>1,388</td>
+</tr>
+</tbody>
+</table>
+<p>A prompt that does not fit is cut to about half the window, keeping four tokens from the start and the
+most recent text — the question survives, the rules in the middle do not. There is no error, and the
+reply is fluent.</p>
+<h3>Who decides the window: request, model, server</h3>
+<p>Parameters apply in this order, the first that sets one winning:</p>
+<ol>
+<li><code>options</code> in the request (<code>/api/generate</code>, <code>/api/chat</code>);</li>
+<li><code>PARAMETER</code> lines stored with the model;</li>
+<li>the server’s environment (<code>OLLAMA_CONTEXT_LENGTH</code>) and built-in defaults.</li>
+</ol>
+<p>So a client sending <code>&quot;options&quot;: {&quot;num_ctx&quot;: 512}</code> overrides a model built with 4096 on every request it
+makes. A larger window does cost something — memory for the key-value cache grows with it (measured in the
+next lab) and a longer prompt takes longer to evaluate — which is why people shrink it; the cost of
+shrinking it below the prompt is that the model stops reading its instructions.</p>
+<h3>Temperature</h3>
+<p>A model produces a probability for every possible next token; <code>temperature</code> reshapes those probabilities
+before one is sampled. Near 0 the most likely token is almost always chosen and the same prompt gives
+nearly the same answer; around 1 and above, unlikely tokens are chosen often and answers wander. For an
+assistant that must repeat policy, low is right. Temperature does not make a model follow rules it cannot
+see, and it does not make a small model smart.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the lab VM (Ollama 0.34.0, <code>qwen2.5:0.5b</code> on 2 CPUs). Through the chat backend:</p>
+<pre><code class="language-console">$ /opt/support-chat/ask &quot;When will my refund arrive?&quot; | jq -c .
+{&quot;answer&quot;:&quot;Please be patient, I need to provide you with the exact time. I will check the system for updates in 2 working days. I'll ask for the invoice number directly.&quot;,&quot;prompt_eval_count&quot;:258,&quot;eval_count&quot;:37}
+</code></pre>
+<p>258 prompt tokens. What the model holds, and what the file says:</p>
+<pre><code class="language-console">$ ollama show support-bot --parameters
+num_ctx                        256
+temperature                    1.2
+$ grep ^PARAMETER /srv/support-bot/Modelfile
+PARAMETER num_ctx 2048
+PARAMETER temperature 1.2
+</code></pre>
+<p>The file was fixed; the model was not rebuilt. How long is the whole prompt? Ask with a window far larger
+than needed, then with the model’s own:</p>
+<pre><code class="language-console">$ curl -s 127.0.0.1:11434/api/chat -d '{&quot;model&quot;:&quot;support-bot&quot;,&quot;stream&quot;:false,
+    &quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;When will my refund arrive?&quot;}],&quot;options&quot;:{&quot;num_ctx&quot;:8192,&quot;num_predict&quot;:1}}' | jq .prompt_eval_count
+1388
+$ # the same without num_ctx
+130
+$ sudo journalctl -u ollama -o cat | grep -i 'truncating input' | tail -1
+level=WARN source=llama_server.go:317 msg=&quot;truncating input prompt&quot; limit=130 prompt=1388 keep=4 new=130
+</code></pre>
+<p>Rebuilding from the file as it stands gives the model 2,048 tokens, enough on its own — but the chat
+backend still sends <code>num_ctx 512</code>:</p>
+<pre><code class="language-console">$ ollama create support-bot -f /srv/support-bot/Modelfile
+$ ollama show support-bot --parameters | grep num_ctx
+num_ctx                        2048
+$ # direct: 1388 prompt tokens
+$ /opt/support-chat/ask &quot;When will my refund arrive?&quot; | jq -c '{prompt_eval_count}'
+{&quot;prompt_eval_count&quot;:258}
+$ grep -n num_ctx /opt/support-chat/ask
+18:        &quot;options&quot;: {&quot;num_ctx&quot;: 512, &quot;num_predict&quot;: 120},
+</code></pre>
+<p>Now the temperature. Three answers at 1.2, first 110 characters each:</p>
+<pre><code>I'm sorry, but there is no specific information on how refunds will be processed once an invoice is returned.
+When will my refund be processed?
+Please let me know when the amount you need to refund will arrive.
+</code></pre>
+<p>The Modelfile gets <code>num_ctx 4096</code> and <code>temperature 0.2</code>, the model is rebuilt from it, and the backend
+stops sending its own window:</p>
+<pre><code class="language-console">$ sudo sed -i 's/^PARAMETER num_ctx .*/PARAMETER num_ctx 4096/; s/^PARAMETER temperature .*/PARAMETER temperature 0.2/' /srv/support-bot/Modelfile
+$ ollama create support-bot -f /srv/support-bot/Modelfile
+$ sudo sed -i 's/&quot;options&quot;: {&quot;num_ctx&quot;: 512, &quot;num_predict&quot;: 120}/&quot;options&quot;: {&quot;num_predict&quot;: 120}/' /opt/support-chat/ask
+$ /opt/support-chat/ask &quot;When will my refund arrive?&quot; | jq -c .
+{&quot;answer&quot;:&quot;I'm sorry, but I can't assist with that.&quot;,&quot;prompt_eval_count&quot;:1388,&quot;eval_count&quot;:13}
+</code></pre>
+<p>The same answer came back three times in a row. It is also not what the rules ask for — the rules say to
+promise nothing and ask for the invoice number. A 0.5-billion-parameter model is a poor follower of
+thirty-nine rules even when it reads all of them; that is a model choice, and a different problem from the
+one fixed here. The grader checks what can be checked: all 1,388 tokens evaluated, directly and through the
+backend, a low temperature, and a Modelfile that matches the server.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Editing the Modelfile and testing.</strong> The server does not read it again. <code>ollama create</code>, then
+<code>ollama show --parameters</code>.</p>
+<p><strong>Judging by the answers.</strong> Truncated or not, the model writes something plausible. <code>prompt_eval_count</code>
+and the server’s “truncating input prompt” warning are the evidence.</p>
+<p><strong>Setting <code>OLLAMA_CONTEXT_LENGTH</code> on the server and stopping.</strong> The model’s own <code>PARAMETER num_ctx</code> and any
+request option both take precedence over it.</p>
+<p><strong><code>num_ctx 1400</code> because the prompt is 1,388 tokens.</strong> The window holds the answer too, and the next
+question will be longer. Leave room.</p>
+<p><strong>Creating the model through the API with the right parameters and leaving the file.</strong> It works until
+someone rebuilds from the file — which is exactly what the last person did.</p>
+<p><strong>Temperature 0 to “make it obey”.</strong> It makes it consistent. A model that ignores a rule at 0 ignores it
+every time.</p>
+<p><strong>Shrinking the context for speed without measuring.</strong> A truncated prompt is faster to evaluate, and the
+answer is written without the instructions. Time both before trading one for the other.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># what the server holds
+ollama show support-bot --modelfile
+ollama show support-bot --parameters
+curl -s 127.0.0.1:11434/api/show -d '{&quot;model&quot;:&quot;support-bot&quot;}' | jq '{parameters, system: (.system|.[0:80])}'
+
+# build / rebuild from the file
+ollama create support-bot -f /srv/support-bot/Modelfile
+
+# how much of the prompt was read
+curl -s 127.0.0.1:11434/api/chat -d '{&quot;model&quot;:&quot;support-bot&quot;,&quot;stream&quot;:false,
+  &quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;test&quot;}],&quot;options&quot;:{&quot;num_predict&quot;:1}}' | jq .prompt_eval_count
+#   compare with the same request and &quot;num_ctx&quot;: 8192
+sudo journalctl -u ollama -o cat | grep 'truncating input prompt'
+
+# precedence: request options &gt; model PARAMETER &gt; OLLAMA_CONTEXT_LENGTH / defaults
+grep -rn num_ctx /opt/support-chat/
+
+# Modelfile
+FROM qwen2.5:0.5b
+PARAMETER num_ctx 4096
+PARAMETER temperature 0.2
+SYSTEM &quot;&quot;&quot;…&quot;&quot;&quot;
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Ollama on a server</em> (topic journal <code>ollama</code>) — Context windows</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.ollama.com/api</li>
+<li>https://docs.ollama.com/modelfile</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>Ollama on a server</em> (<code>ollama</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>You change <code>PARAMETER num_ctx</code> in a Modelfile. What else must happen before the model uses it, and how
+do you confirm it did?</p>
+<blockquote>
+<p><code>ollama create &lt;name&gt; -f Modelfile</code> must build the model again; <code>ollama show &lt;name&gt; --parameters</code>
+shows what the server holds.</p>
+</blockquote>
+</li>
+<li>
+<p>Which number in an Ollama response tells you how much of the prompt the model read, and what do you
+compare it with?</p>
+<blockquote>
+<p><code>prompt_eval_count</code>. Compare it with the same request sent with a window far larger than the prompt;
+if the model’s own setting gives a smaller count, the prompt was truncated.</p>
+</blockquote>
+</li>
+<li>
+<p>A 1,388-token prompt is sent with <code>num_ctx</code> 1024. What does the model evaluate, and what is lost?</p>
+<blockquote>
+<p>About half the window — 514 tokens here: a few tokens from the start and the most recent text. The
+middle, where a long system prompt sits, is dropped, and the server logs “truncating input prompt”.</p>
+</blockquote>
+</li>
+<li>
+<p>A model is built with <code>num_ctx 4096</code>. A client sends <code>&quot;options&quot;: {&quot;num_ctx&quot;: 512}</code>. Which applies, and
+what about <code>OLLAMA_CONTEXT_LENGTH=8192</code> on the server?</p>
+<blockquote>
+<p>The request’s 512. Request options override model parameters, which override the server’s
+environment and defaults.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>ollama create</code> do with the base model’s weights?</p>
+<blockquote>
+<p>Nothing is copied: the new model’s manifest references the same blobs, adding its own system prompt,
+template and parameters.</p>
+</blockquote>
+</li>
+<li>
+<p>What does temperature control, and why does lowering it not make the assistant follow its rules?</p>
+<blockquote>
+<p>How randomly each next token is sampled; low values give repeatable answers. It cannot make the model
+use instructions it did not read, or understand ones it cannot follow.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is judging the fix by the assistant’s answers unreliable here?</p>
+<blockquote>
+<p>The model writes fluent, plausible text whether or not its rules were truncated, and a small model may
+disregard rules it did read. Token counts and server logs show whether it was given them.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must the Modelfile, and not only the server, carry the fix?</p>
+<blockquote>
+<p>The next <code>ollama create</code> from the file replaces the server’s model with whatever the file says —
+which is how a fix made only on the server is lost.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

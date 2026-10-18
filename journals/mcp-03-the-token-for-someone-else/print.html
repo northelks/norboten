@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Token for Someone Else — a remote MCP server checks who a token was issued for</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>The Token for Someone Else — a remote MCP server checks who a token was issued for</h1>
+  <div class="meta">mcp, networking · 30 minutes · 1115 words</div>
+</header>
+<p>A remote MCP server behind OAuth receives a bearer token with every request and has to decide whether
+to honour it. “Signed by an issuer I trust” is necessary and nowhere near enough: the same issuer signs
+tokens for every service it serves. A token carries an audience — the service it was issued for — and
+an expiry. A server that ignores the audience accepts the billing sync’s token as readily as its own,
+and a server that ignores the expiry accepts a token that leaked last year. Each turns one stolen token
+into a key to everything that trusts the issuer.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Name the claims an MCP server must check in an access token, and what each prevents.</li>
+<li>Read a token’s claims without its signing key, and tell which service it is for.</li>
+<li>Configure a resource server to accept only tokens issued for its own URL, and not after they expire.</li>
+<li>Get a client a token for the server it actually talks to.</li>
+<li>Recognise, in a client, the symptom of a server rightly refusing its token.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>A token is a signed list of claims</h3>
+<p>The tokens here are JWTs: three base64url parts — a header, the claims, a signature. <code>lab-idp show</code>
+decodes the middle part; anyone can read it, which is why a token must never be treated as secret
+<em>content</em>, only as a secret <em>credential</em>. The claims that matter: <code>iss</code>, who signed it; <code>aud</code>, which
+service it is for; <code>sub</code>, on whose behalf; <code>exp</code>, until when. The signature proves <code>lab-idp</code> wrote those
+claims. It says nothing about whether <em>this</em> server should accept them.</p>
+<h3>Audience: the one check that stops a confused deputy</h3>
+<p>The MCP authorization specification requires a server to accept only tokens issued for itself —
+RFC 8707 resource indicators on the client side, an audience check on the server side — and forbids a
+server from passing a client’s token on to another service. Without the check, any service’s token
+works here, and a token this server receives could be replayed against any other lax service. With it,
+<code>audience</code> is the server’s own URL, <code>http://127.0.0.1:8931/mcp</code>, and a token for
+<code>https://billing.example/api</code> is refused with <code>401</code> and <code>error=&quot;invalid_token&quot;</code>.</p>
+<h3>Expiry</h3>
+<p><code>exp</code> bounds how long a leaked token is useful. <code>verify_exp: false</code> removes the bound — the kind of
+setting someone adds while debugging a clock and forgets. Short lifetimes plus refresh tokens are how
+OAuth keeps a stolen access token cheap; they only work if the server looks at <code>exp</code>.</p>
+<h3>The client’s side: one token per audience</h3>
+<p>The job reads <code>INVENTORY_TOKEN</code> from <code>~/.config/inventory/env</code>, and <code>.mcp.json</code> sends it as
+<code>Authorization: Bearer ${INVENTORY_TOKEN}</code>. The file held a copy of the billing sync’s token because it
+worked. The fix is a token minted for the inventory server; a client that talks to two services holds
+two tokens. In a full OAuth flow the client asks for this with the <code>resource</code> parameter, and the
+authorization server stamps it into <code>aud</code>.</p>
+<h3>What a refused client looks like</h3>
+<p>When the server answers <code>401</code>, Claude Code does not report “wrong audience”. It treats the server as one
+that needs authentication, does not connect, and offers the model none of its tools — the job’s model
+sees <code>No such tool available</code>. The server’s log and its <code>WWW-Authenticate</code> header carry the reason.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the lab’s container (Ubuntu 26.04, Claude Code 2.1.270; the settings file shown on one
+line). The server’s settings, and the job’s token:</p>
+<pre><code class="language-console">$ cat /etc/inventory-mcp/config.json
+{&quot;issuer&quot;: &quot;https://idp.lab&quot;, &quot;audience&quot;: null, &quot;verify_exp&quot;: false, &quot;bind&quot;: &quot;127.0.0.1&quot;, &quot;port&quot;: 8931}
+$ . ~/.config/inventory/env; lab-idp show &quot;$INVENTORY_TOKEN&quot;
+{
+  &quot;iss&quot;: &quot;https://idp.lab&quot;,
+  &quot;aud&quot;: &quot;https://billing.example/api&quot;,
+  &quot;sub&quot;: &quot;billing-sync&quot;,
+  &quot;iat&quot;: 1789498100,
+  &quot;exp&quot;: 1792090100
+}
+$ tail -3 /var/log/inventory-mcp.log
+2026-09-15 18:48:21,109 list_hosts for billing-sync
+</code></pre>
+<p>The inventory server logs its caller as <code>billing-sync</code>. Any token the provider signs works — a fresh
+one for billing, asked for by hand:</p>
+<pre><code class="language-console">$ sudo lab-idp mint --audience https://billing.example/api --subject someone-else &gt; /tmp/t
+$ curl -s -o /dev/null -w &quot;%{http_code}\n&quot; -H &quot;Authorization: Bearer $(cat /tmp/t)&quot; \
+    -H &quot;Content-Type: application/json&quot; -d '{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:1,&quot;method&quot;:&quot;tools/list&quot;}' \
+    http://127.0.0.1:8931/mcp
+200
+</code></pre>
+<p>Set <code>audience</code> to the server’s URL and <code>verify_exp</code> to true, <code>sudo inventory-mcp restart</code>, and the job’s
+copied token is refused:</p>
+<pre><code class="language-console">HTTP/1.0 401 Unauthorized
+WWW-Authenticate: Bearer error=&quot;invalid_token&quot;, error_description=&quot;token is for 'https://billing.example/api', not this server&quot;
+</code></pre>
+<p>The job, run with the old token at this point, gets no tools at all:</p>
+<pre><code class="language-text">list_hosts: &lt;tool_use_error&gt;Error: No such tool available: mcp__inventory__list_hosts&lt;/tool_use_error&gt;
+</code></pre>
+<p>A token for the inventory server, into the job’s environment:</p>
+<pre><code class="language-console">$ token=$(sudo lab-idp mint --audience http://127.0.0.1:8931/mcp --subject inventory-report)
+$ lab-idp show &quot;$token&quot; | grep -E &quot;aud|sub&quot;
+  &quot;aud&quot;: &quot;http://127.0.0.1:8931/mcp&quot;,
+  &quot;sub&quot;: &quot;inventory-report&quot;,
+$ printf &quot;INVENTORY_TOKEN=%s\n&quot; &quot;$token&quot; &gt; ~/.config/inventory/env
+</code></pre>
+<p>and the job again:</p>
+<pre><code class="language-text">list_hosts: db-5857  database  Ubuntu 26.04
+web-1  web  Ubuntu 26.04
+legacy-2  batch  Ubuntu 20.04
+</code></pre>
+<p>The log now names the right caller, <code>list_hosts for inventory-report</code>. An expired token, minted with an
+issue time two hours ago and a one-hour lifetime, is refused too:
+<code>{&quot;error&quot;: &quot;invalid_token&quot;, &quot;error_description&quot;: &quot;token expired&quot;}</code>.</p>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong>Minting a new token and stopping.</strong> The job works, and the server still takes every other service’s
+token. The grader mints a billing token of its own.</li>
+<li><strong>Setting the audience to the billing API’s URL.</strong> The copied token passes; the check now protects
+the wrong service.</li>
+<li><strong>Checking <code>sub</code> instead of <code>aud</code>.</strong> <code>sub</code> says on whose behalf; a billing token for the same person is
+still a billing token.</li>
+<li><strong>Turning off the signature check to “just test”.</strong> Then anyone can write the claims.</li>
+<li><strong>Pasting the token into <code>.mcp.json</code>.</strong> It works and ends up in the repository; <code>${INVENTORY_TOKEN}</code>
+keeps it in the job’s environment.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-text">lab-idp show &quot;$TOKEN&quot;                                   # iss, aud, sub, iat, exp — no key needed
+sudo lab-idp mint --audience URL --subject NAME         # a token for one service
+curl -i -H &quot;Authorization: Bearer $TOKEN&quot; -H 'Content-Type: application/json' \
+  -d '{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:1,&quot;method&quot;:&quot;tools/list&quot;}' http://127.0.0.1:8931/mcp
+sudo inventory-mcp restart                              # settings are read at start
+tail -f /var/log/inventory-mcp.log                      # who called, what was refused, and why
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>The Model Context Protocol</em> (topic journal <code>mcp</code>) — Authorization for remote servers</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization</li>
+<li>https://www.rfc-editor.org/rfc/rfc9068</li>
+<li>https://www.rfc-editor.org/rfc/rfc8707</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>The Model Context Protocol</em> (<code>mcp</code>), <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A token is correctly signed by the issuer the server trusts. Why may the server still refuse it?</p>
+<blockquote>
+<p>It may be for another service (<code>aud</code>), or past its <code>exp</code>; the signature proves only who wrote the
+claims.</p>
+</blockquote>
+</li>
+<li>
+<p>What does the MCP authorization specification require of a server about audiences?</p>
+<blockquote>
+<p>To accept only tokens issued for itself — its own resource identifier — and not to pass tokens it
+received on to other services.</p>
+</blockquote>
+</li>
+<li>
+<p>How can you tell which service a JWT was issued for without the signing key?</p>
+<blockquote>
+<p>Decode its middle, base64url part and read <code>aud</code>; the claims are signed, not encrypted.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a Claude Code job show when a remote server rightly refuses its token?</p>
+<blockquote>
+<p>The server is not connected: none of its tools are offered, so a call reports that no such tool is
+available. The reason is in the server’s 401 and log.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>verify_exp: false</code> dangerous even if tokens are never logged?</p>
+<blockquote>
+<p>A token that leaks in any way stays valid for ever instead of for its lifetime.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

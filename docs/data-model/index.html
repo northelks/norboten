@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data model · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/docs/data-model/"><meta property="og:title" content="Data model · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/docs/data-model/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Data model · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" aria-current="page">Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      <div class="group">Getting started</div>
+      <a href="../../docs/getting-started/"
+>Install and first lab</a>
+      <a href="../../docs/tui-reference/"
+>TUI reference</a>
+      <a href="../../docs/faq/"
+>FAQ</a>
+      <div class="group">Contributing labs</div>
+      <a href="../../docs/writing-a-lab/"
+>Writing a lab</a>
+      <a href="../../docs/lab-spec/"
+>Lab specification</a>
+      <a href="../../docs/quiz-spec/"
+>Theory question spec</a>
+      <a href="../../docs/claude-code-plugin/"
+>The Claude Code plugin</a>
+      <div class="group">How it is built</div>
+      <a href="../../docs/architecture/"
+>Architecture</a>
+      <a href="../../docs/rated-labs/"
+>Rated and unrated labs</a>
+      <a href="../../docs/claude-code-in-norboten/"
+>How Norboten uses Claude</a>
+      <a href="../../docs/mcp/"
+>The MCP server</a>
+      <a href="../../docs/data-model/"
+aria-current="page">Data model</a>
+      <a href="../../docs/api-reference/"
+>API reference</a>
+      <a href="../../docs/pipelines/"
+>Pipelines</a>
+      <a href="../../docs/open-questions/"
+>Open questions</a>
+      <div class="group">Running it yourself</div>
+      <a href="../../docs/self-hosting/"
+>Self-hosting and configuration</a>
+      <a href="../../docs/deploy/"
+>Deploying the server</a>
+      <a href="../../docs/ci-cd/"
+>CI/CD</a>
+      <a href="../../docs/releasing/"
+>Releasing</a>
+    </nav>
+    <article class="prose">
+      <h1 id="data-model">Data model</h1>
+<p>Norboten keeps data in four places, and each place holds only what belongs there:</p>
+<table>
+<thead>
+<tr>
+<th>Where</th>
+<th>What</th>
+<th>Survives</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PostgreSQL</strong> (server)</td>
+<td>accounts, credentials, tokens, attempts, ratings, play sessions and frames, verified questions, events</td>
+<td>everything; backed up nightly with a restore check</td>
+</tr>
+<tr>
+<td><strong>Redis</strong> (server)</td>
+<td>live frames in flight, rate-limit counters, a short cache</td>
+<td>nothing needs to — losing it costs a reconnect and a cold cache</td>
+</tr>
+<tr>
+<td><strong>The learner's machine</strong> (<code>~/.norboten</code>)</td>
+<td>lab VMs, images, sessions, grade reports, recordings, theory progress, the sign-in token</td>
+<td>until the learner deletes it</td>
+</tr>
+<tr>
+<td><strong>The repository</strong></td>
+<td>labs, question banks, journals, docs, recordings shipped with the site</td>
+<td>git</td>
+</tr>
+</tbody>
+</table>
+<p>The schema is <code>SCHEMA</code> in <code>api/src/norboten_api/db.py</code>: plain SQL, applied on every start, every
+statement idempotent (<code>CREATE … IF NOT EXISTS</code>), under a PostgreSQL advisory lock so two API
+workers starting together do not race. A column that holds data is never renamed or dropped, so an
+older API image runs against a newer database — which is what makes a rollback safe. The one
+exception came before any account existed: the password and email columns of the earlier sign-ins,
+and the <code>login_codes</code> table, went on 2026-09-16. Times are
+<code>timestamptz</code> in the database and Unix seconds in Python.</p>
+<h2 id="postgresql">PostgreSQL</h2>
+<pre><code>credentials 1──* tokens            users 1──* attempts
+     │                               │
+     └──────── user_id ──────────────┤ 1──* ratings (one per topic)
+                                     │
+                                     ├─ nick shown on play_sessions 1──* play_batches
+                                     │
+                                     ├──* rated_attempts ──────┐
+                                     └──* rated_quiz_sessions ─┴─ closed ─▶ one attempts row
+
+events
+</code></pre>
+<p><code>user_id</code> is a random 32-character hex id created by a GitHub account's first sign-in. It is the key
+everywhere and never changes; the nick is a label on top of it and is chosen once.</p>
+<h3 id="credentials"><code>credentials</code></h3>
+<p>Who an account is: a GitHub account, and nothing else. Created by the first sign-in with that GitHub
+account (<code>POST /auth/github/poll</code> from a terminal, <code>POST /auth/github/exchange</code> on the site). There is
+no password and no email column (both dropped 2026-09-16), and no GitHub token is ever stored.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user_id</code></td>
+<td>text</td>
+<td>primary key</td>
+</tr>
+<tr>
+<td><code>github_id</code></td>
+<td>bigint</td>
+<td>GitHub's numeric user id; unique (<code>credentials_github_idx</code>); never changes</td>
+</tr>
+<tr>
+<td><code>github_login</code></td>
+<td>text</td>
+<td>the login as GitHub last reported it, refreshed at every sign-in; the public profile links to it</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>timestamptz</td>
+<td></td>
+</tr>
+<tr>
+<td><code>discord_id</code></td>
+<td>text</td>
+<td>the linked Discord user, or null; unique (<code>credentials_discord_idx</code>)</td>
+</tr>
+<tr>
+<td><code>digest</code></td>
+<td>boolean</td>
+<td>the weekly learner digest; <code>false</code> until the learner turns it on, and only possible with Discord linked (<code>PUT /auth/preferences</code>); read by the digest job (<code>norboten_api/digest.py</code>) on the server</td>
+</tr>
+<tr>
+<td><code>discord_error</code></td>
+<td>text</td>
+<td>why the last digest could not be delivered (Discord's <code>50007</code>), shown on the account page; cleared on a new link</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tokens"><code>tokens</code></h3>
+<p>Opaque bearer tokens. The client keeps the token; the server keeps only its SHA-256.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>token_hash</code></td>
+<td>text</td>
+<td>primary key; hex SHA-256 of the token</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td>text</td>
+<td>→ <code>credentials.user_id</code>, <code>ON DELETE CASCADE</code></td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td>text</td>
+<td><code>web</code> (the site) or <code>cli</code> (a terminal); either 90 days when remembered, 12 hours when not. <code>mcp</code> and <code>mcp-refresh</code> are an MCP client's</td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td>text</td>
+<td>for <code>cli</code>, the machine that signed in, e.g. <code>tower.local (Darwin)</code></td>
+</tr>
+<tr>
+<td><code>created_at</code>, <code>expires_at</code>, <code>last_used_at</code></td>
+<td>timestamptz</td>
+<td><code>last_used_at</code> is updated on each authenticated request</td>
+</tr>
+</tbody>
+</table>
+<p>Index: <code>tokens_user_idx (user_id)</code> — &quot;where am I signed in&quot; and revoking all.</p>
+<h3 id="pending_sign_ins"><code>pending_sign_ins</code></h3>
+<p>A sign-in or a Discord link that has started and not finished (<code>norboten_api/pending.py</code>), in the
+database rather than Redis so that a restart strands nobody mid-sign-in. Every row is used once — it
+is deleted as it is read — and expires.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>text</td>
+<td>primary key; random; the terminal's poll handle, GitHub's <code>state</code>, the one-time code</td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td>text</td>
+<td><code>device</code> (a terminal), <code>web</code> (the site), <code>once</code> (the one-time code the site exchanges), <code>discord-link</code></td>
+</tr>
+<tr>
+<td><code>data</code></td>
+<td>jsonb</td>
+<td><code>device</code>: GitHub's device code (never sent to the terminal), the polling interval, the terminal's label, <code>remember</code>; <code>web</code>: the page's own state, <code>remember</code>, where to return; <code>once</code>: the GitHub id and login, <code>remember</code>; <code>discord-link</code>: the account and whether to join the server</td>
+</tr>
+<tr>
+<td><code>expires_at</code></td>
+<td>timestamptz</td>
+<td>15 minutes; a <code>once</code> code 60 seconds</td>
+</tr>
+</tbody>
+</table>
+<p>Index: <code>pending_sign_ins_expiry_idx (expires_at)</code>.</p>
+<h3 id="users"><code>users</code></h3>
+<p>The public profile. Created by <code>POST /me</code> once a signed-in account chooses a nick.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user_id</code></td>
+<td>text</td>
+<td>primary key</td>
+</tr>
+<tr>
+<td><code>nick</code></td>
+<td>text</td>
+<td>unique; <code>^[a-z0-9][a-z0-9_-]{1,18}[a-z0-9]$</code></td>
+</tr>
+<tr>
+<td><code>country</code></td>
+<td>char(2)</td>
+<td>ISO 3166-1 alpha-2; drawn as a flag</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>timestamptz</td>
+<td></td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td>boolean</td>
+<td>a generated sample account, labelled wherever it is shown</td>
+</tr>
+</tbody>
+</table>
+<h3 id="attempts"><code>attempts</code></h3>
+<p>One graded lab attempt or one finished theory run. Written by <code>POST /attempts</code>, and by a rated
+attempt when it closes (<code>rated_attempts</code>); never updated.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>bigserial</td>
+<td>primary key</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td>text</td>
+<td></td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td>text</td>
+<td><code>lab</code> or <code>quiz</code></td>
+</tr>
+<tr>
+<td><code>lab_id</code></td>
+<td>text</td>
+<td>the lab id, or the quiz topic for <code>quiz</code></td>
+</tr>
+<tr>
+<td><code>started_at</code></td>
+<td>timestamptz</td>
+<td>when the faults were applied (the clock's start)</td>
+</tr>
+<tr>
+<td><code>duration_seconds</code></td>
+<td>integer</td>
+<td></td>
+</tr>
+<tr>
+<td><code>score_percent</code></td>
+<td>smallint</td>
+<td>0–100</td>
+</tr>
+<tr>
+<td><code>passed</code></td>
+<td>boolean</td>
+<td></td>
+</tr>
+<tr>
+<td><code>rated</code></td>
+<td>boolean</td>
+<td>practice attempts are recorded and never rated</td>
+</tr>
+<tr>
+<td><code>within_limit</code></td>
+<td>boolean</td>
+<td>false when a rated attempt ran over its clock (then it is a loss)</td>
+</tr>
+<tr>
+<td><code>difficulty</code></td>
+<td>smallint</td>
+<td><strong>from the lab manifest</strong>, never from the client</td>
+</tr>
+<tr>
+<td><code>topics</code></td>
+<td>text[]</td>
+<td>from the manifest too</td>
+</tr>
+<tr>
+<td><code>rating_delta</code></td>
+<td>jsonb</td>
+<td><code>{topic: change}</code> this attempt caused; empty for practice</td>
+</tr>
+</tbody>
+</table>
+<p>Indexes: <code>(user_id, started_at desc)</code> for a profile, <code>(lab_id, started_at desc)</code> for analytics.</p>
+<h3 id="ratings"><code>ratings</code></h3>
+<p>The current Glicko-2 rating per learner per topic. Upserted after each rated attempt.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user_id</code>, <code>topic</code></td>
+<td>text</td>
+<td>composite primary key; <code>topic</code> is one of the nineteen slugs in <code>cli/src/norboten/topics.py</code></td>
+</tr>
+<tr>
+<td><code>r</code>, <code>rd</code>, <code>sigma</code></td>
+<td>double precision</td>
+<td>rating, rating deviation, volatility (start 1500 / 350 / 0.06)</td>
+</tr>
+<tr>
+<td><code>games</code></td>
+<td>integer</td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>timestamptz</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Index: <code>ratings_topic_idx (topic)</code> for a topic board. The overall rating is not stored: it is the
+inverse-variance-weighted mean of the topic ratings, computed when read.</p>
+<h3 id="rated_attempts"><code>rated_attempts</code></h3>
+<p>A rated lab attempt between being issued and being judged (docs/lab-spec.md §13). Created by
+<code>POST /rated/attempts</code>; closed by the last fact record, by <code>…/abandon</code>, by starting another one, or
+by the hourly sweep once it expires. Closing writes one <code>attempts</code> row with <code>rated = true</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>attempt_id</code></td>
+<td>text</td>
+<td>primary key; 24 random url-safe characters</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td>text</td>
+<td></td>
+</tr>
+<tr>
+<td><code>open</code></td>
+<td>boolean</td>
+<td>false once closed</td>
+</tr>
+<tr>
+<td><code>expires_at</code></td>
+<td>timestamptz</td>
+<td>issued + three times the lab's clock, at least an hour</td>
+</tr>
+<tr>
+<td><code>data</code></td>
+<td>jsonb</td>
+<td>the rest, read whole: lab, image, nonce, the attempt key, the received records, the outcome, each check's verdict, the rating change</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>timestamptz</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Indexes: <code>(user_id) WHERE open</code> — one open attempt per learner is looked up on every start — and
+<code>(expires_at) WHERE open</code> for the sweep. The key is stored because the server verifies with it; it
+signs this attempt's records and nothing else.</p>
+<h3 id="rated_quiz_sessions"><code>rated_quiz_sessions</code></h3>
+<p>A rated theory run (docs/quiz-spec.md §6), in the same five columns as <code>rated_attempts</code>: the run's
+id as <code>attempt_id</code>, its owner, <code>open</code>, <code>expires_at</code> (an hour after it started) and <code>data</code> — the
+topic, the questions it will ask in order, each served question with when it was served and what
+came back, the outcome and the rating change. Closing it writes one <code>attempts</code> row with
+<code>kind = 'quiz'</code> and <code>rated = true</code>. Indexes as for <code>rated_attempts</code>.</p>
+<h3 id="play_sessions"><code>play_sessions</code></h3>
+<p>A recorded or live terminal session. Created by <code>POST /play/sessions</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_id</code></td>
+<td>text</td>
+<td>primary key; 16 random url-safe characters</td>
+</tr>
+<tr>
+<td><code>user_id</code>, <code>nick</code>, <code>country</code></td>
+<td>text</td>
+<td>the nick and country as they were when it started</td>
+</tr>
+<tr>
+<td><code>lab_id</code>, <code>lab_title</code></td>
+<td>text</td>
+<td></td>
+</tr>
+<tr>
+<td><code>width</code>, <code>height</code></td>
+<td>smallint</td>
+<td>the terminal, for the player</td>
+</tr>
+<tr>
+<td><code>started_at</code>, <code>last_frame_at</code>, <code>ended_at</code></td>
+<td>timestamptz</td>
+<td>live = not ended and a frame in the last 25 s</td>
+</tr>
+<tr>
+<td><code>frames</code>, <code>commands</code></td>
+<td>integer</td>
+<td>running counts</td>
+</tr>
+<tr>
+<td><code>passed</code></td>
+<td>boolean</td>
+<td>set when it ends, if known</td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td>boolean</td>
+<td></td>
+</tr>
+<tr>
+<td><code>expires_at</code></td>
+<td>timestamptz</td>
+<td><code>started_at</code> + 7 days; <code>purge()</code> deletes past it hourly</td>
+</tr>
+</tbody>
+</table>
+<p>Index: <code>play_sessions_recent_idx (last_frame_at desc)</code>.</p>
+<h3 id="play_batches"><code>play_batches</code></h3>
+<p>What the recorder flushed every couple of seconds. Deleted with its session.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_id</code>, <code>seq</code></td>
+<td>text, integer</td>
+<td>composite primary key; a retried batch is ignored (<code>ON CONFLICT DO NOTHING</code>)</td>
+</tr>
+<tr>
+<td><code>at</code></td>
+<td>double precision</td>
+<td>seconds into the recording</td>
+</tr>
+<tr>
+<td><code>events</code></td>
+<td>jsonb</td>
+<td>asciicast v2 events `[time, &quot;o&quot;</td>
+</tr>
+<tr>
+<td><code>commands</code></td>
+<td>jsonb</td>
+<td><code>[{at, text}]</code></td>
+</tr>
+<tr>
+<td><code>changes</code></td>
+<td>jsonb</td>
+<td><code>[{path, diff, truncated, command}]</code> — diffs taken inside the guest</td>
+</tr>
+</tbody>
+</table>
+<h3 id="events"><code>events</code></h3>
+<p>Append-only operational events, as JSON: <code>chat</code> (answered, blocked), <code>progress</code>
+(anonymous, opt-in), <code>stuck_point</code> (opt-in telemetry). No question is stored: the banks are files in
+the repository (a <code>questions</code> table from before 2026-09-15 is dropped on start).</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>bigserial primary key</td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td>text</td>
+</tr>
+<tr>
+<td><code>payload</code></td>
+<td>jsonb</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>timestamptz</td>
+</tr>
+</tbody>
+</table>
+<p>Index: <code>events_kind_idx (kind, created_at desc)</code>.</p>
+<h2 id="redis">Redis</h2>
+<p><code>api/src/norboten_api/live.py</code>. No persistence (<code>--save &quot;&quot; --appendonly no</code>), 256 MB with LRU
+eviction.</p>
+<table>
+<thead>
+<tr>
+<th>Key or channel</th>
+<th>Type</th>
+<th>TTL</th>
+<th>Written by</th>
+<th>Read by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>play:&lt;session_id&gt;</code></td>
+<td>pub/sub channel</td>
+<td>—</td>
+<td><code>POST …/frames</code> and <code>…/end</code> publish `{type: batch</td>
+<td>end}`</td>
+</tr>
+<tr>
+<td><code>rate:&lt;bucket&gt;:&lt;who&gt;:&lt;window&gt;</code></td>
+<td>counter</td>
+<td>the window + 5 s</td>
+<td>every rate-limited endpoint</td>
+<td>the same</td>
+</tr>
+<tr>
+<td>`board:&lt;topic</td>
+<td>overall&gt;:&lt;limit&gt;`</td>
+<td>string (JSON)</td>
+<td>30 s</td>
+<td><code>GET /leaderboard</code></td>
+</tr>
+<tr>
+<td><code>readyz</code></td>
+<td>string</td>
+<td>10 s</td>
+<td><code>GET /readyz</code></td>
+<td>the same</td>
+</tr>
+</tbody>
+</table>
+<p>Rate limits: chat 20 a minute per client (<code>NORBOTEN_CHAT_PER_MINUTE</code>); starting a sign-in and
+exchanging a one-time code 10 a minute per client each (<code>NORBOTEN_SIGN_INS_PER_MINUTE</code>); starting a
+Discord link 10 a minute. The
+client is the first <code>X-Forwarded-For</code> address Caddy sets.</p>
+<h2 id="the-learners-machine">The learner's machine</h2>
+<p><code>~/.norboten</code>, or <code>NORBOTEN_HOME</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lima/&lt;version&gt;/</code></td>
+<td>the pinned Lima</td>
+</tr>
+<tr>
+<td><code>vms/</code></td>
+<td>the lab VMs (<code>LIMA_HOME</code>): disks, snapshots, serial logs and sockets</td>
+</tr>
+<tr>
+<td><code>images/&lt;id&gt;/&lt;arch&gt;/</code></td>
+<td>golden base images, with the metadata they were verified against</td>
+</tr>
+<tr>
+<td><code>labs/&lt;id&gt;/&lt;version&gt;/</code></td>
+<td>labs pulled from the registry</td>
+</tr>
+<tr>
+<td><code>sessions/&lt;lab&gt;.json</code></td>
+<td>a lab session: state, image, attempts, hint levels, clock</td>
+</tr>
+<tr>
+<td><code>sessions/&lt;lab&gt;.last.json</code></td>
+<td>the last grade report, with every check's result per pass</td>
+</tr>
+<tr>
+<td><code>plays/&lt;lab&gt;-&lt;stamp&gt;.cast</code>, <code>.log.json</code></td>
+<td>recordings: asciicast v2, and the commands and diffs</td>
+</tr>
+<tr>
+<td><code>journals/&lt;id&gt;.pdf</code></td>
+<td>exported journals</td>
+</tr>
+<tr>
+<td><code>progress.json</code></td>
+<td>theory results per topic</td>
+</tr>
+<tr>
+<td><code>credentials.json</code></td>
+<td>mode 0600: the <code>cli</code> token, its expiry, which API issued it</td>
+</tr>
+</tbody>
+</table>
+<p>Nothing here is sent anywhere unless the learner signs in (graded attempts, rated theory runs) or
+streams a session.</p>
+
+    </article>
+    <div class="toc">
+<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>      <a class="h2" href="#postgresql">PostgreSQL</a>
+      <a class="h3" href="#credentials">credentials</a>
+      <a class="h3" href="#tokens">tokens</a>
+      <a class="h3" href="#pending_sign_ins">pending_sign_ins</a>
+      <a class="h3" href="#users">users</a>
+      <a class="h3" href="#attempts">attempts</a>
+      <a class="h3" href="#ratings">ratings</a>
+      <a class="h3" href="#rated_attempts">rated_attempts</a>
+      <a class="h3" href="#rated_quiz_sessions">rated_quiz_sessions</a>
+      <a class="h3" href="#play_sessions">play_sessions</a>
+      <a class="h3" href="#play_batches">play_batches</a>
+      <a class="h3" href="#events">events</a>
+      <a class="h2" href="#redis">Redis</a>
+      <a class="h2" href="#the-learners-machine">The learner&#39;s machine</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("../../search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+</body>
+</html>

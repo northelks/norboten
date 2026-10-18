@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A playbook describes a state, not a sequence of commands</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A playbook describes a state, not a sequence of commands</h1>
+  <div class="meta">ansible, boot-systemd · 40 minutes · 2280 words</div>
+</header>
+<p>The playbook in <code>/srv/ansible</code> runs without errors. That is the problem with it: it runs without
+errors every single time, reports six changes every single time, restarts the application every
+single time, and grows a configuration file by one line every single time. Its <code>--check</code> mode skips
+five of its seven tasks, so nobody can preview what it will do. And the application listens on 8080
+although the inventory says 8081, because a variable set “for testing” in the play outranks the
+inventory.</p>
+<p>None of that is a bug in Ansible. It is what happens when a playbook is written as a shell script
+with YAML around it. <code>command</code> and <code>shell</code> tasks run commands; they do not know what the machine is
+supposed to look like, so they cannot tell whether there is anything to do, they cannot report
+honestly whether they changed something, and they cannot predict it in check mode. Ansible’s value
+comes from <strong>modules</strong>, which compare the desired state with the actual one and act only on the
+difference. A playbook built from them <strong>converges</strong>: run it once and the machine matches; run it
+again and nothing happens.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Explain idempotence in terms of what a module does: read the current state, compare, change only the
+difference, report <code>changed</code> truthfully.</li>
+<li>Recognise tasks that cannot converge — <code>command</code>, <code>shell</code>, appends — and replace them with the
+builtin module that describes the same state.</li>
+<li>Use handlers so services restart only when their configuration actually changed.</li>
+<li>Find where a variable’s value comes from with <code>ansible … -m debug</code>, and name which sources outrank
+inventory <code>group_vars</code>.</li>
+<li>Use <code>--check --diff</code> as a preview, and read its skipped and changed counts.</li>
+<li>Apply kernel parameters persistently and immediately, and know that writing a file in
+<code>/etc/sysctl.d</code> does neither by itself at run time.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>What “idempotent” really means</h3>
+<p>An operation is idempotent when doing it twice has the same effect as doing it once. For
+configuration management the useful form is stronger: a task <strong>describes an end state</strong>, and running
+it is a request to make the machine match. The builtin modules implement that in three steps:</p>
+<ol>
+<li><strong>Gather</strong> the current state (does the user exist? what is in the file? is the unit enabled?).</li>
+<li><strong>Compare</strong> with the parameters of the task.</li>
+<li><strong>Act</strong> only if they differ, and set <code>changed</code> accordingly.</li>
+</ol>
+<p>That third step is what gives <code>changed</code> a meaning. On a converged machine every task reports <code>ok</code>,
+handlers are not notified, and the play recap says <code>changed=0</code>. When something drifts, exactly the
+tasks that fixed it report <code>changed</code>, which is a small, readable audit of what was wrong.</p>
+<h3>Why <code>command</code> and <code>shell</code> cannot converge</h3>
+<pre><code class="language-yaml">- name: Enable forwarding for the application's containers
+  ansible.builtin.shell: echo &quot;net.ipv4.ip_forward = 1&quot; &gt;&gt; /etc/sysctl.d/90-app.conf
+</code></pre>
+<p>Ansible cannot know what an arbitrary command does, so it assumes the worst: every run, the command
+runs and the task reports <code>changed</code>. An append is the pure form of the problem — each run is a new
+line. <code>useradd app</code> fails on the second run, which is why it came with <code>ignore_errors: true</code>, which
+in turn hides the day it fails for a real reason. <code>cp</code> always “changes”. <code>systemctl restart</code> in a
+handler notified by a task that always changes restarts the application on every run.</p>
+<p><code>command</code> and <code>shell</code> are still legitimate, for operations no module covers. They must then be taught
+the missing steps:</p>
+<pre><code class="language-yaml">- ansible.builtin.command: /opt/app/bin/migrate
+  args:
+    creates: /var/lib/app/.migrated        # skip if this exists
+- ansible.builtin.command: /opt/app/bin/rotate-keys --dry-run
+  register: plan
+  changed_when: &quot;'nothing to do' not in plan.stdout&quot;
+</code></pre>
+<p><code>creates</code>/<code>removes</code> decide whether to run; <code>changed_when</code> decides what to report. Without them, a
+command task is a statement that the playbook cannot be trusted to converge.</p>
+<h3>The module for each job</h3>
+<table>
+<thead>
+<tr>
+<th>What the shell did</th>
+<th>What describes the state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>useradd …</code></td>
+<td><code>ansible.builtin.user</code> (<code>name</code>, <code>system</code>, <code>home</code>, <code>shell</code>, <code>create_home</code>)</td>
+</tr>
+<tr>
+<td><code>mkdir -p</code></td>
+<td><code>ansible.builtin.file</code> with <code>state: directory</code> and a <code>mode</code></td>
+</tr>
+<tr>
+<td><code>cp files/x dest</code></td>
+<td><code>ansible.builtin.copy</code> with <code>src</code> and <code>mode</code></td>
+</tr>
+<tr>
+<td><code>echo … &gt; file</code>, <code>printf … &gt; file</code></td>
+<td><code>ansible.builtin.copy</code> with <code>content</code>, or <code>ansible.builtin.template</code></td>
+</tr>
+<tr>
+<td><code>echo … &gt;&gt; file</code></td>
+<td><code>copy</code>/<code>template</code> for a file you own; <code>lineinfile</code> for one line in someone else’s file</td>
+</tr>
+<tr>
+<td><code>systemctl daemon-reload &amp;&amp; enable --now</code></td>
+<td><code>ansible.builtin.systemd_service</code> with <code>state</code>, <code>enabled</code>, <code>daemon_reload</code></td>
+</tr>
+<tr>
+<td><code>sysctl -w</code>, sysctl.d files</td>
+<td>a file via <code>copy</code> plus a handler, or <code>ansible.posix.sysctl</code> if that collection is installed</td>
+</tr>
+</tbody>
+</table>
+<p><code>copy</code> with <code>content:</code> manages the <em>whole</em> file: whatever duplicates or strays are in it, the next run
+replaces them with exactly the content given, and reports <code>changed</code> once. That is why it is the right
+tool here, and <code>lineinfile</code> is not — <code>lineinfile</code> would leave the existing duplicates alone.</p>
+<h3>Handlers: change-triggered actions</h3>
+<pre><code class="language-yaml">    - name: Configuration
+      ansible.builtin.template:
+        src: templates/app.conf.j2
+        dest: /etc/app/app.conf
+      notify: Restart app
+  handlers:
+    - name: Restart app
+      ansible.builtin.systemd_service:
+        name: app
+        state: restarted
+</code></pre>
+<p>A task notifies a handler <strong>only when it reports <code>changed</code></strong>. Handlers run once, after the tasks of
+the play (or at <code>meta: flush_handlers</code>), however many tasks notified them. A handler that is a
+<code>command</code> with <code>changed_when: true</code> is fine: it only runs when something real changed. The restart on
+every run in the original came from the notifying task, not from the handler.</p>
+<h3>Where a variable’s value comes from</h3>
+<p>Ansible merges variables from many sources, and each source has a fixed rank. The ones that matter
+most, from low to high:</p>
+<pre><code>role defaults  &lt;  inventory group_vars/all  &lt;  inventory group_vars/&lt;group&gt;  &lt;  host_vars
+               &lt;  play vars / vars_files     &lt;  role vars  &lt;  block/task vars
+               &lt;  set_fact / register        &lt;  extra vars (-e)   ← always wins
+</code></pre>
+<p><code>group_vars/app.yml</code> next to the inventory gives <code>app_port: 8081</code>. The play has</p>
+<pre><code class="language-yaml">  vars:
+    app_port: 8080  # testing — remove before merging
+</code></pre>
+<p>and <strong>play vars outrank inventory variables</strong>, so every task in the play sees 8080. The inventory is
+not ignored; it is overridden. <code>ansible &lt;pattern&gt; -m ansible.builtin.debug -a var=app_port</code> evaluates
+the variable from the inventory alone (no play), which is the quickest way to see that the inventory
+is right and the play is the culprit.</p>
+<p>A useful habit that follows: values that describe a host or group live in the inventory; play and role
+<code>vars</code> are for constants that should <em>not</em> be overridable per host. Anything “temporary” belongs on
+the command line as <code>-e</code>, where it cannot be committed by accident.</p>
+<h3>Check mode and diff</h3>
+<p><code>--check</code> runs the play without changing anything. Modules that support it report what they would
+change. <code>command</code> and <code>shell</code> cannot be simulated, so Ansible <strong>skips</strong> them in check mode — which is
+why <code>skipped</code> is as important in a check-mode recap as <code>changed</code>: a skipped task is a part of the
+playbook that the preview did not see. <code>--diff</code> adds a unified diff for file changes.</p>
+<p>On a converged host, <code>ansible-playbook site.yml --check</code> should say <code>changed=0 skipped=0</code> (tasks with
+a <code>when:</code> condition that is false are the legitimate exception). That single line is a strong test of
+a playbook: it proves the tasks describe state and that the machine is in it. It is exactly what the
+lab grades, and it never changes the machine.</p>
+<p>One subtlety visible in the walkthrough: a handler notified in check mode also runs in check mode.
+A <code>systemd_service</code> handler reports <code>changed</code> (“it would restart”); a <code>command</code> handler is skipped.</p>
+<h3>Kernel parameters: two places, two moments</h3>
+<p><code>/etc/sysctl.d/*.conf</code> is read by <code>systemd-sysctl.service</code> <strong>at boot</strong>. Writing the file changes
+nothing now. <code>sysctl -w key=value</code> (or writing to <code>/proc/sys/…</code>) changes the running kernel and is
+lost at reboot. A correct configuration does both: the file for the next boot, and an apply for now.
+<code>sysctl -p FILE</code> loads one file; <code>sysctl --system</code> reloads them all. In a playbook that is a file task
+plus a handler, so the kernel is touched only when the file changed. On Ubuntu <code>sysctl</code> lives in
+<code>/usr/sbin</code>, which is not on an unprivileged user’s <code>PATH</code>.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the track’s lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. Look at the symptoms before running anything.</strong></p>
+<pre><code class="language-console">$ cat /etc/sysctl.d/90-app.conf; /usr/sbin/sysctl net.ipv4.ip_forward
+net.ipv4.ip_forward = 1
+net.ipv4.ip_forward = 1
+net.ipv4.ip_forward = 0
+$ sudo ss -ltnp | grep python3
+LISTEN 0      5          127.0.0.1:8080      0.0.0.0:*    users:((&quot;python3&quot;,pid=1512,fd=3))
+$ curl -s http://127.0.0.1:8080/; curl -sS http://127.0.0.1:8081/; echo &quot;exit=$?&quot;
+inventory service
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Could not connect to server
+exit=7
+$ systemctl show app -p ActiveEnterTimestamp
+ActiveEnterTimestamp=Mon 2026-09-14 03:47:32 UTC
+</code></pre>
+<p>Two identical lines in the sysctl file — the playbook has been run twice — and forwarding is still
+off in the kernel: nothing ever applied the file. The application answers on 8080, not 8081.</p>
+<p><strong>2. Run the playbook, look again, then preview it.</strong></p>
+<pre><code class="language-console">$ cd /srv/ansible &amp;&amp; sudo ansible-playbook site.yml 2&gt;&amp;1 | tail -n 4
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=8    changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=1
+$ cat /etc/sysctl.d/90-app.conf; systemctl show app -p ActiveEnterTimestamp
+net.ipv4.ip_forward = 1
+net.ipv4.ip_forward = 1
+net.ipv4.ip_forward = 1
+ActiveEnterTimestamp=Mon 2026-09-14 03:47:34 UTC
+$ cd /srv/ansible &amp;&amp; sudo ansible-playbook site.yml --check 2&gt;&amp;1 | grep -E '^(TASK|changed|ok|skipping)|localhost'
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+TASK [Create the app account] **************************************************
+skipping: [localhost]
+TASK [Enable forwarding for the application's containers] **********************
+skipping: [localhost]
+TASK [Install the application] *************************************************
+skipping: [localhost]
+TASK [Write the configuration] *************************************************
+skipping: [localhost]
+TASK [Install the unit] ********************************************************
+ok: [localhost]
+TASK [Start the application] ***************************************************
+skipping: [localhost]
+localhost                  : ok=2    changed=0    unreachable=0    failed=0    skipped=5    rescued=0    ignored=0
+</code></pre>
+<p>On an unchanged machine: six changes, one ignored failure (the second <code>useradd</code>), a third line in the
+file, and a new <code>ActiveEnterTimestamp</code> — the application restarted for nothing. Check mode skips five
+tasks and reports <code>changed=0</code>, which looks reassuring and means only “I did not look”.</p>
+<p><strong>3. Find where the port comes from.</strong></p>
+<pre><code class="language-console">$ cat /srv/ansible/inventory.ini /srv/ansible/group_vars/app.yml
+[app]
+localhost ansible_connection=local
+---
+app_port: 8081
+app_greeting: inventory service
+$ cd /srv/ansible &amp;&amp; ansible app -m ansible.builtin.debug -a var=app_port
+localhost | SUCCESS =&gt; {
+    &quot;app_port&quot;: 8081
+}
+$ sed -n 1,12p /srv/ansible/site.yml
+---
+- name: Configure the application host
+  hosts: app
+  become: true
+  vars:
+    app_port: 8080  # testing — remove before merging
+  tasks:
+    - name: Create the app account
+      ansible.builtin.command: useradd --system --home-dir /opt/app --shell /usr/sbin/nologin app
+      ignore_errors: true
+
+    - name: Enable forwarding for the application's containers
+</code></pre>
+<p>The inventory alone resolves <code>app_port</code> to 8081. The play’s own <code>vars</code> sets 8080, and play vars
+outrank inventory variables.</p>
+<p><strong>4. Rewrite the playbook with modules.</strong> No play <code>vars</code>, one module per piece of state, and handlers
+for the two things that should follow a change:</p>
+<pre><code class="language-yaml">---
+- name: Configure the application host
+  hosts: app
+  become: true
+  tasks:
+    - name: App account
+      ansible.builtin.user:
+        name: app
+        system: true
+        home: /opt/app
+        create_home: false
+        shell: /usr/sbin/nologin
+
+    - name: Forwarding for the application's containers
+      ansible.builtin.copy:
+        dest: /etc/sysctl.d/90-app.conf
+        content: &quot;net.ipv4.ip_forward = 1\n&quot;
+        mode: &quot;0644&quot;
+      notify: Apply sysctl
+
+    - name: Application directory
+      ansible.builtin.file:
+        path: /opt/app
+        state: directory
+        mode: &quot;0755&quot;
+
+    - name: Application
+      ansible.builtin.copy:
+        src: files/app.py
+        dest: /opt/app/app.py
+        mode: &quot;0644&quot;
+      notify: Restart app
+
+    - name: Configuration directory
+      ansible.builtin.file:
+        path: /etc/app
+        state: directory
+        mode: &quot;0755&quot;
+
+    - name: Configuration
+      ansible.builtin.template:
+        src: templates/app.conf.j2
+        dest: /etc/app/app.conf
+        mode: &quot;0644&quot;
+      notify: Restart app
+
+    - name: Unit
+      ansible.builtin.copy:
+        src: files/app.service
+        dest: /etc/systemd/system/app.service
+        mode: &quot;0644&quot;
+      notify: Restart app
+
+    - name: Application running and enabled
+      ansible.builtin.systemd_service:
+        name: app
+        state: started
+        enabled: true
+        daemon_reload: true
+
+  handlers:
+    - name: Apply sysctl
+      ansible.builtin.command: sysctl -p /etc/sysctl.d/90-app.conf
+      changed_when: true
+
+    - name: Restart app
+      ansible.builtin.systemd_service:
+        name: app
+        state: restarted
+        daemon_reload: true
+</code></pre>
+<p><strong>5. Preview, apply, apply again, preview again.</strong></p>
+<pre><code class="language-console">$ cd /srv/ansible &amp;&amp; sudo ansible-playbook site.yml --check --diff 2&gt;&amp;1 | grep -vE '^\s*$'
+PLAY [Configure the application host] ******************************************
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+TASK [App account] *************************************************************
+ok: [localhost]
+TASK [Forwarding for the application's containers] *****************************
+--- before: /etc/sysctl.d/90-app.conf
++++ after: /etc/sysctl.d/90-app.conf
+@@ -1,3 +1 @@
+ net.ipv4.ip_forward = 1
+-net.ipv4.ip_forward = 1
+-net.ipv4.ip_forward = 1
+changed: [localhost]
+TASK [Application directory] ***************************************************
+ok: [localhost]
+TASK [Application] *************************************************************
+ok: [localhost]
+TASK [Configuration directory] *************************************************
+ok: [localhost]
+TASK [Configuration] ***********************************************************
+--- before: /etc/app/app.conf
++++ after: /root/.ansible/tmp/ansible-local-21777amddf4y/tmp669hmsui/app.conf.j2
+@@ -1,2 +1,3 @@
+-port = 8080
++# managed by Ansible — /srv/ansible
++port = 8081
+ greeting = inventory service
+changed: [localhost]
+TASK [Unit] ********************************************************************
+ok: [localhost]
+TASK [Application running and enabled] *****************************************
+ok: [localhost]
+RUNNING HANDLER [Apply sysctl] *************************************************
+skipping: [localhost]
+RUNNING HANDLER [Restart app] **************************************************
+changed: [localhost]
+PLAY RECAP *********************************************************************
+localhost                  : ok=10   changed=3    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0
+</code></pre>
+<p>The preview now covers every task and says exactly what will change: the duplicate lines go, the port
+becomes 8081. The existing <code>app</code> account, directories, application file and unit already match, so
+those tasks are <code>ok</code>. The one skip is the <code>command</code> handler, which check mode cannot simulate.</p>
+<pre><code class="language-console">$ cd /srv/ansible &amp;&amp; sudo ansible-playbook site.yml 2&gt;&amp;1 | grep -E '^(TASK|RUNNING|changed|ok)|localhost'
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+TASK [App account] *************************************************************
+ok: [localhost]
+TASK [Forwarding for the application's containers] *****************************
+changed: [localhost]
+TASK [Application directory] ***************************************************
+ok: [localhost]
+TASK [Application] *************************************************************
+ok: [localhost]
+TASK [Configuration directory] *************************************************
+ok: [localhost]
+TASK [Configuration] ***********************************************************
+changed: [localhost]
+TASK [Unit] ********************************************************************
+ok: [localhost]
+TASK [Application running and enabled] *****************************************
+ok: [localhost]
+RUNNING HANDLER [Apply sysctl] *************************************************
+changed: [localhost]
+RUNNING HANDLER [Restart app] **************************************************
+changed: [localhost]
+localhost                  : ok=11   changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+$ cd /srv/ansible &amp;&amp; sudo ansible-playbook site.yml 2&gt;&amp;1 | tail -n 3
+PLAY RECAP *********************************************************************
+localhost                  : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+$ cd /srv/ansible &amp;&amp; sudo ansible-playbook site.yml --check 2&gt;&amp;1 | tail -n 3
+PLAY RECAP *********************************************************************
+localhost                  : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+</code></pre>
+<p>The real run changed two things and ran both handlers once. The second run changed nothing and ran no
+handlers. Check mode on the converged machine: <code>changed=0 skipped=0</code>.</p>
+<p><strong>6. Confirm the result on the machine.</strong></p>
+<pre><code class="language-console">$ cat /etc/sysctl.d/90-app.conf /etc/app/app.conf; /usr/sbin/sysctl net.ipv4.ip_forward; curl -s http://127.0.0.1:8081/
+net.ipv4.ip_forward = 1
+# managed by Ansible — /srv/ansible
+port = 8081
+greeting = inventory service
+net.ipv4.ip_forward = 1
+inventory service
+</code></pre>
+<p><strong>7. Grade.</strong> The checks — including the check-mode run — passed before and after the reboot.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Deleting the <code>vars:</code> block and changing nothing else.</strong> The port is fixed, but the playbook still
+appends, restarts on every run and hides in check mode.</p>
+<p><strong><code>lineinfile</code> for the sysctl setting.</strong> It stops new duplicates but leaves the two that already exist,
+so the file keeps three lines. For a file the playbook owns, manage the whole content.</p>
+<p><strong><code>changed_when: false</code> on the shell tasks.</strong> The recap becomes <code>changed=0</code>, and the tasks still append
+and restart on every run. It silences the report without making the task describe a state, and check
+mode still skips them.</p>
+<p><strong><code>check_mode: false</code> on the shell tasks “so --check does not skip them”.</strong> Then <code>--check</code> really
+runs them — and changes the machine during what everybody believes is a dry run.</p>
+<p><strong>Keeping <code>ignore_errors: true</code> on the account task.</strong> With <code>ansible.builtin.user</code> there is no error to
+ignore; with <code>ignore_errors</code> left in place, a genuine failure (a UID clash, a locked <code>/etc/passwd</code>)
+passes silently.</p>
+<p><strong>Setting the port with <code>-e app_port=8081</code> in the documentation.</strong> It works because extra vars win,
+and it hides the conflict instead of removing it. The next person who forgets <code>-e</code> gets 8080.</p>
+<p><strong>Writing the sysctl file and expecting the kernel to follow.</strong> The file is read at boot. Without a
+handler (or <code>sysctl --system</code>) the value is only right after the next reboot — the grader checks the
+running kernel too.</p>
+<p><strong>Restarting through <code>ansible.builtin.command: systemctl restart app</code>.</strong> It works as a handler, but
+<code>systemd_service</code> with <code>state: restarted</code> also runs <code>daemon-reload</code> when asked and reports clearly;
+use the module.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console">$ ansible-playbook site.yml --check --diff          # preview; watch changed AND skipped
+$ ansible-playbook site.yml                          # apply
+$ ansible-playbook site.yml | tail -n 3              # the recap: a second run should be changed=0
+$ ansible-playbook site.yml --list-tasks             # what would run, without running it
+$ ansible-playbook site.yml --start-at-task &quot;Configuration&quot;
+$ ansible app -m ansible.builtin.debug -a var=app_port     # a variable from the inventory alone
+$ ansible-inventory --host localhost                 # all inventory variables for a host
+$ ansible-doc ansible.builtin.copy                   # a module's parameters and examples
+$ /usr/sbin/sysctl net.ipv4.ip_forward               # the running value
+$ sudo sysctl -p /etc/sysctl.d/90-app.conf           # apply one file now
+$ systemctl show app -p ActiveEnterTimestamp         # did the service restart?
+</code></pre>
+<pre><code class="language-yaml"># a command that converges
+- ansible.builtin.command: /usr/local/bin/init-db
+  args: {creates: /var/lib/db/.initialised}
+# a command that reports honestly
+- ansible.builtin.command: some-tool status
+  register: out
+  changed_when: false
+# restart only on change
+- ansible.builtin.template: {src: app.conf.j2, dest: /etc/app/app.conf}
+  notify: Restart app
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>A green run is not a correct machine</em> (topic journal <code>ansible</code>) — Variable precedence, the parts that bite</li>
+<li><em>A green run is not a correct machine</em> (topic journal <code>ansible</code>) — Idempotence is a property of each task</li>
+<li><em>A green run is not a correct machine</em> (topic journal <code>ansible</code>) — Handlers: a notification is a promise kept at the end</li>
+<li><em>A green run is not a correct machine</em> (topic journal <code>ansible</code>) — shell and command report changed because they cannot know</li>
+<li><em>A green run is not a correct machine</em> (topic journal <code>ansible</code>) — Check mode, and what it cannot see</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>A green run is not a correct machine</em> (<code>ansible</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>What three steps does a state module perform that a <code>command</code> task does not?</p>
+<blockquote>
+<p>It reads the current state, compares it with the desired state from its parameters, and changes only the difference — reporting <code>changed</code> only when it acted.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did check mode report <code>changed=0</code> on the original playbook, and why is that misleading?</p>
+<blockquote>
+<p>Five of the seven tasks were <code>command</code>/<code>shell</code> tasks, which check mode cannot simulate and therefore skips; <code>changed=0</code> only reflects the two tasks it did evaluate.</p>
+</blockquote>
+</li>
+<li>
+<p><code>group_vars/app.yml</code> sets <code>app_port: 8081</code> and the play sets <code>vars: app_port: 8080</code>. Which value do tasks see, and how do you prove the inventory value?</p>
+<blockquote>
+<p>8080 — play vars outrank inventory group_vars. <code>ansible app -m ansible.builtin.debug -a var=app_port</code> shows the inventory’s 8081 without the play.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>copy</code> with <code>content:</code> the right fix for the duplicated sysctl lines, and <code>lineinfile</code> not?</p>
+<blockquote>
+<p><code>copy</code> manages the whole file, so it removes the existing duplicates and reports changed once; <code>lineinfile</code> only ensures one matching line exists and leaves the other copies.</p>
+</blockquote>
+</li>
+<li>
+<p>When does a handler run, and how many times?</p>
+<blockquote>
+<p>Only if at least one task that notifies it reports <code>changed</code>; once per host, after the play’s tasks (or at <code>meta: flush_handlers</code>), no matter how many tasks notified it.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a playbook recap of <code>changed=0 skipped=0</code> from <code>--check</code> prove on a configured host?</p>
+<blockquote>
+<p>That every task could be evaluated without being skipped, and that none of them would change anything: the playbook describes state and the machine is already in it.</p>
+</blockquote>
+</li>
+<li>
+<p>After a play writes <code>/etc/sysctl.d/90-app.conf</code>, why can <code>sysctl net.ipv4.ip_forward</code> still print 0?</p>
+<blockquote>
+<p>The file is only read at boot by systemd-sysctl; the running kernel changes only when the value is applied, e.g. with <code>sysctl -p FILE</code> or <code>sysctl --system</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>changed_when: false</code> on an appending <code>shell</code> task not a fix?</p>
+<blockquote>
+<p>It only changes the report; the task still appends on every run and is still skipped in check mode.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

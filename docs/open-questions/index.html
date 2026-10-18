@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Open questions · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/docs/open-questions/"><meta property="og:title" content="Open questions · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/docs/open-questions/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Open questions · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" aria-current="page">Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      <div class="group">Getting started</div>
+      <a href="../../docs/getting-started/"
+>Install and first lab</a>
+      <a href="../../docs/tui-reference/"
+>TUI reference</a>
+      <a href="../../docs/faq/"
+>FAQ</a>
+      <div class="group">Contributing labs</div>
+      <a href="../../docs/writing-a-lab/"
+>Writing a lab</a>
+      <a href="../../docs/lab-spec/"
+>Lab specification</a>
+      <a href="../../docs/quiz-spec/"
+>Theory question spec</a>
+      <a href="../../docs/claude-code-plugin/"
+>The Claude Code plugin</a>
+      <div class="group">How it is built</div>
+      <a href="../../docs/architecture/"
+>Architecture</a>
+      <a href="../../docs/rated-labs/"
+>Rated and unrated labs</a>
+      <a href="../../docs/claude-code-in-norboten/"
+>How Norboten uses Claude</a>
+      <a href="../../docs/mcp/"
+>The MCP server</a>
+      <a href="../../docs/data-model/"
+>Data model</a>
+      <a href="../../docs/api-reference/"
+>API reference</a>
+      <a href="../../docs/pipelines/"
+>Pipelines</a>
+      <a href="../../docs/open-questions/"
+aria-current="page">Open questions</a>
+      <div class="group">Running it yourself</div>
+      <a href="../../docs/self-hosting/"
+>Self-hosting and configuration</a>
+      <a href="../../docs/deploy/"
+>Deploying the server</a>
+      <a href="../../docs/ci-cd/"
+>CI/CD</a>
+      <a href="../../docs/releasing/"
+>Releasing</a>
+    </nav>
+    <article class="prose">
+      <h1 id="open-questions">Open questions</h1>
+<p>Things the build plan does not settle, with the decision taken so work could continue. Each entry
+is <strong>Open</strong> (needs the maintainer) or <strong>Decided</strong> (a working answer, revisit if wrong).</p>
+<hr />
+<h3 id="q1--how-does-a-learner-reach-a-vm-that-has-no-ssh--decided">Q1 — How does a learner reach a VM that has no SSH? · Decided</h3>
+<p>Lab 3 boots into emergency mode and Lab 5 needs <code>rd.break</code> at the bootloader. Lima reaches guests
+over SSH, which is not up in either state.</p>
+<p><strong>Decision:</strong> the lab console (<code>k</code>, and <code>b</code> for the bootloader) attaches to the guest's serial console (QEMU chardev socket that
+Lima creates per instance). Golden images put GRUB and the kernel on the serial console and set a
+known root password (<code>norboten</code>) so the emergency shell's <code>sulogin</code> accepts it — on RHEL-family
+systems a locked root account refuses the emergency shell entirely, which would make Lab 3
+unsolvable. Lab 5 then changes the root password as one of its faults.</p>
+<h3 id="q2--vz-or-qemu-on-macos--decided">Q2 — VZ or QEMU on macOS? · Decided</h3>
+<p>Lima defaults to Apple's Virtualization.framework (<code>vmType: vz</code>) on macOS. Norboten needs qcow2 disks
+it can snapshot with <code>qemu-img</code> (a lab reset, &lt; 15 s) and the serial console sockets Lima
+creates only for QEMU.</p>
+<p><strong>Decision:</strong> <code>vmType: qemu</code> on every host. Doctor requires QEMU and prints the install
+command (<code>brew install qemu</code>, <code>apt install qemu-system</code>, …). Lima itself is downloaded and pinned by
+the CLI, QEMU is not — it is a system package with kernel-module dependencies on Linux.</p>
+<h3 id="q3--windows--open">Q3 — Windows · Open</h3>
+<p>Lima on Windows uses the WSL2 driver, which has no snapshots and no serial console, so doctor reports
+Windows as unsupported for local labs. Running Norboten inside a WSL2 distribution with nested KVM
+may work and should be tested before claiming support. There is no hosted fallback (see Q5).</p>
+<h3 id="q4--what-the-hosted-side-costs--decided-2026-09-13">Q4 — What the hosted side costs · Decided (2026-09-13)</h3>
+<p>The first plan put the server side on AWS with an EKS cluster for hosted labs; the EKS control
+plane alone cost more than a $30 budget. <strong>Decision:</strong> no cloud provider services at all. One
+server — a netcup VPS, or any Ubuntu machine — runs the whole
+Docker Compose project: Caddy, the API, PostgreSQL, Redis, Ollama, Prometheus and Grafana (n8n was
+removed in P15, 2026-09-14). The
+server calls no hosted model (decided 2026-09-15), so there is no other running cost.</p>
+<h3 id="q5--hosted-lab-mode--dropped-2026-09-13">Q5 — Hosted lab mode · Dropped (2026-09-13)</h3>
+<p>Hosted mode would have run a learner's lab VM on the server. A cloud VPS does not expose <code>/dev/kvm</code>,
+so QEMU there would run without acceleration — unusably slow for a reboot check — and Kubernetes
+added an operator's worth of machinery for one feature. <strong>Decision:</strong> labs run only on the learner's
+machine. Hosted labs remain possible on a bare-metal server with KVM, and are not built.</p>
+<h3 id="q6--also-the-runtime-for-the-two-labs-that-do-not-need-a-kernel--decided-2026-09-14">Q6 — &quot;Also the runtime for the two labs that do not need a kernel&quot; · Decided (2026-09-14)</h3>
+<p>Section 4 of the plan says Docker is the runtime for two kernel-free labs; none existed and
+<code>runtime: container</code> was a field nothing implemented. Now both exist:
+<code>linux-05-shared-folder-locks-people-out</code> (groups, modes, setgid, umask, default ACLs) and
+<code>linux-06-log-that-never-rotates</code> (logrotate's refusals, <code>su</code>, <code>create</code> versus <code>copytruncate</code>). They
+run on <code>ubuntu-26.04-container</code>, an image of <code>kind: container</code> built locally from a Dockerfile, through
+<code>norboten.containers.Container</code>, which gives the engine, the grader and the gate the same interface a
+Lima VM does. Neither has a reboot check, because neither has a boot: the persistence a VM lab proves
+by rebooting is, here, a property of files. Each starts in about a second, resets in under one, and
+passes the gate in 2–3 s; in CI the gate needs Docker, not KVM.</p>
+<h3 id="q7--redis-and-packer--decided-2026-09-13">Q7 — Redis and Packer · Decided (2026-09-13)</h3>
+<p><strong>Redis is load-bearing now</strong>: server-sent events for live sessions subscribe to Redis pub/sub
+instead of polling the database, rate limits count
+there, and the leaderboard is cached there — all state that must be shared between API workers and
+may be lost without harm (docs/data-model.md). <strong>Packer is not used</strong>: the golden image builder boots
+the upstream image with Lima (already a dependency), runs the Ansible baseline and exports the disk
+with <code>qemu-img</code>; Packer's QEMU builder would duplicate that path.</p>
+<h3 id="q8--section-references-in-the-plan-are-off-by-one--decided-2026-09-14">Q8 — Section references in the plan are off by one · Decided (2026-09-14)</h3>
+<p>Section 4 of the plan pointed to &quot;section 6&quot; for the agents (they are in 7) and &quot;section 7&quot; for n8n
+(it is 8); the solvability gate is Phase 6 in section 11, not &quot;section 8&quot;. All three now point where
+they should; the other references in the plan (base images and theory questions in 6, the gate
+per base in 11, the site in 12) were checked and were already right.</p>
+<h3 id="q9--podman-in-ex200-for-rhel-10--decided">Q9 — Podman in EX200 for RHEL 10 · Decided</h3>
+<p>Checked on 2026-09-11 against the official EX200 page (redhat.com/en/services/training/
+ex200-red-hat-certified-system-administrator-rhcsa-exam): the exam is based on RHEL 10 and lists
+<strong>no container or Podman objectives</strong>. New in the RHEL 10 list: Flatpak repositories and packages.
+No Podman lab. RHCSA lab <code>objectives:</code> quote the official wording verbatim.</p>
+<h3 id="q10--ghcr-owner--decided-provisional">Q10 — GHCR owner · Decided (provisional)</h3>
+<p>Images and labs publish to <code>ghcr.io/northelks/…</code>. Change <code>images/registry.yaml</code> and the publish
+workflows together if the project moves to an organisation.</p>
+<h3 id="q11--the-intro-track--decided">Q11 — The <code>intro</code> track · Decided</h3>
+<p>The plan binds <code>rhcsa</code> to Rocky and <code>linux</code> to Ubuntu/Alpine, but <code>hello</code> must run on all three
+images. The spec adds a third track, <code>intro</code>, served by every image and used only by <code>hello</code>.</p>
+<h3 id="q12--min_memory-per-image--decided-2026-09-14">Q12 — <code>min_memory</code> per image · Decided (2026-09-14)</h3>
+<p><code>images/registry.yaml</code> carried first estimates. <code>images/memory.py</code> now measures them: every lab runs
+through the solvability gate while a sampler in the guest records MemTotal, MemAvailable and swap
+once a second, labelled by gate step, collected before each reboot and before the VM is deleted,
+with the kernel's out-of-memory count; <code>--memory image=size</code> gives a lab less, which is how a smaller
+value is proven.</p>
+<table>
+<thead>
+<tr>
+<th>Image</th>
+<th>min_memory</th>
+<th>Peak used (lab, step)</th>
+<th>Also passes at</th>
+<th>Below that</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>alpine</td>
+<td>256 MiB</td>
+<td>52 MiB (linux-01, boot)</td>
+<td>224 MiB</td>
+<td>192 MiB hangs in UEFI; 128 MiB kernel panic</td>
+</tr>
+<tr>
+<td>ubuntu-26.04 †</td>
+<td>512 MiB</td>
+<td>106 MiB (linux-02, after the reboot)</td>
+<td>384 MiB</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ubuntu-26.04-devops †</td>
+<td>1 GiB</td>
+<td>324 MiB (docker-01, broken state)</td>
+<td>768 MiB</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ubuntu-26.04-automation †</td>
+<td>3 GiB</td>
+<td>1061 MiB (ollama-02, broken state; re-measured 2026-09-15 after n8n left, 7 labs)</td>
+<td>not re-probed; 2 GiB passed with n8n</td>
+<td>—</td>
+</tr>
+<tr>
+<td>rocky-10</td>
+<td>1536 MiB</td>
+<td>425 MiB (rhcsa-04, the solution)</td>
+<td>not probed: the RHCSA labs pin 1536 MiB</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>All 29 lab × image pairs passed at the registry's values with no swap and no OOM kill. <strong>The
+estimates stay</strong>: each keeps at least twice the reference solution's peak, and a learner does more
+than the solution does — editors, <code>man</code>, a Compose stack of their own, a second model loaded in
+Ollama. Lowering them would buy a few hundred megabytes on the host at the price of labs that fail
+for a reason the lab is not about. One-second sampling can miss a short spike, which is why the
+&quot;also passes at&quot; column, and not the peak, is the evidence for headroom.</p>
+<p>† Measured on the image each one replaced when the images moved to Ubuntu 26.04 (2026-09-15); the
+values stay until <code>images/memory.py</code> has measured the Ubuntu images.</p>
+<h3 id="q13--memory-snapshots-are-broken-on-apple-silicon--decided">Q13 — Memory snapshots are broken on Apple Silicon · Decided</h3>
+<p>Measured on QEMU 11.0.1 with HVF (macOS, M-series): after <code>savevm</code> — which is what
+<code>limactl snapshot create</code> does on a running VM — the next guest reboot hangs in UEFI at 100% CPU,
+and starting QEMU with <code>-loadvm</code> aborts (<code>cpu_pre_load: assertion failed</code>). A plain pause/resume
+does not trigger it.</p>
+<p><strong>Decision:</strong> snapshots are disk-only (<code>qemu-img snapshot</code>, VM stopped) and a lab reset is
+a cold boot from the restored disk. Golden images are tuned to make that fast — GRUB timeout 1 s,
+cloud-init limited to NoCloud, and on Alpine no blocking <code>chronyd initstepslew</code> (15 s) or dhcpcd
+ARP probe (5 s). Measured reset: Alpine 9.8 s, Rocky 9.9 s. Revisit memory snapshots on KVM
+hosts, where they may work, once there is a Linux test machine.</p>
+<h3 id="q14--the-gate-and-boot_after_break--decided">Q14 — The gate and <code>boot_after_break</code> · Decided</h3>
+<p>For a lab whose broken boot never reaches the network (Lab 3's emergency mode), the reference
+solution cannot run over SSH after the extra boot. The gate therefore applies the faults and runs
+the solution <strong>without</strong> the post-break boot; the grading reboot that follows still proves the fix
+survives a boot. The learner-facing broken boot is exercised by hand when a lab is reviewed —
+which missed two faults; Q18 closed that gap with a second gate phase.</p>
+<h3 id="q15--upstream-mirrors-are-slow--decided">Q15 — Upstream mirrors are slow · Decided</h3>
+<p><code>dl.rockylinux.org</code> delivered ~0.4 MB/s and stalled a Lima download mid-file. The golden image
+builder downloads upstream images itself — resumable, retried, digest-verified — into
+<code>~/.norboten/cache/upstream/</code> and hands Lima a local path.</p>
+<h3 id="q16--a-vector-database--decided-2026-09-13">Q16 — A vector database · Decided (2026-09-13)</h3>
+<p>The plan listed pgvector for retrieval and question dedup. Nothing in the stack needed embeddings:
+the consultant ranks with BM25 (exact technical terms beat similarity here), question dedup is
+textual (difflib against the topic's accepted prompts), and relations between labs, topics,
+question banks and journals are computed with TF-IDF, cosine similarity and a networkx graph —
+deterministic, explainable, no model. <strong>Decision:</strong> no vector database. pgvector in the same
+PostgreSQL stays the next step if semantic similarity ever earns its place; the image would change
+from <code>postgres:17-alpine</code> to <code>pgvector/pgvector:pg17</code> and nothing else.</p>
+<h3 id="q17--which-models-verify-a-drafted-question--decided-2026-09-15">Q17 — Which models verify a drafted question · Decided (2026-09-15)</h3>
+<p>Questions are drafted locally, never on the server. By default the writer is <code>claude-code/opus</code> and
+the blind solvers <code>claude-code/sonnet</code> and <code>claude-code/haiku</code>, on the drafter's own Claude Code
+subscription. The pipeline requires at least two verifiers that are <strong>not</strong> the writer, so one
+vendor still gets independent solves (a different model, a fresh context, no key in the prompt);
+exported OpenAI or Gemini keys add another family, the stronger check. The vendor is inferred from
+the id prefix.</p>
+<h3 id="q18--faults-that-do-not-survive-the-boot-after-the-break--decided-2026-09-14">Q18 — Faults that do not survive the boot after the break · Decided (2026-09-14)</h3>
+<p>The consequence of Q14, found by replaying every journal on a real machine (2026-09-13): a fault
+that holds right after the break scripts run but not after one more boot passes the gate and is
+already gone for the learner. Two labs shipped that way. In rhcsa-03 the held, deleted spool file
+died with its process at the boot (fixed: the spooler takes its spool again in a new boot until it
+has been restarted). In rhcsa-05 the <code>Storage=volatile</code> drop-in was named <code>50-…</code> and lost to the
+golden image's <code>90-norboten.conf</code>, and the deleted <code>/var/log/journal</code> is recreated by
+systemd-tmpfiles at boot (fixed: <code>99-retention.conf</code>).</p>
+<p><strong>Decision:</strong> a second gate phase for <code>boot_after_break</code> labs (docs/lab-spec.md §9, steps 5–6). After
+the normal gate passes, a fresh VM gets the faults, boots once more exactly as a learner's does, and
+every check must still fail. The checks run over SSH when the broken machine has a network. When the
+boot stops at a maintenance prompt they run over a serial port: before that boot the gate enables
+systemd's <code>debug-shell.service</code> on a serial port the guest does not use — Lima's PCI serial port on
+aarch64, its virtio console on x86_64, which has no PCI one (found by writing a marker to each guest
+tty and seeing which one reaches that port's log) — which gives a root shell in emergency mode
+without any password — rhcsa-05 changes the root password, so sulogin with the image's password is
+only the fallback. The runner and the checks cross in acknowledged base64 chunks
+(<code>cli/src/norboten/lima/serial_shell.py</code>).</p>
+<p>Verified on rocky-10: rhcsa-03 and rhcsa-05 both stop at the maintenance prompt and pass the phase;
+a copy of rhcsa-05 with the old <code>50-retention.conf</code> passes every earlier step of the gate and fails
+this phase on exactly <code>12_journal_persistent</code>. One check needed a declared exemption:
+rhcsa-03's <code>05_held_space_released</code> cannot fail in emergency mode, where the spooler is not running;
+it is marked <code>maintenance_pass: true</code> with the reason, and the exemption lapses if a boot ever reaches
+the network.</p>
+<h3 id="q19--should-the-consultant-add-an-embedding-rerank--decided-2026-09-15">Q19 — Should the consultant add an embedding rerank? · Decided (2026-09-15)</h3>
+<p>Retrieval was measured on two held-out sets of learner-style questions. The first set scores 15/16 in
+the top three passages, but the corpus has since been edited with it in mind. The second set, which
+nothing was tuned for, scores 6/16: BM25 finds a question's exact terms (<code>lvextend</code>, <code>fstab</code>) and
+misses the same question in other words. An embedding model would help with rewording — <code>all-minilm</code>
+through Ollama gave 0.621 to &quot;disk full&quot; against &quot;no space left on device&quot;, which share no words, and
+0.228 to an unrelated phrase — at the cost of a second model on the server, an index to rebuild with
+the content, and rankings that are harder to explain. <strong>Decision (the maintainer):</strong> keep BM25 alone,
+as Q16 and the architecture describe. The 6/16 is a known limit, the test keeps its floor under it,
+and the consultant's widget still falls back to the same passages in the browser. Revisit with a
+third held-out set if learners' real questions show the misses matter.</p>
+
+    </article>
+    <div class="toc">
+<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>      <a class="h3" href="#q1--how-does-a-learner-reach-a-vm-that-has-no-ssh--decided">Q1 — How does a learner reach a VM that has no SSH? · Decided</a>
+      <a class="h3" href="#q2--vz-or-qemu-on-macos--decided">Q2 — VZ or QEMU on macOS? · Decided</a>
+      <a class="h3" href="#q3--windows--open">Q3 — Windows · Open</a>
+      <a class="h3" href="#q4--what-the-hosted-side-costs--decided-2026-09-13">Q4 — What the hosted side costs · Decided (2026-09-13)</a>
+      <a class="h3" href="#q5--hosted-lab-mode--dropped-2026-09-13">Q5 — Hosted lab mode · Dropped (2026-09-13)</a>
+      <a class="h3" href="#q6--also-the-runtime-for-the-two-labs-that-do-not-need-a-kernel--decided-2026-09-14">Q6 — &amp;quot;Also the runtime for the two labs that do not need a kernel&amp;quot; · Decided (2026-09-14)</a>
+      <a class="h3" href="#q7--redis-and-packer--decided-2026-09-13">Q7 — Redis and Packer · Decided (2026-09-13)</a>
+      <a class="h3" href="#q8--section-references-in-the-plan-are-off-by-one--decided-2026-09-14">Q8 — Section references in the plan are off by one · Decided (2026-09-14)</a>
+      <a class="h3" href="#q9--podman-in-ex200-for-rhel-10--decided">Q9 — Podman in EX200 for RHEL 10 · Decided</a>
+      <a class="h3" href="#q10--ghcr-owner--decided-provisional">Q10 — GHCR owner · Decided (provisional)</a>
+      <a class="h3" href="#q11--the-intro-track--decided">Q11 — The intro track · Decided</a>
+      <a class="h3" href="#q12--min_memory-per-image--decided-2026-09-14">Q12 — min_memory per image · Decided (2026-09-14)</a>
+      <a class="h3" href="#q13--memory-snapshots-are-broken-on-apple-silicon--decided">Q13 — Memory snapshots are broken on Apple Silicon · Decided</a>
+      <a class="h3" href="#q14--the-gate-and-boot_after_break--decided">Q14 — The gate and boot_after_break · Decided</a>
+      <a class="h3" href="#q15--upstream-mirrors-are-slow--decided">Q15 — Upstream mirrors are slow · Decided</a>
+      <a class="h3" href="#q16--a-vector-database--decided-2026-09-13">Q16 — A vector database · Decided (2026-09-13)</a>
+      <a class="h3" href="#q17--which-models-verify-a-drafted-question--decided-2026-09-15">Q17 — Which models verify a drafted question · Decided (2026-09-15)</a>
+      <a class="h3" href="#q18--faults-that-do-not-survive-the-boot-after-the-break--decided-2026-09-14">Q18 — Faults that do not survive the boot after the break · Decided (2026-09-14)</a>
+      <a class="h3" href="#q19--should-the-consultant-add-an-embedding-rerank--decided-2026-09-15">Q19 — Should the consultant add an embedding rerank? · Decided (2026-09-15)</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("../../search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+</body>
+</html>

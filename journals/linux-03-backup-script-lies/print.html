@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A script that cannot fail is not a backup</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A script that cannot fail is not a backup</h1>
+  <div class="meta">bash, linux-basics · 35 minutes · 3292 words</div>
+</header>
+<p>The script has written “backup OK” every night for a year. It is not lying on purpose: it ends with
+<code>echo &quot;backup OK&quot;</code> and <code>exit 0</code>, unconditionally, so there is no state of the world in which it says
+anything else. The restore that failed did not reveal a new bug — it revealed that nobody had ever
+had any information about whether the backup worked.</p>
+<p>Underneath that there are two genuine defects, both classics. Unquoted variables, so a filename with
+a space in it becomes two filenames, neither of which exists. And a <code>cron</code> entry that works when you
+test it by hand and not when cron runs it, because cron’s environment is almost nothing like yours.</p>
+<p>Each of the three is worth knowing on its own. Together they make the lesson of the lab, which is
+that <strong>a script’s job is not to do the work; it is to tell you the truth about whether the work
+happened.</strong></p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Quote variables and command substitutions so that filenames with spaces, tabs and newlines survive.</li>
+<li>Explain what word splitting and globbing do to an unquoted expansion, and name the two safe ways to
+hand a list of files to another program.</li>
+<li>Make a script fail loudly: non-zero exit, a message on stderr, and no success written to a log.</li>
+<li>Say what <code>set -e</code>, <code>set -u</code> and <code>set -o pipefail</code> each do, and where <code>set -e</code> does not save you.</li>
+<li>Diagnose a job that works in your shell and fails under cron, and fix it in the crontab rather than
+by guessing.</li>
+<li>Write a log line that will let someone a year from now tell a good night from a bad one.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>The lie itself</h3>
+<pre><code class="language-bash">cd $SRC
+FILES=$(find . -type f)
+tar -czf $ARCHIVE $FILES 2&gt;/dev/null
+echo &quot;$(date -Is) backup OK: $ARCHIVE&quot; &gt;&gt; $LOG
+exit 0
+</code></pre>
+<p>Four lines, four independent failures of honesty:</p>
+<ol>
+<li><code>cd $SRC</code> is not checked. If the directory does not exist, <code>cd</code> fails, prints to stderr, and the
+script carries on <strong>in whatever directory it was already in</strong> — which for cron is <code>/root</code> or the
+user’s home. <code>find .</code> then archives that.</li>
+<li><code>2&gt;/dev/null</code> throws away tar’s complaints. Every “file not found” caused by the quoting bug goes
+to the same place.</li>
+<li>tar’s exit status is never examined. Neither is <code>find</code>’s, nor <code>cd</code>’s.</li>
+<li><code>echo … backup OK</code> and <code>exit 0</code> are unconditional. The script has no code path that reports
+failure, so the log is a record of the script having run, not of a backup having happened.</li>
+</ol>
+<p>That last point is the one to carry away. A log line that is always the same carries no information.
+The information content of “backup OK” is exactly zero if there is no “backup FAILED” to compare it
+with.</p>
+<h3>Word splitting, in the order it happens</h3>
+<p>When bash expands <code>$FILES</code>, the result is not a string handed to tar. It goes through two more steps:</p>
+<pre><code>   $FILES          →  the variable's value
+   word splitting  →  cut into words at every character in IFS (space, tab, newline by default)
+   globbing        →  any word containing * ? [ ] is expanded against the filesystem
+</code></pre>
+<p>So with <code>FILES</code> containing <code>./invoices/2026 Q3 summary.csv</code>, tar receives <strong>four</strong> arguments:
+<code>./invoices/2026</code>, <code>Q3</code>, <code>summary.csv</code> — and none of those files exists. Add a file called <code>report*</code>
+and the glob step will match things you never named. This is why the archive held “a fraction of the
+files”: exactly the files whose names had no spaces.</p>
+<p>Quoting stops both steps:</p>
+<pre><code class="language-bash">tar -czf &quot;$ARCHIVE&quot; &quot;$FILE&quot;        # one argument, whatever is in it
+</code></pre>
+<p>The rules worth internalising, because they are the whole subject:</p>
+<table>
+<thead>
+<tr>
+<th>written</th>
+<th>you get</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$var</code></td>
+<td>split into words, then globbed — almost never what you want</td>
+</tr>
+<tr>
+<td><code>&quot;$var&quot;</code></td>
+<td>exactly one argument, byte for byte</td>
+</tr>
+<tr>
+<td><code>$(cmd)</code></td>
+<td>the output, split and globbed</td>
+</tr>
+<tr>
+<td><code>&quot;$(cmd)&quot;</code></td>
+<td>the output as one argument, with trailing newlines stripped</td>
+</tr>
+<tr>
+<td><code>$@</code></td>
+<td>split again — a bug</td>
+</tr>
+<tr>
+<td><code>&quot;$@&quot;</code></td>
+<td>each argument preserved separately — <strong>the only correct way to pass arguments on</strong></td>
+</tr>
+<tr>
+<td><code>&quot;$*&quot;</code></td>
+<td>all arguments joined into one string with spaces</td>
+</tr>
+</tbody>
+</table>
+<p>Two places where quoting is <em>not</em> needed, so you can recognise them rather than fearing them: inside
+<code>[[ ]]</code> (bash’s test keyword does not split), and on the right-hand side of a plain assignment
+(<code>x=$y</code> is safe). Everywhere else, quote. A useful rule of thumb: if you are not certain, quote —
+there is no case where correct quoting breaks a correct script.</p>
+<h3>Handing a list of files to a program</h3>
+<p><code>FILES=$(find …)</code> is broken in principle, not just in this script: a newline-separated string in a
+variable cannot represent a filename containing a newline, and filenames may contain newlines. Three
+robust patterns replace it:</p>
+<pre><code class="language-bash"># 1. Let the other program do the walking — best when it can
+tar -czf &quot;$ARCHIVE&quot; -C &quot;$SRC&quot; .
+
+# 2. find … -exec, with + to batch arguments
+find &quot;$SRC&quot; -type f -exec tar -rf &quot;$TAR&quot; {} +
+
+# 3. NUL-separated, for anything that supports it — the only fully safe separator,
+#    because NUL is the one byte a filename cannot contain
+find &quot;$SRC&quot; -type f -print0 | xargs -0 tar -czf &quot;$ARCHIVE&quot;
+find &quot;$SRC&quot; -type f -print0 | while IFS= read -r -d '' f; do process &quot;$f&quot;; done
+</code></pre>
+<p>The first is the right answer here, and it is worth seeing why it is better than merely safe. <code>tar -C &quot;$SRC&quot; .</code> changes directory inside tar, so the archive holds <code>./invoices/march.csv</code> rather than
+<code>/srv/data/invoices/march.csv</code> — relative paths, which is what you want at restore time (you can
+unpack them anywhere, and tar will not refuse to overwrite from an absolute path). It also archives
+empty directories, symlinks and permissions, which a <code>find -type f</code> list silently drops.</p>
+<p>That <code>while IFS= read -r</code> incantation in pattern 3 is worth decoding once, since it appears in every
+careful shell script: <code>IFS=</code> stops leading and trailing whitespace being trimmed, <code>-r</code> stops
+backslashes being interpreted, and <code>-d ''</code> reads up to a NUL instead of a newline.</p>
+<h3>Failing loudly</h3>
+<p>Three mechanisms, and you want all three.</p>
+<p><strong>Exit status.</strong> The caller — cron, a systemd timer, a monitoring check, a human — learns success or
+failure from <code>$?</code> and nothing else. <code>0</code> is success; anything else is failure. Check the commands that
+matter:</p>
+<pre><code class="language-bash">tar -czf &quot;$ARCHIVE&quot; -C &quot;$SRC&quot; . || fail &quot;could not write $ARCHIVE&quot;
+</code></pre>
+<p><strong>stderr.</strong> Diagnostics go to file descriptor 2, and data goes to 1. This is not a stylistic
+preference: it is what lets <code>backup-data &gt; /dev/null</code> stay quiet on success and still shout on
+failure, and it is why cron mails you stderr.</p>
+<pre><code class="language-bash">echo &quot;backup-data: $*&quot; &gt;&amp;2
+</code></pre>
+<p><strong>The log.</strong> Write a line for both outcomes, with a timestamp, so the log answers questions:</p>
+<pre><code class="language-bash">log()  { echo &quot;$(date -Is) $*&quot; &gt;&gt; &quot;$LOG&quot;; }
+fail() { echo &quot;backup-data: $*&quot; &gt;&amp;2; log &quot;backup FAILED: $*&quot;; exit 1; }
+</code></pre>
+<p>A small function pair like that is the difference between a script that can be trusted and one that
+cannot, and it costs two lines. Note the order inside <code>fail</code>: message to stderr, record to the log,
+then a non-zero exit — and note that <code>fail</code> exits, so callers read as assertions:</p>
+<pre><code class="language-bash">[ -d &quot;$SRC&quot; ] || fail &quot;source $SRC does not exist&quot;
+[ -d &quot;$DEST&quot; ] || fail &quot;destination $DEST is not a directory&quot;
+</code></pre>
+<p>Check preconditions <em>before</em> doing work, and check the work afterwards. <code>[ -d ]</code> for a directory,
+<code>[ -f ]</code> for a regular file, <code>[ -r ]</code>/<code>[ -w ]</code>/<code>[ -x ]</code> for access, <code>[ -n ]</code>/<code>[ -z ]</code> for a non-empty
+or empty string.</p>
+<h3><code>set -euo pipefail</code>, and what it does not do</h3>
+<pre><code class="language-bash">set -euo pipefail
+</code></pre>
+<ul>
+<li><strong><code>-e</code></strong> exit as soon as any command returns non-zero. Turns a silent failure into a stopped script.</li>
+<li><strong><code>-u</code></strong> treat an unset variable as an error. Catches <code>$BACKUP_DEST</code> when you typed <code>$BACKUP_DST</code> —
+which without <code>-u</code> expands to nothing, and <code>tar -czf /data-…tar.gz</code> writes to the root directory.</li>
+<li><strong><code>-o pipefail</code></strong> make a pipeline fail if <em>any</em> stage fails. Without it, <code>find … | xargs tar …</code>
+reports only <code>xargs</code>’s status, so a failing <code>find</code> is invisible.</li>
+</ul>
+<p><code>set -e</code> is a safety net, not a strategy, and its exceptions are worth knowing because they surprise
+people:</p>
+<pre><code class="language-bash">cmd || true                  # explicitly ignored — and now -e does not fire (this is the point)
+if cmd; then …                # a command in a condition is exempt: no exit
+cmd1 &amp;&amp; cmd2                 # only the last command's status counts
+f() { false; echo reached; }  # -e inside a function called in a condition does not fire
+count=$(grep -c x file)      # assignment from a substitution: the status is the assignment's
+</code></pre>
+<p>Which is why explicit <code>|| fail &quot;…&quot;</code> on the commands that matter is better than relying on <code>-e</code> to
+catch everything. Use both: <code>-e</code> for the things you forgot, explicit checks for the things you care
+about. And <code>${BACKUP_SRC:-/srv/data}</code> — “this variable, or this default” — coexists happily with
+<code>-u</code>, since the default makes it defined.</p>
+<h3>cron’s environment is not yours</h3>
+<p>The nightly job is:</p>
+<pre><code>15 2 * * * root backup-data
+</code></pre>
+<p>Test it in your shell and it works. Under cron it does not, because cron runs jobs with a minimal
+environment — typically <code>PATH=/usr/bin:/bin</code> and nothing else. <code>/usr/local/bin</code>, where the script
+lives, is not in it. Your interactive shell has it because <code>/etc/profile</code> put it there, and cron does
+not read <code>/etc/profile</code>, <code>~/.bashrc</code>, or any of your shell’s configuration.</p>
+<p>Three fixes, best first:</p>
+<pre><code>15 2 * * * root /usr/local/bin/backup-data      # 1. an absolute path — always correct
+
+PATH=/usr/local/bin:/usr/bin:/bin               # 2. set PATH in the crontab itself
+15 2 * * * root backup-data
+
+15 2 * * * root . /etc/profile; backup-data     # 3. source a profile — fragile, avoid
+</code></pre>
+<p>The rest of the crontab’s own rules, which cost people a night each:</p>
+<ul>
+<li><strong>Five time fields</strong>: minute, hour, day-of-month, month, day-of-week. <code>15 2 * * *</code> is 02:15 daily.</li>
+<li><strong><code>/etc/cron.d/*</code> and <code>/etc/crontab</code> have a user field</strong>; a user’s own crontab (<code>crontab -e</code>) does
+not. Putting <code>root</code> in the wrong one makes cron try to run a program called <code>root</code>.</li>
+<li><strong><code>%</code> is special</strong> in a crontab command — it means a newline and starts the stdin section. In a
+<code>date +%Y%m%d</code> inside a crontab line it must be <code>\%</code>. This is the single most common “works by hand,
+not in cron” cause after <code>PATH</code>.</li>
+<li><strong>Anything printed is mailed</strong> to the job’s user. On a machine with no mail transport that output
+is simply lost, which is why a job should write its own log rather than rely on stdout.</li>
+<li><strong>A file in <code>/etc/cron.d</code> must be owned by root, not writable by others, and must have no dot in
+its name</strong> — otherwise cron ignores it, silently.</li>
+<li><strong>The last line needs a newline.</strong> A crontab file that does not end with one has historically been
+ignored by some cron implementations.</li>
+</ul>
+<p>And the daemon has to be running and enabled, which differs by system — <code>cron</code> on Ubuntu,
+<code>crond</code> on Alpine and RHEL:</p>
+<pre><code class="language-console">$ systemctl is-enabled cron &amp;&amp; systemctl is-active cron      # Ubuntu
+$ rc-update show default | grep crond ; rc-service crond status   # Alpine
+</code></pre>
+<p>The honest way to test a cron job is to reproduce cron’s environment rather than to wait for 02:15:</p>
+<pre><code class="language-console">$ sudo env -i PATH=/usr/bin:/bin /usr/local/bin/backup-data ; echo &quot;exit=$?&quot;
+</code></pre>
+<p><code>env -i</code> starts with an empty environment and adds only what you name. If it works under that, it
+will work under cron. It is also how you discover that your script depended on <code>$HOME</code>, or on a
+<code>umask</code> your shell set, or on a locale that changes how <code>date</code> formats.</p>
+<p>For completeness: a systemd timer (see the rhcsa-05 journal) is the modern alternative, and it
+sidesteps most of this — the service unit states its own <code>Environment=</code>, output goes to the journal
+rather than to mail, and <code>systemd-analyze calendar</code> checks the schedule. cron remains everywhere,
+which is why its traps are worth knowing.</p>
+<h2>A failure, walked through</h2>
+<p>The log says “backup OK”. <code>/var/backups</code> has nothing recent in it.</p>
+<p><strong>1. Read the script before running anything.</strong> Four lines in, the verdict is already available:</p>
+<pre><code class="language-console">$ cat /usr/local/bin/backup-data
+cd $SRC
+FILES=$(find . -type f)
+tar -czf $ARCHIVE $FILES 2&gt;/dev/null
+echo &quot;$(date -Is) backup OK: $ARCHIVE&quot; &gt;&gt; $LOG
+exit 0
+</code></pre>
+<p><code>exit 0</code> with no conditional above it means the log line tells you nothing at all. Everything else is
+now a question about <em>what</em> is broken, not <em>whether</em>.</p>
+<p><strong>2. Run it with the stderr it was hiding.</strong> The variables exist so this can be done safely, in a
+sandbox, with test data:</p>
+<pre><code class="language-console">$ mkdir -p /tmp/t/src/&quot;a dir&quot; /tmp/t/dest
+$ printf 'x\n' &gt; /tmp/t/src/plain.txt
+$ printf 'y\n' &gt; /tmp/t/src/&quot;a dir&quot;/&quot;inner file.log&quot;
+$ BACKUP_SRC=/tmp/t/src BACKUP_DEST=/tmp/t/dest BACKUP_LOG=/tmp/t/log \
+    bash -x /usr/local/bin/backup-data
++ SRC=/tmp/t/src
++ DEST=/tmp/t/dest
++ LOG=/tmp/t/log
+++ date +%Y%m%d-%H%M%S
++ STAMP=20260913-042411
++ ARCHIVE=/tmp/t/dest/data-20260913-042411.tar.gz
++ cd /tmp/t/src
+++ find . -type f
++ FILES='./plain.txt
+./a dir/inner file.log'
++ tar -czf /tmp/t/dest/data-20260913-042411.tar.gz ./plain.txt ./a dir/inner file.log
+++ date -Is
++ echo '2026-09-13T04:24:11+00:00 backup OK: /tmp/t/dest/data-20260913-042411.tar.gz'
++ exit 0
+</code></pre>
+<p><code>bash -x</code> prints each command after expansion, and the expansion <em>is</em> the bug: one filename became
+three arguments. What the trace does not show is tar’s reaction, because <code>2&gt;/dev/null</code> swallowed it.
+Run the same command by hand without the redirection:</p>
+<pre><code class="language-console">$ cd /tmp/t/src &amp;&amp; tar -czf /tmp/t/x.tgz $(find . -type f) ; echo &quot;tar exit=$?&quot;
+tar: ./a: Cannot stat: No such file or directory
+tar: dir/inner: Cannot stat: No such file or directory
+tar: file.log: Cannot stat: No such file or directory
+tar: Exiting with failure status due to previous errors
+tar exit=2
+</code></pre>
+<p>tar knew, said so, and exited 2. The script threw the message away, ignored the status, and wrote
+“backup OK”.</p>
+<p><strong>3. Confirm what the archive actually holds</strong>, because that is the claim that failed for the restore:</p>
+<pre><code class="language-console">$ tar -tzf /tmp/t/dest/data-*.tar.gz
+./plain.txt
+</code></pre>
+<p>One file of two. Exactly the file with no space in its name.</p>
+<p><strong>4. Rewrite it.</strong> The changes are small and each one maps to a fault:</p>
+<pre><code class="language-bash">#!/bin/bash
+# backup-data — nightly archive of the data directory.
+# BACKUP_SRC, BACKUP_DEST and BACKUP_LOG override the defaults.
+set -euo pipefail
+
+SRC=${BACKUP_SRC:-/srv/data}
+DEST=${BACKUP_DEST:-/var/backups}
+LOG=${BACKUP_LOG:-/var/log/backup-data.log}
+ARCHIVE=&quot;$DEST/data-$(date +%Y%m%d-%H%M%S).tar.gz&quot;
+
+log()  { echo &quot;$(date -Is) $*&quot; &gt;&gt; &quot;$LOG&quot;; }
+fail() { echo &quot;backup-data: $*&quot; &gt;&amp;2; log &quot;backup FAILED: $*&quot;; exit 1; }
+
+[ -d &quot;$SRC&quot; ] || fail &quot;source $SRC does not exist&quot;
+tar -czf &quot;$ARCHIVE&quot; -C &quot;$SRC&quot; . || fail &quot;could not write $ARCHIVE&quot;
+log &quot;backup OK: $ARCHIVE&quot;
+</code></pre>
+<p>What changed, and why:</p>
+<ul>
+<li><code>set -euo pipefail</code> — the net.</li>
+<li><code>-C &quot;$SRC&quot; .</code> instead of <code>cd $SRC</code> and a file list — tar walks the tree itself, so there is no list
+to split, and the archive holds relative paths.</li>
+<li>every expansion quoted, including <code>&quot;$ARCHIVE&quot;</code> and inside <code>log</code>/<code>fail</code>.</li>
+<li><code>2&gt;/dev/null</code> gone: tar’s complaints are the most valuable output the script produces.</li>
+<li>a <code>fail</code> function, so every failure exits non-zero, says why on stderr, and leaves a “backup
+FAILED” line rather than a lie.</li>
+<li><code>&quot;backup OK&quot;</code> reached only if tar succeeded.</li>
+</ul>
+<p><strong>5. Test all three outcomes, because two of them are what the lab actually grades.</strong> A script is
+only trustworthy if you have seen it fail:</p>
+<pre><code class="language-console">$ sudo install -m 755 /tmp/backup-data /usr/local/bin/backup-data
+$ rm -f /tmp/t/log /tmp/t/dest/*          # start the log fresh, so the count below means something
+
+# the happy path, with awkward names
+$ BACKUP_SRC=/tmp/t/src BACKUP_DEST=/tmp/t/dest BACKUP_LOG=/tmp/t/log backup-data
+$ echo &quot;exit=$?&quot; ; tar -tzf /tmp/t/dest/data-*.tar.gz
+exit=0
+./
+./plain.txt
+./a dir/
+./a dir/inner file.log
+
+# a missing source
+$ BACKUP_SRC=/tmp/t/nope BACKUP_DEST=/tmp/t/dest BACKUP_LOG=/tmp/t/log backup-data
+backup-data: source /tmp/t/nope does not exist
+$ echo &quot;exit=$?&quot;
+exit=1
+
+# a destination that cannot be written (a file where the directory should be)
+$ : &gt; /tmp/t/notadir
+$ BACKUP_SRC=/tmp/t/src BACKUP_DEST=/tmp/t/notadir BACKUP_LOG=/tmp/t/log backup-data
+tar (child): /tmp/t/notadir/data-20260913-042427.tar.gz: Cannot open: Not a directory
+tar (child): Error is not recoverable: exiting now
+tar: Child returned status 2
+tar: Error is not recoverable: exiting now
+backup-data: could not write /tmp/t/notadir/data-20260913-042427.tar.gz
+$ echo &quot;exit=$?&quot; ; grep -c 'backup OK' /tmp/t/log
+exit=1
+1
+$ cat /tmp/t/log
+2026-09-13T04:24:27+00:00 backup OK: /tmp/t/dest/data-20260913-042427.tar.gz
+2026-09-13T04:24:27+00:00 backup FAILED: source /tmp/t/nope does not exist
+2026-09-13T04:24:27+00:00 backup FAILED: could not write /tmp/t/notadir/data-20260913-042427.tar.gz
+</code></pre>
+<p>(<code>tar (child)</code> is gzip’s half of <code>tar -z</code>: tar runs the compressor as a child process, and it is the
+child that failed to open the output.)</p>
+<p>One “backup OK” in the log — from the successful run — and two “backup FAILED” lines. The log now
+distinguishes nights.</p>
+<p><strong>6. Fix cron.</strong> The entry names a bare command, and cron’s <code>PATH</code> does not include
+<code>/usr/local/bin</code>:</p>
+<pre><code class="language-console">$ cat /etc/cron.d/backup-data
+# nightly backup
+15 2 * * * root backup-data
+$ sudo env -i PATH=/usr/bin:/bin backup-data ; echo &quot;exit=$?&quot;
+env: ‘backup-data’: No such file or directory
+exit=127
+</code></pre>
+<p>Exit 127 is “command not found” — the shell’s way of saying <code>PATH</code>. Use an absolute path:</p>
+<pre><code class="language-console">$ sudo sed -i 's#root backup-data#root /usr/local/bin/backup-data#' /etc/cron.d/backup-data
+$ sudo env -i PATH=/usr/bin:/bin /usr/local/bin/backup-data ; echo &quot;exit=$?&quot;
+exit=0
+$ systemctl is-active cron &amp;&amp; systemctl is-enabled cron
+active
+enabled
+</code></pre>
+<p>(On Alpine the same job lives in <code>/etc/crontabs/root</code> — readable only with <code>sudo</code> — with no user
+field, next to the <code>run-parts /etc/periodic/…</code> lines, and the daemon is <code>crond</code> under OpenRC:
+<code>rc-update add crond default</code>. BusyBox’s <code>tar</code> words its failure differently, <em>tar: can’t open
+‘…’: Not a directory</em>, and the script’s own <code>fail</code> line is the same on both.)</p>
+<p><strong>7. Reboot and check the whole chain again</strong>, because a cron daemon that is running and not enabled
+is the next version of this bug:</p>
+<pre><code class="language-console">$ sudo reboot
+$ systemctl is-enabled cron ; systemctl is-active cron
+$ sudo run-parts --test /etc/cron.daily &gt;/dev/null ; cat /etc/cron.d/backup-data
+$ sudo /usr/local/bin/backup-data &amp;&amp; tail -2 /var/log/backup-data.log
+</code></pre>
+<h2>Common wrong turns</h2>
+<p><strong>Quoting <code>$FILES</code> and stopping there.</strong> <code>tar -czf &quot;$ARCHIVE&quot; &quot;$FILES&quot;</code> hands tar a <em>single</em>
+argument containing every filename and a few newlines, so now nothing is archived instead of some
+things. The list-in-a-variable shape is the problem; quoting it does not fix it. Let tar walk the tree
+(<code>-C &quot;$SRC&quot; .</code>), or use <code>-print0 | xargs -0</code>.</p>
+<p><strong>Setting <code>IFS=$'\n'</code> to make the loop work.</strong> It makes spaces safe and leaves newlines in filenames
+broken, and it changes the behaviour of every later command in the script. NUL separation is the
+mechanism that actually holds: it is the one byte a filename cannot contain.</p>
+<p><strong>Leaving <code>2&gt;/dev/null</code> in place because the errors are noisy.</strong> The noise was tar telling you the
+script was broken, for a year. If output is genuinely uninteresting, send it to the log, not to
+<code>/dev/null</code>.</p>
+<p><strong>Adding <code>set -e</code> and believing the script now fails loudly.</strong> <code>set -e</code> makes it <em>stop</em>; it does not
+make it <em>say</em> anything, and it does not stop a previously-written “backup OK” from being the last
+thing in the log. It is also exempt inside conditions, in <code>&amp;&amp;</code>/<code>||</code> chains, and for commands whose
+status is consumed by an assignment. Explicit <code>|| fail &quot;…&quot;</code> on the commands you care about is what
+makes a failure legible.</p>
+<p><strong>Checking <code>$?</code> in a separate <code>if</code> several lines later.</strong> <code>$?</code> is the status of the <em>last</em> command,
+and the <code>echo</code> you inserted while debugging has already overwritten it. Test the command directly
+(<code>if tar …; then</code>) or use <code>|| fail</code>.</p>
+<p><strong>Writing the error to stdout.</strong> <code>echo &quot;backup failed&quot;</code> on stdout means a caller redirecting stdout
+to <code>/dev/null</code> sees silence, and cron mails nothing. Errors belong on <code>&gt;&amp;2</code>.</p>
+<p><strong>Exiting 0 after reporting a failure.</strong> The message is for humans; the exit status is for machines,
+and the machine is what runs it nightly. A monitoring check reads <code>$?</code>.</p>
+<p><strong>Using <code>date +%Y%m%d</code> directly in a crontab line.</strong> In a crontab, <code>%</code> starts the stdin section and
+must be written <code>\%</code>. It works perfectly when you paste the command into a shell to test it, which
+is what makes it so hard to find.</p>
+<p><strong>Adding <code>/usr/local/bin</code> to your own <code>.bashrc</code> and re-testing.</strong> That changes your shell, not
+cron’s. <code>sudo env -i PATH=/usr/bin:/bin &lt;cmd&gt;</code> is the test; an absolute path in the crontab is the
+fix.</p>
+<p><strong>Using a bare command name in <code>/etc/cron.d</code> and putting the user field in a user crontab (or the
+reverse).</strong> <code>/etc/crontab</code> and <code>/etc/cron.d/*</code> take a user field; <code>crontab -e</code> files do not. Get it
+wrong and cron either runs the wrong thing or reports that it cannot find a command called <code>root</code>.</p>
+<p><strong>Naming a file in <code>/etc/cron.d</code> with a dot in it</strong>, or making it group-writable. cron ignores it
+without explanation.</p>
+<p><strong>Testing only the happy path.</strong> The two graded failure cases are the whole point: a backup script is
+a claim about failure handling, and you have not verified it until you have watched it fail on a
+missing source and on an unwritable destination.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># quoting
+&quot;$var&quot;          # one argument, exactly
+&quot;$(cmd)&quot;        # the output as one argument (trailing newlines stripped)
+&quot;$@&quot;            # each positional argument preserved   ← always this, never $@
+&quot;${arr[@]}&quot;     # each array element preserved
+${var:-default} # this, or a default (works with set -u)
+${var:?message} # …or die with a message if unset
+# no quoting needed: inside [[ ]], and on the right of a plain x=$y assignment
+
+# file lists, safely
+tar -czf &quot;$ARCHIVE&quot; -C &quot;$SRC&quot; .                 # let the tool walk the tree  ← preferred
+find &quot;$SRC&quot; -type f -exec cmd {} +              # batched, no shell in between
+find &quot;$SRC&quot; -print0 | xargs -0 cmd              # NUL-separated
+find &quot;$SRC&quot; -print0 | while IFS= read -r -d '' f; do cmd &quot;$f&quot;; done
+mapfile -d '' files &lt; &lt;(find &quot;$SRC&quot; -print0)    # into an array (bash 4.4+)
+
+# failing loudly
+set -euo pipefail                  # -e stop on error, -u unset is an error, pipefail
+log()  { echo &quot;$(date -Is) $*&quot; &gt;&gt; &quot;$LOG&quot;; }
+fail() { echo &quot;$0: $*&quot; &gt;&amp;2; log &quot;FAILED: $*&quot;; exit 1; }
+[ -d &quot;$SRC&quot; ]  || fail &quot;no source $SRC&quot;         # -f file, -d dir, -r/-w/-x access
+[ -n &quot;$var&quot; ]  || fail &quot;empty var&quot;              # -z empty, -n non-empty
+cmd || fail &quot;cmd failed&quot;
+if ! cmd; then fail &quot;…&quot;; fi
+trap 'rm -rf &quot;$tmp&quot;' EXIT                       # clean up on any exit path
+
+# debugging
+bash -n script            # syntax only, run nothing
+bash -x script            # print each command after expansion  ← finds quoting bugs
+set -x ; … ; set +x       # trace one section
+shellcheck script         # static analysis; finds every unquoted expansion (not on the lab image: apt install shellcheck)
+
+# cron
+# min hour dom mon dow [user]  command       (user field: /etc/crontab, /etc/cron.d/* only)
+15 2 * * * root /usr/local/bin/backup-data   # absolute path — cron's PATH is /usr/bin:/bin
+PATH=/usr/local/bin:/usr/bin:/bin            # …or set it at the top of the crontab
+# \% : a literal percent (unescaped % starts the stdin section)
+crontab -l ; crontab -e ; crontab -u user -l
+systemctl is-enabled cron ; systemctl is-active cron        # Ubuntu
+rc-update show default | grep crond ; rc-service crond status   # Alpine
+sudo env -i PATH=/usr/bin:/bin /usr/local/bin/job ; echo $?   # reproduce cron's environment
+journalctl -t CRON -b                        # what cron says it ran (systemd systems)
+# exit 127 = command not found → PATH.  exit 126 = found, not executable.
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Active, green, and not working</em> (topic journal <code>monitoring</code>) — A check is an exit status</li>
+</ul>
+<p>Manual pages: <code>man 1 bash</code>, <code>man 5 crontab</code>.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p><code>FILES=$(find . -type f)</code> then <code>tar -czf $ARCHIVE $FILES</code>. Exactly what happens to a file called
+<code>2026 Q3 summary.csv</code>, and what do the archive and the log say afterwards?</p>
+<blockquote>
+<p>Word splitting cuts the unquoted <code>$FILES</code> at every space, so tar receives <code>./invoices/2026</code>,
+<code>Q3</code> and <code>summary.csv</code> as three separate arguments, none of which exists. tar reports three
+errors and exits non-zero; the archive contains only the files whose names had no spaces; and
+because the script discards stderr and ends in <code>exit 0</code>, the log still says “backup OK”.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is quoting <code>$FILES</code> not the fix, and what are the two robust ways to hand a list of files to
+another program?</p>
+<blockquote>
+<p><code>&quot;$FILES&quot;</code> becomes one argument containing every name and some newlines, so nothing is archived
+instead of some things — a list cannot live in a string, because a filename may contain a
+newline. Either let the tool walk the tree itself (<code>tar -C &quot;$SRC&quot; .</code>), or use NUL separation
+(<code>find -print0 | xargs -0</code>, or <code>while IFS= read -r -d ''</code>).</p>
+</blockquote>
+</li>
+<li>
+<p>What do <code>set -e</code>, <code>set -u</code> and <code>set -o pipefail</code> each catch, and name two situations where
+<code>set -e</code> does not fire?</p>
+<blockquote>
+<p><code>-e</code> exits on the first non-zero status; <code>-u</code> makes an unset variable an error (catching a typo
+that would otherwise expand to nothing); <code>pipefail</code> makes a pipeline fail if any stage fails,
+not just the last. It does not fire for a command used as a condition (<code>if cmd</code>, <code>cmd || true</code>,
+<code>a &amp;&amp; b</code> except the last), nor when the status is consumed by an assignment
+(<code>x=$(failing-cmd)</code>).</p>
+</blockquote>
+</li>
+<li>
+<p>A script prints “backup failed” and exits 0. Name both defects and who is harmed by each.</p>
+<blockquote>
+<p>The message is on stdout rather than stderr, so a caller that redirects stdout — cron included —
+sees nothing at all. And exit 0 tells every machine consumer, from cron’s mail to a monitoring
+check, that the run succeeded. Humans lose the message; automation loses the truth.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the minimum a log line needs for someone to distinguish a good night from a bad one a year
+later?</p>
+<blockquote>
+<p>A timestamp, an explicit outcome written on <em>both</em> paths (OK and FAILED), and the reason plus the
+artifact on failure. A log that only ever contains one sentence carries no information — there
+must be a line that could have been different.</p>
+</blockquote>
+</li>
+<li>
+<p>A job works when you run it in your shell and does nothing under cron. What is the first thing to
+suspect, and what single command reproduces cron’s conditions?</p>
+<blockquote>
+<p><code>PATH</code>: cron gives a job roughly <code>/usr/bin:/bin</code> and reads none of your shell’s startup files,
+so anything in <code>/usr/local/bin</code> is not found — exit 127. Reproduce it with
+<code>env -i PATH=/usr/bin:/bin /path/to/job</code>. Fix it with an absolute path in the crontab, or a
+<code>PATH=</code> line at the top of the crontab.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>date +%Y%m%d</code> behave differently in a crontab line than in a shell?</p>
+<blockquote>
+<p>In a crontab, <code>%</code> is special: it terminates the command and starts the data fed to it on stdin.
+It must be escaped as <code>\%</code>. The command tests perfectly when pasted into a shell, which is what
+makes this failure so persistent.</p>
+</blockquote>
+</li>
+<li>
+<p><code>bash -n</code>, <code>bash -x</code> and <code>shellcheck</code> — what does each one tell you, and which finds a quoting bug
+fastest?</p>
+<blockquote>
+<p><code>bash -n</code> parses without running, catching syntax errors only. <code>bash -x</code> prints every command
+<em>after</em> expansion, so an unquoted variable that became three arguments is visible on the trace —
+the fastest way to see this class of bug in action. <code>shellcheck</code> finds unquoted expansions
+statically, before you run anything, and should be in the habit.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

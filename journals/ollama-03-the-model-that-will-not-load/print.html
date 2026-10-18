@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A loaded model costs its weights plus a cache for every token it may hold</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A loaded model costs its weights plus a cache for every token it may hold</h1>
+  <div class="meta">ollama, kernel-performance, boot-systemd · 35 minutes · 1492 words</div>
+</header>
+<p>“The model is 400 MB” is true of the file and says little about the server. To answer, the runtime
+loads the weights, adds its own working memory, and reserves a <strong>key-value cache</strong>: for every token of
+context, in every request slot it may serve at once, the intermediate results of every layer, so each
+new token does not recompute the whole conversation. That cache grows with the context length and with
+the number of parallel requests, multiplied.</p>
+<p>This machine’s tuning asked for 32,768 tokens of context for eight people at once — a cache of three
+gigabytes on a three-gigabyte machine — and then capped the service at 400 MB because the model file is
+400 MB. The result is two different failures that look alike from the outside: the kernel killing the
+server mid-load, and the server refusing to allocate what it was told to. Telling them apart is most of
+the lab.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Estimate what a model server will need from context length and parallelism, and measure it.</li>
+<li>Read <code>MemoryMax=</code>, <code>MemoryPeak</code> and <code>NRestarts</code> for a service, and find the kernel’s OOM message.</li>
+<li>Distinguish an out-of-memory kill from a failed allocation in the journal and from the client.</li>
+<li>Choose a memory limit that protects the machine without killing the service.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>What the server holds</h3>
+<p>For <code>qwen2.5:0.5b</code> (a 4-bit file of about 400 MB), Ollama reports the loaded size in <code>/api/ps</code>, and systemd
+records the service’s peak memory. Measured on the lab VM (2 CPUs, 3 GB), one load each:</p>
+<table>
+<thead>
+<tr>
+<th><code>OLLAMA_CONTEXT_LENGTH</code></th>
+<th><code>OLLAMA_NUM_PARALLEL</code></th>
+<th>loaded size (<code>/api/ps</code>)</th>
+<th>service <code>MemoryPeak</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4,096</td>
+<td>1</td>
+<td>600 MiB</td>
+<td>734 MiB</td>
+</tr>
+<tr>
+<td>4,096</td>
+<td>2</td>
+<td>688 MiB</td>
+<td>734 MiB</td>
+</tr>
+<tr>
+<td>8,192</td>
+<td>2</td>
+<td>792 MiB</td>
+<td>813 MiB</td>
+</tr>
+<tr>
+<td>16,384</td>
+<td>4</td>
+<td>1,488 MiB</td>
+<td>1,398 MiB</td>
+</tr>
+<tr>
+<td>32,768</td>
+<td>8</td>
+<td>— load fails: 3,072 MiB for the cache alone</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>The cache is sized for <strong>context × parallel</strong> tokens: 32,768 × 8 is 262,144 tokens, and the runtime’s log
+says so (<code>n_ctx = 262144</code>, <code>n_ctx_seq = 32768</code>). Doubling either doubles the cache. “Eight people on the
+team” does not mean eight requests at the same instant; requests beyond <code>OLLAMA_NUM_PARALLEL</code> wait in a
+queue (<code>OLLAMA_MAX_QUEUE</code>, 512 by default) rather than failing.</p>
+<p>Before loading, Ollama 0.34 estimates the need and logs it — here <code>projected to use 3645 MiB of host memory vs. 2973 MiB of total host memory</code>. It compares with the machine’s memory, <strong>not</strong> with the
+service’s cgroup limit.</p>
+<h3>MemoryMax and the OOM killer</h3>
+<p>systemd runs each service in its own control group. <code>MemoryMax=</code> caps that group; when its memory reaches
+the cap and cannot be reclaimed, the kernel’s OOM killer kills a process <strong>inside that group</strong>, however
+much memory the rest of the machine has. The traces:</p>
+<ul>
+<li><code>journalctl -u ollama</code>: <code>A process of this unit has been killed by the OOM killer.</code> and <code>Failed with result 'oom-kill'</code>, then <code>Scheduled restart job</code> if the unit restarts;</li>
+<li><code>journalctl -k</code>: <code>Memory cgroup out of memory: Killed process … (llama-server)</code> with
+<code>constraint=CONSTRAINT_MEMCG</code>;</li>
+<li><code>systemctl show ollama -p NRestarts</code> goes up; the client’s connection is simply closed.</li>
+</ul>
+<p><code>MemoryPeak</code> (the group’s high-water mark since the unit started) shows how close a working service comes
+to its cap. <code>MemoryHigh=</code> is the softer sibling: above it the kernel throttles and reclaims instead of
+killing.</p>
+<h3>A failed allocation is not a kill</h3>
+<p>When the cap is large enough to start but the runtime asks for a single block it cannot get, the runtime
+itself fails: <code>ggml_aligned_malloc: insufficient memory (attempted to allocate 3072.00 MB)</code>, <code>failed to allocate buffer for kv cache</code>, <code>Load failed</code>. The server stays up, <code>NRestarts</code> does not change, and the
+client receives HTTP 500 with that error in the body. The fix is the same kind — ask for less — but the
+evidence is in a different place, and raising <code>MemoryMax</code> does nothing for it.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the lab VM (Ollama 0.34.0, systemd 257). A question, as the team asks it:</p>
+<pre><code class="language-console">$ curl -s -w '\nHTTP %{http_code}\n' 127.0.0.1:11434/api/generate \
+    -d '{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;prompt&quot;:&quot;Name one Linux command.&quot;,&quot;stream&quot;:false,&quot;options&quot;:{&quot;num_predict&quot;:8}}'
+
+HTTP 000
+$ systemctl show ollama -p MemoryMax -p MemoryPeak -p NRestarts
+NRestarts=1
+MemoryPeak=29376512
+MemoryMax=419430400
+$ sudo journalctl -u ollama -o cat | grep -E 'projected|OOM|oom-kill|Scheduled restart'
+common_params_fit_impl: projected to use 3645 MiB of host memory vs. 2973 MiB of total host memory
+ollama.service: A process of this unit has been killed by the OOM killer.
+ollama.service: Failed with result 'oom-kill'.
+ollama.service: Scheduled restart job, restart counter is at 1.
+$ sudo journalctl -k | grep -i 'memory cgroup out of memory'
+kernel: Memory cgroup out of memory: Killed process 940 (llama-server) total-vm:1001312kB, anon-rss:380628kB, …
+</code></pre>
+<p>No HTTP response at all, one restart, and a peak that reset with the restart. The drop-in holds the whole
+tuning:</p>
+<pre><code class="language-ini"># /etc/systemd/system/ollama.service.d/tuning.conf
+[Service]
+Environment=&quot;OLLAMA_CONTEXT_LENGTH=32768&quot;
+Environment=&quot;OLLAMA_NUM_PARALLEL=8&quot;
+MemoryMax=400M
+</code></pre>
+<p>The obvious fix is the limit. Raising it to 1536M:</p>
+<pre><code class="language-console">$ sudo sed -i 's/^MemoryMax=400M/MemoryMax=1536M/' /etc/systemd/system/ollama.service.d/tuning.conf
+$ sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart ollama
+$ curl -s 127.0.0.1:11434/api/generate -d '{…}' | jq -r .error
+llama-server process has terminated: exit status 1: ggml_aligned_malloc: insufficient memory (attempted to allocate 3072.00 MB)
+$ systemctl show ollama -p NRestarts -p MemoryPeak
+NRestarts=0
+MemoryPeak=777523200
+$ sudo journalctl -u ollama -o cat | grep -E 'kv cache' | tail -1
+llama_init_from_model: failed to initialize the context: failed to allocate buffer for kv cache
+</code></pre>
+<p>A different failure: nothing was killed, the server answered with an error, and the cause is the three
+gigabytes of cache — no limit that fits on this machine would help. Size the cache to the need — 4,096
+tokens, two at a time — and keep a limit with room above it:</p>
+<pre><code class="language-console">$ printf '[Service]\nEnvironment=&quot;OLLAMA_CONTEXT_LENGTH=4096&quot;\nEnvironment=&quot;OLLAMA_NUM_PARALLEL=2&quot;\nMemoryMax=1536M\n' \
+    | sudo tee /etc/systemd/system/ollama.service.d/tuning.conf
+$ sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart ollama
+$ time curl -s 127.0.0.1:11434/api/generate -d '{…}' | jq -c '{response, load_duration}'
+{&quot;response&quot;:&quot;Linux is a Unix-like operating system,&quot;,&quot;load_duration&quot;:603007669}
+real	0m0.908s
+$ curl -s 127.0.0.1:11434/api/ps | jq -c '.models[] | {name, size, context_length}'
+{&quot;name&quot;:&quot;qwen2.5:0.5b&quot;,&quot;size&quot;:721231542,&quot;context_length&quot;:4096}
+$ systemctl show ollama -p NRestarts -p MemoryPeak -p MemoryMax
+NRestarts=0
+MemoryPeak=769761280
+MemoryMax=1610612736
+</code></pre>
+<p>Loaded in 0.6 s, a peak of 734 MiB under a 1,536 MiB cap. (The answer itself — “Linux is a Unix-like
+operating system,” for “name one Linux command” — is what eight tokens of a half-billion-parameter model
+buy.) The grader asks again after a reboot.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Removing <code>MemoryMax=</code> altogether.</strong> The service works, and the next oversized setting takes the whole
+machine into swap or the global OOM killer, which may pick sshd.</p>
+<p><strong>Raising the limit until the error changes.</strong> The kill becomes an allocation failure; no limit on a 3 GB
+machine holds a 3 GB cache plus everything else.</p>
+<p><strong>Sizing <code>OLLAMA_NUM_PARALLEL</code> to the team.</strong> It is simultaneous requests, not users. Excess requests
+queue; each parallel slot costs a full context of cache.</p>
+<p><strong>Setting the context to 512 to save memory.</strong> Everything loads, and every prompt longer than a few hundred
+tokens is truncated (see the previous lab). The team asked for 4,096.</p>
+<p><strong>Reading <code>MemoryPeak</code> after a crash.</strong> It is reset when the unit restarts; the kill’s size is in the
+kernel log and in <code>Consumed … memory peak</code> in the unit’s journal.</p>
+<p><strong>Testing with <code>ollama run</code> in a terminal.</strong> The client talks to the same server, so it does exercise the
+limits — but it hides the HTTP status. <code>curl -w '%{http_code}'</code> shows 000 for a kill and 500 for an
+allocation failure.</p>
+<p><strong>Forgetting <code>daemon-reload</code>.</strong> Resource settings in a drop-in do not apply until systemd rereads it.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># what the unit is allowed, what it used, whether it died
+systemctl show ollama -p MemoryMax -p MemoryHigh -p MemoryPeak -p MemoryCurrent -p NRestarts -p Result
+systemctl cat ollama
+sudo journalctl -u ollama -o cat | grep -E 'oom-kill|OOM killer|Scheduled restart|Consumed'
+sudo journalctl -k | grep -i 'out of memory'
+
+# what the runtime tried
+sudo journalctl -u ollama -o cat | grep -E 'projected to use|n_ctx|insufficient memory|kv cache|Load failed'
+
+# what is loaded, and how big
+curl -s 127.0.0.1:11434/api/ps | jq '.models[] | {name, size, context_length, expires_at}'
+
+# from the client: 000 = connection dropped (killed), 500 = error answered
+curl -s -o /dev/null -w '%{http_code}\n' 127.0.0.1:11434/api/generate -d '{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;prompt&quot;:&quot;hi&quot;,&quot;stream&quot;:false}'
+
+# sizing
+[Service]
+Environment=&quot;OLLAMA_CONTEXT_LENGTH=4096&quot;     # tokens per request
+Environment=&quot;OLLAMA_NUM_PARALLEL=2&quot;          # simultaneous requests; cache ∝ context × parallel
+MemoryMax=1536M                              # hard cap: OOM kill inside the cgroup
+MemoryHigh=1200M                             # soft: throttle and reclaim first
+sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart ollama
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>The limits nobody set, and the numbers everybody misreads</em> (topic journal <code>kernel-performance</code>) — OOM: the machine’s, or the cgroup’s</li>
+<li><em>Ollama on a server</em> (topic journal <code>ollama</code>) — Memory</li>
+<li><em>Ollama on a server</em> (topic journal <code>ollama</code>) — Context windows</li>
+</ul>
+<p>Manual pages: <code>man 5 systemd.resource-control</code>.</p>
+<p>The whole subject, end to end: the topic journals <em>Ollama on a server</em> (<code>ollama</code>), <em>The limits nobody set, and the numbers everybody misreads</em> (<code>kernel-performance</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Why does a model server need more memory than the model file, and which two settings multiply the
+extra?</p>
+<blockquote>
+<p>Besides the weights it holds working memory and a key-value cache for every token it may process;
+the cache is sized by <code>OLLAMA_CONTEXT_LENGTH</code> times <code>OLLAMA_NUM_PARALLEL</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>The journal says <code>Failed with result 'oom-kill'</code> on a machine with 2 GB free. What limit was hit, and
+where does the kernel say so?</p>
+<blockquote>
+<p>The unit’s <code>MemoryMax=</code> cgroup limit. <code>journalctl -k</code> shows <code>Memory cgroup out of memory</code> with
+<code>constraint=CONSTRAINT_MEMCG</code> and the killed process.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a client see in each case: the server killed mid-load, and the server failing to allocate its
+cache?</p>
+<blockquote>
+<p>A dropped connection with no HTTP status (curl reports 000) for the kill; HTTP 500 with the allocation
+error in the body for the failure, with the server still running.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did raising <code>MemoryMax</code> to 1536M not make the 32,768 × 8 configuration work?</p>
+<blockquote>
+<p>The cache alone needed 3,072 MB, more than the limit and more than the machine could provide; the
+failure became an allocation error instead of a kill.</p>
+</blockquote>
+</li>
+<li>
+<p>The team has eight members. Why is <code>OLLAMA_NUM_PARALLEL=2</code> still a reasonable setting?</p>
+<blockquote>
+<p>It limits simultaneous requests, not users. Requests beyond it wait in Ollama’s queue; each parallel
+slot costs a full context of cache memory.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between <code>MemoryMax=</code> and <code>MemoryHigh=</code>?</p>
+<blockquote>
+<p><code>MemoryMax</code> is a hard limit: at it, the kernel OOM-kills within the cgroup. <code>MemoryHigh</code> is a
+throttling point: above it the kernel reclaims and slows the group rather than killing.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is removing the memory limit the wrong fix?</p>
+<blockquote>
+<p>The service then competes with everything else on the machine; an oversized setting pushes the whole
+system into swap or the global OOM killer, which may kill something more important.</p>
+</blockquote>
+</li>
+<li>
+<p>Ollama logged <code>projected to use 3645 MiB of host memory vs. 2973 MiB of total host memory</code>. Why did that
+estimate not prevent the 400 MB kill?</p>
+<blockquote>
+<p>It compares with the machine’s memory, not with the service’s cgroup limit, so a load that “fits the
+host” can still exceed <code>MemoryMax</code>.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

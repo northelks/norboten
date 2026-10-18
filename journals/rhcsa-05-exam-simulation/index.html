@@ -1,0 +1,1010 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ninety minutes on a machine that will not boot · Norboten</title>
+<meta name="description" content="Fifteen tasks, ninety minutes, and a pass line of seventy per cent — eleven tasks. You do not know the root password, your own sudo is gone, and the machine doe">
+<link rel="canonical" href="https://norboten.org/journals/rhcsa-05-exam-simulation/"><meta property="og:title" content="Ninety minutes on a machine that will not boot · Norboten">
+<meta property="og:description" content="Fifteen tasks, ninety minutes, and a pass line of seventy per cent — eleven tasks. You do not know the root password, your own sudo is gone, and the machine doe">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/rhcsa-05-exam-simulation/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ninety minutes on a machine that will not boot · Norboten">
+<meta name="twitter:description" content="Fifteen tasks, ninety minutes, and a pass line of seventy per cent — eleven tasks. You do not know the root password, your own sudo is gone, and the machine doe">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Ninety minutes on a machine that will not boot",
+  "description": "Fifteen tasks, ninety minutes, and a pass line of seventy per cent \u2014 eleven tasks. You do not know the root password, your own sudo is gone, and the machine doe",
+  "url": "https://norboten.org/journals/rhcsa-05-exam-simulation/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 5181,
+  "timeRequired": "PT70M",
+  "about": ["Users and permissions", "Boot and systemd", "Storage and LVM", "Networking", "Linux basics"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Server You Inherited</div>
+    <h1>Ninety minutes on a machine that will not boot</h1>
+    <p class="muted">
+      70 minutes' reading · 5181 words ·<span class="tag">Users and permissions</span><span class="tag">Boot and systemd</span><span class="tag">Storage and LVM</span><span class="tag">Networking</span><span class="tag">Linux basics</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 147 words</title><rect x="0.0" y="0" width="15.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 3407 words</title><rect x="18.8" y="0" width="365.2" height="30" rx="4" fill="#1d2a23"/><text x="26.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 1213 words</title><rect x="386.9" y="0" width="130.0" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 863 words</title><rect x="519.9" y="0" width="92.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 441 words</title><rect x="615.4" y="0" width="47.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 217 words</title><rect x="665.7" y="0" width="23.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 635 words</title><rect x="691.9" y="0" width="68.1" height="30" rx="4" fill="#1d2a23"/><text x="699.9" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/rhcsa-05-exam-simulation/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Fifteen tasks, ninety minutes, and a pass line of seventy per cent — eleven tasks. You do not know
+the root password, your own <code>sudo</code> is gone, and the machine does not finish booting, so the first
+thing to earn is a shell. Everything is graded after a reboot.</p>
+<p>The individual tasks here are not hard; most of them are one or two commands, and the mechanisms
+behind them appear in the other four journals in this track. What this lab actually tests is
+different, and it is the thing that decides real exams: <strong>whether you can order the work, verify as
+you go, and leave nothing that only works until the next boot.</strong> Fifteen correct fixes, one of which
+you did in a shell instead of a file, is fourteen. And there is one trap on this machine that
+converts a correct fix into a locked-out system — it is the second task, and it is the most
+important paragraph in this journal.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Interrupt the bootloader, get a root shell through <code>rd.break</code>, change the root password, and
+— crucially — leave SELinux able to read the file you just rewrote.</li>
+<li>Repoint a repository at a local mirror, and check that nothing else is enabled.</li>
+<li>Write a systemd timer that genuinely fires, and prove its schedule without waiting for it.</li>
+<li>Create accounts and groups with specified numeric IDs, set password aging, and make an account
+that owns files but cannot log in.</li>
+<li>Configure a time client, a persistent journal and key-based SSH, and verify each of them rather
+than assuming.</li>
+<li>Write a small Bash script that handles its arguments, writes errors to stderr, and exits with the
+status it was asked for.</li>
+<li>Plan ninety minutes: what to do first because everything else depends on it, what to defer, and
+when to spend a reboot.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="getting-in-interrupt-the-boot">Getting in: interrupt the boot</h3>
+<p>The bootloader is the one place where nothing on the disk can stop you — which is why physical (or
+console) access is root access, and why disk encryption exists. On the lab's screen press <strong><code>b</code></strong>:
+it presses the reset button and attaches to the boot console.</p>
+<p>The menu waits ten seconds. Press an arrow key to stop the countdown, highlight the kernel you want,
+and press <strong><code>e</code></strong> to edit its boot entry. On this machine the entry looks like this:</p>
+<pre><code> |load_video                                                                  |
+ |set gfxpayload=keep                                                         |
+ |insmod gzio                                                                 |
+ |linux ($root)/vmlinuz-6.12.0-211.54.1.el10_2.aarch64 no_timer_check root=UU\|
+ |ID=adbc700e-905a-4aa3-90a2-084cd25fcc12  console=tty0 console=ttyAMA0,11520\|
+ |0n8                                                                         |
+ |initrd ($root)/initramfs-6.12.0-211.54.1.el10_2.aarch64.img $tuned_initrd   |
+</code></pre>
+<p>The <code>linux</code> line is <em>one</em> line drawn across three rows — the <code>\</code> at the right edge marks the wrap. Move
+the cursor down onto it, press <strong>Ctrl-E</strong> to jump to the end of that logical line (after <code>0n8</code>), and
+type a space and:</p>
+<pre><code>rd.break
+</code></pre>
+<p>Get the line right: land on the <code>initrd</code> line instead, or on an empty line below it, and GRUB treats
+<code>rd.break</code> as a command of its own and the boot fails. Then <strong>Ctrl-X</strong> to boot what you have edited. Note that these edits are not written anywhere: they
+apply to this boot only, which is exactly what you want, and also means a typo costs one reset.</p>
+<p><code>rd.break</code> stops the boot in the <strong>initramfs</strong>, before control is handed to the real root
+filesystem. The kernel console is the serial line, so the shell appears on the serial
+console (<code>k</code>), not the boot console. That is a deliberately strange environment and it explains every
+subsequent step — all of which were checked on this machine:</p>
+<ul>
+<li>your root filesystem is mounted at <strong><code>/sysroot</code></strong>, and it is mounted <strong>read-only</strong>
+(<code>findmnt /sysroot</code> shows <code>ro</code>);</li>
+<li>the tools you are using are the initramfs's, not the system's — there is no <code>head</code>, no
+<code>getenforce</code>;</li>
+<li><strong>SELinux policy is not loaded</strong> — <code>/sys/fs/selinux</code> does not exist, and inside the chroot
+<code>id -Z</code> says <em>works only on an SELinux-enabled kernel</em>.</li>
+</ul>
+<p>Older guides show the prompt as <code>switch_root:/#</code>. On Rocky 10 both shells — before and after the
+<code>chroot</code> — say <code>sh-5.2#</code>, so the prompt will not tell you where you are; <code>findmnt /sysroot</code> will. So:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">sh-5.2# </span>mount<span class="hl-w"> </span>-o<span class="hl-w"> </span>remount,rw<span class="hl-w"> </span>/sysroot
+<span class="hl-gp">sh-5.2# </span>chroot<span class="hl-w"> </span>/sysroot
+<span class="hl-gp">sh-5.2# </span>passwd<span class="hl-w"> </span>root
+<span class="hl-go">New password:</span>
+<span class="hl-go">Retype new password:</span>
+<span class="hl-go">passwd: password updated successfully</span>
+<span class="hl-gp">sh-5.2# </span>ls<span class="hl-w"> </span>-Z<span class="hl-w"> </span>/etc/shadow
+<span class="hl-go">? /etc/shadow</span>
+<span class="hl-gp">sh-5.2# </span>touch<span class="hl-w"> </span>/.autorelabel
+<span class="hl-gp">sh-5.2# </span><span class="hl-nb">exit</span>
+<span class="hl-go">exit</span>
+<span class="hl-gp">sh-5.2# </span><span class="hl-nb">exit</span>
+<span class="hl-go">exit</span>
+</code></pre>
+
+<p>That <code>?</code> is the whole next section in one character: the file you just rewrote has no label.</p>
+<p>Two neighbouring routes exist and are worth knowing. <code>init=/bin/bash</code> replaces PID 1 with a shell,
+which boots further and mounts <code>/</code> directly — but you must then remount <code>/</code> read-write yourself and
+you have no systemd, so <code>exit</code> does not continue the boot and you must reboot forcibly.
+<code>systemd.debug-shell=1</code> gives you a root shell on tty9 of a system that otherwise boots normally.
+<code>rd.break</code> is the documented RHCSA path and the one to have in your fingers.</p>
+<h3 id="the-trap-autorelabel">The trap: <code>/.autorelabel</code></h3>
+<p><code>passwd</code> rewrites <code>/etc/shadow</code>. In the <code>rd.break</code> environment there is no SELinux policy loaded, so
+the file that comes out has no valid label — and once the system boots with the policy in force,
+nothing may read it. Not <code>login</code>, not <code>sshd</code>, not <code>su</code>, not <code>sulogin</code>. The failure is spectacular
+and entirely silent at the moment you cause it. This is what it looked like when the relabel was
+skipped on this machine, which also has a broken <code>fstab</code> and so drops to emergency mode:</p>
+<pre><code>You are in emergency mode. After logging in, type &quot;journalctl -xb&quot; to view
+system logs, &quot;systemctl reboot&quot; to reboot, or &quot;exit&quot;
+to continue bootup.
+Cannot open access to console, the root account is locked.
+See sulogin(8) man page for more details.
+Press Enter to continue.
+</code></pre>
+<p><em>The root account is locked</em> — seconds after you set its password. <code>sulogin</code> cannot read <code>/etc/shadow</code>,
+so it concludes there is no usable root password. Pressing Enter retries the boot, which fails on the
+same <code>fstab</code>, which lands on the same message: a loop with no way out except the bootloader. Booted
+permissive, the label shows what happened:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>getenforce<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-Z<span class="hl-w"> </span>/etc/shadow
+<span class="hl-go">Permissive</span>
+<span class="hl-gp">system_u:object_r:unlabeled_t:s0 /etc/shadow      # </span>should<span class="hl-w"> </span>be<span class="hl-w"> </span>shadow_t
+</code></pre>
+
+<p><code>touch /.autorelabel</code> tells the next boot to relabel the whole filesystem and then reboot again. It
+costs a couple of minutes on a lab machine (and much more on a real one), and it is the safe answer.</p>
+<p>If you are already locked out, the recovery is to go back to the bootloader and append <strong><code>enforcing=0</code></strong>
+instead of <code>rd.break</code>. The system boots permissive, <code>sulogin</code> can read the file, and you can repair
+just the account files — verified on this machine:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>restorecon<span class="hl-w"> </span>-v<span class="hl-w"> </span>/etc/shadow<span class="hl-w"> </span>/etc/passwd<span class="hl-w"> </span>/etc/group<span class="hl-w"> </span>/etc/gshadow
+<span class="hl-go">Relabeled /etc/shadow from system_u:object_r:unlabeled_t:s0 to system_u:object_r:shadow_t:s0</span>
+</code></pre>
+
+<p>and then reboot into enforcing (the kernel-line edit was never saved, so a plain reboot does it).</p>
+<p>Some older guides offer a third route: <code>load_policy -i</code> inside the <code>rd.break</code> chroot, then
+<code>restorecon /etc/shadow</code>. <strong>Do not use it on RHEL/Rocky 10.</strong> Tried on this machine, <code>load_policy -i</code>
+loaded the policy in <em>enforcing</em> mode while the shell was still running as <code>kernel_t</code>: <code>restorecon</code>
+failed with <em>Permission denied</em>, <code>ls</code> was denied reading <code>/etc/shadow</code>, and after <code>exit</code> the
+initramfs could not execute its own cleanup (<code>Failed to start initrd-cleanup.service</code>). It turns a
+missing label into a machine that cannot finish the initramfs. Note
+what is <em>not</em> on the list: setting <code>SELINUX=disabled</code>. That converts a two-minute relabel into an
+audit finding, and this lab's second check — which passes on the broken machine and can only be
+broken by you — exists precisely to catch the version of task 1 that skips this step.</p>
+<p>The general rule behind the specific trap: <strong>a file written while the policy was not loaded has no
+label, and a file moved rather than copied keeps its old one.</strong> Any time you edit system files from
+a rescue environment, relabel afterwards.</p>
+<h3 id="repositories-and-packages">Repositories and packages</h3>
+<p>A repository is a file in <code>/etc/yum.repos.d/*.repo</code>:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-k">[lab-local]</span>
+<span class="hl-na">name</span><span class="hl-o">=</span><span class="hl-s">Lab packages</span>
+<span class="hl-na">baseurl</span><span class="hl-o">=</span><span class="hl-s">file:///opt/repos/local</span>
+<span class="hl-na">enabled</span><span class="hl-o">=</span><span class="hl-s">1</span>
+<span class="hl-na">gpgcheck</span><span class="hl-o">=</span><span class="hl-s">0</span>
+</code></pre>
+
+<p>The id in brackets is what <code>dnf</code> calls it; <code>baseurl</code> can be <code>http://</code>, <code>https://</code>, or <code>file://</code> for
+a local directory — note the three slashes, two for the scheme and one for the absolute path. When
+the mirror is a directory on this machine, <code>file:///opt/repos/local</code> is the whole configuration.
+<code>gpgcheck=0</code> says do not verify signatures, which is acceptable for a local mirror you control and
+is what the task asks for; the alternative is <code>gpgkey=file:///etc/pki/rpm-gpg/…</code>.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>dnf<span class="hl-w"> </span>repolist<span class="hl-w">                       </span><span class="hl-c1"># enabled repositories</span>
+<span class="hl-gp">$ </span>dnf<span class="hl-w"> </span>repolist<span class="hl-w"> </span>--all<span class="hl-w">                 </span><span class="hl-c1"># including the disabled ones — read this when asked</span>
+<span class="hl-gp">                                     # </span><span class="hl-k">for</span><span class="hl-w"> </span><span class="hl-s2">"no other repository enabled"</span>
+<span class="hl-gp"># </span>dnf<span class="hl-w"> </span>config-manager<span class="hl-w"> </span>--set-disabled<span class="hl-w"> </span>some-repo
+<span class="hl-gp"># </span>dnf<span class="hl-w"> </span>clean<span class="hl-w"> </span>all<span class="hl-w">                 </span><span class="hl-c1"># after changing a baseurl, so stale metadata is not reused</span>
+<span class="hl-gp"># </span>dnf<span class="hl-w"> </span>-y<span class="hl-w"> </span>install<span class="hl-w"> </span>tree
+<span class="hl-gp">$ </span>rpm<span class="hl-w"> </span>-q<span class="hl-w"> </span>tree<span class="hl-w">                        </span><span class="hl-c1"># the verification, from the other tool</span>
+<span class="hl-gp">$ </span>dnf<span class="hl-w"> </span>provides<span class="hl-w"> </span><span class="hl-s1">'*/sysreport'</span><span class="hl-w">         </span><span class="hl-c1"># which package ships a given file</span>
+</code></pre>
+
+<p><code>dnf</code> caches metadata aggressively, so a repository that was pointing at a dead URL can keep
+reporting the dead URL's error after you fix it. <code>dnf clean all</code> is the reflex.</p>
+<h3 id="timers-that-actually-fire">Timers that actually fire</h3>
+<p>A systemd timer is a <em>pair</em> of units: <code>foo.service</code> does the work, <code>foo.timer</code> decides when. You
+enable the <strong>timer</strong>, not the service — the service is <code>static</code> and pulled in by the timer:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-k">[Timer]</span>
+<span class="hl-na">OnCalendar</span><span class="hl-o">=</span><span class="hl-s">*:0/15</span>
+<span class="hl-na">Persistent</span><span class="hl-o">=</span><span class="hl-s">true</span>
+
+<span class="hl-k">[Install]</span>
+<span class="hl-na">WantedBy</span><span class="hl-o">=</span><span class="hl-s">timers.target</span>
+</code></pre>
+
+<p><code>OnCalendar</code> takes a calendar expression: <code>*:0/15</code> is &quot;every 15 minutes starting at minute 0&quot; —
+<code>0/15</code> means from 0, in steps of 15. <code>*:0,15,30,45</code> says the same thing by listing. Other shapes
+worth recognising: <code>hourly</code>, <code>daily</code>, <code>Mon..Fri 09:00</code>, <code>*-*-01 03:00</code> (the first of the month).
+<code>Persistent=true</code> means that if the machine was off when the timer should have fired, it fires once
+after boot — the <code>anacron</code> behaviour. <code>OnBootSec=</code>/<code>OnUnitActiveSec=</code> express a monotonic schedule
+instead: <code>OnUnitActiveSec=15min</code> is &quot;15 minutes after the last run&quot;, which drifts, where <code>OnCalendar</code>
+does not.</p>
+<p>Never trust a calendar expression you have not checked, and never wait fifteen minutes to find out:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemd-analyze<span class="hl-w"> </span>calendar<span class="hl-w"> </span><span class="hl-s1">'*:0/15'</span>
+<span class="hl-go">  Original form: *:0/15</span>
+<span class="hl-go">Normalized form: *-*-* *:00/15:00</span>
+<span class="hl-go">    Next elapse: Sun 2026-09-13 05:15:00 UTC</span>
+<span class="hl-go">       From now: 48s left</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>list-timers<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>sysreport
+<span class="hl-go">Sun 2026-09-13 05:15:00 UTC    42s -                                - sysreport.timer              sysreport.service</span>
+<span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>sysreport.service<span class="hl-w">    </span><span class="hl-c1"># test the work without waiting for the schedule</span>
+</code></pre>
+
+<p>The fault on this machine is a misspelling — <code>OnCalender=</code> — and it is worth dwelling on what
+systemd does with it. An unknown key on its own is not fatal: it is ignored with a warning. But once
+it is ignored this timer has no schedule at all, and a timer with no schedule is refused outright:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemd-analyze<span class="hl-w"> </span>verify<span class="hl-w"> </span>/etc/systemd/system/sysreport.timer
+<span class="hl-go">/etc/systemd/system/sysreport.timer:5: Unknown key 'OnCalender' in section [Timer], ignoring.</span>
+<span class="hl-go">sysreport.timer: Timer unit lacks value setting. Refusing.</span>
+<span class="hl-go">Unit sysreport.timer has a bad unit file setting.</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>list-timers<span class="hl-w"> </span>--all<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span>sysreport
+<span class="hl-go">0</span>
+</code></pre>
+
+<p>So <code>list-timers --all</code> does not show a broken timer — it does not show the timer at all, and a fast
+reader concludes it was never installed. Two habits protect you: run <code>systemd-analyze verify</code> on any
+unit you did not write, which names the unknown key, and read <code>systemctl list-timers</code> rather than the
+file.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>daemon-reload
+<span class="hl-gp"># </span>systemctl<span class="hl-w"> </span><span class="hl-nb">enable</span><span class="hl-w"> </span>--now<span class="hl-w"> </span>sysreport.timer<span class="hl-w">      </span><span class="hl-c1"># the TIMER, and --now so it is running too</span>
+<span class="hl-go">Created symlink '/etc/systemd/system/timers.target.wants/sysreport.timer' → '/etc/systemd/system/sysreport.timer'.</span>
+</code></pre>
+
+<h3 id="accounts-with-specified-numbers-and-two-ways-to-say-no-login">Accounts with specified numbers, and two ways to say &quot;no login&quot;</h3>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>groupadd<span class="hl-w"> </span>-g<span class="hl-w"> </span><span class="hl-m">5000</span><span class="hl-w"> </span>auditors
+<span class="hl-gp"># </span>useradd<span class="hl-w"> </span>-u<span class="hl-w"> </span><span class="hl-m">5001</span><span class="hl-w"> </span>-G<span class="hl-w"> </span>auditors<span class="hl-w"> </span>maria
+<span class="hl-gp"># </span>useradd<span class="hl-w"> </span>-u<span class="hl-w"> </span><span class="hl-m">5002</span><span class="hl-w"> </span>-G<span class="hl-w"> </span>auditors<span class="hl-w"> </span>-s<span class="hl-w"> </span>/sbin/nologin<span class="hl-w"> </span>sam
+</code></pre>
+
+<p><code>-u</code> and <code>-g</code> are the numeric ID flags; <code>-G</code> is the supplementary group list (see the rhcsa-01
+journal for <code>-G</code> versus <code>-aG</code>). <code>-s /sbin/nologin</code> is the shell that prints a message and exits,
+which is how you make an account that exists for file ownership and cannot be logged into.</p>
+<p>Distinguish three things that all sound like &quot;disabled&quot;:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>what it stops</th>
+<th>what it does not stop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>usermod -s /sbin/nologin</code></td>
+<td>interactive login, by any means</td>
+<td><code>su - sam -c cmd</code> as root, file ownership, cron</td>
+</tr>
+<tr>
+<td><code>passwd -l</code> / <code>usermod -L</code></td>
+<td>password authentication (a <code>!</code> prefix in <code>/etc/shadow</code>)</td>
+<td><strong>SSH key</strong> login, sudo from another account</td>
+</tr>
+<tr>
+<td><code>chage -E 0</code></td>
+<td>the account entirely, as expired</td>
+<td>nothing much; this is the strong one</td>
+</tr>
+</tbody>
+</table>
+<p>The task here says <em>no interactive login is possible</em>, and the shell is the mechanism that answers
+it. Locking the password would leave key-based login open, which is the classic half-answer.</p>
+<p>Password aging lives in <code>/etc/shadow</code> and is edited with <code>chage</code>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>chage<span class="hl-w"> </span>-M<span class="hl-w"> </span><span class="hl-m">90</span><span class="hl-w"> </span>maria<span class="hl-w">          </span><span class="hl-c1"># maximum age: must change at least every 90 days</span>
+<span class="hl-gp"># </span>chage<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">7</span><span class="hl-w"> </span>maria<span class="hl-w">           </span><span class="hl-c1"># minimum age: may not change more often than weekly</span>
+<span class="hl-gp"># </span>chage<span class="hl-w"> </span>-W<span class="hl-w"> </span><span class="hl-m">14</span><span class="hl-w"> </span>maria<span class="hl-w">          </span><span class="hl-c1"># warn 14 days ahead</span>
+<span class="hl-gp"># </span>chage<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-m">2026</span>-12-31<span class="hl-w"> </span>maria<span class="hl-w">  </span><span class="hl-c1"># the account expires on this date</span>
+<span class="hl-gp"># </span>chage<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-m">0</span><span class="hl-w"> </span>maria<span class="hl-w">           </span><span class="hl-c1"># force a change at the next login</span>
+<span class="hl-gp"># </span>chage<span class="hl-w"> </span>-l<span class="hl-w"> </span>maria<span class="hl-w">             </span><span class="hl-c1"># read all of it back  ← always verify</span>
+</code></pre>
+
+<p><code>/etc/login.defs</code> holds the defaults (<code>PASS_MAX_DAYS</code>, <code>PASS_MIN_DAYS</code>, <code>PASS_WARN_AGE</code>) applied to
+accounts created <em>afterwards</em>; changing it does not touch existing users, which is a common
+misreading of a task that says &quot;maria's password must expire every 90 days&quot;.</p>
+<h3 id="time-journal-keys">Time, journal, keys</h3>
+<p><strong>chrony.</strong> The client config is <code>/etc/chrony.conf</code>. A <code>pool</code> line resolves to many servers, a
+<code>server</code> line to one; when a task says &quot;use only this server&quot;, every existing <code>pool</code> and <code>server</code>
+line has to go — comment them out rather than deleting, so you can see what you changed.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>vi<span class="hl-w"> </span>/etc/chrony.conf<span class="hl-w">             </span><span class="hl-c1"># comment out pool/server lines; add: server 192.168.5.2 iburst</span>
+<span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>chronyd
+<span class="hl-gp"># </span>chronyc<span class="hl-w"> </span>sources<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">^? _gateway                      0   6     0     -     +0ns[   +0ns] +/-    0ns</span>
+<span class="hl-gp"># </span>chronyc<span class="hl-w"> </span>-n<span class="hl-w"> </span>sources<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">^? 192.168.5.2                   0   7     0     -     +0ns[   +0ns] +/-    0ns</span>
+<span class="hl-gp">$ </span>timedatectl<span class="hl-w">                     </span><span class="hl-c1"># clock, timezone, NTP enabled/synchronised</span>
+</code></pre>
+
+<p><code>iburst</code> makes the first synchronisation fast rather than polite; it is what you want on a server
+that just booted. <code>chronyc sources</code> showing your server — and nothing else — is the proof, with one
+trap: chrony resolves addresses to names, and on this machine <code>192.168.5.2</code> is the gateway, so it is
+listed as <code>_gateway</code> and looks like the wrong server. <code>-n</code> shows numbers, and it is an option to
+<code>chronyc</code> itself, so it goes <em>before</em> the command: <code>chronyc -n sources</code>. (<code>chronyc sources -n</code> is
+silently the same as without it.) The <code>^?</code> means not yet reachable — in this lab nothing answers on
+that address, and the task is the configuration, not the synchronisation.</p>
+<p><strong>The journal.</strong> <code>journald</code> keeps logs in memory unless it is told, or allowed, to keep them on disk:</p>
+<pre><code>Storage=persistent   always /var/log/journal, created if missing
+Storage=auto          /var/log/journal if it EXISTS, otherwise /run  ← the compiled-in default
+Storage=volatile      /run only: nothing survives a reboot
+</code></pre>
+<p>The setting comes from <code>/etc/systemd/journald.conf</code> and then every drop-in in
+<code>/etc/systemd/journald.conf.d/</code>, <strong>in filename order, the last one winning</strong>. On this machine:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>ls<span class="hl-w"> </span>/etc/systemd/journald.conf.d/
+<span class="hl-go">90-norboten.conf  99-retention.conf</span>
+<span class="hl-gp"># </span>cat<span class="hl-w"> </span>/etc/systemd/journald.conf.d/90-norboten.conf<span class="hl-w"> </span>/etc/systemd/journald.conf.d/99-retention.conf
+<span class="hl-go">[Journal]</span>
+<span class="hl-go">Storage=persistent</span>
+<span class="hl-go">[Journal]</span>
+<span class="hl-go">Storage=volatile</span>
+</code></pre>
+
+<p>The image asks for <code>persistent</code>; somebody's later drop-in says <code>volatile</code>, and <code>99</code> sorts after <code>90</code>,
+so volatile wins. (Deleting <code>/var/log/journal</code> would not have done it on its own: Rocky's
+<code>systemd-tmpfiles</code> configuration recreates the directory at every boot.) Remove the drop-in — with
+<code>-f</code>, because root's <code>rm</code> on RHEL is an alias for <code>rm -i</code> and will stop to ask:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>rm<span class="hl-w"> </span>-f<span class="hl-w"> </span>/etc/systemd/journald.conf.d/99-retention.conf
+<span class="hl-gp"># </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/var/log/journal<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>systemd-tmpfiles<span class="hl-w"> </span>--create<span class="hl-w"> </span>--prefix<span class="hl-w"> </span>/var/log/journal
+<span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>systemd-journald
+<span class="hl-gp"># </span>journalctl<span class="hl-w"> </span>--flush<span class="hl-w">                                    </span><span class="hl-c1"># move /run's journal to /var</span>
+<span class="hl-gp"># </span>journalctl<span class="hl-w"> </span>--list-boots<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-2<span class="hl-w">                     </span><span class="hl-c1"># more than one line = it is kept</span>
+</code></pre>
+
+<p><code>--list-boots</code> is the honest test, and it can only pass after a reboot has happened with the
+configuration in place — which is one more reason to spend a reboot before the clock runs out.</p>
+<p><strong>SSH keys.</strong> Key authentication is a keypair plus one line in the target account's
+<code>authorized_keys</code>, and <code>sshd</code> is deliberately fussy about permissions (<code>StrictModes</code>): a
+group-writable home directory or a readable-by-others private key makes it refuse the key and fall
+back to a password, with the reason only in the server's log.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>maria
+<span class="hl-gp">$ </span>ssh-keygen<span class="hl-w"> </span>-t<span class="hl-w"> </span>ed25519<span class="hl-w"> </span>-N<span class="hl-w"> </span><span class="hl-s1">''</span><span class="hl-w"> </span>-f<span class="hl-w"> </span>~/.ssh/id_ed25519
+<span class="hl-gp">$ </span>ssh-copy-id<span class="hl-w"> </span>maria@localhost<span class="hl-w">          </span><span class="hl-c1"># or: cat ~/.ssh/id_ed25519.pub &gt;&gt; ~/.ssh/authorized_keys</span>
+<span class="hl-gp">$ </span>chmod<span class="hl-w"> </span><span class="hl-m">700</span><span class="hl-w"> </span>~/.ssh<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">600</span><span class="hl-w"> </span>~/.ssh/authorized_keys
+<span class="hl-gp">$ </span>ssh<span class="hl-w"> </span>-o<span class="hl-w"> </span><span class="hl-nv">BatchMode</span><span class="hl-o">=</span>yes<span class="hl-w"> </span>-o<span class="hl-w"> </span><span class="hl-nv">StrictHostKeyChecking</span><span class="hl-o">=</span>accept-new<span class="hl-w"> </span>maria@localhost<span class="hl-w"> </span><span class="hl-nb">true</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span>key-login-works
+<span class="hl-go">Warning: Permanently added 'localhost' (ED25519) to the list of known hosts.</span>
+<span class="hl-go">key-login-works</span>
+</code></pre>
+
+<p><code>BatchMode=yes</code> is the verification that matters: it disables every interactive prompt, so the
+command succeeds only if the key alone was enough. Testing with a plain <code>ssh</code> and typing a password
+proves nothing about the key. If it fails, <code>journalctl -u sshd -n 20</code> (as root) names the reason —
+usually <code>Authentication refused: bad ownership or modes</code>.</p>
+<h3 id="script-arguments">Script arguments</h3>
+<p>The task specifies behaviour precisely, and the specification <em>is</em> the test: three lines on stdout,
+<code>-o FILE</code> writes them to a file instead, any other option prints to <strong>stderr</strong> and exits <strong>2</strong>.</p>
+<pre class="hl"><code class="language-bash"><span class="hl-ch">#!/bin/bash</span>
+report<span class="hl-o">()</span><span class="hl-w"> </span><span class="hl-o">{</span>
+<span class="hl-w">    </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"hostname: </span><span class="hl-k">$(</span>hostname<span class="hl-w"> </span>-s<span class="hl-k">)</span><span class="hl-s2">"</span>
+<span class="hl-w">    </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"kernel: </span><span class="hl-k">$(</span>uname<span class="hl-w"> </span>-r<span class="hl-k">)</span><span class="hl-s2">"</span>
+<span class="hl-w">    </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"root_free: </span><span class="hl-k">$(</span>df<span class="hl-w"> </span>--output<span class="hl-o">=</span>pcent<span class="hl-w"> </span>/<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tr<span class="hl-w"> </span>-dc<span class="hl-w"> </span><span class="hl-s1">'0-9'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>awk<span class="hl-w"> </span><span class="hl-s1">'{print 100-$1}'</span><span class="hl-k">)</span><span class="hl-s2">%"</span>
+<span class="hl-o">}</span>
+<span class="hl-k">case</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">1</span><span class="hl-k">:-</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-k">in</span>
+<span class="hl-w">    </span><span class="hl-s2">""</span><span class="hl-o">)</span><span class="hl-w"> </span>report<span class="hl-w"> </span><span class="hl-p">;;</span>
+<span class="hl-w">    </span>-o<span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">2</span><span class="hl-k">:-</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"sysreport: -o needs a file"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+<span class="hl-w">        </span>report<span class="hl-w"> </span>&gt;<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$2</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-p">;;</span>
+<span class="hl-w">    </span>*<span class="hl-o">)</span><span class="hl-w">  </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"sysreport: unknown option: </span><span class="hl-nv">$1</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span><span class="hl-p">;;</span>
+<span class="hl-k">esac</span>
+</code></pre>
+
+<p>The pieces worth naming: <code>$1</code>, <code>$2</code> are positional parameters and <code>$#</code> is how many there are;
+<code>${1:-}</code> is &quot;<code>$1</code>, or empty if unset&quot;, which keeps <code>set -u</code> scripts from dying on no arguments;
+<code>&gt;&amp;2</code> redirects to stderr, which is where errors belong because stdout is data; <code>exit 2</code> is the
+status the caller was promised; and <code>&quot;$2&quot;</code> is quoted, because a filename with a space is not your
+script's business to mangle. <code>shift</code> and a <code>while</code> loop are the general pattern when there are more
+options than this; <code>getopts</code> is the tidy version.</p>
+<p>Two details specific to the output. <code>hostname -s</code> is the <em>short</em> name, so a machine called
+<code>web01.lab.example</code> would report <code>web01</code> (this one is simply <code>lima-nb-rhcsa-05</code>). And free space as a percentage is the complement of what <code>df</code>
+prints: <code>df --output=pcent /</code> gives used percent, so subtract from 100 — and check it against
+<code>df -h /</code> by eye, because an off-by-one here is a failed task on an otherwise perfect script.</p>
+<h3 id="you-have-no-sudo-su--">You have no sudo: <code>su -</code></h3>
+<p>The briefing says your account's <code>sudo</code> was removed, and it means it — <code>sudo</code> asks for a password and
+then refuses, and even <code>ls /etc/sudoers.d</code> is denied. Once task 1 has given root a password you know,
+the first command over SSH is:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-nb">true</span>
+<span class="hl-go">sudo: a password is required</span>
+<span class="hl-gp">$ </span>su<span class="hl-w"> </span>-
+<span class="hl-go">Password:</span>
+<span class="hl-gp">#</span>
+</code></pre>
+
+<p>Everything else is done in that root shell (so the <code>#</code> prompts in this journal), or you do task 15
+first — put yourself back in <code>wheel</code> — and <strong>log in again</strong> so your session picks the group up. Either
+works; what does not work is typing <code>sudo</code> in front of fifteen tasks and wondering why none of them
+happened. And remember what a root shell on RHEL changes: <code>rm</code>, <code>cp</code> and <code>mv</code> are aliased with <code>-i</code>,
+so a script-like sequence pasted into it stops at the first prompt and the <em>next line</em> becomes the
+answer.</p>
+<h3 id="the-last-two-a-shared-directory-and-your-own-sudo">The last two: a shared directory, and your own sudo</h3>
+<p><code>/srv/audit</code> is the rhcsa-01 mechanism exactly: group <code>auditors</code>, group <code>rwx</code>, setgid so new files
+inherit the group, and <strong>nothing for others</strong> because the task says nobody else may enter:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/srv/audit
+<span class="hl-gp"># </span>chgrp<span class="hl-w"> </span>auditors<span class="hl-w"> </span>/srv/audit
+<span class="hl-gp"># </span>chmod<span class="hl-w"> </span><span class="hl-m">2770</span><span class="hl-w"> </span>/srv/audit<span class="hl-w">               </span><span class="hl-c1"># not 2777: `o` must be empty</span>
+</code></pre>
+
+<p>And your own administrative access is group membership, not a new sudoers file. RHEL's
+<code>/etc/sudoers</code> already contains <code>%wheel ALL=(ALL) ALL</code>; the previous admin removed you from the
+group:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>usermod<span class="hl-w"> </span>-aG<span class="hl-w"> </span>wheel<span class="hl-w"> </span>YOUR_ACCOUNT<span class="hl-w">      </span><span class="hl-c1"># -aG: add, do not replace (not $USER — in `su -` that is root)</span>
+<span class="hl-gp"># </span>sudo<span class="hl-w"> </span>-l<span class="hl-w"> </span>-U<span class="hl-w"> </span>YOUR_ACCOUNT<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">    (ALL) ALL</span>
+</code></pre>
+
+<p>Remember that your <em>current</em> session still holds its old group list. Log in again before concluding
+it did not work — the same lesson as rhcsa-01, and the reason people redo a correct fix twice.</p>
+<h3 id="how-to-spend-ninety-minutes">How to spend ninety minutes</h3>
+<p>An order, because some tasks block others and some are cheap:</p>
+<ol>
+<li><strong>Get in</strong> (task 1), with <code>/.autorelabel</code> (task 2). Nothing else can start until you have root.
+Budget 10 minutes, including the relabel reboot. From then on work in <code>su -</code>, or do task 15 first
+and log in again.</li>
+<li><strong>Make it boot</strong> (task 3): the <code>fstab</code> UUID. Do this next, because every later verification wants
+a machine that boots normally, and because a broken <code>fstab</code> has no network — see the rhcsa-03
+journal for the mechanism.</li>
+<li><strong>The repository</strong> (task 4), because task 5 (<code>tree</code>) cannot happen without it.</li>
+<li><strong>Everything independent</strong>, cheapest first: accounts and group (7), aging (8), nologin (9), the
+shared directory (14), wheel (15), chrony (11), the journal (12). None of these takes more than a
+minute or two. (Task 12 is a one-line fix once you have found the drop-in that wins.)</li>
+<li><strong>The script</strong> (10) and the <strong>timer</strong> (6). The script is the longest single task; do it while you
+still have attention, and test it three ways (no arguments, <code>-o</code>, a bad option) rather than once.</li>
+<li><strong>Keys</strong> (13), then <strong>reboot with time to spare</strong> and re-verify everything. The reboot is not
+optional: it is where a runtime-only fix confesses, and it is the only way task 12 can pass.</li>
+</ol>
+<p>Two exam habits worth more than any single command. <strong>Verify each task as you finish it</strong> — <code>chage -l</code>, <code>systemctl list-timers</code>, <code>chronyc sources</code>, <code>dnf repolist</code>, <code>sudo -l -U</code>, <code>ls -Zd</code> — because a
+task you believe is done and is not costs you the whole task and you will never look again. And
+<strong>keep moving</strong>: eleven of fifteen is a pass, so a task that is fighting you is worth abandoning for
+ten minutes while you collect three cheap ones, and coming back to.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>The machine hangs in the boot. Nothing is known and nothing can be logged into.</p>
+<p><strong>1. Get to the bootloader and interrupt the initramfs.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-go">  (b on the lab's screen: reset, and the boot console)</span>
+<span class="hl-go">  (an arrow key to stop the countdown; `e` on the first entry; cursor down to the `linux` line;</span>
+<span class="hl-go">   Ctrl-E; type " rd.break")</span>
+<span class="hl-go"> |linux ($root)/vmlinuz-6.12.0-211.54.1.el10_2.aarch64 no_timer_check root=UU\|</span>
+<span class="hl-go"> |ID=adbc700e-905a-4aa3-90a2-084cd25fcc12  console=tty0 console=ttyAMA0,11520\|</span>
+<span class="hl-go"> |0n8 rd.break                                                                |</span>
+<span class="hl-go">  (Ctrl-X)</span>
+</code></pre>
+
+<p>The shell arrives on the serial console, so detach (<code>Ctrl-]</code>) and press <code>k</code> for it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">sh-5.2# </span>findmnt<span class="hl-w"> </span>/sysroot
+<span class="hl-go">TARGET   SOURCE    FSTYPE OPTIONS</span>
+<span class="hl-go">/sysroot /dev/vda3 xfs    ro,relatime,attr2,inode64,logbufs=8,logbsize=32k,noquota</span>
+<span class="hl-gp">sh-5.2# </span>mount<span class="hl-w"> </span>-o<span class="hl-w"> </span>remount,rw<span class="hl-w"> </span>/sysroot
+<span class="hl-gp">sh-5.2# </span>chroot<span class="hl-w"> </span>/sysroot
+<span class="hl-gp">sh-5.2# </span>passwd<span class="hl-w"> </span>root
+<span class="hl-go">New password:</span>
+<span class="hl-go">Retype new password:</span>
+<span class="hl-go">passwd: password updated successfully</span>
+<span class="hl-gp">sh-5.2# </span>touch<span class="hl-w"> </span>/.autorelabel
+<span class="hl-gp">sh-5.2# </span><span class="hl-nb">exit</span>
+<span class="hl-go">exit</span>
+<span class="hl-gp">sh-5.2# </span><span class="hl-nb">exit</span>
+<span class="hl-go">exit</span>
+</code></pre>
+
+<p>The boot resumes, the relabel runs, and the machine reboots itself once more — that second reboot is
+the relabel finishing; do not interrupt it.</p>
+<p><strong>2. It still does not finish booting, and now you can read why.</strong> You have a root password, so the
+maintenance prompt accepts you:</p>
+<pre class="hl"><code class="language-console"><span class="hl-go">Give root password for maintenance</span>
+<span class="hl-gp hl-gp-VirtualEnv">(or press Control-D to continue)</span><span class="hl-go">:</span>
+<span class="hl-gp">[root@lima-nb-rhcsa-05 ~]# </span>ls<span class="hl-w"> </span>-Z<span class="hl-w"> </span>/etc/shadow<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>/.autorelabel
+<span class="hl-go">system_u:object_r:shadow_t:s0 /etc/shadow</span>
+<span class="hl-go">ls: cannot access '/.autorelabel': No such file or directory</span>
+</code></pre>
+
+<p>Checked first, deliberately: <code>shadow_t</code>, and the flag file is gone — the relabel ran and consumed it.
+The trap did not spring. Now the boot:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>--failed<span class="hl-w"> </span>--no-legend
+<span class="hl-gp"># </span>journalctl<span class="hl-w"> </span>-xb<span class="hl-w"> </span>-p<span class="hl-w"> </span>err<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-v<span class="hl-w"> </span><span class="hl-s1">'░'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">… systemd[1]: Timed out waiting for device dev-disk-by\x2duuid-76d3b598\x2d71c5\x2d45f9\x2d85b2\x2d29a902d956a2.device - /dev/disk/by-uuid/76d3b598-71c5-45f9-85b2-29a902d956a2.</span>
+<span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>status<span class="hl-w"> </span>data.mount<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'Active|What'</span>
+<span class="hl-go">     Active: inactive (dead)</span>
+<span class="hl-go">       What: /dev/disk/by-uuid/76d3b598-71c5-45f9-85b2-29a902d956a2</span>
+<span class="hl-gp"># </span>blkid<span class="hl-w"> </span>/dev/vdb
+<span class="hl-go">/dev/vdb: UUID="74cb22f9-11f8-4a0f-a843-69b47d79f402" BLOCK_SIZE="512" TYPE="xfs"</span>
+</code></pre>
+
+<p><code>systemctl --failed</code> prints nothing — the device job timed out and the mount was never attempted, so
+nothing is <em>failed</em> (the rhcsa-03 journal explains why). The error log has the answer: <code>fstab</code> names a
+UUID that does not exist on this machine. Fix the source, verify, and continue the boot:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span><span class="hl-nv">uuid</span><span class="hl-o">=</span><span class="hl-k">$(</span>blkid<span class="hl-w"> </span>-s<span class="hl-w"> </span>UUID<span class="hl-w"> </span>-o<span class="hl-w"> </span>value<span class="hl-w"> </span>/dev/vdb<span class="hl-k">)</span>
+<span class="hl-gp"># </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s2">"s|^UUID=[^ ]* /data |UUID=</span><span class="hl-nv">$uuid</span><span class="hl-s2"> /data |"</span><span class="hl-w"> </span>/etc/fstab
+<span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>daemon-reload
+<span class="hl-gp"># </span>findmnt<span class="hl-w"> </span>--verify<span class="hl-w"> </span>--tab-file<span class="hl-w"> </span>/etc/fstab
+<span class="hl-go">Success, no errors or warnings detected</span>
+<span class="hl-gp"># </span>mount<span class="hl-w"> </span>-a<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>findmnt<span class="hl-w"> </span>/data
+<span class="hl-go">TARGET SOURCE   FSTYPE OPTIONS</span>
+<span class="hl-go">/data  /dev/vdb xfs    rw,relatime,seclabel,attr2,inode64,logbufs=8,logbsize=32k,noquota</span>
+<span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>default
+<span class="hl-go">Failed to connect to system scope bus via local transport: No such file or directory</span>
+<span class="hl-go">…</span>
+<span class="hl-go">lima-nb-rhcsa-05 login:</span>
+</code></pre>
+
+<p>Despite the complaint, the boot continues to a login prompt and SSH answers.</p>
+<p><strong>3. Become root.</strong> Your own account has no sudo:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-nb">true</span>
+<span class="hl-go">sudo: a password is required</span>
+<span class="hl-gp">$ </span>su<span class="hl-w"> </span>-
+<span class="hl-go">Password:</span>
+<span class="hl-gp">#</span>
+</code></pre>
+
+<p><strong>4. The repository, then the package.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>dnf<span class="hl-w"> </span>repolist<span class="hl-w"> </span>--all<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-v<span class="hl-w"> </span>disabled
+<span class="hl-go">repo id                    repo name                                    status</span>
+<span class="hl-go">lab-local                  Lab packages                                 enabled</span>
+<span class="hl-gp"># </span>cat<span class="hl-w"> </span>/etc/yum.repos.d/lab-local.repo
+<span class="hl-go">[lab-local]</span>
+<span class="hl-go">name=Lab packages</span>
+<span class="hl-go">baseurl=http://mirror.lab.invalid/rocky10/</span>
+<span class="hl-go">enabled=1</span>
+<span class="hl-go">gpgcheck=0</span>
+<span class="hl-gp"># </span>ls<span class="hl-w"> </span>/opt/repos/local
+<span class="hl-go">repodata  tree-2.1.0-8.el10.aarch64.rpm  zsh-5.9-15.el10.aarch64.rpm</span>
+</code></pre>
+
+<p>The mirror is a directory on this machine; point the repository at it and clear the metadata:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'s|^baseurl=.*|baseurl=file:///opt/repos/local|'</span><span class="hl-w"> </span>/etc/yum.repos.d/lab-local.repo
+<span class="hl-gp"># </span>dnf<span class="hl-w"> </span>clean<span class="hl-w"> </span>all
+<span class="hl-gp"># </span>dnf<span class="hl-w"> </span>repolist
+<span class="hl-go">repo id        repo name</span>
+<span class="hl-go">lab-local      Lab packages</span>
+<span class="hl-gp"># </span>dnf<span class="hl-w"> </span>-y<span class="hl-w"> </span>install<span class="hl-w"> </span>tree
+<span class="hl-go">…</span>
+<span class="hl-go">Complete!</span>
+<span class="hl-gp"># </span>rpm<span class="hl-w"> </span>-q<span class="hl-w"> </span>tree
+<span class="hl-go">tree-2.1.0-8.el10.aarch64</span>
+</code></pre>
+
+<p>Everything else was already disabled, which satisfies &quot;no other repository is enabled&quot; — but the
+<code>--all</code> listing is how you know rather than assume.</p>
+<p><strong>5. The timer that never fires — and does not even appear.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>list-timers<span class="hl-w"> </span>--all<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span>sysreport
+<span class="hl-go">0</span>
+<span class="hl-gp"># </span>systemd-analyze<span class="hl-w"> </span>verify<span class="hl-w"> </span>/etc/systemd/system/sysreport.timer
+<span class="hl-go">/etc/systemd/system/sysreport.timer:5: Unknown key 'OnCalender' in section [Timer], ignoring.</span>
+<span class="hl-go">sysreport.timer: Timer unit lacks value setting. Refusing.</span>
+</code></pre>
+
+<p>One letter, and systemd refuses the whole unit. Fix it, check the expression, reload, enable the timer:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'s/^OnCalender=/OnCalendar=/'</span><span class="hl-w"> </span>/etc/systemd/system/sysreport.timer
+<span class="hl-gp"># </span>systemd-analyze<span class="hl-w"> </span>calendar<span class="hl-w"> </span><span class="hl-s1">'*:0/15'</span>
+<span class="hl-go">  Original form: *:0/15</span>
+<span class="hl-go">Normalized form: *-*-* *:00/15:00</span>
+<span class="hl-go">    Next elapse: Sun 2026-09-13 05:15:00 UTC</span>
+<span class="hl-go">       From now: 48s left</span>
+<span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>daemon-reload<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span><span class="hl-nb">enable</span><span class="hl-w"> </span>--now<span class="hl-w"> </span>sysreport.timer
+<span class="hl-go">Created symlink '/etc/systemd/system/timers.target.wants/sysreport.timer' → '/etc/systemd/system/sysreport.timer'.</span>
+<span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>list-timers<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>sysreport
+<span class="hl-go">Sun 2026-09-13 05:15:00 UTC    42s -                                - sysreport.timer              sysreport.service</span>
+</code></pre>
+
+<p>The timer's service runs <code>/usr/local/bin/sysreport -o /var/log/sysreport.txt</code>, which does not exist
+yet — so the schedule is right and the work will fail until task 10 is done. Note the dependency and
+move on.</p>
+<p><strong>6. The cheap block, verified one at a time.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>groupadd<span class="hl-w"> </span>-g<span class="hl-w"> </span><span class="hl-m">5000</span><span class="hl-w"> </span>auditors
+<span class="hl-gp"># </span>useradd<span class="hl-w"> </span>-u<span class="hl-w"> </span><span class="hl-m">5001</span><span class="hl-w"> </span>-G<span class="hl-w"> </span>auditors<span class="hl-w"> </span>maria
+<span class="hl-gp"># </span>useradd<span class="hl-w"> </span>-u<span class="hl-w"> </span><span class="hl-m">5002</span><span class="hl-w"> </span>-G<span class="hl-w"> </span>auditors<span class="hl-w"> </span>-s<span class="hl-w"> </span>/sbin/nologin<span class="hl-w"> </span>sam
+<span class="hl-gp"># </span>id<span class="hl-w"> </span>maria<span class="hl-p">;</span><span class="hl-w"> </span>id<span class="hl-w"> </span>sam
+<span class="hl-go">uid=5001(maria) gid=5001(maria) groups=5001(maria),5000(auditors)</span>
+<span class="hl-go">uid=5002(sam) gid=5002(sam) groups=5002(sam),5000(auditors)</span>
+
+<span class="hl-gp"># </span>chage<span class="hl-w"> </span>-M<span class="hl-w"> </span><span class="hl-m">90</span><span class="hl-w"> </span>maria<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>chage<span class="hl-w"> </span>-l<span class="hl-w"> </span>maria<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>Maximum
+<span class="hl-go">Maximum number of days between password change		: 90</span>
+
+<span class="hl-gp"># </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/srv/audit<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>chgrp<span class="hl-w"> </span>auditors<span class="hl-w"> </span>/srv/audit<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">2770</span><span class="hl-w"> </span>/srv/audit
+<span class="hl-gp"># </span>ls<span class="hl-w"> </span>-ld<span class="hl-w"> </span>/srv/audit
+<span class="hl-go">drwxrws---. 2 root auditors 6 Sep 13 05:14 /srv/audit</span>
+
+<span class="hl-gp"># </span>usermod<span class="hl-w"> </span>-aG<span class="hl-w"> </span>wheel<span class="hl-w"> </span>YOUR_ACCOUNT<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>-l<span class="hl-w"> </span>-U<span class="hl-w"> </span>YOUR_ACCOUNT<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">    (ALL) ALL</span>
+
+<span class="hl-gp"># </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'s/^(server|pool)[[:space:]]/# &amp;/'</span><span class="hl-w"> </span>/etc/chrony.conf
+<span class="hl-gp"># </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s1">'server 192.168.5.2 iburst'</span><span class="hl-w"> </span>&gt;&gt;<span class="hl-w"> </span>/etc/chrony.conf
+<span class="hl-gp"># </span>systemctl<span class="hl-w"> </span><span class="hl-nb">enable</span><span class="hl-w"> </span>--now<span class="hl-w"> </span>chronyd<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>chronyd
+<span class="hl-gp"># </span>chronyc<span class="hl-w"> </span>-n<span class="hl-w"> </span>sources<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">^? 192.168.5.2                   0   7     0     -     +0ns[   +0ns] +/-    0ns</span>
+</code></pre>
+
+<p>The journal, which needs one more look than the others:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>ls<span class="hl-w"> </span>/etc/systemd/journald.conf.d/
+<span class="hl-go">90-norboten.conf  99-retention.conf</span>
+<span class="hl-gp"># </span>cat<span class="hl-w"> </span>/etc/systemd/journald.conf.d/99-retention.conf
+<span class="hl-go">[Journal]</span>
+<span class="hl-go">Storage=volatile</span>
+<span class="hl-gp"># </span>rm<span class="hl-w"> </span>-f<span class="hl-w"> </span>/etc/systemd/journald.conf.d/99-retention.conf
+<span class="hl-gp"># </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/var/log/journal<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>systemd-tmpfiles<span class="hl-w"> </span>--create<span class="hl-w"> </span>--prefix<span class="hl-w"> </span>/var/log/journal
+<span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>systemd-journald<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>journalctl<span class="hl-w"> </span>--flush
+<span class="hl-gp"># </span>ls<span class="hl-w"> </span>-ld<span class="hl-w"> </span>/var/log/journal
+<span class="hl-go">drwxr-sr-x+ 3 root systemd-journal 46 Sep 13 05:03 /var/log/journal</span>
+</code></pre>
+
+<p>Note the <code>-f</code> on <code>rm</code>. Without it, root's <code>rm -i</code> alias asks <em>remove regular file …?</em> — and if you
+pasted several lines, the next one is taken as the answer, the file stays, and nothing complains.</p>
+<p><strong>7. The script, tested against its specification rather than by eye.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>vi<span class="hl-w"> </span>/usr/local/bin/sysreport<span class="hl-w">      </span><span class="hl-c1"># (the case/esac version above)</span>
+<span class="hl-gp"># </span>chmod<span class="hl-w"> </span><span class="hl-m">755</span><span class="hl-w"> </span>/usr/local/bin/sysreport
+<span class="hl-gp"># </span>sysreport
+<span class="hl-go">hostname: lima-nb-rhcsa-05</span>
+<span class="hl-go">kernel: 6.12.0-211.54.1.el10_2.aarch64</span>
+<span class="hl-go">root_free: 89%</span>
+<span class="hl-gp"># </span>df<span class="hl-w"> </span>-h<span class="hl-w"> </span>/<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1<span class="hl-w">                </span><span class="hl-c1"># sanity-check the arithmetic: 11% used is 89% free</span>
+<span class="hl-go">/dev/vda3        15G  1.6G   14G  11% /</span>
+<span class="hl-gp"># </span>sysreport<span class="hl-w"> </span>-o<span class="hl-w"> </span>/tmp/r<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/tmp/r
+<span class="hl-go">hostname: lima-nb-rhcsa-05</span>
+<span class="hl-go">kernel: 6.12.0-211.54.1.el10_2.aarch64</span>
+<span class="hl-go">root_free: 89%</span>
+<span class="hl-gp"># </span>sysreport<span class="hl-w"> </span>-z<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">sysreport: unknown option: -z</span>
+<span class="hl-go">exit=2</span>
+<span class="hl-gp"># </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>sysreport.service<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/var/log/sysreport.txt
+<span class="hl-go">hostname: lima-nb-rhcsa-05</span>
+<span class="hl-go">kernel: 6.12.0-211.54.1.el10_2.aarch64</span>
+<span class="hl-go">root_free: 89%</span>
+</code></pre>
+
+<p><strong>8. Keys, proved without a password prompt.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>maria<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-err">'</span>ssh-keygen<span class="hl-w"> </span>-q<span class="hl-w"> </span>-t<span class="hl-w"> </span>ed25519<span class="hl-w"> </span>-N<span class="hl-w"> </span><span class="hl-s2">""</span><span class="hl-w"> </span>-f<span class="hl-w"> </span>~/.ssh/id_ed25519<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span>
+<span class="hl-go">    cat ~/.ssh/id_ed25519.pub &gt;&gt; ~/.ssh/authorized_keys &amp;&amp; chmod 600 ~/.ssh/authorized_keys'</span>
+<span class="hl-gp"># </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>maria<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new maria@localhost true'</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">Warning: Permanently added 'localhost' (ED25519) to the list of known hosts.</span>
+<span class="hl-go">exit=0</span>
+</code></pre>
+
+<p><strong>9. Reboot, with time left, and walk the list again.</strong> This is a task in its own right, not a
+formality:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>reboot
+<span class="hl-gp">$ </span>findmnt<span class="hl-w"> </span>/data<span class="hl-w">                       </span><span class="hl-c1"># 3</span>
+<span class="hl-gp">$ </span>dnf<span class="hl-w"> </span>repolist<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>rpm<span class="hl-w"> </span>-q<span class="hl-w"> </span>tree<span class="hl-w">          </span><span class="hl-c1"># 4, 5</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>list-timers<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>sysreport<span class="hl-w">   </span><span class="hl-c1"># 6</span>
+<span class="hl-gp">$ </span>id<span class="hl-w"> </span>maria<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>id<span class="hl-w"> </span>sam<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>chage<span class="hl-w"> </span>-l<span class="hl-w"> </span>maria<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-4<span class="hl-w">   </span><span class="hl-c1"># 7, 8, 9  (sudo works again: new login)</span>
+<span class="hl-gp">$ </span>sysreport<span class="hl-w">                           </span><span class="hl-c1"># 10</span>
+<span class="hl-gp">$ </span>chronyc<span class="hl-w"> </span>-n<span class="hl-w"> </span>sources<span class="hl-w">                  </span><span class="hl-c1"># 11</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>--list-boots<span class="hl-w">        </span><span class="hl-c1"># 12  ← only provable after a reboot</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>maria<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'ssh -o BatchMode=yes maria@localhost true'</span><span class="hl-w">   </span><span class="hl-c1"># 13</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-ld<span class="hl-w"> </span>/srv/audit<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>-l<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1<span class="hl-w">   </span><span class="hl-c1"># 14, 15</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-Z<span class="hl-w"> </span>/etc/shadow<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>getenforce<span class="hl-w">      </span><span class="hl-c1"># 1, 2</span>
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong><code>rd.break</code> without <code>touch /.autorelabel</code>.</strong> The password is set, and <code>sulogin</code> answers <em>Cannot open
+access to console, the root account is locked</em> — because <code>/etc/shadow</code> is <code>unlabeled_t</code> and the policy
+forbids reading it. On this machine, whose <code>fstab</code> is also broken, Enter just retries the failing boot
+and returns to the same message. Recover by booting with <code>enforcing=0</code> and running <code>restorecon</code> on the
+account files, or by going back to <code>rd.break</code> and touching the flag. This is the single most expensive
+mistake available on this machine.</p>
+<p><strong><code>load_policy -i</code> in the <code>rd.break</code> chroot, to avoid the relabel.</strong> Older guides suggest it. On Rocky
+10 it loads the policy enforcing while the shell is still <code>kernel_t</code>: <code>restorecon</code> is denied, and after
+<code>exit</code> the initramfs cannot run its own cleanup. Use <code>/.autorelabel</code>, or <code>enforcing=0</code> afterwards.</p>
+<p><strong>Typing <code>sudo</code> for every task.</strong> Your account's sudo was removed; every one of those commands asks for
+a password and refuses. <code>su -</code> with the root password you just set, or task 15 first and a fresh
+login.</p>
+<p><strong>Pasting commands into a root shell.</strong> Root's <code>rm</code>, <code>cp</code> and <code>mv</code> are aliased with <code>-i</code> on RHEL. The
+first one asks a question, the next pasted line becomes the answer (not <em>y</em>), the file survives, and
+the lines after it run against a state you did not intend. <code>rm -f</code>, or <code>\rm</code>.</p>
+<p><strong>&quot;Fixing&quot; the label problem with <code>SELINUX=disabled</code>.</strong> It works, it needs a reboot, coming back
+needs another reboot plus a relabel, and it fails the check that exists for exactly this. Permissive
+(<code>enforcing=0</code> on the kernel line, once) is the diagnostic; relabelling is the fix.</p>
+<p><strong>Forgetting that the boot-menu edit is temporary.</strong> It is — which is good. People sometimes go back
+to remove <code>rd.break</code> from GRUB's configuration; there is nothing to remove.</p>
+<p><strong>Leaving <code>/data</code> out of <code>fstab</code>, or mounting it by device name.</strong> <code>mount /dev/vdb /data</code> satisfies
+the eye and not the reboot. The task says mount at boot, by UUID or label. <code>findmnt --verify</code> before
+the reboot, every time.</p>
+<p><strong>Changing <code>/etc/login.defs</code> for maria's aging.</strong> <code>PASS_MAX_DAYS</code> there applies to accounts created
+afterwards. An existing user's aging lives in <code>/etc/shadow</code> and is set with <code>chage -M 90 maria</code>.
+<code>chage -l maria</code> is the read-back.</p>
+<p><strong>Locking sam's password instead of setting <code>nologin</code>.</strong> <code>passwd -l sam</code> blocks password
+authentication and leaves key-based login working. &quot;No interactive login&quot; is a property of the
+shell.</p>
+<p><strong>Enabling <code>sysreport.service</code> instead of <code>sysreport.timer</code>.</strong> The service has no <code>[Install]</code> section,
+so <code>enable</code> refuses and prints a paragraph about static units; adding <code>WantedBy=multi-user.target</code> to
+make that go away gives you a job that runs once at boot and never again. The timer is the unit with
+the schedule and the <code>[Install]</code> section that belongs in <code>timers.target</code>.</p>
+<p><strong>Trusting a calendar expression.</strong> <code>*/15</code> where <code>0/15</code> was meant, <code>15</code> on its own, a missing colon:
+each produces a timer that either never fires or fires at a surprising moment. <code>systemd-analyze calendar</code> costs one second and <code>systemctl list-timers</code> shows the next elapse.</p>
+<p><strong>Looking for the timer in <code>list-timers</code> and concluding it was never installed.</strong> The unknown key is
+ignored, the timer is then left with no schedule, and systemd <em>refuses</em> it — so <code>list-timers --all</code>
+does not list it at all. The file is there and looks right. <code>systemd-analyze verify &lt;unit&gt;</code> names the
+key.</p>
+<p><strong>Configuring chrony by adding a line and leaving the pool.</strong> &quot;Only this server&quot; means the existing
+<code>pool</code>/<code>server</code> lines go. <code>chronyc -n sources</code> shows what it is really using, which is the only answer
+that counts — and without <code>-n</code>, placed before the command, the lab's server is listed as <code>_gateway</code>
+and looks wrong when it is right.</p>
+<p><strong>Adding <code>Storage=persistent</code> in a new drop-in and leaving the volatile one.</strong> Drop-ins apply in
+filename order and the last one wins: a <code>50-persistent.conf</code> loses to <code>99-retention.conf</code>. Find the
+file that sets the value you do not want and remove it. And without <code>journalctl --flush</code> the current
+boot's logs stay in <code>/run</code> — which matters because the check asks for more than one boot in
+<code>--list-boots</code>.</p>
+<p><strong>Testing SSH by typing a password.</strong> That proves the account works, not the key. <code>-o BatchMode=yes</code>, or watch for the absence of a prompt. When it fails, the reason is in
+<code>journalctl -u sshd</code>, and it is usually the permissions on <code>~/.ssh</code> or the home directory.</p>
+<p><strong>A script that prints its error to stdout, or exits 1.</strong> The specification said stderr and 2. In a
+graded task and in a pipeline, the difference is the whole point of the exercise: stdout is data,
+stderr is commentary, and the exit status is what the caller branches on.</p>
+<p><strong>Reporting used space where free space was asked for.</strong> <code>df --output=pcent</code> is <em>used</em>; the task
+wants the complement. Compare your script's output with <code>df -h /</code> before you move on.</p>
+<p><strong>Doing the tasks in file order.</strong> Task 5 needs task 4; almost everything needs tasks 1 and 3; and
+task 12 cannot be proved without a reboot. Read all fifteen first, then order them by dependency and
+by cost.</p>
+<p><strong>Not spending a reboot.</strong> More than half the failure modes in this lab are runtime-only fixes, and
+the grading reboot finds every one of them. Reboot yourself, with fifteen minutes left, and re-walk
+the list.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>getting<span class="hl-w"> </span><span class="hl-k">in</span>
+<span class="hl-gp"># </span>at<span class="hl-w"> </span>the<span class="hl-w"> </span>GRUB<span class="hl-w"> </span>menu:<span class="hl-w"> </span>any<span class="hl-w"> </span>key<span class="hl-w"> </span>to<span class="hl-w"> </span>stop<span class="hl-w"> </span>the<span class="hl-w"> </span>countdown,<span class="hl-w"> </span><span class="hl-sb">`</span>e<span class="hl-sb">`</span><span class="hl-w"> </span>to<span class="hl-w"> </span>edit,<span class="hl-w"> </span>Ctrl-X<span class="hl-w"> </span>to<span class="hl-w"> </span>boot
+<span class="hl-go">rd.break                       # stop in the initramfs; root is /sysroot, read-only, no policy</span>
+<span class="hl-gp">                               # </span><span class="hl-o">(</span>the<span class="hl-w"> </span>linux<span class="hl-w"> </span>line<span class="hl-w"> </span>wraps:<span class="hl-w"> </span>cursor<span class="hl-w"> </span>onto<span class="hl-w"> </span>it,<span class="hl-w"> </span>Ctrl-E,<span class="hl-w"> </span>append<span class="hl-p">;</span><span class="hl-w"> </span>Ctrl-X<span class="hl-w"> </span>boots<span class="hl-o">)</span>
+<span class="hl-go">  mount -o remount,rw /sysroot ; chroot /sysroot ; passwd ; touch /.autorelabel ; exit ; exit</span>
+<span class="hl-go">init=/bin/bash                 # PID 1 is a shell; remount / rw yourself; no clean exit</span>
+<span class="hl-go">enforcing=0                    # boot permissive once, to repair labels</span>
+<span class="hl-go">systemd.debug-shell=1          # a root shell on tty9</span>
+
+<span class="hl-gp"># </span>labels<span class="hl-w"> </span>after<span class="hl-w"> </span>a<span class="hl-w"> </span>rescue<span class="hl-w"> </span>edit
+<span class="hl-go">restorecon -v /etc/shadow /etc/passwd /etc/group /etc/gshadow</span>
+<span class="hl-go">restorecon -n -v PATH          # dry run: silence means correct</span>
+<span class="hl-go">touch /.autorelabel &amp;&amp; reboot  # relabel everything (then it reboots again by itself)</span>
+
+<span class="hl-gp"># </span>repositories<span class="hl-w"> </span>and<span class="hl-w"> </span>packages
+<span class="hl-go">dnf repolist ; dnf repolist --all</span>
+<span class="hl-go">dnf config-manager --set-enabled|--set-disabled REPO</span>
+<span class="hl-go">dnf clean all                  # after changing a baseurl</span>
+<span class="hl-go">dnf -y install|remove PKG ; rpm -q PKG ; dnf provides '*/file'</span>
+<span class="hl-gp"># </span>/etc/yum.repos.d/x.repo:<span class="hl-w">  </span><span class="hl-o">[</span>id<span class="hl-o">]</span><span class="hl-w"> </span>/<span class="hl-w"> </span><span class="hl-nv">name</span><span class="hl-o">=</span><span class="hl-w"> </span>/<span class="hl-w"> </span><span class="hl-nv">baseurl</span><span class="hl-o">=</span>file:///opt/repos/local<span class="hl-w"> </span>/<span class="hl-w"> </span><span class="hl-nv">enabled</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>/<span class="hl-w"> </span><span class="hl-nv">gpgcheck</span><span class="hl-o">=</span><span class="hl-m">0</span>
+
+<span class="hl-gp"># </span>timers
+<span class="hl-go">systemctl list-timers --all</span>
+<span class="hl-go">systemd-analyze calendar '*:0/15'</span>
+<span class="hl-go">systemd-analyze verify /etc/systemd/system/foo.timer      # names unknown keys</span>
+<span class="hl-go">systemctl enable --now foo.timer                          # the TIMER, not the service</span>
+<span class="hl-go">systemctl start foo.service                               # test the work now</span>
+<span class="hl-gp"># </span><span class="hl-nv">OnCalendar</span><span class="hl-o">=</span>*:0/15<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>hourly<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>Mon..Fri<span class="hl-w"> </span><span class="hl-m">09</span>:00<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nv">Persistent</span><span class="hl-o">=</span><span class="hl-nb">true</span><span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nv">WantedBy</span><span class="hl-o">=</span>timers.target
+
+<span class="hl-gp"># </span>accounts
+<span class="hl-go">groupadd -g 5000 auditors</span>
+<span class="hl-go">useradd -u 5001 -G auditors maria</span>
+<span class="hl-go">useradd -u 5002 -G auditors -s /sbin/nologin sam</span>
+<span class="hl-go">usermod -aG wheel USER         # administrator, the standard way</span>
+<span class="hl-go">chage -M 90 -m 7 -W 14 USER ; chage -E 2026-12-31 USER ; chage -d 0 USER</span>
+<span class="hl-go">chage -l USER                  # verify</span>
+<span class="hl-go">passwd -l USER                 # password auth off — does NOT stop key login</span>
+
+<span class="hl-gp"># </span><span class="hl-nb">time</span>
+<span class="hl-go">vi /etc/chrony.conf            # comment out pool/server; add: server 192.168.5.2 iburst</span>
+<span class="hl-go">systemctl enable --now chronyd ; chronyc -n sources ; chronyc tracking ; timedatectl</span>
+
+<span class="hl-gp"># </span>journal
+<span class="hl-gp"># </span><span class="hl-nv">Storage</span><span class="hl-o">=</span>auto<span class="hl-w"> </span><span class="hl-o">(</span>default<span class="hl-o">)</span><span class="hl-w"> </span>uses<span class="hl-w"> </span>/var/log/journal<span class="hl-w"> </span><span class="hl-k">if</span><span class="hl-w"> </span>it<span class="hl-w"> </span>exists<span class="hl-p">;</span><span class="hl-w"> </span>persistent<span class="hl-w"> </span>always<span class="hl-p">;</span><span class="hl-w"> </span>volatile<span class="hl-w"> </span>never
+<span class="hl-go">ls /etc/systemd/journald.conf.d/   # drop-ins apply in filename order: the LAST Storage= wins</span>
+<span class="hl-go">mkdir -p /var/log/journal ; systemd-tmpfiles --create --prefix /var/log/journal</span>
+<span class="hl-go">systemctl restart systemd-journald ; journalctl --flush ; journalctl --list-boots</span>
+
+<span class="hl-gp"># </span>ssh<span class="hl-w"> </span>keys
+<span class="hl-go">ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519</span>
+<span class="hl-go">ssh-copy-id user@host          # or append the .pub to ~/.ssh/authorized_keys</span>
+<span class="hl-go">chmod 700 ~/.ssh ; chmod 600 ~/.ssh/authorized_keys</span>
+<span class="hl-go">ssh -o BatchMode=yes user@host true &amp;&amp; echo ok     # proves the KEY worked</span>
+<span class="hl-go">journalctl -u sshd -n 20       # why it refused</span>
+
+<span class="hl-gp"># </span>script<span class="hl-w"> </span>arguments
+<span class="hl-go">"$1" "$2" "$#" "$@" "${1:-}"   # positional, count, all, defaulted</span>
+<span class="hl-go">case "${1:-}" in -o) … ;; *) echo "msg" &gt;&amp;2 ; exit 2 ;; esac</span>
+<span class="hl-go">hostname -s ; uname -r ; df --output=pcent /        # used percent: free is 100 minus this</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>Three layers of &quot;permission denied&quot;</em> (lab journal <code>rhcsa-04-selinux-firewall-network</code>) — Everything has a label</li>
+<li><em>The volume that filled overnight</em> (lab journal <code>rhcsa-03-storage-and-lvm</code>) — fstab, and what systemd does with it</li>
+<li><em>The volume that filled overnight</em> (lab journal <code>rhcsa-03-storage-and-lvm</code>) — The maintenance prompt</li>
+<li><em>Counting things, and the specification is the test</em> (lab journal <code>linux-04-write-the-report</code>) — Options: getopts</li>
+<li><em>The log lines that were never written down</em> (topic journal <code>logging-journald</code>) — Where the journal lives, and how big it gets</li>
+<li><em>The account that was almost on the team</em> (lab journal <code>rhcsa-01-users-and-permissions</code>) — The bits on a directory mean something different</li>
+</ul>
+<p>Manual pages: <code>man 7 dracut.cmdline</code>, <code>man 5 fstab</code>, <code>man 5 dnf.conf</code>, <code>man 8 dnf</code>, <code>man 5 systemd.timer</code>, <code>man 7 systemd.time</code>, <code>man 8 groupadd</code>, <code>man 8 useradd</code>, <code>man 1 chage</code>, <code>man 5 shadow</code>, <code>man 5 passwd</code>, <code>man 1 bash</code>, <code>man 5 chrony.conf</code>, <code>man 5 journald.conf</code>, <code>man 1 ssh-keygen</code>, <code>man 8 sshd</code>, <code>man 5 sudoers</code>.</p>
+<p>The whole subject, end to end: the topic journal <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>You set the root password through <code>rd.break</code>, and the maintenance prompt now says <em>Cannot open
+access to console, the root account is locked</em>. What happened, and name two ways out.</p>
+<blockquote>
+<p><code>passwd</code> rewrote <code>/etc/shadow</code> in an environment with no SELinux policy loaded, so the file is
+<code>unlabeled_t</code> and the policy forbids reading it — <code>sulogin</code> cannot see a usable root password. Either boot with <code>enforcing=0</code> and
+<code>restorecon -v /etc/shadow /etc/passwd /etc/group /etc/gshadow</code>, or return to <code>rd.break</code> and
+<code>touch /.autorelabel</code>. Disabling SELinux is not one of the ways out.</p>
+</blockquote>
+</li>
+<li>
+<p>In the <code>rd.break</code> shell, why is <code>mount -o remount,rw /sysroot</code> needed before <code>passwd</code>, and why
+<code>chroot /sysroot</code> after it?</p>
+<blockquote>
+<p>The initramfs mounts the real root read-only at <code>/sysroot</code>, so nothing can be written yet. The
+<code>chroot</code> makes <code>/sysroot</code> the shell's <code>/</code>, so <code>passwd</code> edits the system's <code>/etc/shadow</code> rather
+than the initramfs's, and uses the system's own configuration.</p>
+</blockquote>
+</li>
+<li>
+<p>A timer unit file exists and looks correct, but <code>systemctl list-timers --all</code> does not list it at
+all. What class of mistake is that, and which command names it?</p>
+<blockquote>
+<p>A key systemd does not recognise — <code>OnCalender=</code> for <code>OnCalendar=</code>. The unknown key is ignored,
+the timer is left with no schedule, and systemd refuses to load it (<em>Timer unit lacks value
+setting. Refusing.</em>).
+<code>systemd-analyze verify &lt;unit&gt;</code> reports the unknown key; <code>systemd-analyze calendar '&lt;expr&gt;'</code>
+then confirms the schedule means what you think.</p>
+</blockquote>
+</li>
+<li>
+<p>A task says a user's password must be changed at least every 90 days. Why is editing
+<code>/etc/login.defs</code> the wrong answer?</p>
+<blockquote>
+<p><code>login.defs</code> supplies defaults for accounts created <em>after</em> the change; it does not touch
+existing ones. Aging for an existing account lives in <code>/etc/shadow</code>: <code>chage -M 90 maria</code>, read
+back with <code>chage -l maria</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Two ways to stop someone logging in are <code>usermod -s /sbin/nologin</code> and <code>passwd -l</code>. Which one
+answers &quot;no interactive login is possible&quot;, and what does the other one leave open?</p>
+<blockquote>
+<p>The <code>nologin</code> shell: there is no interactive shell to start, by any authentication method.
+<code>passwd -l</code> only disables password authentication — an SSH key in <code>authorized_keys</code> still
+works, which is exactly the gap a task like this is testing for.</p>
+</blockquote>
+</li>
+<li>
+<p><code>/etc/systemd/journald.conf.d/</code> holds <code>90-norboten.conf</code> with <code>Storage=persistent</code> and
+<code>99-retention.conf</code> with <code>Storage=volatile</code>, and <code>/var/log/journal</code> exists. Is the journal kept
+across reboots, and what is the fix?</p>
+<blockquote>
+<p>No. Drop-ins apply in filename order and the last assignment wins, so <code>volatile</code> from <code>99-…</code>
+overrides <code>persistent</code>, and the existing directory is ignored. Remove the <code>99-</code> drop-in (with
+<code>rm -f</code>, since root's <code>rm</code> asks first), restart <code>systemd-journald</code>, and <code>journalctl --flush</code> to
+move the current boot out of <code>/run</code>. Adding another <code>persistent</code> drop-in with a smaller number
+would change nothing.</p>
+</blockquote>
+</li>
+<li>
+<p>You test key-based SSH with <code>ssh maria@localhost</code>, type maria's password, and get a shell. What
+have you proved, and what is the correct test?</p>
+<blockquote>
+<p>Only that the account and the password work — the key may not have been used at all.
+<code>ssh -o BatchMode=yes maria@localhost true</code> disables every prompt, so a zero exit status means
+the key alone authenticated. Failures are explained in <code>journalctl -u sshd</code>, usually as bad
+ownership or modes on <code>~/.ssh</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>With fifteen tasks, ninety minutes and a pass line of eleven, what are the two habits that most
+change the outcome?</p>
+<blockquote>
+<p>Verify each task the moment you finish it, with the command that reads the state back
+(<code>chage -l</code>, <code>list-timers</code>, <code>chronyc sources</code>, <code>dnf repolist</code>, <code>sudo -l -U</code>, <code>ls -Zd</code>) — a task
+you wrongly believe is done is never revisited. And reboot deliberately, with time left, then
+re-walk the list: the grading reboot is where every runtime-only fix fails, and one task here
+cannot even be proved without it.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A proxy in front of a model is not a proxy in front of a web page — cheat sheet</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · cheat sheet</div>
+  <h1>A proxy in front of a model is not a proxy in front of a web page — cheat sheet</h1>
+  <div class="meta">ollama, ai-services, networking</div>
+</header>
+<pre><code class="language-console"># split the problem in two, first
+curl -s -m 5 localhost:11434/api/tags     # the backend directly (exit 7 = could not connect)
+curl -si -m 5 localhost:8080/api/tags     # through the proxy
+sudo ss -lntp | grep ollama               # what is ACTUALLY listening, and on which port
+sudo journalctl -u ollama -b --no-pager | tail
+sudo tail -5 /var/log/nginx/error.log     # nginx names the upstream address it tried
+
+# the service account and its model store
+systemctl show -p User -p Environment --value ollama
+chown -R ollama:ollama /srv/models ; chmod 755 /srv/models
+sudo -u ollama ls /srv/models             # a permissions test
+ollama list                               # a SERVER test: it is an HTTP client, it reads nothing from disk
+find /srv/models \! -user ollama          # after any root-run maintenance: should be silent
+
+# an nginx proxy for a model API
+#   proxy_pass http://127.0.0.1:11434;   (NO trailing slash = pass the URI through unchanged)
+#   proxy_http_version 1.1;              (default 1.0)
+#   proxy_read_timeout 600s;             (default 60s: the max GAP between reads, not the total —
+#                                          and a stream:false request is one long gap)
+#   proxy_buffering off;                 (default on: nginx MAY hold and spool; off guarantees it won't)
+#   proxy_send_timeout 600s ; proxy_request_buffering off ; client_max_body_size 32m
+nginx -t &amp;&amp; systemctl reload nginx ; sleep 1   # reload returns before the old workers are gone
+
+# errnos in an upstream error
+# 111 ECONNREFUSED  nothing is listening there
+# 110 ETIMEDOUT     proxy_read_timeout (&quot;while reading response header&quot;), or a firewall dropping
+#  13 EACCES        a policy: SELinux httpd_can_network_connect, or AppArmor
+
+# reproduce a timeout on purpose: time the backend, then the proxy
+curl -s -o /dev/null -w '%{http_code} %{time_total}\n' localhost:11434/api/generate -d &quot;$LONG&quot;
+curl -s -o /dev/null -w '%{http_code} %{time_total}\n' localhost:8080/api/generate  -d &quot;$LONG&quot;
+# a 504 whose time equals proxy_read_timeout is that timeout
+
+# measure a stream instead of guessing: when did each line arrive?
+curl -N -s localhost:8080/api/generate -d &quot;$STREAM&quot; | python3 -u /tmp/gaps.py
+# log format: add $request_time $upstream_response_time
+</code></pre>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

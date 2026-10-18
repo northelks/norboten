@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A subagent exists only where Claude Code looks, with the keys it requires</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A subagent exists only where Claude Code looks, with the keys it requires</h1>
+  <div class="meta">claude-code, ai-agents · 30 minutes · 1594 words</div>
+</header>
+<p>A subagent is a Markdown file: a few lines of YAML frontmatter and a system prompt. Teams put real
+effort into the prompt — the payments team’s security reviewer lists exactly what to look for and
+how to report it — and almost none into the six lines above it. Those six lines decide whether the
+agent exists at all, which tools it holds and which model it bills to.</p>
+<p>When the definition is wrong, nothing fails loudly. The main agent asks for the reviewer, Claude
+Code tells it no such agent exists, and the main agent does the review itself, on its own model
+with its own tools, and reports success. The job’s JSON result is indistinguishable from a real
+review. This lab’s reviewer is wrong four ways: the wrong directory, a misspelled required key, no
+tool list, and a model nobody budgeted for.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Put a project or user subagent where Claude Code finds it, and know which definition wins when
+the same name exists in several places.</li>
+<li>Write the frontmatter a subagent requires, and know which mistakes hide it completely.</li>
+<li>Restrict a subagent’s tools, and predict what it gets when the list is missing or misspelled.</li>
+<li>Pin the model a subagent runs on, independently of the session.</li>
+<li>Find out, after a headless run, whether a subagent really ran — and on what.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Where subagents come from</h3>
+<p>Claude Code assembles its list of subagents at startup from several places. When two define the same
+<code>name</code>, the higher priority wins:</p>
+<table>
+<thead>
+<tr>
+<th>priority</th>
+<th>source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>managed settings (an organisation’s)</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>--agents '&lt;json&gt;'</code> on the command line, for one session</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>project</strong>: <code>.claude/agents/*.md</code>, scanned recursively</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>user</strong>: <code>~/.claude/agents/*.md</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>plugins</td>
+</tr>
+</tbody>
+</table>
+<p>A subagent’s identity is its <code>name</code> field, not its file name. A directory that is almost right —
+<code>.claude/agent/</code>, <code>.claude/subagents/</code>, <code>agents/</code> at the project root — is simply not read.
+Claude Code also ships built-in agents (<code>general-purpose</code>, <code>Explore</code>, <code>Plan</code> and others), which is
+the list it offers when a requested name is missing:</p>
+<pre><code>Agent type 'security-reviewer' not found. Available agents: claude, Explore, general-purpose, Plan, statusline-setup
+</code></pre>
+<p>A headless <code>-p</code> run loads project subagents without a trust dialog, like hooks and <code>CLAUDE.md</code>.</p>
+<h3>The frontmatter</h3>
+<pre><code class="language-markdown">---
+name: security-reviewer
+description: Reviews a diff for security problems before it merges. Use it for every pre-merge review.
+tools: Read, Grep, Glob
+model: haiku
+---
+You are the payments team's security reviewer. …
+</code></pre>
+<ul>
+<li><code>name</code> — required; lower-case letters and hyphens.</li>
+<li><code>description</code> — required; this is what Claude reads to decide when to delegate, so it should say
+when, not only what. “Use proactively” encourages automatic delegation.</li>
+<li><code>tools</code> — optional; a comma-separated list of tool names <strong>as Claude Code spells them</strong>. Omitted:
+the subagent inherits every tool of the session that starts it, MCP tools included.</li>
+<li><code>model</code> — optional; <code>haiku</code>, <code>sonnet</code>, <code>opus</code>, a full model id, or <code>inherit</code>. Omitted: the
+subagent uses its default (the session’s model).</li>
+<li>Others: <code>disallowedTools</code>, <code>permissionMode</code>, <code>maxTurns</code>, <code>skills</code>, <code>mcpServers</code>, <code>hooks</code>,
+<code>background</code>, <code>effort</code>, <code>isolation: worktree</code>, <code>color</code>.</li>
+</ul>
+<p>The frontmatter is read only if <code>---</code> is the first line. The body is the subagent’s <strong>whole</strong> system
+prompt: it does not also get Claude Code’s.</p>
+<p>What each mistake does, verified with Claude Code 2.1.270 by a model that asks for the agent by name:</p>
+<table>
+<thead>
+<tr>
+<th>definition</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>correct, in <code>.claude/agents/</code></td>
+<td>the subagent runs, with <code>Read, Grep, Glob</code>, on Haiku</td>
+</tr>
+<tr>
+<td>correct, in <code>.claude/agent/</code></td>
+<td>“not found”</td>
+</tr>
+<tr>
+<td><code>desc:</code> instead of <code>description:</code></td>
+<td>“not found”</td>
+</tr>
+<tr>
+<td>no frontmatter delimiters</td>
+<td>“not found”</td>
+</tr>
+<tr>
+<td>no <code>tools:</code> line</td>
+<td>runs with Agent, Bash, Edit, Write, WebFetch, WebSearch and the rest</td>
+</tr>
+<tr>
+<td><code>tools: read, grep</code></td>
+<td>“Async agent launched successfully” — and the subagent never sends a request</td>
+</tr>
+</tbody>
+</table>
+<p>The last row is the nastiest. No listed name resolves to a tool, so the subagent cannot start, yet the
+main agent is told it launched.</p>
+<h3>What the subagent’s tools and model cost</h3>
+<p>A subagent’s tools are a security boundary in a way the main agent’s prompt is not: a reviewer that
+holds <code>Edit</code> can “fix” what it reviews, and one that holds <code>Bash</code> can run what it reads. The session’s
+permission mode still applies — in this lab’s <code>dontAsk</code> job an edit would be refused — but a subagent
+definition is shared by every session that uses it, including interactive ones where a person clicks
+“allow”. Restrict it where it is defined.</p>
+<p>The model matters for money. A subagent that names no model runs on the session’s; this job’s session
+defaults to Opus, so every daily review ran there. <code>model: haiku</code> pins the reviewer regardless of who
+starts it.</p>
+<h3>Evidence that a subagent ran</h3>
+<p>The job’s JSON result reports the main agent’s final text and <code>modelUsage</code> per model; it says nothing
+reliable about delegation. The session transcript does. Each run writes
+<code>~/.claude/projects/&lt;project&gt;/&lt;session&gt;.jsonl</code>, and a session that delegated has a directory beside it:</p>
+<pre><code>&lt;session&gt;.jsonl
+&lt;session&gt;/subagents/agent-&lt;id&gt;.jsonl        the subagent's own conversation
+&lt;session&gt;/subagents/agent-&lt;id&gt;.meta.json    {&quot;agentType&quot;: &quot;security-reviewer&quot;, …}
+</code></pre>
+<p>The tool results in the main transcript show “not found”; the subagent’s transcript shows the model
+each of its turns used.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed in the lab container (Claude Code 2.1.270, the scripted model). The job’s result claims a
+review:</p>
+<pre><code class="language-console">$ tail -n1 ~/review.json | jq -c '{result, num_turns, is_error}'
+{&quot;result&quot;:&quot;Review finished: see the findings above.&quot;,&quot;num_turns&quot;:2,&quot;is_error&quot;:false}
+</code></pre>
+<p>The transcript of that session says what the Agent tool actually answered:</p>
+<pre><code class="language-console">$ f=$(ls -t ~/.claude/projects/-home-learner-payments/*.jsonl | head -1)
+$ jq -r 'select(.type==&quot;user&quot;) | .message.content[]? | select(.type==&quot;tool_result&quot;) | .content' &quot;$f&quot;
+Agent type 'security-reviewer' not found. Available agents: claude, Explore, general-purpose, Plan, statusline-setup
+$ find .claude -type f
+.claude/agent/security-reviewer.md
+</code></pre>
+<p>Moving the file to <code>.claude/agents/</code> changes nothing:</p>
+<pre><code class="language-console">$ mkdir -p .claude/agents &amp;&amp; mv .claude/agent/security-reviewer.md .claude/agents/ &amp;&amp; rmdir .claude/agent
+$ ~/bin/review-diff
+$ jq -r 'select(.type==&quot;user&quot;) | .message.content[]? | select(.type==&quot;tool_result&quot;) | .content' \
+    &quot;$(ls -t ~/.claude/projects/-home-learner-payments/*.jsonl | head -1)&quot;
+Agent type 'security-reviewer' not found. Available agents: claude, Explore, general-purpose, Plan, statusline-setup
+$ head -5 .claude/agents/security-reviewer.md
+---
+name: security-reviewer
+desc: Reviews a diff for security problems before it merges. Use it for every pre-merge review.
+model: opus
+---
+</code></pre>
+<p><code>desc:</code> is not <code>description:</code>. With that fixed, the session grows a <code>subagents/</code> directory, and the
+review really runs in the reviewer:</p>
+<pre><code class="language-console">$ sed -i 's/^desc: /description: /' .claude/agents/security-reviewer.md &amp;&amp; ~/bin/review-diff
+$ ls ~/.claude/projects/-home-learner-payments/f53f961e-*/subagents
+agent-ac82c9a07e4fb4461.jsonl  agent-ac82c9a07e4fb4461.meta.json
+$ cat ~/.claude/projects/-home-learner-payments/f53f961e-*/subagents/*.meta.json
+{&quot;agentType&quot;:&quot;security-reviewer&quot;,&quot;description&quot;:&quot;Pre-merge security review&quot;,&quot;toolUseId&quot;:&quot;toolu_fake_000004&quot;,
+ &quot;spawnDepth&quot;:1,&quot;requestShape&quot;:&quot;background&quot;,&quot;requestNonInteractive&quot;:true}
+$ jq -c 'select(.type==&quot;assistant&quot;) | {model: .message.model}' …/subagents/agent-*.jsonl | head -1
+{&quot;model&quot;:&quot;claude-opus-5&quot;}
+</code></pre>
+<p>It runs — on Opus. The grader, at this point, also sees what the reviewer was offered:</p>
+<pre><code>PASS 01_the_review_runs_in_the_reviewer: The security-reviewer subagent ran the review (1 request(s) of its own).
+FAIL 02_the_reviewer_can_only_read: The reviewer is offered tools beyond reading: Agent, Bash, Edit,
+     EnterWorktree, ExitWorktree, NotebookEdit, SendMessage, Skill, TaskStop, WebFetch, WebSearch, Write.
+FAIL 03_the_reviewer_runs_on_haiku: The reviewer asks for claude-opus-5, not Haiku.
+     reviewer model: claude-opus-5
+     main agent model: claude-opus-5
+</code></pre>
+<p>Two more lines of frontmatter:</p>
+<pre><code class="language-console">$ sed -i 's/^model: opus$/model: haiku\ntools: Read, Grep, Glob/' .claude/agents/security-reviewer.md
+$ ~/bin/review-diff
+$ jq -c 'select(.type==&quot;assistant&quot;) | {model: .message.model}' …/subagents/agent-*.jsonl | head -1
+{&quot;model&quot;:&quot;claude-haiku-4-5-20251001&quot;}
+</code></pre>
+<pre><code>PASS 01_the_review_runs_in_the_reviewer: The security-reviewer subagent ran the review (1 request(s) of its own).
+PASS 02_the_reviewer_can_only_read: The reviewer is offered only Glob, Grep, Read.
+PASS 03_the_reviewer_runs_on_haiku: The reviewer runs on claude-haiku-4-5-20251001.
+     main agent model: claude-opus-5
+</code></pre>
+<p>The main agent still runs on Opus; the job could say <code>--model sonnet</code> too. That is a separate choice
+from the reviewer’s, which is the point of pinning it in the definition.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Trusting the job’s result.</strong> “Review finished” was written by the main agent after it was told the
+reviewer did not exist. Read the tool results in the transcript, or look for <code>subagents/</code>.</p>
+<p><strong>Fixing only the directory.</strong> With <code>desc:</code> the file is still not a subagent. Both faults hide it, so
+either fix alone looks like “no change”.</p>
+<p><strong>Writing <code>tools: read, grep</code>.</strong> Case matters. The launch is reported as successful and nothing runs.</p>
+<p><strong>Leaving <code>tools</code> out “so it can look around”.</strong> It can also edit, run commands and fetch URLs. A
+reviewer reads.</p>
+<p><strong>Setting <code>--model haiku</code> on the job.</strong> It changes the main agent; a subagent with <code>model: opus</code> still
+asks for Opus. Pin the subagent’s model in its file.</p>
+<p><strong>Putting the reviewer in <code>~/.claude/agents/</code>.</strong> It works on your machine and nowhere else — not in CI,
+not for a teammate. A project’s agents belong in the project, reviewed with its code.</p>
+<p><strong>Renaming the file to “fix” the name.</strong> The name is the <code>name</code> field. Two files with the same <code>name</code>
+at the same level is an ambiguity you do not want; at different levels, the higher priority silently
+wins.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># where Claude Code looks (project wins over user)
+ls .claude/agents/ ~/.claude/agents/
+
+# a minimal, restricted subagent
+cat &gt; .claude/agents/security-reviewer.md &lt;&lt;'EOF'
+---
+name: security-reviewer
+description: Reviews a diff for security problems before it merges. Use it for every pre-merge review.
+tools: Read, Grep, Glob
+model: haiku
+---
+You are the security reviewer. …
+EOF
+
+# one-off agents for a single session, without files
+claude -p &quot;…&quot; --agents '{&quot;reviewer&quot;: {&quot;description&quot;: &quot;Reviews diffs&quot;, &quot;prompt&quot;: &quot;You review.&quot;, &quot;tools&quot;: [&quot;Read&quot;], &quot;model&quot;: &quot;haiku&quot;}}'
+
+# did the last session delegate, to what, on which model?
+s=$(ls -t ~/.claude/projects/&lt;project&gt;/*.jsonl | head -1)
+jq -r 'select(.type==&quot;user&quot;) | .message.content[]? | select(.type==&quot;tool_result&quot;) | .content' &quot;$s&quot;
+cat &quot;${s%.jsonl}&quot;/subagents/*.meta.json
+jq -c 'select(.type==&quot;assistant&quot;) | .message.model' &quot;${s%.jsonl}&quot;/subagents/agent-*.jsonl | sort | uniq -c
+
+# models per run, main agent and subagents together
+jq '.modelUsage | keys' run.json
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Claude Code in a job</em> (topic journal <code>claude-code</code>) — What the model may do</li>
+<li><em>Claude Code in a job</em> (topic journal <code>claude-code</code>) — What a run costs</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://code.claude.com/docs/en/sub-agents</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>Claude Code in a job</em> (<code>claude-code</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A subagent file with valid frontmatter sits in <code>.claude/agent/</code>. What does the model get when it
+asks for the agent by name, and what does the main agent typically do next?</p>
+<blockquote>
+<p>“Agent type ‘…’ not found”, with the list of agents Claude Code does know. The main agent carries
+on without it — usually doing the work itself and reporting success.</p>
+</blockquote>
+</li>
+<li>
+<p>Which two frontmatter keys are required, and what is the second one for?</p>
+<blockquote>
+<p><code>name</code> and <code>description</code>. The description is what Claude reads to decide when to delegate to the
+subagent; without it the file is not loaded as a subagent at all.</p>
+</blockquote>
+</li>
+<li>
+<p>A subagent has no <code>tools:</code> line. What can it do?</p>
+<blockquote>
+<p>Everything the starting session can: it inherits all tools, including Bash, Edit, Write, web
+tools and MCP tools. The session’s permission rules still apply to its calls.</p>
+</blockquote>
+</li>
+<li>
+<p><code>tools: read, grep</code> — what happens when the subagent is requested, and why is the tool result
+misleading?</p>
+<blockquote>
+<p>No name resolves to a tool (names are case-sensitive), so the subagent never runs. Claude Code
+2.1.270 still tells the main agent the background agent launched successfully.</p>
+</blockquote>
+</li>
+<li>
+<p>The job runs with <code>--model haiku</code>, and the reviewer’s file says <code>model: opus</code>. Which model does the
+review use?</p>
+<blockquote>
+<p>Opus. A subagent’s own <code>model</code> overrides the session’s; only <code>inherit</code> or an omitted model follows
+the session.</p>
+</blockquote>
+</li>
+<li>
+<p>The same <code>name</code> is defined in <code>.claude/agents/</code> and in <code>~/.claude/agents/</code>. Which is used, and what
+outranks both?</p>
+<blockquote>
+<p>The project’s (priority 3 beats the user’s 4). Managed agents and <code>--agents</code> on the command line
+outrank both.</p>
+</blockquote>
+</li>
+<li>
+<p>After a headless run, where do you find proof that a subagent ran, and on which model?</p>
+<blockquote>
+<p>In the session’s directory beside its transcript:
+<code>~/.claude/projects/&lt;project&gt;/&lt;session&gt;/subagents/agent-&lt;id&gt;.meta.json</code> names the agent type, and
+the model of each assistant turn is in <code>agent-&lt;id&gt;.jsonl</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Why restrict a reviewer’s tools in its definition rather than relying on the job’s <code>dontAsk</code> mode?</p>
+<blockquote>
+<p>The definition is shared by every session that uses the agent, including interactive ones where a
+person may approve an edit. Restricting tools where the agent is defined holds everywhere; a
+job’s permission mode protects only that job.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

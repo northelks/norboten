@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One writer at a time, and a file that is only ever whole</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>One writer at a time, and a file that is only ever whole</h1>
+  <div class="meta">python, boot-systemd · 40 minutes · 1387 words</div>
+</header>
+<p>A timer that starts a job every minute is a promise about how often the job <em>starts</em>, not about how
+long it takes. The day the catalogue grows past a minute’s work, two rebuilds run at once, and they
+are both writing the same file. Nobody planned that; it arrives on its own.</p>
+<p>Two separate mistakes make it dangerous. Nothing stops the second run — the script names a lock file
+and never takes it. And the file being rebuilt is the file the shop reads, written product by
+product, so during a rebuild there is no moment at which it is a complete price list. Either
+mistake alone is survivable. Together they explain a shop that served half its catalogue.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Take an advisory lock with <code>flock</code>, without waiting, and release it by ending the process.</li>
+<li>Say why a lock file that is merely created and deleted is not a lock.</li>
+<li>Replace a file’s contents atomically with a temporary file and <code>os.replace()</code>.</li>
+<li>Explain what a reader sees during each of the two kinds of write.</li>
+<li>Know what systemd does when a timer fires while the last run is still going.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>The kernel already has a lock</h3>
+<p><code>flock(2)</code> puts an advisory lock on an open file. The rules are short: one exclusive holder at a
+time; <code>LOCK_NB</code> makes the call fail instead of waiting; and the lock lives as long as the open file
+description — so when the process ends, for any reason, the kernel releases it. There is nothing to
+clean up after a crash, and no stale lock to inherit.</p>
+<pre><code class="language-python">fd = os.open(LOCK, os.O_CREAT | os.O_RDWR, 0o644)
+try:
+    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except OSError:            # BlockingIOError, errno EWOULDBLOCK
+    return &quot;another run holds it&quot;
+</code></pre>
+<p>Two details matter. Keep <code>fd</code> open for the whole run: closing it releases the lock, so a <code>with open(...)</code> around just the acquisition is a bug. And <em>advisory</em> means only that processes which ask
+are held back; a program that never takes the lock writes anyway. The lock is a convention among
+the programs that share the resource, enforced by the kernel for those who join in.</p>
+<p>The alternative most people write first — “if the lock file exists, exit; else create it; delete it
+at the end” — has two holes. Between the test and the creation another process can do the same
+(a race), and a run that dies leaves the file behind so every later run refuses. <code>flock</code> has
+neither problem.</p>
+<p><code>flock</code> locks are per file description, so a fork inherits the lock, and two different paths to the
+same file (a bind mount, a symlink) are still the same inode and the same lock. On NFS, use
+<code>fcntl(F_SETLK)</code> instead — or a lock service.</p>
+<h3>What a reader sees</h3>
+<p>Writing <code>open(OUT, &quot;w&quot;)</code> and then filling the file leaves the live file in every intermediate state:
+truncated to nothing, then half a JSON object, then whole. A reader that opens it at the wrong
+moment gets a parse error or — worse for a price list — a syntactically valid subset.</p>
+<p><code>os.replace(tmp, path)</code> is a <code>rename(2)</code> within one file system: the directory entry points at the
+old inode or the new one, and never at something in between. Readers that have the old file open
+keep reading it to the end; readers that open afterwards get the new one. The recipe is always the
+same:</p>
+<pre><code class="language-python">fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path))   # same file system, private
+with os.fdopen(fd, &quot;w&quot;, encoding=&quot;utf-8&quot;) as f:
+    json.dump(data, f); f.flush(); os.fsync(f.fileno()) # on disk, not just in the page cache
+os.chmod(tmp, 0o644)                                    # mkstemp makes it 0600
+os.replace(tmp, path)
+</code></pre>
+<p>With that, a second writer is a waste of work rather than a corruption — which is why both halves
+are worth having even when the lock is in place.</p>
+<h3>Overlap is systemd’s business too</h3>
+<p>A <code>oneshot</code> service that is still running when its timer fires again does not start a second copy:
+systemd sees the unit as active and the job is queued or dropped, depending on the unit’s job mode.
+That is exactly why the lock still matters here: a rebuild started <strong>by hand</strong>, by Ansible, or by
+another timer unit is not the same unit, and systemd has no view of it at all. <code>RefuseManualStart=</code>
+and the unit’s <code>Conflicts=</code> are policy for the unit, not protection for the file.</p>
+<p><code>OnUnitActiveSec=</code> (this timer) measures from the end of the last activation, so it will not chase a
+slow job; <code>OnCalendar=</code> or <code>OnUnitInactiveSec=</code> behave differently. Knowing which one a timer uses
+is part of knowing whether overlap is possible at all.</p>
+<h2>A failure, walked through</h2>
+<p>Run on the lab’s own machine: <code>ubuntu-26.04-devops</code>, Python 3.14.4, before any change.</p>
+<p>Two rebuilds started a second apart both run to the end, and both report success:</p>
+<pre><code class="language-console">$ sudo sh -c 'python3 /opt/pricing/rebuild.py &amp; sleep 0.8; python3 /opt/pricing/rebuild.py; echo &quot;second run exit: $?&quot;; wait'
+rebuilt 4 prices
+rebuilt 4 prices
+second run exit: 0
+</code></pre>
+<p>While a rebuild is running, a reader finds the price list unreadable — twice in a row here, and
+whole only once the run has finished:</p>
+<pre><code class="language-console">$ sudo sh -c 'python3 /opt/pricing/rebuild.py &amp; sleep 0.9; for i in 1 2 3; do python3 -c &quot;import json;print(json.load(open(\&quot;/var/lib/pricing/prices.json\&quot;)))&quot; 2&gt;&amp;1 | tail -1; sleep 0.4; done; wait'
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 4 column 1 (char 39)
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 5 column 1 (char 59)
+rebuilt 4 prices
+{'BOLT-M6': 0.56, 'NUT-M6': 0.35, 'WASHER-6': 0.14, 'SPANNER-13': 9.1}
+</code></pre>
+<p>What the lock the script never takes would have done, in eight lines:</p>
+<pre><code class="language-console">$ python3 - &lt;&lt;'PY'
+import fcntl, os, subprocess, sys
+fd = os.open(&quot;/tmp/demo.lock&quot;, os.O_CREAT | os.O_RDWR, 0o644)
+fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+print(&quot;first holder: got the lock&quot;)
+code = &quot;…second process tries the same…&quot;
+subprocess.run([sys.executable, &quot;-c&quot;, code])
+PY
+second holder refused: BlockingIOError 11
+first holder: got the lock
+</code></pre>
+<p>(errno 11 is <code>EWOULDBLOCK</code>: the lock is held, and <code>LOCK_NB</code> means do not wait. The two lines arrive
+out of order because the parent’s own output is still buffered — see the worker lab.)</p>
+<p>After the fix — the lock taken before the work and held for the whole run, the prices built in
+memory and the file replaced in one step:</p>
+<pre><code class="language-console">$ sudo sh -c 'python3 /opt/pricing/rebuild.py &amp; sleep 0.8; python3 /opt/pricing/rebuild.py; echo &quot;second run exit: $?&quot;; wait'
+second run exit: 1
+rebuilt 4 prices
+rebuild: another rebuild holds /run/pricing-rebuild.lock
+$ sudo sh -c 'python3 /opt/pricing/rebuild.py &amp; sleep 0.9; for i in 1 2 3; do python3 -c &quot;import json;print(sorted(json.load(open(\&quot;/var/lib/pricing/prices.json\&quot;))))&quot; 2&gt;&amp;1 | tail -1; sleep 0.4; done; wait'
+['BOLT-M6', 'NUT-M6', 'SPANNER-13', 'WASHER-6']
+['BOLT-M6', 'NUT-M6', 'SPANNER-13', 'WASHER-6']
+rebuilt 4 prices
+['BOLT-M6', 'NUT-M6', 'SPANNER-13', 'WASHER-6']
+</code></pre>
+<p>The second run refuses in milliseconds with a message and a non-zero status, and every read during a
+rebuild sees the full list.</p>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong><code>if os.path.exists(LOCK): sys.exit()</code> … <code>os.remove(LOCK)</code>.</strong> Two runs can pass the test in the
+same instant, and a run that dies leaves the file behind so every later run refuses. This is the
+lock file without the lock.</li>
+<li><strong>Taking the lock in a <code>with</code> block, or closing the file.</strong> The lock is released when the last file
+descriptor for that open file description is closed; the rebuild then has no protection at all.</li>
+<li><strong><code>fcntl.flock(fd, fcntl.LOCK_EX)</code> without <code>LOCK_NB</code>.</strong> The second run waits instead of refusing,
+so every minute adds another waiting rebuild and the queue never drains.</li>
+<li><strong>Writing the temporary file in <code>/tmp</code>.</strong> <code>os.replace()</code> across file systems raises
+<code>OSError: [Errno 18] Invalid cross-device link</code>; the temporary file belongs in the target’s
+directory.</li>
+<li><strong>Forgetting <code>os.chmod</code> after <code>mkstemp</code>.</strong> The new file is <code>0600</code>, so the shop’s reader loses access
+the first time the rebuild runs.</li>
+<li><strong>Leaving the lock to systemd.</strong> It knows about its own unit; a run started by hand or by another
+tool is invisible to it.</li>
+<li><strong>Locking the output file itself.</strong> The rename replaces the inode, so the lock the next process
+takes is on a different file. Lock a path that nobody replaces.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-python">import fcntl, os, tempfile, json
+
+fd = os.open(LOCK, os.O_CREAT | os.O_RDWR, 0o644)   # keep fd open for the whole run
+try:
+    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except OSError:
+    sys.exit(&quot;another run holds the lock&quot;)
+
+tmp_fd, tmp = tempfile.mkstemp(dir=os.path.dirname(OUT), prefix=&quot;.prices-&quot;)
+with os.fdopen(tmp_fd, &quot;w&quot;, encoding=&quot;utf-8&quot;) as f:
+    json.dump(prices, f); f.flush(); os.fsync(f.fileno())
+os.chmod(tmp, 0o644)
+os.replace(tmp, OUT)        # atomic within one file system
+</code></pre>
+<pre><code class="language-console">flock -n /run/job.lock -c 'command'      # the same lock, from a shell
+systemctl list-timers --no-pager         # what is due, and when it last ran
+systemctl show unit -p Result -p ExecMainStatus
+</code></pre>
+<h2>Going deeper</h2>
+<ul>
+<li><code>man 2 flock</code>, <code>man 1 flock</code>, and <code>fcntl.flock</code> in the Python documentation.</li>
+<li><code>man 2 rename</code> and <code>os.replace</code>.</li>
+<li><code>man 5 systemd.timer</code> — <code>OnUnitActiveSec=</code> against <code>OnCalendar=</code> — and <code>man 5 systemd.unit</code> for
+what happens when a unit is already active.</li>
+<li>The <code>filelock</code> package, when a project wants the same thing with a context manager and Windows
+support.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Why is “create the lock file if it does not exist, delete it at the end” not a lock?</p>
+<blockquote>
+<p>The test and the creation are two steps, so two processes can both pass; and a run that dies
+leaves the file, which blocks every later run.</p>
+</blockquote>
+</li>
+<li>
+<p>What releases a <code>flock</code> lock?</p>
+<blockquote>
+<p>Closing the last descriptor of that open file description, or the process ending — the kernel
+does it, so a crash leaves nothing behind.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>LOCK_NB</code> change?</p>
+<blockquote>
+<p>The call fails with <code>BlockingIOError</code> (<code>EWOULDBLOCK</code>) instead of waiting, which is what lets the
+second run refuse immediately rather than queue up.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a reader see while <code>open(path, &quot;w&quot;)</code> is being filled, and what does it see with
+<code>os.replace()</code>?</p>
+<blockquote>
+<p>With the direct write: a truncated file, then partial content. With the replace: the old file or
+the new one, never anything in between.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must the temporary file be in the same directory as the target?</p>
+<blockquote>
+<p><code>os.replace()</code> is a rename, which only works within one file system; across file systems it
+raises <code>EXDEV</code>, and any copy-based fallback brings back the half-written window.</p>
+</blockquote>
+</li>
+<li>
+<p>A timer fires while its own service is still running. Does that start a second copy — and why is
+the lock still needed?</p>
+<blockquote>
+<p>No: systemd sees the unit as active. The lock is for the runs systemd does not know about — by
+hand, from Ansible, from another unit.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

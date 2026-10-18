@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A proxy in front of a model is not a proxy in front of a web page</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A proxy in front of a model is not a proxy in front of a web page</h1>
+  <div class="meta">ollama, ai-services, networking · 40 minutes · 3479 words</div>
+</header>
+<p>Four faults, and only one of them is exotic. The models were moved and left owned by root, so the
+service account cannot read them. The service was never enabled. The proxy points at a port nothing
+listens on. And then the interesting one: the proxy is configured the way you would configure a proxy
+for a web page — with a five-second read timeout, and buffering left on — which is wrong for a model
+server, and produces the symptom the team reported as “the answer just stops”.</p>
+<p>That last fault is the point of the lab. An HTTP proxy’s defaults assume a response that is small,
+fast and complete before it is useful. A generated answer is none of those: it arrives a token at a
+time, over seconds or minutes — or, if the client asked for it in one piece, it arrives after a long
+silence. A read timeout sized for web pages cuts both of those off. Buffering is subtler than folklore
+says, and this journal measures it on the lab machine rather than repeating the folklore. Both are
+configuration, both are invisible in a quick test with a short prompt, and both are the first thing to
+check when somebody says an LLM endpoint “sometimes cuts off”.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Run a local model server under its own account with its model store outside the account’s home, and
+get the ownership right — and test it in a way that actually tests the filesystem.</li>
+<li>Find out which port a service is actually listening on rather than which port you believe it is on.</li>
+<li>Read an nginx <code>proxy_pass</code> block and say what each directive does to a long, streamed response.</li>
+<li>Configure <code>proxy_read_timeout</code>, <code>proxy_buffering</code> and <code>proxy_http_version</code> deliberately, and explain
+what each one’s default risks.</li>
+<li>Reproduce a timeout on purpose, and measure whether a proxy is holding back a stream instead of
+guessing.</li>
+<li>Separate “the model server is broken” from “the proxy in front of it is broken”, in one command.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>The service, its account, and where the models live</h3>
+<pre><code class="language-ini">[Service]
+User=ollama
+Group=ollama
+Environment=HOME=/var/lib/ollama
+Environment=OLLAMA_HOST=127.0.0.1:11434
+Environment=OLLAMA_MODELS=/srv/models
+ExecStart=/usr/local/bin/ollama serve
+Restart=on-failure
+RestartSec=5
+</code></pre>
+<p>Three environment variables carry the whole deployment decision. <code>OLLAMA_HOST</code> is the address the
+server <strong>binds</strong>, and binding <code>127.0.0.1</code> rather than <code>0.0.0.0</code> is deliberate: the model server is
+reachable only from this machine, and everything external goes through the proxy, where you can put
+authentication, rate limits and logging. <code>OLLAMA_MODELS</code> moves the model store off the account’s home
+directory — sensible, because model files are large and belong on whatever volume has room. <code>HOME</code>
+matters because without <code>OLLAMA_MODELS</code> the server falls back to <code>$HOME/.ollama</code>, and a service with no
+<code>HOME</code> writes its models somewhere surprising.</p>
+<p>The cost of moving the store is that its ownership becomes something you must state. The tidy-up moved
+the directory as root:</p>
+<pre><code class="language-console">$ ls -ld /srv/models
+drwx------ 4 root root 4096 Sep 12 17:31 /srv/models
+</code></pre>
+<p><code>0700 root:root</code> — the service account cannot even traverse it. Ollama says so at startup, in its own
+words:</p>
+<pre><code>Error: mkdir /srv/models/blobs: permission denied: ensure path elements are traversable
+</code></pre>
+<p>The requirement is “the ollama account can read them, and nobody else can write there”, which is
+exactly:</p>
+<pre><code class="language-console">$ sudo chown -R ollama:ollama /srv/models
+$ sudo chmod 755 /srv/models
+</code></pre>
+<p><code>755</code> gives the owner write access and everyone else read-and-traverse; <code>750</code> with the group set to
+<code>ollama</code> would be tighter and equally correct. What matters is that the <em>owner</em> is the service account
+(it creates <code>blobs/</code> and writes into the store when pulling) and that “other” has no <code>w</code>. A gigabyte of
+model weights that any account on the box can overwrite is a supply-chain problem wearing a permissions
+costume.</p>
+<p>Test it as the account, never as root — and test the filesystem with a filesystem command:</p>
+<pre><code class="language-console">$ sudo -u ollama ls /srv/models
+blobs  manifests
+</code></pre>
+<p>A tempting alternative is <code>sudo -u ollama … ollama list</code>. It does not test what it appears to.
+<code>ollama list</code> is a <em>client</em>: it asks the running server over HTTP, and reads nothing from disk. With
+the server down it says only <em>Error: could not connect to ollama server, run ‘ollama serve’ to start
+it</em>; with the server up it lists whatever the server can see, whichever account ran the client. It is
+the right check that the service works, after you have started it — not a permissions test.</p>
+<h3>Which port is it really on?</h3>
+<p>The proxy config says <code>proxy_pass http://127.0.0.1:11435</code>. The unit says
+<code>OLLAMA_HOST=127.0.0.1:11434</code>. One of those is a typo, and the way to find out which is not to read
+either file more carefully — it is to ask the kernel:</p>
+<pre><code class="language-console">$ sudo ss -lntp | grep ollama
+LISTEN 0      4096       127.0.0.1:11434      0.0.0.0:*    users:((&quot;ollama&quot;,pid=1158,fd=3))
+</code></pre>
+<p>The listener is the ground truth. <code>11434</code> is Ollama’s documented default; <code>11435</code> is a fat finger, and
+it produces a very specific pair of symptoms: nginx answers instantly with <strong>502 Bad Gateway</strong>, and
+its error log says <code>connect() failed (111: Connection refused)</code>.</p>
+<p>Errno 111 is worth filing next to the other two from the rhcsa-04 journal:</p>
+<table>
+<thead>
+<tr>
+<th>errno</th>
+<th>on a connect</th>
+<th>means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>111 <code>ECONNREFUSED</code></td>
+<td>something said no at once</td>
+<td>nothing is listening on that port</td>
+</tr>
+<tr>
+<td>13 <code>EACCES</code></td>
+<td>the kernel refused you</td>
+<td>a policy: SELinux <code>httpd_can_network_connect</code>, AppArmor</td>
+</tr>
+<tr>
+<td>110 <code>ETIMEDOUT</code></td>
+<td>nothing said anything</td>
+<td>a firewall dropping — or, in a proxy’s log, a read timeout</td>
+</tr>
+</tbody>
+</table>
+<p><code>curl</code> directly against the backend is the one-command way to split “the model server is broken” from
+“the proxy is broken”, and it should be the first thing you run:</p>
+<pre><code class="language-console">$ curl -s -m 5 localhost:11434/api/tags | head -c 80     # the backend, bypassing nginx
+$ curl -si -m 5 localhost:8080/api/tags | head -1        # through the proxy
+</code></pre>
+<p>If the first works and the second does not, you have a proxy problem and can stop thinking about
+models entirely.</p>
+<h3><code>proxy_read_timeout</code>: the gap, not the total</h3>
+<pre><code class="language-nginx">location / {
+    proxy_pass http://127.0.0.1:11434;
+    proxy_http_version 1.1;
+    proxy_buffering on;
+    proxy_read_timeout 5s;
+}
+</code></pre>
+<p><code>proxy_read_timeout</code> (default 60s) is the maximum time between two successive reads <em>from the
+backend</em> — not the duration of the response. Whether a generation trips it depends entirely on how the
+client asked for the answer:</p>
+<ul>
+<li><strong><code>&quot;stream&quot;: true</code></strong> — Ollama sends the headers at once and then a line per token, every few
+milliseconds on this machine. The gaps are tiny, and a ten-minute generation never trips even a
+short timeout.</li>
+<li><strong><code>&quot;stream&quot;: false</code></strong> — Ollama sends <em>nothing</em> until the whole answer is ready. For nginx the entire
+generation is one silence, waiting for the response header, and any answer that takes longer than the
+timeout is cut off.</li>
+</ul>
+<p>Measured on the lab machine with the 5-second timeout: a two-word prompt came back through the proxy
+in 1.9 s, and four sentences took under a second — the small model is fast once loaded. A
+600-word essay took 7.7 s against Ollama directly, and through the proxy:</p>
+<pre><code class="language-console">$ curl -s -o /dev/null -w '%{http_code} %{time_total}\n' localhost:8080/api/generate \
+    -d '{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;prompt&quot;:&quot;Write a detailed 600-word essay about the history of Linux.&quot;,
+         &quot;stream&quot;:false,&quot;options&quot;:{&quot;num_predict&quot;:700}}'
+504 5.003166
+$ sudo tail -1 /var/log/nginx/error.log
+… upstream timed out (110: Connection timed out) while reading response header from upstream, …
+</code></pre>
+<p>A 504 at five seconds and three milliseconds. <strong>A 504 whose duration equals your
+<code>proxy_read_timeout</code> is that timeout, every time</strong> — and “short prompts work, long answers stop” is its
+signature. The same holds for a model’s first request after it has been unloaded: loading the weights
+is a silence too.</p>
+<h3><code>proxy_buffering</code>: what it does, measured</h3>
+<p>The folklore is that with <code>proxy_buffering on</code> the client receives nothing until the backend has
+finished. That is not what nginx does, and it is worth knowing precisely.</p>
+<p>With buffering on, nginx reads the backend’s response into its buffers as fast as the backend sends
+it, and writes to the client as fast as the client accepts. When the client keeps up, data passes
+straight through. Measured on the lab machine (nginx 1.26.3), streaming a 700-token answer and
+recording when each line arrived:</p>
+<pre><code>direct to :11434         621 lines in 7.60s; largest gaps between lines: 42ms, 41ms, 26ms
+proxy, buffering on      527 lines in 6.28s; largest gaps between lines: 41ms, 32ms, 18ms
+</code></pre>
+<p>No holding back at all. What buffering <em>does</em> change is who absorbs a slow client. With a client
+limited to 2 KiB/s, Ollama’s own log recorded the request finished in 4.8 s while the client was still
+receiving for 20.9 s — nginx held the rest and fed it out. That is the feature it exists for: freeing
+the backend from slow readers, and spooling large responses to a temporary file when they do not fit
+in memory.</p>
+<p>So why does the lab — and nearly every guide for streaming APIs — insist on <code>proxy_buffering off</code>?
+Because “on” means nginx is <em>allowed</em> to hold data, and in real deployments it does: behind <code>gzip</code>,
+which accumulates output before compressing; with <code>proxy_cache</code>; with a slow or distant client; and
+on older setups where the upstream speaks HTTP/1.0 and the response is not chunked. <code>off</code> is the
+explicit guarantee that each chunk is forwarded as it arrives and that a long generation is never
+spooled to disk. Applications can ask for the same thing per response with an <code>X-Accel-Buffering: no</code>
+header; Ollama does not send one. Set it in the proxy, and do not claim more for it than it does.</p>
+<h3>The block, and its neighbours</h3>
+<pre><code class="language-nginx">server {
+    listen 8080;
+    server_name _;
+
+    location / {
+        proxy_pass http://127.0.0.1:11434;
+        proxy_http_version 1.1;       # default 1.0: no keep-alive to the backend
+        proxy_buffering off;          # forward each chunk as it arrives, never spool to disk
+        proxy_read_timeout 600s;      # a long silence is a long generation, not a dead backend
+    }
+}
+</code></pre>
+<p>Neighbours worth knowing, even though this lab does not require them:</p>
+<pre><code class="language-nginx">        proxy_request_buffering off;  # for large uploads: stream the request body too
+        proxy_send_timeout 600s;      # the write-side equivalent of read_timeout
+        client_max_body_size 32m;     # default 1m: a long prompt or an image will 413
+        gzip off;                     # or at least not on the streaming location
+</code></pre>
+<p>And two traps specific to <code>proxy_pass</code>, because they cost an afternoon each:</p>
+<ul>
+<li><strong>A trailing slash changes the path.</strong> <code>proxy_pass http://host:11434;</code> passes the URI through
+unchanged; <code>proxy_pass http://host:11434/;</code> replaces the matched <code>location</code> prefix with <code>/</code>. With
+<code>location /</code> the two happen to be equivalent, but under <code>location /api/</code> they are very different,
+and the difference is a 404 from the backend.</li>
+<li><strong>A hostname in <code>proxy_pass</code> is resolved once at startup</strong> unless you use a <code>resolver</code> and a
+variable. For <code>127.0.0.1</code> that is irrelevant; for a container name it is the reason the proxy keeps
+talking to an address that moved.</li>
+</ul>
+<p>Always check the syntax before reloading, and reload rather than restart so existing connections are
+not dropped:</p>
+<pre><code class="language-console">$ sudo nginx -t &amp;&amp; sudo systemctl reload nginx
+</code></pre>
+<p>One measured detail about <code>reload</code>: it returns <em>before</em> the old worker processes have been replaced.
+On this machine a request sent the instant <code>reload</code> returned still reached the old configuration and
+got the old 502; a second later the same request got 200. Give it a moment before concluding the
+change did not work.</p>
+<h3>Reading the proxy’s own log</h3>
+<p>nginx tells you which of these you have hit, in <code>/var/log/nginx/error.log</code>:</p>
+<pre><code>connect() failed (111: Connection refused) while connecting to upstream      → wrong port/nothing there
+upstream timed out (110: Connection timed out) while reading response header → proxy_read_timeout
+connect() failed (13: Permission denied) while connecting to upstream        → SELinux/AppArmor
+upstream prematurely closed connection while reading response header         → the backend died
+</code></pre>
+<p>The access log is worth a look too. Adding <code>$request_time $upstream_response_time</code> to the log format
+makes a timeout self-evident — the request time sits exactly on the limit — and is one of the
+highest-value five-minute changes available on a proxy.</p>
+<h2>A failure, walked through</h2>
+<p>The chat page times out. <code>curl localhost:8080/api/tags</code> returns nothing useful.</p>
+<p><strong>1. Split the problem in two, immediately.</strong></p>
+<pre><code class="language-console">$ curl -s -m 5 localhost:11434/api/tags ; echo &quot;curl=$?&quot;
+curl=7
+$ curl -si -m 5 localhost:8080/api/tags | head -1
+HTTP/1.1 502 Bad Gateway
+</code></pre>
+<p>curl’s exit 7 is “failed to connect”. Neither works, so start at the bottom: there is no model server,
+and the proxy is honestly reporting that it cannot reach one.</p>
+<p><strong>2. The service.</strong></p>
+<pre><code class="language-console">$ systemctl status ollama --no-pager | head -3
+○ ollama.service - Ollama model server
+     Loaded: loaded (/etc/systemd/system/ollama.service; disabled; preset: enabled)
+     Active: inactive (dead)
+$ sudo systemctl start ollama ; sleep 3 ; systemctl is-active ollama
+activating
+$ sudo journalctl -u ollama -b --no-pager | tail -3
+… ollama[1034]: Error: mkdir /srv/models/blobs: permission denied: ensure path elements are traversable
+… systemd[1]: ollama.service: Main process exited, code=exited, status=1/FAILURE
+… systemd[1]: ollama.service: Failed with result 'exit-code'.
+</code></pre>
+<p>Two facts: <code>disabled</code> (nothing at boot — a graded requirement), and a start that fails and is retried —
+<code>activating</code> is <code>Restart=on-failure</code> waiting its five seconds before the next attempt. The log says why.</p>
+<p><strong>3. The models.</strong> Check the ownership, against the account the unit runs as:</p>
+<pre><code class="language-console">$ systemctl show -p User -p Environment --value ollama
+ollama
+HOME=/var/lib/ollama OLLAMA_HOST=127.0.0.1:11434 OLLAMA_MODELS=/srv/models
+$ ls -ld /srv/models
+drwx------ 4 root root 4096 Sep 12 17:31 /srv/models
+$ sudo -u ollama ls /srv/models
+ls: cannot open directory '/srv/models': Permission denied
+</code></pre>
+<p>The move preserved root’s ownership and a private mode. Give the store to the account that serves it,
+and let others read but not write:</p>
+<pre><code class="language-console">$ sudo chown -R ollama:ollama /srv/models
+$ sudo chmod 755 /srv/models
+$ sudo -u ollama ls /srv/models
+blobs  manifests
+$ sudo systemctl enable --now ollama
+Created symlink '/etc/systemd/system/multi-user.target.wants/ollama.service' → '/etc/systemd/system/ollama.service'.
+$ ollama list
+NAME                 ID              SIZE      MODIFIED
+all-minilm:latest    1b226e2802db    45 MB     12 hours ago
+qwen2.5:0.5b         a8b0c5157701    397 MB    12 hours ago
+</code></pre>
+<p>Now <code>ollama list</code> is the right check: the server is up, and it can see its models. Everything from
+here is the proxy.</p>
+<p><strong>4. The proxy still says 502. Read its log, not its config first.</strong></p>
+<pre><code class="language-console">$ curl -si -m 5 localhost:8080/api/tags | head -1
+HTTP/1.1 502 Bad Gateway
+$ sudo tail -1 /var/log/nginx/error.log
+… connect() failed (111: Connection refused) while connecting to upstream, client: 127.0.0.1,
+  server: _, request: &quot;GET /api/tags HTTP/1.1&quot;, upstream: &quot;http://127.0.0.1:11435/api/tags&quot;, …
+</code></pre>
+<p><code>11435</code>. The log names the address it tried, which is faster than diffing two files. Confirm which one
+is real, then fix the config:</p>
+<pre><code class="language-console">$ sudo ss -lntp | grep ollama
+LISTEN 0      4096       127.0.0.1:11434      0.0.0.0:*    users:((&quot;ollama&quot;,pid=1158,fd=3))
+$ sudo sed -i 's/11435/11434/' /etc/nginx/conf.d/model-proxy.conf
+$ sudo nginx -t &amp;&amp; sudo systemctl reload nginx
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+$ sleep 1 ; curl -s -o /dev/null -w '%{http_code}\n' localhost:8080/api/tags
+200
+</code></pre>
+<p>(The <code>sleep 1</code> is the reload detail from above: without it, this machine answered 502 once more.)</p>
+<p><strong>5. Generation works… with a short prompt.</strong> This is the moment to be suspicious rather than
+satisfied:</p>
+<pre><code class="language-console">$ curl -s -o /dev/null -w '%{http_code} %{time_total}\n' localhost:8080/api/generate \
+    -d '{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;prompt&quot;:&quot;say ready&quot;,&quot;stream&quot;:false}'
+200 1.941610
+</code></pre>
+<p>Under two seconds, well inside a five-second timeout. The reported symptom was <em>long</em> answers, so ask
+for one — and ask the backend first, so you know how long a correct answer takes:</p>
+<pre><code class="language-console">$ B='{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;prompt&quot;:&quot;Write a detailed 600-word essay about the history of Linux.&quot;,&quot;stream&quot;:false,&quot;options&quot;:{&quot;num_predict&quot;:700}}'
+$ curl -s -o /dev/null -w '%{http_code} %{time_total}\n' localhost:11434/api/generate -d &quot;$B&quot;
+200 7.738688
+$ curl -s -o /dev/null -w '%{http_code} %{time_total}\n' localhost:8080/api/generate -d &quot;$B&quot;
+504 5.003166
+$ sudo tail -1 /var/log/nginx/error.log
+… upstream timed out (110: Connection timed out) while reading response header from upstream, …
+</code></pre>
+<p>A 504 at 5.003 s for an answer that takes 7.7 s, matching <code>proxy_read_timeout 5s</code>. That coincidence is
+the diagnosis.</p>
+<p><strong>6. Measure the buffering question instead of assuming it.</strong> Stream the same answer through both
+paths and record when each line arrives:</p>
+<pre><code class="language-console">$ cat &gt; /tmp/gaps.py &lt;&lt;'PY'
+import sys, time
+t0 = time.time(); times = []
+for line in sys.stdin.buffer:
+    times.append(time.time() - t0)
+gaps = sorted((b - a for a, b in zip(times, times[1:])), reverse=True)[:3]
+print(f&quot;{len(times)} lines in {times[-1]:.2f}s; largest gaps: &quot; + &quot;, &quot;.join(f&quot;{g*1000:.0f}ms&quot; for g in gaps))
+PY
+$ S='{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;prompt&quot;:&quot;Write a detailed 600-word essay about the history of Linux.&quot;,&quot;stream&quot;:true,&quot;options&quot;:{&quot;num_predict&quot;:700}}'
+$ for port in 11434 8080; do curl -N -s localhost:$port/api/generate -d &quot;$S&quot; | python3 -u /tmp/gaps.py; done
+621 lines in 7.60s; largest gaps: 42ms, 41ms, 26ms
+527 lines in 6.28s; largest gaps: 41ms, 32ms, 18ms
+</code></pre>
+<p>On this machine, with this client, buffering did not hold the stream back. That is a real result, not
+a failure of the test — and it is why the requirement is phrased as configuration (“no response
+buffering”) rather than as a symptom you could observe here. Set it anyway, for the cases described
+above where “allowed to buffer” becomes “buffers”.</p>
+<p><strong>7. Fix both directives.</strong></p>
+<pre><code class="language-console">$ sudo tee /etc/nginx/conf.d/model-proxy.conf &gt;/dev/null &lt;&lt;'CONF'
+server {
+    listen 8080;
+    server_name _;
+
+    location / {
+        proxy_pass http://127.0.0.1:11434;
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_read_timeout 600s;
+    }
+}
+CONF
+$ sudo nginx -t &amp;&amp; sudo systemctl reload nginx
+$ sleep 1 ; curl -s -o /dev/null -w '%{http_code} %{time_total}\n' localhost:8080/api/generate -d &quot;$B&quot;
+200 8.493810
+$ sudo systemctl enable nginx
+</code></pre>
+<p>The long answer that was a 504 now completes, in the time the model actually needs.</p>
+<p><strong>8. Reboot and re-check everything</strong>, including that nginx itself is enabled — a proxy that is
+running and not enabled is the same class of bug as the service it fronts:</p>
+<pre><code class="language-console">$ sudo reboot
+$ systemctl is-enabled ollama nginx ; systemctl is-active ollama nginx
+$ sudo find /srv/models \! -user ollama | head          # silence
+$ curl -s localhost:8080/api/tags | head -c 60
+$ curl -s -o /dev/null -w '%{http_code} %{time_total}\n' localhost:8080/api/generate -d &quot;$B&quot;
+</code></pre>
+<h2>Common wrong turns</h2>
+<p><strong>Testing only with a two-word prompt.</strong> It passes with a five-second timeout, which is exactly how
+this configuration reached production. Test with an answer long enough to take real time — and time the
+backend directly first, so you know what “long enough” is on this hardware.</p>
+<p><strong>Reading <code>proxy_read_timeout</code> as the total response time.</strong> It is the maximum gap <em>between reads</em>. A
+streamed ten-minute generation never trips a 60-second timeout; a non-streamed answer is one long gap
+and trips it as soon as it takes longer; a first request that waits for the model to load is a gap too.</p>
+<p><strong>Believing buffering explains every slow stream.</strong> Measured here, <code>proxy_buffering on</code> passed Ollama’s
+stream through as it arrived. If a stream really is arriving in lumps, look for <code>gzip</code>, caching, an
+extra proxy or a CDN in the path, a slow client, or an HTTP/1.0 upstream — and measure line arrival
+times rather than guessing.</p>
+<p><strong>Leaving <code>proxy_buffering on</code> because it did not visibly matter.</strong> It is still permission for nginx to
+hold data and spool a long response to disk, and the first <code>gzip on</code> or cache in front of this location
+turns permission into behaviour. The requirement is the explicit guarantee.</p>
+<p><strong><code>curl</code> without <code>-N</code> when checking a stream.</strong> curl buffers its own output when stdout is not a
+terminal, so a perfectly streaming response can look like it arrived all at once. You would then go
+and “fix” a proxy that was already correct.</p>
+<p><strong>Testing the model store with <code>ollama list</code>.</strong> It is an HTTP client; with the server down it cannot
+connect, and with the server up it reports what the <em>server</em> can see. <code>sudo -u ollama ls /srv/models</code>
+tests the permissions.</p>
+<p><strong>Trusting the config over the listener.</strong> Two files disagreed about the port, and reading them harder
+does not resolve it. <code>ss -lntp</code> says what is actually listening, and nginx’s error log names the
+address it tried — between them there is nothing left to guess.</p>
+<p><strong>Debugging the model when the proxy is at fault (or the reverse).</strong> One <code>curl</code> against <code>:11434</code> splits
+the problem in half and costs two seconds. Do it first, every time.</p>
+<p><strong>Running <code>ollama serve</code> as root to see if the models are readable.</strong> They will be, root reads
+everything — and now there are root-owned files in the model store and a second process bound to the
+port.</p>
+<p><strong><code>chmod 777 /srv/models</code>.</strong> It fixes the permission error and makes a gigabyte of model weights
+writable by every account on the machine, which is a code-execution path dressed as a convenience. The
+owner should be the service account; nobody else needs <code>w</code>.</p>
+<p><strong><code>chown</code> on the model files but not the directory</strong> (or the reverse). The server creates <code>blobs/</code> and
+writes into the store, so it needs the directory. <code>chown -R</code> on the directory itself — not a glob,
+which skips dotfiles.</p>
+<p><strong>Testing the instant <code>reload</code> returns.</strong> The old workers may still be serving; the first request can
+see the old configuration. A second later it does not.</p>
+<p><strong><code>systemctl restart nginx</code> instead of <code>reload</code>.</strong> Restart drops every in-flight connection, which on
+a proxy in front of long generations means killing users’ requests. <code>nginx -t &amp;&amp; systemctl reload nginx</code> validates first and then swaps workers gracefully.</p>
+<p><strong>Starting without enabling — either service.</strong> Both <code>ollama</code> and <code>nginx</code> are graded on the boot, and
+the reboot is where an un-enabled unit confesses.</p>
+<p><strong>Binding the model server to <code>0.0.0.0</code> to “make it reachable”.</strong> It is meant to be reached through the
+proxy; that is where authentication, limits and logging live. A model server exposed directly to a
+network is an open inference endpoint.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># split the problem in two, first
+curl -s -m 5 localhost:11434/api/tags     # the backend directly (exit 7 = could not connect)
+curl -si -m 5 localhost:8080/api/tags     # through the proxy
+sudo ss -lntp | grep ollama               # what is ACTUALLY listening, and on which port
+sudo journalctl -u ollama -b --no-pager | tail
+sudo tail -5 /var/log/nginx/error.log     # nginx names the upstream address it tried
+
+# the service account and its model store
+systemctl show -p User -p Environment --value ollama
+chown -R ollama:ollama /srv/models ; chmod 755 /srv/models
+sudo -u ollama ls /srv/models             # a permissions test
+ollama list                               # a SERVER test: it is an HTTP client, it reads nothing from disk
+find /srv/models \! -user ollama          # after any root-run maintenance: should be silent
+
+# an nginx proxy for a model API
+#   proxy_pass http://127.0.0.1:11434;   (NO trailing slash = pass the URI through unchanged)
+#   proxy_http_version 1.1;              (default 1.0)
+#   proxy_read_timeout 600s;             (default 60s: the max GAP between reads, not the total —
+#                                          and a stream:false request is one long gap)
+#   proxy_buffering off;                 (default on: nginx MAY hold and spool; off guarantees it won't)
+#   proxy_send_timeout 600s ; proxy_request_buffering off ; client_max_body_size 32m
+nginx -t &amp;&amp; systemctl reload nginx ; sleep 1   # reload returns before the old workers are gone
+
+# errnos in an upstream error
+# 111 ECONNREFUSED  nothing is listening there
+# 110 ETIMEDOUT     proxy_read_timeout (&quot;while reading response header&quot;), or a firewall dropping
+#  13 EACCES        a policy: SELinux httpd_can_network_connect, or AppArmor
+
+# reproduce a timeout on purpose: time the backend, then the proxy
+curl -s -o /dev/null -w '%{http_code} %{time_total}\n' localhost:11434/api/generate -d &quot;$LONG&quot;
+curl -s -o /dev/null -w '%{http_code} %{time_total}\n' localhost:8080/api/generate  -d &quot;$LONG&quot;
+# a 504 whose time equals proxy_read_timeout is that timeout
+
+# measure a stream instead of guessing: when did each line arrive?
+curl -N -s localhost:8080/api/generate -d &quot;$STREAM&quot; | python3 -u /tmp/gaps.py
+# log format: add $request_time $upstream_response_time
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Ollama on a server</em> (topic journal <code>ollama</code>) — The service</li>
+<li><em>Ollama on a server</em> (topic journal <code>ollama</code>) — Models on disk</li>
+<li><em>Resolves here, listens there, routes until Tuesday</em> (topic journal <code>networking</code>) — Listening on loopback, or on everything</li>
+<li><em>Ollama on a server</em> (topic journal <code>ollama</code>) — What a request costs: load, prompt, generation</li>
+</ul>
+<p>Manual pages: <code>man 1 journalctl</code>, <code>man 1 chown</code>, <code>man 8 ss</code>.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://nginx.org/en/docs/http/ngx_http_proxy_module.html</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>Ollama on a server</em> (<code>ollama</code>), <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A team reports that short prompts work and long answers “just stop”, with a 504. Which directive is
+responsible, and how do you prove it in two commands?</p>
+<blockquote>
+<p><code>proxy_read_timeout</code>. Time a long answer against the backend directly, then through the proxy: the
+backend returns 200 after, say, 7.7 s, and the proxy returns 504 at a time equal to the timeout
+(5.003 s on this lab’s machine), with <em>upstream timed out … while reading response header</em> in the
+error log.</p>
+</blockquote>
+</li>
+<li>
+<p>Is <code>proxy_read_timeout</code> a limit on the total length of a response? Explain why the same model
+answer can pass as a stream and fail as a single response.</p>
+<blockquote>
+<p>No — it is the maximum time between two successive reads from the backend. Streamed, Ollama sends
+a line every few milliseconds, so the gaps are tiny however long the answer runs. With
+<code>&quot;stream&quot;: false</code> it sends nothing until the answer is complete, so the whole generation is one
+gap and is cut off once it exceeds the timeout.</p>
+</blockquote>
+</li>
+<li>
+<p>With <code>proxy_buffering on</code>, does the client receive nothing until the backend has finished? What did
+the lab machine show, and why set <code>proxy_buffering off</code> anyway?</p>
+<blockquote>
+<p>No. nginx reads from the backend and writes to the client as fast as each allows; measured here,
+a streamed answer arrived through the buffered proxy with the same line gaps as directly. Buffering
+lets nginx absorb a slow client (the backend finished at 4.8 s while a rate-limited client read
+until 20.9 s) and spool large responses to disk. <code>off</code> guarantees forwarding as data arrives, which
+matters once <code>gzip</code>, caching, a slow client or an HTTP/1.0 upstream turns “allowed to buffer” into
+buffering.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>curl -N</code> do, and why does its absence invalidate a streaming test?</p>
+<blockquote>
+<p>It disables curl’s own output buffering. Without it, curl collects the output when stdout is not a
+terminal, so a correctly streamed response looks as though it arrived all at once — and you go and
+change a proxy that was already right.</p>
+</blockquote>
+</li>
+<li>
+<p>nginx returns 502 and the error log says <code>connect() failed (111: Connection refused)</code>. What is
+wrong, and how does that differ from errno 110 and errno 13 in the same log?</p>
+<blockquote>
+<p>111 means nothing is listening on the address nginx tried — a wrong port or a stopped backend;
+<code>ss -lntp</code> settles it. 110 is a timeout: a read timeout while waiting on the backend, or packets
+going nowhere. 13 is a policy refusal — SELinux’s <code>httpd_can_network_connect</code> boolean, or an
+AppArmor rule.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>sudo -u ollama ollama list</code> not a test of whether the service account can read its models?</p>
+<blockquote>
+<p><code>ollama list</code> is an HTTP client that asks the running server; it reads nothing from disk. With the
+server down it only reports that it cannot connect, and with the server up it shows what the server
+sees, regardless of which account ran the client. <code>sudo -u ollama ls /srv/models</code> tests the
+permissions; <code>ollama list</code> afterwards tests the service.</p>
+</blockquote>
+</li>
+<li>
+<p>You fix nginx’s config, run <code>nginx -t &amp;&amp; systemctl reload nginx</code>, and the very next request still
+shows the old behaviour. Is the fix wrong?</p>
+<blockquote>
+<p>Not necessarily. <code>reload</code> signals the master process and returns; the old workers finish their
+connections and are replaced moments later, so a request sent immediately can still be served under
+the old configuration. Wait a second and try again before doubting the change.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>OLLAMA_HOST=127.0.0.1:11434</code> the right default, and what do you give up by changing it to
+<code>0.0.0.0</code>?</p>
+<blockquote>
+<p>Binding loopback means the only route in is through the proxy, which is where authentication,
+rate limiting, TLS and logging live. Binding <code>0.0.0.0</code> exposes an unauthenticated inference
+endpoint to the network and bypasses every control you configured in front of it.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

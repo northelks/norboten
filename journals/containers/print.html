@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The container that ran fine until the machine rebooted</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>The container that ran fine until the machine rebooted</h1>
+  <div class="meta">containers · 40 minutes · 2678 words</div>
+</header>
+<p>The task sounds like one command: run a small web server in a container, as an unprivileged account,
+serving files from the host, and have it come back after a reboot. It is one command to get it
+<em>running</em>. Getting it right takes five separate mechanisms to agree — user namespaces, SELinux labels,
+unprivileged ports, systemd’s per-user manager and where container data actually lives — and each one
+has a failure that looks like something else.</p>
+<p>RHEL 10’s container objectives are exactly this: rootless containers, persistent storage, and running
+them as systemd services. Everything below was done on a Rocky Linux 10 lab machine with podman 5.8.2
+and recorded, including the failures, which are the useful part.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Explain what a rootless container needs from the account that runs it, and fix an account that
+cannot pull an image.</li>
+<li>Mount a host directory into a container under SELinux, and choose between <code>:Z</code> and <code>:z</code>.</li>
+<li>Say why a rootless container cannot publish port 80, and what the options are.</li>
+<li>Run a container as a systemd user service with a Quadlet file, and make it start at boot without
+anyone logging in.</li>
+<li>Tell data in a container’s writable layer from data in a volume, and know where each lives.</li>
+<li>Recognise the warnings that mean “no user session”, and the ones that are merely noise.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Rootless needs subordinate IDs</h3>
+<p>A rootless container still has a <code>root</code> inside it, and image layers contain files owned by many
+different users (<code>/etc/shadow</code> in Alpine belongs to group 42). The kernel lets an unprivileged user map
+those IDs only through a range of <strong>subordinate IDs</strong> assigned to that account in <code>/etc/subuid</code> and
+<code>/etc/subgid</code>. An account without a range can map exactly one ID — its own — and the first image pull
+fails while unpacking:</p>
+<pre><code class="language-console">$ podman pull docker.io/library/alpine:3.22
+Error: … unpacking failed (error: exit status 1; output: potentially insufficient UIDs or GIDs
+available in user namespace (requested 0:42 for /etc/shadow): Check /etc/subuid and /etc/subgid if
+configured locally and run &quot;podman system migrate&quot;: lchown /etc/shadow: invalid argument)
+$ podman unshare cat /proc/self/uid_map
+         0        501          1
+</code></pre>
+<p><code>0 501 1</code>: container root is host UID 501, and that is the entire map. The lab machine’s own login
+account was created by cloud-init with no entry in <code>/etc/subuid</code> at all. An account created with
+<code>useradd</code> gets one automatically, from the ranges in <code>/etc/login.defs</code>:</p>
+<pre><code class="language-console">$ sudo useradd -m webapp
+$ grep webapp /etc/subuid /etc/subgid
+/etc/subuid:webapp:524288:65536
+/etc/subgid:webapp:524288:65536
+</code></pre>
+<p>65,536 IDs starting at 524288: inside the container, UID 1 is host UID 524288, and none of them is a
+real account on the host. For an existing account without a range, <code>sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 USER</code> adds one, then <code>podman system migrate</code>
+restarts the user’s podman processes with it. Done for the lab machine’s login account, the map became
+<code>0 501 1</code> plus <code>1 100000 65536</code>, and the same pull succeeded. Run services under a dedicated account like <code>webapp</code>,
+not under a person’s login — which, on this machine, also sidesteps the missing range.</p>
+<h3>A session, or the lack of one</h3>
+<p>Rootless podman expects a <strong>systemd user session</strong>: a per-user <code>systemd --user</code> manager and an
+<code>XDG_RUNTIME_DIR</code> under <code>/run/user/UID</code>. Becoming the account with <code>sudo -iu webapp</code> or <code>su - webapp</code>
+does not create one, and podman says so on every command:</p>
+<pre><code>level=warning msg=&quot;The cgroupv2 manager is set to systemd but there is no systemd user session available&quot;
+level=warning msg=&quot;For using systemd, you may need to log in using a user session&quot;
+level=warning msg=&quot;Alternatively, you can enable lingering with: `loginctl enable-linger 1000` (possibly as root)&quot;
+level=warning msg=&quot;Falling back to --cgroup-manager=cgroupfs&quot;
+</code></pre>
+<p>Containers still run — podman falls back to managing cgroups itself — but anything involving the user’s
+systemd will not work. The fix that matters for services is <strong>lingering</strong>:</p>
+<pre><code class="language-console">$ sudo loginctl enable-linger webapp
+$ loginctl show-user webapp -p Linger -p State
+State=lingering
+Linger=yes
+</code></pre>
+<p>With linger on, systemd starts that user’s manager at boot and keeps it running without a login. It is
+also what makes a container-as-service start at boot at all, which is the subject of the failure below.
+When working as the account from <code>sudo</code>, point the tools at the session explicitly:
+<code>sudo -iu webapp env XDG_RUNTIME_DIR=/run/user/$(id -u webapp) systemctl --user …</code>. (A real login over
+SSH, or <code>machinectl shell webapp@</code> where <code>systemd-container</code> is installed, sets it up for you.)</p>
+<h3>Bind mounts and SELinux</h3>
+<p>Containers run in the SELinux domain <code>container_t</code>, and <code>container_t</code> may read files labelled
+<code>container_file_t</code> — not the <code>var_t</code> that everything under <code>/srv</code> gets by default. The host file is
+world-readable, the container’s root owns it in the namespace, and the read is still refused:</p>
+<pre><code class="language-console">$ ls -Zd /srv/site
+unconfined_u:object_r:var_t:s0 /srv/site
+$ podman run -d --name site -p 8080:8080 -v /srv/site:/www docker.io/library/busybox:1.37 \
+    httpd -f -p 8080 -h /www
+$ curl -s -o /dev/null -w '%{http_code}\n' localhost:8080/
+404
+$ podman exec site cat /www/index.html
+cat: can't open '/www/index.html': Permission denied
+$ sudo ausearch -m avc -ts recent
+avc:  denied  { read } for  pid=3281 comm=&quot;cat&quot; name=&quot;index.html&quot; dev=&quot;vda3&quot; ino=50382633
+  scontext=system_u:system_r:container_t:s0:c346,c349 tcontext=unconfined_u:object_r:var_t:s0
+  tclass=file permissive=0
+</code></pre>
+<p>Note the symptom the web server chose: <strong>404</strong>, not 403 — it could not read the file, and reported it
+as absent. The denial is the only honest witness. The volume option tells podman to relabel:</p>
+<pre><code class="language-console">$ podman run -d --name site -p 8080:8080 -v /srv/site:/www:Z docker.io/library/busybox:1.37 \
+    httpd -f -p 8080 -h /www
+$ curl -s localhost:8080/
+&lt;h1&gt;hello from the host&lt;/h1&gt;
+$ ls -Zd /srv/site /srv/site/index.html
+system_u:object_r:container_file_t:s0:c11,c951 /srv/site
+system_u:object_r:container_file_t:s0:c11,c951 /srv/site/index.html
+</code></pre>
+<p><code>:Z</code> (capital) labels the content <strong>private</strong> to this container: <code>container_file_t</code> plus this
+container’s MCS categories, <code>c11,c951</code>, which no other container shares. <code>:z</code> (lower case) labels it
+<code>container_file_t</code> without categories, so several containers can use it. Two consequences worth
+remembering: <code>:Z</code> really changes the files’ labels on the host, so never use it on <code>/home</code> or <code>/etc</code>;
+and <code>:Z</code> means <em>one</em> container. Verified: with container A running on a directory mounted <code>:Z</code>, a second
+container mounting the same directory <code>:Z</code> relabelled it with its own categories — the second could read
+the file, and A, still running, got <em>Permission denied</em> from then on.</p>
+<h3>Ports below 1024</h3>
+<pre><code class="language-console">$ podman run -d --name p80 -p 80:8080 docker.io/library/busybox:1.37 true
+Failed to bind port 80 (Permission denied) for option '-t 80-80:8080-8080'
+$ sysctl net.ipv4.ip_unprivileged_port_start
+net.ipv4.ip_unprivileged_port_start = 1024
+</code></pre>
+<p>A rootless container’s published ports are bound by a helper process running as the user, and the
+kernel reserves ports below <code>ip_unprivileged_port_start</code> for privileged processes. The options, in
+order of preference: publish on a high port and put a reverse proxy or a firewalld forward on 80;
+lower the sysctl (a machine-wide decision); or run that one container rootful.</p>
+<h3>Quadlet: a container as a service</h3>
+<p><code>podman generate systemd</code> used to write unit files from a running container. In podman 5 it still
+works and says so:</p>
+<pre><code>DEPRECATED command:
+It is recommended to use Quadlets for running containers and pods under systemd.
+</code></pre>
+<p>A Quadlet is a small declarative file that a systemd generator turns into a real service at every
+<code>daemon-reload</code>. For a user service it lives in <code>~/.config/containers/systemd/</code>:</p>
+<pre><code class="language-ini"># /home/webapp/.config/containers/systemd/site.container
+[Unit]
+Description=static site
+
+[Container]
+Image=docker.io/library/busybox:1.37
+Exec=httpd -f -p 8080 -h /www
+PublishPort=8080:8080
+Volume=/srv/site:/www:Z
+
+[Service]
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+</code></pre>
+<pre><code class="language-console">$ systemctl --user daemon-reload
+$ systemctl --user status site
+○ site.service - static site
+     Loaded: loaded (/home/webapp/.config/containers/systemd/site.container; generated)
+$ systemctl --user cat site | head -2
+# /run/user/1000/systemd/generator/site.service
+# Automatically generated by /usr/lib/systemd/user-generators/podman-user-generator
+$ systemctl --user start site
+$ curl -s localhost:8080/
+&lt;h1&gt;hello from the host&lt;/h1&gt;
+</code></pre>
+<p>The file becomes <code>site.service</code>. What you do <strong>not</strong> do is enable it:</p>
+<pre><code class="language-console">$ systemctl --user enable site
+Failed to enable unit: Unit /run/user/1000/systemd/generator/site.service is transient or generated
+</code></pre>
+<p>The <code>[Install]</code> section is handled by the generator itself, which creates the <code>default.target</code> wants
+link each time it runs. For a system-wide container, the same file goes in <code>/etc/containers/systemd/</code>
+with <code>WantedBy=multi-user.target</code>, and runs rootful under the system manager.</p>
+<h3>Where the data lives</h3>
+<p>A container has a writable layer on top of its image, and it disappears with the container:</p>
+<pre><code class="language-console">$ podman run --name scratch docker.io/library/busybox:1.37 sh -c 'echo order-42 &gt; /tmp/orders.txt'
+$ podman rm scratch
+$ podman run --rm docker.io/library/busybox:1.37 cat /tmp/orders.txt
+cat: can't open '/tmp/orders.txt': No such file or directory
+</code></pre>
+<p>Anything that must outlive the container goes in a volume or a bind mount:</p>
+<pre><code class="language-console">$ podman volume create orders
+$ podman run --rm -v orders:/data docker.io/library/busybox:1.37 sh -c 'echo order-42 &gt; /data/orders.txt'
+$ podman run --rm -v orders:/data docker.io/library/busybox:1.37 cat /data/orders.txt
+order-42
+$ podman volume inspect orders --format '{{.Mountpoint}}'
+/home/webapp/.local/share/containers/storage/volumes/orders/_data
+</code></pre>
+<p>And a rootless user’s storage is its own. The images <code>webapp</code> pulled are not visible to root, and
+root’s are not visible to <code>webapp</code>:</p>
+<pre><code class="language-console">$ podman images --format '{{.Repository}}:{{.Tag}}'          # as webapp
+docker.io/library/alpine:3.22
+docker.io/library/busybox:1.37
+$ sudo podman images --format '{{.Repository}}:{{.Tag}}' | wc -l
+0
+$ podman info --format '{{.Store.GraphRoot}}'                  # as webapp
+/home/webapp/.local/share/containers/storage
+$ sudo podman info --format '{{.Store.GraphRoot}}'
+/var/lib/containers/storage
+</code></pre>
+<p>So “the image is not there” and “the volume is empty” are often a question of <em>which user asked</em>.</p>
+<h2>A failure, walked through</h2>
+<p>The site container was set up as a Quadlet for <code>webapp</code>, tested, and it answered. After a maintenance
+reboot the site is down.</p>
+<p><strong>1. Is it running, and who would have started it?</strong></p>
+<pre><code class="language-console">$ curl -s -m 5 -o /dev/null -w 'curl=%{http_code}\n' localhost:8080/
+curl=000
+$ sudo -iu webapp env XDG_RUNTIME_DIR=/run/user/1000 systemctl --user is-active site
+Failed to connect to user scope bus via local transport: No such file or directory
+$ loginctl show-user webapp -p Linger -p State
+Failed to get user: User ID 1000 is not logged in or lingering
+$ ls /run/user/
+501
+</code></pre>
+<p>There is no user manager for <code>webapp</code> at all — no <code>/run/user/1000</code>, nothing to connect to. The
+container was never started because nothing that could start it exists: a user’s <code>systemd --user</code>
+runs while that user has a session, and after a reboot nobody has logged in as <code>webapp</code>.</p>
+<p><strong>2. Enable lingering, and prove it with a reboot.</strong></p>
+<pre><code class="language-console">$ sudo loginctl enable-linger webapp
+$ sudo systemctl reboot
+…
+$ loginctl show-user webapp -p Linger -p State
+State=lingering
+Linger=yes
+$ sudo -iu webapp env XDG_RUNTIME_DIR=/run/user/1000 systemctl --user is-active site
+active
+$ curl -s localhost:8080/
+&lt;h1&gt;hello from the host&lt;/h1&gt;
+</code></pre>
+<p><strong>3. Walk back through how it was built</strong>, because each step of the original setup had its own trap,
+and a rebuild on another machine will meet them in order.</p>
+<p>The pull, as a person’s login account created by cloud-init:</p>
+<pre><code class="language-console">$ podman pull docker.io/library/alpine:3.22
+Error: … potentially insufficient UIDs or GIDs available in user namespace (requested 0:42 for /etc/shadow) …
+</code></pre>
+<p>No subordinate IDs. A dedicated account created with <code>useradd</code> has them, which is one more reason to
+run services under one.</p>
+<p>The first run of the web server:</p>
+<pre><code class="language-console">$ podman run -d --name site -p 8080:8080 -v /srv/site:/www docker.io/library/alpine:3.22 \
+    busybox httpd -f -p 8080 -h /www
+$ podman logs site
+httpd: applet not found
+</code></pre>
+<p>Alpine’s BusyBox is built without <code>httpd</code>; the <code>busybox</code> image has it. A container that exits at once
+is best read with <code>podman logs</code> — <code>podman exec</code> then fails with <em>can only create exec sessions on
+running containers</em>, which tells you only that it is not running.</p>
+<p>With the <code>busybox</code> image the server starts and answers <strong>404</strong> for a file that exists: the SELinux
+denial above, fixed with <code>:Z</code>. The same server on port 80 fails with <em>Failed to bind port 80
+(Permission denied)</em>: fixed by publishing 8080.</p>
+<p><strong>4. The Quadlet, and the command that does not apply to it.</strong></p>
+<pre><code class="language-console">$ systemctl --user daemon-reload
+$ systemctl --user enable site
+Failed to enable unit: Unit /run/user/1000/systemd/generator/site.service is transient or generated
+</code></pre>
+<p>That error is not a problem to solve — <code>WantedBy=default.target</code> in the <code>.container</code> file already does
+what <code>enable</code> would. The missing piece was never the unit; it was lingering, and it only shows up at the
+first reboot.</p>
+<p><strong>5. One more thing the logs showed on every stop:</strong></p>
+<pre><code>level=warning msg=&quot;StopSignal SIGTERM failed to stop container site in 10 seconds, resorting to SIGKILL&quot;
+</code></pre>
+<p>BusyBox <code>httpd</code> runs as PID 1 in the container and ignores <code>SIGTERM</code>, so every stop waits ten seconds
+and kills it. Harmless for a static site; for a database it is a crash on every restart. Programs that
+do not handle signals as PID 1 want <code>--init</code> — measured, the same <code>podman stop</code> took 10 s without it and
+0 s with it — which is <code>RunInit=true</code> in a Quadlet (the generated unit’s <code>ExecStart</code> gains <code>--init</code>), or a
+proper <code>StopSignal=</code>.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Running services under a person’s login account.</strong> It may have no subordinate IDs (this one did not),
+it has a real home and shell, and its session comes and goes with the person. Create a service account
+with <code>useradd</code>.</p>
+<p><strong>Assuming <code>sudo -iu user</code> or <code>su - user</code> gives a user session.</strong> It does not; podman falls back to
+cgroupfs and warns, and <code>systemctl --user</code> cannot connect. Use <code>loginctl enable-linger</code> and set
+<code>XDG_RUNTIME_DIR</code>, or log in properly.</p>
+<p><strong>Forgetting lingering.</strong> The service works while you are logged in and testing, and vanishes at the
+first reboot, because nothing starts that user’s systemd. <code>loginctl enable-linger USER</code>, then reboot to
+prove it.</p>
+<p><strong><code>chmod 777</code> on a bind mount that the container cannot read.</strong> The permission bits were never the
+problem; SELinux was. <code>:Z</code> for a directory one container owns, <code>:z</code> for one shared by several.</p>
+<p><strong><code>:Z</code> on a system directory.</strong> It relabels the host path for real. On <code>/home</code>, <code>/etc</code> or <code>/var</code>, it
+breaks everything else that reads those files. Mount a dedicated directory.</p>
+<p><strong><code>setenforce 0</code> to make the volume work.</strong> It does, and it removes the protection that keeps a
+compromised container from reading the host (see the rhcsa-04 journal).</p>
+<p><strong>Reading 404 as “the file is not there”.</strong> A server that cannot read a file often reports it as
+missing. Check <code>podman exec … cat</code>, and the audit log.</p>
+<p><strong>Publishing port 80 from a rootless container.</strong> Blocked by <code>ip_unprivileged_port_start</code>. Publish a
+high port and front it, or decide machine-wide to lower the sysctl.</p>
+<p><strong><code>systemctl --user enable</code> on a Quadlet unit.</strong> It is a generated unit and cannot be enabled; the
+<code>[Install]</code> section in the <code>.container</code> file is how it is started.</p>
+<p><strong>Writing important data inside the container.</strong> The writable layer is gone with <code>podman rm</code>. Use a
+volume or a bind mount.</p>
+<p><strong>Looking for a user’s images or volumes as root.</strong> Rootless storage is per user, under
+<code>~/.local/share/containers/storage</code>. <code>sudo podman images</code> shows root’s store, not theirs.</p>
+<h2>Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rootless <code>podman run</code> fails with “cannot find UID/GID for user”</td>
+<td>no subordinate ID range for the user</td>
+<td><code>grep USER /etc/subuid /etc/subgid</code></td>
+</tr>
+<tr>
+<td>a rootless container stops when the user logs out</td>
+<td>no lingering: the user’s systemd instance ends with the session</td>
+<td><code>loginctl show-user USER -p Linger</code></td>
+</tr>
+<tr>
+<td>“permission denied” inside a container on a bind-mounted directory</td>
+<td>the SELinux label, or UID mapping in a rootless container</td>
+<td><code>ls -Z</code>; <code>:Z</code>/<code>:z</code> on the mount; <code>podman unshare ls -ln</code></td>
+</tr>
+<tr>
+<td>a rootless container cannot publish port 80</td>
+<td>unprivileged ports start at 1024</td>
+<td><code>sysctl net.ipv4.ip_unprivileged_port_start</code></td>
+</tr>
+<tr>
+<td>a container’s data is gone after it was recreated</td>
+<td>it lived in the container’s writable layer, not a volume</td>
+<td><code>podman inspect -f '{{.Mounts}}' NAME</code></td>
+</tr>
+<tr>
+<td>a Quadlet unit does not exist after writing the file</td>
+<td>the generator has not run, or the file is in the wrong directory</td>
+<td><code>systemctl --user daemon-reload</code>; the generator’s dry run, in <code>man 5 podman-systemd.unit</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># the account
+grep USER /etc/subuid /etc/subgid                      # a subordinate range must exist
+usermod --add-subuids 100000-165535 --add-subgids 100000-165535 USER ; podman system migrate
+podman unshare cat /proc/self/uid_map                  # what the namespace actually maps
+loginctl enable-linger USER                            # user manager at boot, no login needed
+loginctl show-user USER -p Linger -p State
+sudo -iu USER env XDG_RUNTIME_DIR=/run/user/$(id -u USER) systemctl --user …
+
+# running
+podman run -d --name NAME -p 8080:8080 -v /srv/site:/www:Z IMAGE CMD
+podman ps -a ; podman logs NAME ; podman exec NAME CMD ; podman rm -f NAME
+podman run --init …                                    # a real PID 1 that forwards signals (Quadlet: RunInit=true)
+# :Z private label (container_file_t + this container's MCS pair)   :z shared label
+
+# SELinux and ports
+ls -Zd /srv/site ; ausearch -m avc -ts recent          # the denial names container_t and the file type
+sysctl net.ipv4.ip_unprivileged_port_start             # 1024: rootless cannot publish below it
+
+# Quadlet
+# ~/.config/containers/systemd/NAME.container     (user)   /etc/containers/systemd/  (system)
+# [Container] Image= Exec= PublishPort= Volume=   [Service] Restart=   [Install] WantedBy=default.target
+systemctl --user daemon-reload ; systemctl --user start NAME ; systemctl --user status NAME
+systemctl --user cat NAME                              # the generated unit
+# do NOT systemctl --user enable it: &quot;transient or generated&quot;
+
+# storage
+podman volume create NAME ; podman volume inspect NAME --format '{{.Mountpoint}}'
+podman info --format '{{.Store.GraphRoot}}'            # per user: ~/.local/share/containers/storage
+</code></pre>
+<h2>Exercises</h2>
+<ol>
+<li>As a new user without subordinate IDs, run a rootless container and read the error; add a range
+with <code>usermod --add-subuids</code> and try again.</li>
+<li>Start a rootless container as a service, log out, and check whether it runs; enable lingering and
+repeat.</li>
+<li>Bind-mount a directory into a container on an SELinux machine with and without <code>:Z</code>; compare
+<code>ls -Z</code> before and after.</li>
+<li>Write a Quadlet <code>.container</code> file, reload, and read the generated unit with <code>systemctl --user cat</code>.</li>
+<li>Recreate a container with and without a named volume and compare what survives.</li>
+</ol>
+<h2>Sources</h2>
+<ul>
+<li><code>man 5 subuid</code>, <code>man 5 subgid</code> — subordinate ID ranges.</li>
+<li><code>man 1 loginctl</code> — <code>enable-linger</code>.</li>
+<li>Podman’s Quadlet reference: https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html</li>
+<li><code>podman run</code> (volumes, <code>:Z</code>, ports): https://docs.podman.io/en/latest/markdown/podman-run.1.html</li>
+<li><code>man 8 semanage-fcontext</code>, <code>man 8 restorecon</code> — labels that persist.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A rootless <code>podman pull</code> fails with <em>potentially insufficient UIDs or GIDs available in user
+namespace</em>. What is missing, and how do you add it?</p>
+<blockquote>
+<p>The account has no subordinate ID range in <code>/etc/subuid</code> and <code>/etc/subgid</code>, so the user namespace
+maps only the user’s own UID and cannot represent the image’s files owned by other IDs. Add a range
+with <code>usermod --add-subuids … --add-subgids …</code> and run <code>podman system migrate</code> — or run the service
+under an account created with <code>useradd</code>, which gets a range automatically.</p>
+</blockquote>
+</li>
+<li>
+<p>A container serving <code>/srv/site</code> through a bind mount answers 404 for a file that exists. Why, and what
+is the fix?</p>
+<blockquote>
+<p>SELinux: the container runs as <code>container_t</code>, which may not read the <code>var_t</code> files under <code>/srv</code>, so
+the read is denied and the server reports the file as missing. Mount with <code>:Z</code> (or <code>:z</code> if several
+containers share it) so podman relabels the content <code>container_file_t</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between <code>:Z</code> and <code>:z</code>, and why should neither be used on <code>/home</code>?</p>
+<blockquote>
+<p><code>:Z</code> gives the content a private label with this container’s MCS categories; <code>:z</code> a shared label any
+container can use. Both relabel the host files for real, so on <code>/home</code> (or <code>/etc</code>, <code>/var</code>) they would
+change labels that other services depend on.</p>
+</blockquote>
+</li>
+<li>
+<p>A Quadlet-managed container works while you test it and is not running after a reboot. What is the
+most likely cause, and how do you confirm it?</p>
+<blockquote>
+<p>Lingering is off, so no <code>systemd --user</code> manager starts for that user at boot and nothing starts the
+service. <code>loginctl show-user USER</code> reports the user is not logged in or lingering, and
+<code>/run/user/UID</code> does not exist. <code>loginctl enable-linger USER</code>, then reboot to prove it.</p>
+</blockquote>
+</li>
+<li>
+<p><code>systemctl --user enable site</code> fails with <em>Unit … is transient or generated</em>. What should you do?</p>
+<blockquote>
+<p>Nothing — the unit is generated from the <code>.container</code> file, and its <code>[Install]</code> section
+(<code>WantedBy=default.target</code>) is applied by the generator at each daemon-reload. Enabling is neither
+possible nor needed.</p>
+</blockquote>
+</li>
+<li>
+<p>Why can a rootless container not publish port 80, and what are the options?</p>
+<blockquote>
+<p>The port is bound by a process running as the user, and ports below
+<code>net.ipv4.ip_unprivileged_port_start</code> (1024) need privilege. Publish a high port and put a proxy or
+firewall forward in front, lower the sysctl machine-wide, or run that container rootful.</p>
+</blockquote>
+</li>
+<li>
+<p>A file written inside a container is gone after <code>podman rm</code> and a fresh <code>podman run</code>. Where should it
+have been written, and where does that live for a rootless user?</p>
+<blockquote>
+<p>In a volume or bind mount. A named volume for a rootless user lives under
+<code>~/.local/share/containers/storage/volumes/NAME/_data</code>; the container’s own writable layer is deleted
+with the container.</p>
+</blockquote>
+</li>
+<li>
+<p>Every stop of a container logs <em>StopSignal SIGTERM failed to stop container … resorting to
+SIGKILL</em>. What is happening, and why might it matter?</p>
+<blockquote>
+<p>The main process runs as PID 1 in the container and does not handle <code>SIGTERM</code>, so podman waits the
+timeout and kills it. For a stateless server it only costs ten seconds; for anything with data it is
+an unclean shutdown on every restart. Use <code>--init</code> (<code>RunInit=true</code> in a Quadlet), a suitable
+<code>StopSignal=</code>, or a program that handles termination.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

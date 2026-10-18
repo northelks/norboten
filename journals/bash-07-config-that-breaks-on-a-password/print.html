@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A value is data; sed&#x27;s replacement is code</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A value is data; sed&#x27;s replacement is code</h1>
+  <div class="meta">bash, users-permissions · 35 minutes · 1507 words</div>
+</header>
+<p>Filling placeholders in a template is the second thing every ops script learns to do, and <code>sed s/@PLACEHOLDER@/$value/</code> is how almost everyone writes it. It works for a year, because the values
+are host names and port numbers. Then a password comes out of the vault with a <code>/</code>, an <code>&amp;</code> and a
+backslash in it, and the render either fails or — worse — produces a configuration that is quietly
+different from the value it was given.</p>
+<p>The reason is not that sed is fragile. It is that <code>s/…/…/</code> is a small program, and pasting a value
+into it makes the value part of that program. Exactly like SQL built by string concatenation, the
+question is never “which characters do I escape”, but “how do I keep data out of the code”.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Name the characters that are special in sed’s <em>replacement</em> text, and in its pattern and delimiter.</li>
+<li>Substitute a value into a template without letting the value become code, using bash’s own
+<code>${var//pattern/replacement}</code>.</li>
+<li>Explain why <code>&quot;$var&quot;</code> inside <code>${t//@P@/&quot;$var&quot;}</code> matters.</li>
+<li>Make a file that holds a secret private from the moment it exists, with <code>umask</code> rather than a later
+<code>chmod</code>.</li>
+<li>Fail a render when a value is missing, with <code>${var:?message}</code>, and keep the previous file.</li>
+<li>Read a unit that fails in <code>ExecStartPre=</code>, and know why editing the rendered file by hand does not
+last.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>What is special in a <code>s</code> command</h3>
+<p><code>s/pattern/replacement/flags</code> has three layers of syntax, and each has its own special characters:</p>
+<ul>
+<li>the <strong>delimiter</strong> — <code>/</code> by default. Any <code>/</code> inside the pattern or the replacement ends the command
+early; the value <code>k3y/&amp;Pa$$\1-vault</code> therefore turns into “unknown option to <code>s</code>”. Another
+delimiter (<code>s|…|…|</code>) only moves the problem to whatever character you chose.</li>
+<li>the <strong>replacement</strong> — <code>&amp;</code> stands for the whole matched text, <code>\1</code>…<code>\9</code> for capture groups, <code>\n</code>
+for a newline, and <code>\</code> escapes any of those. <code>a&amp;b</code> renders as <code>a@P@b</code>, silently: the placeholder
+is put back in place of the ampersand.</li>
+<li>the <strong>pattern</strong> — a basic regular expression, where <code>.</code>, <code>*</code>, <code>[</code>, <code>^</code> and <code>$</code> are meta-characters.
+Placeholders such as <code>@DB_PASSWORD@</code> contain none of these, which is why the pattern side is not
+the part that breaks here.</li>
+</ul>
+<p>The shell adds a layer of its own before sed sees anything: <code>&quot;s/@P@/$p/&quot;</code> is expanded by bash, so a
+<code>$</code> or a backslash in the value has already been through the shell’s quoting rules.</p>
+<h3>Substituting without a language in between</h3>
+<p>Bash can replace text in a variable directly:</p>
+<pre><code class="language-bash">text=$(&lt;&quot;$TEMPLATE&quot;)
+text=${text//@DB_PASSWORD@/&quot;$password&quot;}
+</code></pre>
+<p><code>${var//pattern/replacement}</code> replaces every occurrence. The pattern is a <em>glob</em> pattern, not a
+regular expression — a placeholder such as <code>@DB_PASSWORD@</code> has no glob characters, so it matches
+literally. The replacement is <strong>not</strong> a pattern at all; the only character that means anything there
+is <code>\</code>, and quoting the expansion (<code>&quot;$password&quot;</code>) makes even that literal. No delimiter, no <code>&amp;</code>, no
+<code>\1</code>: the value stays data.</p>
+<p><code>printf '%s\n' &quot;$text&quot; &gt; file</code> then writes the result — <code>printf</code> with a <code>%s</code> format, never
+<code>printf &quot;$text&quot;</code>, which would interpret <code>%</code> sequences in the data.</p>
+<p>Other tools that keep data separate from code: <code>envsubst</code> (from gettext) for <code>$VAR</code> templates, <code>jq --arg</code> for JSON, Python’s <code>string.Template.substitute</code>, and any templating engine. The common shape
+is: the value is passed as a value, not spliced into a program.</p>
+<h3>A secret is private from its first byte</h3>
+<p>A new file’s permissions are <code>0666</code> (or <code>0777</code> for programs) minus the process’s <code>umask</code>. On this
+machine the default is <code>0002</code>, so a shell redirection creates <code>0664</code> — readable by everyone. A
+<code>chmod 600</code> afterwards closes the door, but the secret was already on disk and readable for the
+moment in between, and any reader that opened it in that moment keeps its descriptor.</p>
+<p><code>umask 077</code> before the file is created means it is never readable by anyone else. Setting the mode
+explicitly as well (<code>chmod 600</code>) covers the case where the file already existed. Writing to a
+temporary file in the same directory and renaming it over the target keeps the previous
+configuration when the render fails, and gives readers an atomic switch.</p>
+<h3>Failing on a missing value</h3>
+<p><code>. &quot;$VALUES&quot;</code> reads assignments from a file; if a name is not in it, the variable simply stays unset,
+and under <code>set -u</code> it is an error only when it is <em>used</em> — by which time the output may already have
+been truncated. <code>${DB_HOST:?DB_HOST is not set in $VALUES}</code> checks and reports in one step: with <code>set -e</code>, a non-interactive shell exits, printing that message to standard error. Unsetting the names
+before sourcing matters too, or a value inherited from the environment silently stands in for a
+missing one.</p>
+<h3>A unit that renders before it starts</h3>
+<p><code>myapp.service</code> has <code>ExecStartPre=/usr/local/bin/render-config</code> and <code>ExecStart=/usr/local/bin/myapp-login</code>.
+systemd runs the <code>ExecStartPre=</code> commands first and fails the unit if one of them fails. Here the
+render <em>succeeded</em> — it exited 0 after sed’s error — and the login failed, which is why the status
+shows <code>ExecStartPre</code> green and <code>ExecStart</code> red. It also means that editing <code>/etc/myapp/app.conf</code> by
+hand is pointless: the next start overwrites it.</p>
+<h2>A failure, walked through</h2>
+<p>Run on the lab’s own machine: <code>ubuntu-26.04-devops</code>, GNU bash 5.3.9, GNU sed 4.9, before any change.</p>
+<pre><code class="language-console">$ systemctl status myapp.service --no-pager -n 6 | head -12
+× myapp.service - myapp, with its configuration rendered at start
+     Loaded: loaded (/etc/systemd/system/myapp.service; enabled; preset: enabled)
+     Active: failed (Result: exit-code) since Wed 2026-09-16 16:54:05 UTC; 114ms ago
+    Process: 1176 ExecStartPre=/usr/local/bin/render-config (code=exited, status=0/SUCCESS)
+    Process: 1179 ExecStart=/usr/local/bin/myapp-login (code=exited, status=1/FAILURE)
+</code></pre>
+<p>The render reported success and left an empty file, because the redirection truncated <code>app.conf</code>
+before sed failed:</p>
+<pre><code class="language-console">$ sudo cat /etc/myapp/secrets.env; ls -l /etc/myapp/
+DB_HOST=db.internal
+DB_PASSWORD='k3y/&amp;Pa$$\1-vault'
+total 8
+-rw-r--r-- 1 root root   0 Sep 16 16:54 app.conf
+-rw-r--r-- 1 root root 151 Sep 16 16:54 app.conf.tmpl
+-rw------- 1 root root  52 Sep 16 16:54 secrets.env
+</code></pre>
+<p>Two things to notice: <code>app.conf</code> is empty, and its mode is <code>0644</code> — the secrets file beside it is
+<code>0600</code>. Running the substitution by hand shows what sed received:</p>
+<pre><code class="language-console">$ p='k3y/&amp;Pa$$\1-vault'; printf 'password = @DB_PASSWORD@\n' | sed -e &quot;s/@DB_PASSWORD@/$p/&quot; ; echo &quot;sed status: $?&quot;
+sed: -e expression #1, char 21: unknown option to `s'
+sed status: 1
+</code></pre>
+<p>The <code>/</code> in the value ended the <code>s</code> command, and what followed was read as flags. A value with only
+an <code>&amp;</code> is worse, because it does not fail at all:</p>
+<pre><code class="language-console">$ p='a&amp;b'; printf 'x = @P@\n' | sed -e &quot;s/@P@/$p/&quot;
+x = a@P@b
+</code></pre>
+<p>The ampersand was replaced by the matched text, so the placeholder is back in the output and nobody
+notices until the application uses it. The shell’s own substitution has none of these layers:</p>
+<pre><code class="language-console">$ t='x = @P@'; p='k3y/&amp;Pa$$\1-vault'; echo &quot;${t//@P@/&quot;$p&quot;}&quot;
+x = k3y/&amp;Pa$$\1-vault
+$ umask
+0002
+</code></pre>
+<p>That <code>umask</code> is why a redirected file is world-readable. After the fix — <code>${text//…}</code> in place of
+sed, <code>${var:?}</code> for each value, <code>umask 077</code> with an explicit <code>chmod 600</code>, and a temporary file
+renamed into place:</p>
+<pre><code class="language-console">$ sudo systemctl restart myapp.service; systemctl is-active myapp.service; sudo journalctl -u myapp.service -b --no-pager -o cat | tail -2
+active
+myapp: logged in to db.internal
+Finished myapp.service - myapp, with its configuration rendered at start.
+$ sudo ls -l /etc/myapp/app.conf; sudo cat /etc/myapp/app.conf
+-rw------- 1 root root 157 Sep 16 16:54 /etc/myapp/app.conf
+# myapp — rendered by render-config from app.conf.tmpl; edits here are overwritten
+[database]
+host = db.internal
+user = myapp
+password = k3y/&amp;Pa$$\1-vault
+$ sudo sh -c 'RENDER_VALUES=/dev/null RENDER_OUT=/tmp/out.conf render-config'; echo &quot;status: $?&quot;
+/usr/local/bin/render-config: line 11: DB_HOST: DB_HOST is not set in /dev/null
+status: 1
+</code></pre>
+<p>The password is in the file exactly as it is in the vault, the file is <code>0600</code>, and a values file
+without <code>DB_HOST</code> fails by name.</p>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong>Escaping the value for sed.</strong> <code>${value//\//\\/}</code> and friends: a new escape for every special
+character, in a specific order, and a bug the first time a value contains one you forgot. Do not
+build an escaper; stop generating code.</li>
+<li><strong>Changing the delimiter.</strong> <code>s|@P@|$value|</code> moves the failure from <code>/</code> to <code>|</code>. Any delimiter can
+appear in a password.</li>
+<li><strong>Rotating the password to something “safe”.</strong> The brief says the password stays as it is, and so
+does reality: the value comes from a vault, and the next one will be worse.</li>
+<li><strong><code>chmod 600</code> after writing.</strong> The secret is world-readable while it is written. Set <code>umask 077</code>
+first.</li>
+<li><strong>Editing <code>/etc/myapp/app.conf</code>.</strong> <code>ExecStartPre=</code> renders it again on the next start.</li>
+<li><strong><code>set -u</code> alone for missing values.</strong> It errors when the variable is used, after the output has
+been truncated, and says nothing about which file should have contained it.</li>
+<li><strong><code>printf &quot;$text&quot;</code>.</strong> A <code>%</code> in the data becomes a format directive. <code>printf '%s\n' &quot;$text&quot;</code>.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash">text=$(&lt;&quot;$TEMPLATE&quot;)                       # read a file into a variable
+text=${text//@DB_HOST@/&quot;$DB_HOST&quot;}         # literal replacement, no escaping needed
+printf '%s\n' &quot;$text&quot; &gt; &quot;$tmp&quot;             # never printf &quot;$text&quot;
+
+unset DB_HOST DB_PASSWORD; . &quot;$VALUES&quot;     # no leftovers from the environment
+: &quot;${DB_HOST:?DB_HOST is not set in $VALUES}&quot;
+
+umask 077                                  # before creating anything that holds a secret
+tmp=$(mktemp &quot;$OUT.XXXXXX&quot;); trap 'rm -f -- &quot;$tmp&quot;' EXIT
+chmod 600 &quot;$tmp&quot;; mv -f -- &quot;$tmp&quot; &quot;$OUT&quot;
+
+# sed's replacement: &amp; = whole match, \1..\9 = groups, \ escapes, delimiter ends the command
+systemctl status unit          # ExecStartPre= failures are shown separately from ExecStart=
+</code></pre>
+<h2>Going deeper</h2>
+<ul>
+<li><code>man 1 sed</code>, <em>The s Command</em>, for <code>&amp;</code>, <code>\1</code> and the delimiter.</li>
+<li><code>man 1 bash</code>, <em>Parameter Expansion</em>, for <code>${var//pattern/replacement}</code> and <code>${var:?word}</code>.</li>
+<li><code>man 2 umask</code>, and <code>man 1 envsubst</code> for <code>$VAR</code> templates.</li>
+<li><code>man 5 systemd.service</code>, <code>ExecStartPre=</code>.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Which three characters are special in sed’s replacement text, and what does each mean?</p>
+<blockquote>
+<p><code>&amp;</code> (the whole matched text), <code>\</code> (escape, and <code>\1</code>…<code>\9</code> for capture groups) and the delimiter
+itself, which ends the replacement early.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does a value containing <code>&amp;</code> produce wrong output rather than an error?</p>
+<blockquote>
+<p><code>&amp;</code> is replaced by the text that matched — the placeholder — so the render succeeds and the
+result silently contains the placeholder instead of the value.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>${text//@P@/&quot;$password&quot;}</code> safe where sed is not?</p>
+<blockquote>
+<p>The replacement side of that expansion is not a pattern; quoting the expansion makes even a
+backslash literal, so the value cannot become syntax.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>chmod 600</code> after writing a secret not enough?</p>
+<blockquote>
+<p>The file exists with the umask’s permissions while it is being written, so anyone can read it in
+that window, and a reader that opened it keeps access.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>: &quot;${DB_HOST:?DB_HOST is not set}&quot;</code> do when <code>DB_HOST</code> is unset?</p>
+<blockquote>
+<p>It writes the message to standard error and exits a non-interactive shell with a non-zero
+status, before anything is written.</p>
+</blockquote>
+</li>
+<li>
+<p>The unit’s status shows <code>ExecStartPre</code> as success and <code>ExecStart</code> as failure. What does that tell
+you, and why is editing <code>app.conf</code> by hand useless?</p>
+<blockquote>
+<p>The render exited 0 but produced a configuration the application rejects; and <code>ExecStartPre=</code>
+runs on every start, so the rendered file is overwritten each time.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

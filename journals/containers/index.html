@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The container that ran fine until the machine rebooted · Norboten</title>
+<meta name="description" content="The task sounds like one command: run a small web server in a container, as an unprivileged account, serving files from the host, and have it come back after a ">
+<link rel="canonical" href="https://norboten.org/journals/containers/"><meta property="og:title" content="The container that ran fine until the machine rebooted · Norboten">
+<meta property="og:description" content="The task sounds like one command: run a small web server in a container, as an unprivileged account, serving files from the host, and have it come back after a ">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/containers/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The container that ran fine until the machine rebooted · Norboten">
+<meta name="twitter:description" content="The task sounds like one command: run a small web server in a container, as an unprivileged account, serving files from the host, and have it come back after a ">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "The container that ran fine until the machine rebooted",
+  "description": "The task sounds like one command: run a small web server in a container, as an unprivileged account, serving files from the host, and have it come back after a ",
+  "url": "https://norboten.org/journals/containers/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2678,
+  "timeRequired": "PT40M",
+  "about": ["Containers"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal</div>
+    <h1>The container that ran fine until the machine rebooted</h1>
+    <p class="muted">
+      40 minutes' reading · 2678 words ·<span class="tag">Containers</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 110 words</title><rect x="0.0" y="0" width="23.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 1289 words</title><rect x="26.9" y="0" width="280.1" height="30" rx="4" fill="#1d2a23"/><text x="34.9" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 578 words</title><rect x="310.0" y="0" width="125.6" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 323 words</title><rect x="438.6" y="0" width="70.2" height="30" rx="4" fill="#1d2a23"/></a><a href="#symptoms-and-causes"><title>Symptoms and causes — 180 words</title><rect x="511.8" y="0" width="39.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 220 words</title><rect x="553.9" y="0" width="47.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#exercises"><title>Exercises — 95 words</title><rect x="604.7" y="0" width="20.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#sources"><title>Sources — 40 words</title><rect x="628.4" y="0" width="8.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 552 words</title><rect x="640.0" y="0" width="120.0" height="30" rx="4" fill="#1d2a23"/><text x="648.0" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#symptoms-and-causes">Symptoms and causes</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#exercises">Exercises</a></li>
+          <li><a href="#sources">Sources</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>The task sounds like one command: run a small web server in a container, as an unprivileged account,
+serving files from the host, and have it come back after a reboot. It is one command to get it
+<em>running</em>. Getting it right takes five separate mechanisms to agree — user namespaces, SELinux labels,
+unprivileged ports, systemd's per-user manager and where container data actually lives — and each one
+has a failure that looks like something else.</p>
+<p>RHEL 10's container objectives are exactly this: rootless containers, persistent storage, and running
+them as systemd services. Everything below was done on a Rocky Linux 10 lab machine with podman 5.8.2
+and recorded, including the failures, which are the useful part.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Explain what a rootless container needs from the account that runs it, and fix an account that
+cannot pull an image.</li>
+<li>Mount a host directory into a container under SELinux, and choose between <code>:Z</code> and <code>:z</code>.</li>
+<li>Say why a rootless container cannot publish port 80, and what the options are.</li>
+<li>Run a container as a systemd user service with a Quadlet file, and make it start at boot without
+anyone logging in.</li>
+<li>Tell data in a container's writable layer from data in a volume, and know where each lives.</li>
+<li>Recognise the warnings that mean &quot;no user session&quot;, and the ones that are merely noise.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="rootless-needs-subordinate-ids">Rootless needs subordinate IDs</h3>
+<p>A rootless container still has a <code>root</code> inside it, and image layers contain files owned by many
+different users (<code>/etc/shadow</code> in Alpine belongs to group 42). The kernel lets an unprivileged user map
+those IDs only through a range of <strong>subordinate IDs</strong> assigned to that account in <code>/etc/subuid</code> and
+<code>/etc/subgid</code>. An account without a range can map exactly one ID — its own — and the first image pull
+fails while unpacking:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>podman<span class="hl-w"> </span>pull<span class="hl-w"> </span>docker.io/library/alpine:3.22
+<span class="hl-go">Error: … unpacking failed (error: exit status 1; output: potentially insufficient UIDs or GIDs</span>
+<span class="hl-go">available in user namespace (requested 0:42 for /etc/shadow): Check /etc/subuid and /etc/subgid if</span>
+<span class="hl-go">configured locally and run "podman system migrate": lchown /etc/shadow: invalid argument)</span>
+<span class="hl-gp">$ </span>podman<span class="hl-w"> </span>unshare<span class="hl-w"> </span>cat<span class="hl-w"> </span>/proc/self/uid_map
+<span class="hl-go">         0        501          1</span>
+</code></pre>
+
+<p><code>0 501 1</code>: container root is host UID 501, and that is the entire map. The lab machine's own login
+account was created by cloud-init with no entry in <code>/etc/subuid</code> at all. An account created with
+<code>useradd</code> gets one automatically, from the ranges in <code>/etc/login.defs</code>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>useradd<span class="hl-w"> </span>-m<span class="hl-w"> </span>webapp
+<span class="hl-gp">$ </span>grep<span class="hl-w"> </span>webapp<span class="hl-w"> </span>/etc/subuid<span class="hl-w"> </span>/etc/subgid
+<span class="hl-go">/etc/subuid:webapp:524288:65536</span>
+<span class="hl-go">/etc/subgid:webapp:524288:65536</span>
+</code></pre>
+
+<p>65,536 IDs starting at 524288: inside the container, UID 1 is host UID 524288, and none of them is a
+real account on the host. For an existing account without a range, <code>sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 USER</code> adds one, then <code>podman system migrate</code>
+restarts the user's podman processes with it. Done for the lab machine's login account, the map became
+<code>0 501 1</code> plus <code>1 100000 65536</code>, and the same pull succeeded. Run services under a dedicated account like <code>webapp</code>,
+not under a person's login — which, on this machine, also sidesteps the missing range.</p>
+<h3 id="a-session-or-the-lack-of-one">A session, or the lack of one</h3>
+<p>Rootless podman expects a <strong>systemd user session</strong>: a per-user <code>systemd --user</code> manager and an
+<code>XDG_RUNTIME_DIR</code> under <code>/run/user/UID</code>. Becoming the account with <code>sudo -iu webapp</code> or <code>su - webapp</code>
+does not create one, and podman says so on every command:</p>
+<pre><code>level=warning msg=&quot;The cgroupv2 manager is set to systemd but there is no systemd user session available&quot;
+level=warning msg=&quot;For using systemd, you may need to log in using a user session&quot;
+level=warning msg=&quot;Alternatively, you can enable lingering with: `loginctl enable-linger 1000` (possibly as root)&quot;
+level=warning msg=&quot;Falling back to --cgroup-manager=cgroupfs&quot;
+</code></pre>
+<p>Containers still run — podman falls back to managing cgroups itself — but anything involving the user's
+systemd will not work. The fix that matters for services is <strong>lingering</strong>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>loginctl<span class="hl-w"> </span>enable-linger<span class="hl-w"> </span>webapp
+<span class="hl-gp">$ </span>loginctl<span class="hl-w"> </span>show-user<span class="hl-w"> </span>webapp<span class="hl-w"> </span>-p<span class="hl-w"> </span>Linger<span class="hl-w"> </span>-p<span class="hl-w"> </span>State
+<span class="hl-go">State=lingering</span>
+<span class="hl-go">Linger=yes</span>
+</code></pre>
+
+<p>With linger on, systemd starts that user's manager at boot and keeps it running without a login. It is
+also what makes a container-as-service start at boot at all, which is the subject of the failure below.
+When working as the account from <code>sudo</code>, point the tools at the session explicitly:
+<code>sudo -iu webapp env XDG_RUNTIME_DIR=/run/user/$(id -u webapp) systemctl --user …</code>. (A real login over
+SSH, or <code>machinectl shell webapp@</code> where <code>systemd-container</code> is installed, sets it up for you.)</p>
+<h3 id="bind-mounts-and-selinux">Bind mounts and SELinux</h3>
+<p>Containers run in the SELinux domain <code>container_t</code>, and <code>container_t</code> may read files labelled
+<code>container_file_t</code> — not the <code>var_t</code> that everything under <code>/srv</code> gets by default. The host file is
+world-readable, the container's root owns it in the namespace, and the read is still refused:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-Zd<span class="hl-w"> </span>/srv/site
+<span class="hl-go">unconfined_u:object_r:var_t:s0 /srv/site</span>
+<span class="hl-gp">$ </span>podman<span class="hl-w"> </span>run<span class="hl-w"> </span>-d<span class="hl-w"> </span>--name<span class="hl-w"> </span>site<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-m">8080</span>:8080<span class="hl-w"> </span>-v<span class="hl-w"> </span>/srv/site:/www<span class="hl-w"> </span>docker.io/library/busybox:1.37<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>httpd<span class="hl-w"> </span>-f<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-m">8080</span><span class="hl-w"> </span>-h<span class="hl-w"> </span>/www
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span>localhost:8080/
+<span class="hl-go">404</span>
+<span class="hl-gp">$ </span>podman<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>site<span class="hl-w"> </span>cat<span class="hl-w"> </span>/www/index.html
+<span class="hl-go">cat: can't open '/www/index.html': Permission denied</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ausearch<span class="hl-w"> </span>-m<span class="hl-w"> </span>avc<span class="hl-w"> </span>-ts<span class="hl-w"> </span>recent
+<span class="hl-go">avc:  denied  { read } for  pid=3281 comm="cat" name="index.html" dev="vda3" ino=50382633</span>
+<span class="hl-go">  scontext=system_u:system_r:container_t:s0:c346,c349 tcontext=unconfined_u:object_r:var_t:s0</span>
+<span class="hl-go">  tclass=file permissive=0</span>
+</code></pre>
+
+<p>Note the symptom the web server chose: <strong>404</strong>, not 403 — it could not read the file, and reported it
+as absent. The denial is the only honest witness. The volume option tells podman to relabel:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>podman<span class="hl-w"> </span>run<span class="hl-w"> </span>-d<span class="hl-w"> </span>--name<span class="hl-w"> </span>site<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-m">8080</span>:8080<span class="hl-w"> </span>-v<span class="hl-w"> </span>/srv/site:/www:Z<span class="hl-w"> </span>docker.io/library/busybox:1.37<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>httpd<span class="hl-w"> </span>-f<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-m">8080</span><span class="hl-w"> </span>-h<span class="hl-w"> </span>/www
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>localhost:8080/
+<span class="hl-go">&lt;h1&gt;hello from the host&lt;/h1&gt;</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-Zd<span class="hl-w"> </span>/srv/site<span class="hl-w"> </span>/srv/site/index.html
+<span class="hl-go">system_u:object_r:container_file_t:s0:c11,c951 /srv/site</span>
+<span class="hl-go">system_u:object_r:container_file_t:s0:c11,c951 /srv/site/index.html</span>
+</code></pre>
+
+<p><code>:Z</code> (capital) labels the content <strong>private</strong> to this container: <code>container_file_t</code> plus this
+container's MCS categories, <code>c11,c951</code>, which no other container shares. <code>:z</code> (lower case) labels it
+<code>container_file_t</code> without categories, so several containers can use it. Two consequences worth
+remembering: <code>:Z</code> really changes the files' labels on the host, so never use it on <code>/home</code> or <code>/etc</code>;
+and <code>:Z</code> means <em>one</em> container. Verified: with container A running on a directory mounted <code>:Z</code>, a second
+container mounting the same directory <code>:Z</code> relabelled it with its own categories — the second could read
+the file, and A, still running, got <em>Permission denied</em> from then on.</p>
+<h3 id="ports-below-1024">Ports below 1024</h3>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>podman<span class="hl-w"> </span>run<span class="hl-w"> </span>-d<span class="hl-w"> </span>--name<span class="hl-w"> </span>p80<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-m">80</span>:8080<span class="hl-w"> </span>docker.io/library/busybox:1.37<span class="hl-w"> </span><span class="hl-nb">true</span>
+<span class="hl-go">Failed to bind port 80 (Permission denied) for option '-t 80-80:8080-8080'</span>
+<span class="hl-gp">$ </span>sysctl<span class="hl-w"> </span>net.ipv4.ip_unprivileged_port_start
+<span class="hl-go">net.ipv4.ip_unprivileged_port_start = 1024</span>
+</code></pre>
+
+<p>A rootless container's published ports are bound by a helper process running as the user, and the
+kernel reserves ports below <code>ip_unprivileged_port_start</code> for privileged processes. The options, in
+order of preference: publish on a high port and put a reverse proxy or a firewalld forward on 80;
+lower the sysctl (a machine-wide decision); or run that one container rootful.</p>
+<h3 id="quadlet-a-container-as-a-service">Quadlet: a container as a service</h3>
+<p><code>podman generate systemd</code> used to write unit files from a running container. In podman 5 it still
+works and says so:</p>
+<pre><code>DEPRECATED command:
+It is recommended to use Quadlets for running containers and pods under systemd.
+</code></pre>
+<p>A Quadlet is a small declarative file that a systemd generator turns into a real service at every
+<code>daemon-reload</code>. For a user service it lives in <code>~/.config/containers/systemd/</code>:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-c1"># /home/webapp/.config/containers/systemd/site.container</span>
+<span class="hl-k">[Unit]</span>
+<span class="hl-na">Description</span><span class="hl-o">=</span><span class="hl-s">static site</span>
+
+<span class="hl-k">[Container]</span>
+<span class="hl-na">Image</span><span class="hl-o">=</span><span class="hl-s">docker.io/library/busybox:1.37</span>
+<span class="hl-na">Exec</span><span class="hl-o">=</span><span class="hl-s">httpd -f -p 8080 -h /www</span>
+<span class="hl-na">PublishPort</span><span class="hl-o">=</span><span class="hl-s">8080:8080</span>
+<span class="hl-na">Volume</span><span class="hl-o">=</span><span class="hl-s">/srv/site:/www:Z</span>
+
+<span class="hl-k">[Service]</span>
+<span class="hl-na">Restart</span><span class="hl-o">=</span><span class="hl-s">on-failure</span>
+
+<span class="hl-k">[Install]</span>
+<span class="hl-na">WantedBy</span><span class="hl-o">=</span><span class="hl-s">default.target</span>
+</code></pre>
+
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>--user<span class="hl-w"> </span>daemon-reload
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>--user<span class="hl-w"> </span>status<span class="hl-w"> </span>site
+<span class="hl-go">○ site.service - static site</span>
+<span class="hl-go">     Loaded: loaded (/home/webapp/.config/containers/systemd/site.container; generated)</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>--user<span class="hl-w"> </span>cat<span class="hl-w"> </span>site<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-2
+<span class="hl-gp"># </span>/run/user/1000/systemd/generator/site.service
+<span class="hl-gp"># </span>Automatically<span class="hl-w"> </span>generated<span class="hl-w"> </span>by<span class="hl-w"> </span>/usr/lib/systemd/user-generators/podman-user-generator
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>--user<span class="hl-w"> </span>start<span class="hl-w"> </span>site
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>localhost:8080/
+<span class="hl-go">&lt;h1&gt;hello from the host&lt;/h1&gt;</span>
+</code></pre>
+
+<p>The file becomes <code>site.service</code>. What you do <strong>not</strong> do is enable it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>--user<span class="hl-w"> </span><span class="hl-nb">enable</span><span class="hl-w"> </span>site
+<span class="hl-go">Failed to enable unit: Unit /run/user/1000/systemd/generator/site.service is transient or generated</span>
+</code></pre>
+
+<p>The <code>[Install]</code> section is handled by the generator itself, which creates the <code>default.target</code> wants
+link each time it runs. For a system-wide container, the same file goes in <code>/etc/containers/systemd/</code>
+with <code>WantedBy=multi-user.target</code>, and runs rootful under the system manager.</p>
+<h3 id="where-the-data-lives">Where the data lives</h3>
+<p>A container has a writable layer on top of its image, and it disappears with the container:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>podman<span class="hl-w"> </span>run<span class="hl-w"> </span>--name<span class="hl-w"> </span>scratch<span class="hl-w"> </span>docker.io/library/busybox:1.37<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'echo order-42 &gt; /tmp/orders.txt'</span>
+<span class="hl-gp">$ </span>podman<span class="hl-w"> </span>rm<span class="hl-w"> </span>scratch
+<span class="hl-gp">$ </span>podman<span class="hl-w"> </span>run<span class="hl-w"> </span>--rm<span class="hl-w"> </span>docker.io/library/busybox:1.37<span class="hl-w"> </span>cat<span class="hl-w"> </span>/tmp/orders.txt
+<span class="hl-go">cat: can't open '/tmp/orders.txt': No such file or directory</span>
+</code></pre>
+
+<p>Anything that must outlive the container goes in a volume or a bind mount:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>podman<span class="hl-w"> </span>volume<span class="hl-w"> </span>create<span class="hl-w"> </span>orders
+<span class="hl-gp">$ </span>podman<span class="hl-w"> </span>run<span class="hl-w"> </span>--rm<span class="hl-w"> </span>-v<span class="hl-w"> </span>orders:/data<span class="hl-w"> </span>docker.io/library/busybox:1.37<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'echo order-42 &gt; /data/orders.txt'</span>
+<span class="hl-gp">$ </span>podman<span class="hl-w"> </span>run<span class="hl-w"> </span>--rm<span class="hl-w"> </span>-v<span class="hl-w"> </span>orders:/data<span class="hl-w"> </span>docker.io/library/busybox:1.37<span class="hl-w"> </span>cat<span class="hl-w"> </span>/data/orders.txt
+<span class="hl-go">order-42</span>
+<span class="hl-gp">$ </span>podman<span class="hl-w"> </span>volume<span class="hl-w"> </span>inspect<span class="hl-w"> </span>orders<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{.Mountpoint}}'</span>
+<span class="hl-go">/home/webapp/.local/share/containers/storage/volumes/orders/_data</span>
+</code></pre>
+
+<p>And a rootless user's storage is its own. The images <code>webapp</code> pulled are not visible to root, and
+root's are not visible to <code>webapp</code>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>podman<span class="hl-w"> </span>images<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{.Repository}}:{{.Tag}}'</span><span class="hl-w">          </span><span class="hl-c1"># as webapp</span>
+<span class="hl-go">docker.io/library/alpine:3.22</span>
+<span class="hl-go">docker.io/library/busybox:1.37</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>podman<span class="hl-w"> </span>images<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{.Repository}}:{{.Tag}}'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>wc<span class="hl-w"> </span>-l
+<span class="hl-go">0</span>
+<span class="hl-gp">$ </span>podman<span class="hl-w"> </span>info<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{.Store.GraphRoot}}'</span><span class="hl-w">                  </span><span class="hl-c1"># as webapp</span>
+<span class="hl-go">/home/webapp/.local/share/containers/storage</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>podman<span class="hl-w"> </span>info<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{.Store.GraphRoot}}'</span>
+<span class="hl-go">/var/lib/containers/storage</span>
+</code></pre>
+
+<p>So &quot;the image is not there&quot; and &quot;the volume is empty&quot; are often a question of <em>which user asked</em>.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>The site container was set up as a Quadlet for <code>webapp</code>, tested, and it answered. After a maintenance
+reboot the site is down.</p>
+<p><strong>1. Is it running, and who would have started it?</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">5</span><span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'curl=%{http_code}\n'</span><span class="hl-w"> </span>localhost:8080/
+<span class="hl-go">curl=000</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-iu<span class="hl-w"> </span>webapp<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">XDG_RUNTIME_DIR</span><span class="hl-o">=</span>/run/user/1000<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>--user<span class="hl-w"> </span>is-active<span class="hl-w"> </span>site
+<span class="hl-go">Failed to connect to user scope bus via local transport: No such file or directory</span>
+<span class="hl-gp">$ </span>loginctl<span class="hl-w"> </span>show-user<span class="hl-w"> </span>webapp<span class="hl-w"> </span>-p<span class="hl-w"> </span>Linger<span class="hl-w"> </span>-p<span class="hl-w"> </span>State
+<span class="hl-go">Failed to get user: User ID 1000 is not logged in or lingering</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>/run/user/
+<span class="hl-go">501</span>
+</code></pre>
+
+<p>There is no user manager for <code>webapp</code> at all — no <code>/run/user/1000</code>, nothing to connect to. The
+container was never started because nothing that could start it exists: a user's <code>systemd --user</code>
+runs while that user has a session, and after a reboot nobody has logged in as <code>webapp</code>.</p>
+<p><strong>2. Enable lingering, and prove it with a reboot.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>loginctl<span class="hl-w"> </span>enable-linger<span class="hl-w"> </span>webapp
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>reboot
+<span class="hl-go">…</span>
+<span class="hl-gp">$ </span>loginctl<span class="hl-w"> </span>show-user<span class="hl-w"> </span>webapp<span class="hl-w"> </span>-p<span class="hl-w"> </span>Linger<span class="hl-w"> </span>-p<span class="hl-w"> </span>State
+<span class="hl-go">State=lingering</span>
+<span class="hl-go">Linger=yes</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-iu<span class="hl-w"> </span>webapp<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">XDG_RUNTIME_DIR</span><span class="hl-o">=</span>/run/user/1000<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>--user<span class="hl-w"> </span>is-active<span class="hl-w"> </span>site
+<span class="hl-go">active</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>localhost:8080/
+<span class="hl-go">&lt;h1&gt;hello from the host&lt;/h1&gt;</span>
+</code></pre>
+
+<p><strong>3. Walk back through how it was built</strong>, because each step of the original setup had its own trap,
+and a rebuild on another machine will meet them in order.</p>
+<p>The pull, as a person's login account created by cloud-init:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>podman<span class="hl-w"> </span>pull<span class="hl-w"> </span>docker.io/library/alpine:3.22
+<span class="hl-go">Error: … potentially insufficient UIDs or GIDs available in user namespace (requested 0:42 for /etc/shadow) …</span>
+</code></pre>
+
+<p>No subordinate IDs. A dedicated account created with <code>useradd</code> has them, which is one more reason to
+run services under one.</p>
+<p>The first run of the web server:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>podman<span class="hl-w"> </span>run<span class="hl-w"> </span>-d<span class="hl-w"> </span>--name<span class="hl-w"> </span>site<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-m">8080</span>:8080<span class="hl-w"> </span>-v<span class="hl-w"> </span>/srv/site:/www<span class="hl-w"> </span>docker.io/library/alpine:3.22<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>busybox<span class="hl-w"> </span>httpd<span class="hl-w"> </span>-f<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-m">8080</span><span class="hl-w"> </span>-h<span class="hl-w"> </span>/www
+<span class="hl-gp">$ </span>podman<span class="hl-w"> </span>logs<span class="hl-w"> </span>site
+<span class="hl-go">httpd: applet not found</span>
+</code></pre>
+
+<p>Alpine's BusyBox is built without <code>httpd</code>; the <code>busybox</code> image has it. A container that exits at once
+is best read with <code>podman logs</code> — <code>podman exec</code> then fails with <em>can only create exec sessions on
+running containers</em>, which tells you only that it is not running.</p>
+<p>With the <code>busybox</code> image the server starts and answers <strong>404</strong> for a file that exists: the SELinux
+denial above, fixed with <code>:Z</code>. The same server on port 80 fails with <em>Failed to bind port 80
+(Permission denied)</em>: fixed by publishing 8080.</p>
+<p><strong>4. The Quadlet, and the command that does not apply to it.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>--user<span class="hl-w"> </span>daemon-reload
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>--user<span class="hl-w"> </span><span class="hl-nb">enable</span><span class="hl-w"> </span>site
+<span class="hl-go">Failed to enable unit: Unit /run/user/1000/systemd/generator/site.service is transient or generated</span>
+</code></pre>
+
+<p>That error is not a problem to solve — <code>WantedBy=default.target</code> in the <code>.container</code> file already does
+what <code>enable</code> would. The missing piece was never the unit; it was lingering, and it only shows up at the
+first reboot.</p>
+<p><strong>5. One more thing the logs showed on every stop:</strong></p>
+<pre><code>level=warning msg=&quot;StopSignal SIGTERM failed to stop container site in 10 seconds, resorting to SIGKILL&quot;
+</code></pre>
+<p>BusyBox <code>httpd</code> runs as PID 1 in the container and ignores <code>SIGTERM</code>, so every stop waits ten seconds
+and kills it. Harmless for a static site; for a database it is a crash on every restart. Programs that
+do not handle signals as PID 1 want <code>--init</code> — measured, the same <code>podman stop</code> took 10 s without it and
+0 s with it — which is <code>RunInit=true</code> in a Quadlet (the generated unit's <code>ExecStart</code> gains <code>--init</code>), or a
+proper <code>StopSignal=</code>.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Running services under a person's login account.</strong> It may have no subordinate IDs (this one did not),
+it has a real home and shell, and its session comes and goes with the person. Create a service account
+with <code>useradd</code>.</p>
+<p><strong>Assuming <code>sudo -iu user</code> or <code>su - user</code> gives a user session.</strong> It does not; podman falls back to
+cgroupfs and warns, and <code>systemctl --user</code> cannot connect. Use <code>loginctl enable-linger</code> and set
+<code>XDG_RUNTIME_DIR</code>, or log in properly.</p>
+<p><strong>Forgetting lingering.</strong> The service works while you are logged in and testing, and vanishes at the
+first reboot, because nothing starts that user's systemd. <code>loginctl enable-linger USER</code>, then reboot to
+prove it.</p>
+<p><strong><code>chmod 777</code> on a bind mount that the container cannot read.</strong> The permission bits were never the
+problem; SELinux was. <code>:Z</code> for a directory one container owns, <code>:z</code> for one shared by several.</p>
+<p><strong><code>:Z</code> on a system directory.</strong> It relabels the host path for real. On <code>/home</code>, <code>/etc</code> or <code>/var</code>, it
+breaks everything else that reads those files. Mount a dedicated directory.</p>
+<p><strong><code>setenforce 0</code> to make the volume work.</strong> It does, and it removes the protection that keeps a
+compromised container from reading the host (see the rhcsa-04 journal).</p>
+<p><strong>Reading 404 as &quot;the file is not there&quot;.</strong> A server that cannot read a file often reports it as
+missing. Check <code>podman exec … cat</code>, and the audit log.</p>
+<p><strong>Publishing port 80 from a rootless container.</strong> Blocked by <code>ip_unprivileged_port_start</code>. Publish a
+high port and front it, or decide machine-wide to lower the sysctl.</p>
+<p><strong><code>systemctl --user enable</code> on a Quadlet unit.</strong> It is a generated unit and cannot be enabled; the
+<code>[Install]</code> section in the <code>.container</code> file is how it is started.</p>
+<p><strong>Writing important data inside the container.</strong> The writable layer is gone with <code>podman rm</code>. Use a
+volume or a bind mount.</p>
+<p><strong>Looking for a user's images or volumes as root.</strong> Rootless storage is per user, under
+<code>~/.local/share/containers/storage</code>. <code>sudo podman images</code> shows root's store, not theirs.</p>
+<h2 id="symptoms-and-causes">Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rootless <code>podman run</code> fails with &quot;cannot find UID/GID for user&quot;</td>
+<td>no subordinate ID range for the user</td>
+<td><code>grep USER /etc/subuid /etc/subgid</code></td>
+</tr>
+<tr>
+<td>a rootless container stops when the user logs out</td>
+<td>no lingering: the user's systemd instance ends with the session</td>
+<td><code>loginctl show-user USER -p Linger</code></td>
+</tr>
+<tr>
+<td>&quot;permission denied&quot; inside a container on a bind-mounted directory</td>
+<td>the SELinux label, or UID mapping in a rootless container</td>
+<td><code>ls -Z</code>; <code>:Z</code>/<code>:z</code> on the mount; <code>podman unshare ls -ln</code></td>
+</tr>
+<tr>
+<td>a rootless container cannot publish port 80</td>
+<td>unprivileged ports start at 1024</td>
+<td><code>sysctl net.ipv4.ip_unprivileged_port_start</code></td>
+</tr>
+<tr>
+<td>a container's data is gone after it was recreated</td>
+<td>it lived in the container's writable layer, not a volume</td>
+<td><code>podman inspect -f '{{.Mounts}}' NAME</code></td>
+</tr>
+<tr>
+<td>a Quadlet unit does not exist after writing the file</td>
+<td>the generator has not run, or the file is in the wrong directory</td>
+<td><code>systemctl --user daemon-reload</code>; the generator's dry run, in <code>man 5 podman-systemd.unit</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>the<span class="hl-w"> </span>account
+<span class="hl-go">grep USER /etc/subuid /etc/subgid                      # a subordinate range must exist</span>
+<span class="hl-go">usermod --add-subuids 100000-165535 --add-subgids 100000-165535 USER ; podman system migrate</span>
+<span class="hl-go">podman unshare cat /proc/self/uid_map                  # what the namespace actually maps</span>
+<span class="hl-go">loginctl enable-linger USER                            # user manager at boot, no login needed</span>
+<span class="hl-go">loginctl show-user USER -p Linger -p State</span>
+<span class="hl-go">sudo -iu USER env XDG_RUNTIME_DIR=/run/user/$(id -u USER) systemctl --user …</span>
+
+<span class="hl-gp"># </span>running
+<span class="hl-go">podman run -d --name NAME -p 8080:8080 -v /srv/site:/www:Z IMAGE CMD</span>
+<span class="hl-go">podman ps -a ; podman logs NAME ; podman exec NAME CMD ; podman rm -f NAME</span>
+<span class="hl-go">podman run --init …                                    # a real PID 1 that forwards signals (Quadlet: RunInit=true)</span>
+<span class="hl-gp"># </span>:Z<span class="hl-w"> </span>private<span class="hl-w"> </span>label<span class="hl-w"> </span><span class="hl-o">(</span>container_file_t<span class="hl-w"> </span>+<span class="hl-w"> </span>this<span class="hl-w"> </span>container<span class="hl-err">'</span>s<span class="hl-w"> </span>MCS<span class="hl-w"> </span>pair<span class="hl-o">)</span><span class="hl-w">   </span>:z<span class="hl-w"> </span>shared<span class="hl-w"> </span>label
+
+<span class="hl-gp"># </span>SELinux<span class="hl-w"> </span>and<span class="hl-w"> </span>ports
+<span class="hl-go">ls -Zd /srv/site ; ausearch -m avc -ts recent          # the denial names container_t and the file type</span>
+<span class="hl-go">sysctl net.ipv4.ip_unprivileged_port_start             # 1024: rootless cannot publish below it</span>
+
+<span class="hl-gp"># </span>Quadlet
+<span class="hl-gp"># </span>~/.config/containers/systemd/NAME.container<span class="hl-w">     </span><span class="hl-o">(</span>user<span class="hl-o">)</span><span class="hl-w">   </span>/etc/containers/systemd/<span class="hl-w">  </span><span class="hl-o">(</span>system<span class="hl-o">)</span>
+<span class="hl-gp"># </span><span class="hl-o">[</span>Container<span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-nv">Image</span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">Exec</span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">PublishPort</span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">Volume</span><span class="hl-o">=</span><span class="hl-w">   </span><span class="hl-o">[</span>Service<span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-nv">Restart</span><span class="hl-o">=</span><span class="hl-w">   </span><span class="hl-o">[</span>Install<span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-nv">WantedBy</span><span class="hl-o">=</span>default.target
+<span class="hl-go">systemctl --user daemon-reload ; systemctl --user start NAME ; systemctl --user status NAME</span>
+<span class="hl-go">systemctl --user cat NAME                              # the generated unit</span>
+<span class="hl-gp"># </span><span class="hl-k">do</span><span class="hl-w"> </span>NOT<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>--user<span class="hl-w"> </span><span class="hl-nb">enable</span><span class="hl-w"> </span>it:<span class="hl-w"> </span><span class="hl-s2">"transient or generated"</span>
+
+<span class="hl-gp"># </span>storage
+<span class="hl-go">podman volume create NAME ; podman volume inspect NAME --format '{{.Mountpoint}}'</span>
+<span class="hl-go">podman info --format '{{.Store.GraphRoot}}'            # per user: ~/.local/share/containers/storage</span>
+</code></pre>
+
+<h2 id="exercises">Exercises</h2>
+<ol>
+<li>As a new user without subordinate IDs, run a rootless container and read the error; add a range
+with <code>usermod --add-subuids</code> and try again.</li>
+<li>Start a rootless container as a service, log out, and check whether it runs; enable lingering and
+repeat.</li>
+<li>Bind-mount a directory into a container on an SELinux machine with and without <code>:Z</code>; compare
+<code>ls -Z</code> before and after.</li>
+<li>Write a Quadlet <code>.container</code> file, reload, and read the generated unit with <code>systemctl --user cat</code>.</li>
+<li>Recreate a container with and without a named volume and compare what survives.</li>
+</ol>
+<h2 id="sources">Sources</h2>
+<ul>
+<li><code>man 5 subuid</code>, <code>man 5 subgid</code> — subordinate ID ranges.</li>
+<li><code>man 1 loginctl</code> — <code>enable-linger</code>.</li>
+<li>Podman's Quadlet reference: https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html</li>
+<li><code>podman run</code> (volumes, <code>:Z</code>, ports): https://docs.podman.io/en/latest/markdown/podman-run.1.html</li>
+<li><code>man 8 semanage-fcontext</code>, <code>man 8 restorecon</code> — labels that persist.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>A rootless <code>podman pull</code> fails with <em>potentially insufficient UIDs or GIDs available in user
+namespace</em>. What is missing, and how do you add it?</p>
+<blockquote>
+<p>The account has no subordinate ID range in <code>/etc/subuid</code> and <code>/etc/subgid</code>, so the user namespace
+maps only the user's own UID and cannot represent the image's files owned by other IDs. Add a range
+with <code>usermod --add-subuids … --add-subgids …</code> and run <code>podman system migrate</code> — or run the service
+under an account created with <code>useradd</code>, which gets a range automatically.</p>
+</blockquote>
+</li>
+<li>
+<p>A container serving <code>/srv/site</code> through a bind mount answers 404 for a file that exists. Why, and what
+is the fix?</p>
+<blockquote>
+<p>SELinux: the container runs as <code>container_t</code>, which may not read the <code>var_t</code> files under <code>/srv</code>, so
+the read is denied and the server reports the file as missing. Mount with <code>:Z</code> (or <code>:z</code> if several
+containers share it) so podman relabels the content <code>container_file_t</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between <code>:Z</code> and <code>:z</code>, and why should neither be used on <code>/home</code>?</p>
+<blockquote>
+<p><code>:Z</code> gives the content a private label with this container's MCS categories; <code>:z</code> a shared label any
+container can use. Both relabel the host files for real, so on <code>/home</code> (or <code>/etc</code>, <code>/var</code>) they would
+change labels that other services depend on.</p>
+</blockquote>
+</li>
+<li>
+<p>A Quadlet-managed container works while you test it and is not running after a reboot. What is the
+most likely cause, and how do you confirm it?</p>
+<blockquote>
+<p>Lingering is off, so no <code>systemd --user</code> manager starts for that user at boot and nothing starts the
+service. <code>loginctl show-user USER</code> reports the user is not logged in or lingering, and
+<code>/run/user/UID</code> does not exist. <code>loginctl enable-linger USER</code>, then reboot to prove it.</p>
+</blockquote>
+</li>
+<li>
+<p><code>systemctl --user enable site</code> fails with <em>Unit … is transient or generated</em>. What should you do?</p>
+<blockquote>
+<p>Nothing — the unit is generated from the <code>.container</code> file, and its <code>[Install]</code> section
+(<code>WantedBy=default.target</code>) is applied by the generator at each daemon-reload. Enabling is neither
+possible nor needed.</p>
+</blockquote>
+</li>
+<li>
+<p>Why can a rootless container not publish port 80, and what are the options?</p>
+<blockquote>
+<p>The port is bound by a process running as the user, and ports below
+<code>net.ipv4.ip_unprivileged_port_start</code> (1024) need privilege. Publish a high port and put a proxy or
+firewall forward in front, lower the sysctl machine-wide, or run that container rootful.</p>
+</blockquote>
+</li>
+<li>
+<p>A file written inside a container is gone after <code>podman rm</code> and a fresh <code>podman run</code>. Where should it
+have been written, and where does that live for a rootless user?</p>
+<blockquote>
+<p>In a volume or bind mount. A named volume for a rootless user lives under
+<code>~/.local/share/containers/storage/volumes/NAME/_data</code>; the container's own writable layer is deleted
+with the container.</p>
+</blockquote>
+</li>
+<li>
+<p>Every stop of a container logs <em>StopSignal SIGTERM failed to stop container … resorting to
+SIGKILL</em>. What is happening, and why might it matter?</p>
+<blockquote>
+<p>The main process runs as PID 1 in the container and does not handle <code>SIGTERM</code>, so podman waits the
+timeout and kills it. For a stateless server it only costs ten seconds; for anything with data it is
+an unclean shutdown on every restart. Use <code>--init</code> (<code>RunInit=true</code> in a Quadlet), a suitable
+<code>StopSignal=</code>, or a program that handles termination.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

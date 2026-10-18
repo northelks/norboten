@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>count numbers things; for_each names them</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>count numbers things; for_each names them</h1>
+  <div class="meta">terraform, networking · 40 minutes · 2008 words</div>
+</header>
+<p>Three virtual hosts, one list: <code>sites = [&quot;shop&quot;, &quot;blog&quot;, &quot;docs&quot;]</code>. Terraform creates a configuration
+file and a cookie secret for each, and derives each site’s port from its position — 8100, 8101, 8102.
+It has worked for months. Then the blog is retired, <code>&quot;blog&quot;</code> is taken out of the middle of the list, and
+the plan wants to rewrite <code>docs</code> with the blog’s port and the blog’s secret, and to delete <code>docs.conf</code>.
+The engineer who ran the plan stopped, correctly, and nothing was applied.</p>
+<p>The plan was not wrong. With <code>count</code>, Terraform does not know the instances as <code>shop</code>, <code>blog</code> and <code>docs</code>.
+It knows them as <code>[0]</code>, <code>[1]</code> and <code>[2]</code>, and the list only supplies what each index should look like
+right now. Remove the element at index 1 and <code>docs</code> becomes index 1: the resource at <code>[1]</code> must change
+from the blog to the docs site, and <code>[2]</code> has nothing left to describe. Everything derived from the index
+— the port, the secret it was paired with — moves with it.</p>
+<p><code>for_each</code> over a map gives each instance a <strong>key</strong> instead of a position. Removing <code>blog</code> then removes
+exactly the instances keyed <code>&quot;blog&quot;</code> and touches nothing else. Converting an existing <code>count</code> resource
+to <code>for_each</code> is a refactoring, and like every refactoring in Terraform it needs <code>moved</code> blocks, so the
+live objects keep their identity under their new addresses.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Explain how <code>count</code> and <code>for_each</code> address their instances, and why removing an element from the
+middle of a <code>count</code> list shifts everything after it.</li>
+<li>Read a plan that says <code>must be replaced</code>, <code>index [2] is out of range for count</code> or <code>resource does not use count</code>, and predict what apply would do.</li>
+<li>Convert a <code>count</code> resource to <code>for_each</code> over a map without replacing live instances, using <code>moved</code>
+blocks from indexes to keys.</li>
+<li>Keep values stable by naming them explicitly (a port per site) rather than deriving them from a
+position.</li>
+<li>Check a configuration change with <code>terraform fmt</code>, <code>validate</code> and a plan before applying, and prove
+the result with <code>-detailed-exitcode</code>.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>How <code>count</code> addresses instances</h3>
+<pre><code class="language-hcl">resource &quot;local_file&quot; &quot;vhost&quot; {
+  count    = length(var.sites)
+  filename = &quot;/etc/nginx-sites/${var.sites[count.index]}.conf&quot;
+  content = templatefile(&quot;${path.module}/vhost.conf.tftpl&quot;, {
+    name   = var.sites[count.index]
+    port   = 8100 + count.index
+    secret = random_id.cookie_secret[count.index].hex
+  })
+}
+</code></pre>
+<p><code>count = 3</code> creates <code>local_file.vhost[0]</code>, <code>[1]</code> and <code>[2]</code>. The only identity an instance has is its
+index; what the index <em>means</em> comes from the list at plan time. With <code>[&quot;shop&quot;, &quot;blog&quot;, &quot;docs&quot;]</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>name</th>
+<th>port</th>
+<th>secret</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vhost[0]</code> / <code>cookie_secret[0]</code></td>
+<td>shop</td>
+<td>8100</td>
+<td>secret 0</td>
+</tr>
+<tr>
+<td><code>vhost[1]</code> / <code>cookie_secret[1]</code></td>
+<td>blog</td>
+<td>8101</td>
+<td>secret 1</td>
+</tr>
+<tr>
+<td><code>vhost[2]</code> / <code>cookie_secret[2]</code></td>
+<td>docs</td>
+<td>8102</td>
+<td>secret 2</td>
+</tr>
+</tbody>
+</table>
+<p>After removing <code>&quot;blog&quot;</code>, <code>length</code> is 2 and the list is <code>[&quot;shop&quot;, &quot;docs&quot;]</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>wants to describe</th>
+<th>consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vhost[0]</code></td>
+<td>shop, 8100, secret 0</td>
+<td>unchanged</td>
+</tr>
+<tr>
+<td><code>vhost[1]</code></td>
+<td>docs, <strong>8101</strong>, <strong>secret 1</strong></td>
+<td>the blog’s file becomes the docs file, with the blog’s port and secret</td>
+</tr>
+<tr>
+<td><code>vhost[2]</code></td>
+<td>nothing — index out of range</td>
+<td>destroyed, deleting <code>docs.conf</code></td>
+</tr>
+<tr>
+<td><code>cookie_secret[1]</code></td>
+<td>kept</td>
+<td>docs inherits the blog’s secret</td>
+</tr>
+<tr>
+<td><code>cookie_secret[2]</code></td>
+<td>nothing</td>
+<td>destroyed: docs’s real secret is gone</td>
+</tr>
+</tbody>
+</table>
+<p>That is why <code>count</code> is the right tool only for <strong>identical, interchangeable</strong> instances — “three worker
+VMs”, where it does not matter which one disappears — and the wrong tool for a collection of named
+things.</p>
+<h3>How <code>for_each</code> addresses instances</h3>
+<pre><code class="language-hcl">variable &quot;sites&quot; {
+  type = map(object({ port = number }))
+  default = {
+    shop = { port = 8100 }
+    docs = { port = 8102 }
+  }
+}
+
+resource &quot;local_file&quot; &quot;vhost&quot; {
+  for_each = var.sites
+  filename = &quot;/etc/nginx-sites/${each.key}.conf&quot;
+  content = templatefile(&quot;${path.module}/vhost.conf.tftpl&quot;, {
+    name   = each.key
+    port   = each.value.port
+    secret = random_id.cookie_secret[each.key].hex
+  })
+}
+</code></pre>
+<p>Instances are <code>local_file.vhost[&quot;shop&quot;]</code> and <code>local_file.vhost[&quot;docs&quot;]</code>. <code>each.key</code> is the map key,
+<code>each.value</code> the value. Keys are the identity: adding, removing or reordering entries affects only the
+instances whose keys changed. A <code>set(string)</code> works too (<code>toset(var.names)</code>), with <code>each.key</code> and
+<code>each.value</code> both the element.</p>
+<p>Two design choices come with it:</p>
+<ul>
+<li><strong>Name the values that must not move.</strong> The port was <code>8100 + count.index</code>, a value derived from a
+position. With <code>for_each</code> there is no position, so the port becomes explicit data: <code>docs</code> keeps 8102
+even though it is now the second of two sites.</li>
+<li><strong>Key related resources the same way.</strong> <code>random_id.cookie_secret[each.key]</code> ties each site’s secret
+to its site by name, not by coincidence of order.</li>
+</ul>
+<p><code>for_each</code> keys must be known at plan time — they cannot come from attributes that only exist after
+apply (a resource’s generated ID, for instance). Static names from variables are exactly right.</p>
+<h3>Converting without replacing: moved blocks</h3>
+<p>Changing <code>count</code> to <code>for_each</code> changes every address: <code>[0]</code> is not <code>[&quot;shop&quot;]</code>. Without help, the plan
+would destroy all the index-addressed instances and create key-addressed ones — new files, and new
+random secrets. <code>moved</code> blocks connect them:</p>
+<pre><code class="language-hcl">moved {
+  from = random_id.cookie_secret[0]
+  to   = random_id.cookie_secret[&quot;shop&quot;]
+}
+
+moved {
+  from = random_id.cookie_secret[2]
+  to   = random_id.cookie_secret[&quot;docs&quot;]
+}
+</code></pre>
+<p>…and the same two for <code>local_file.vhost</code>. There is no move for <code>[1]</code>: the blog is being retired, so its
+instances are left at an address the configuration no longer has, and the plan destroys them — which is
+the only change anyone wanted. Moves are declared per instance, for every resource that uses the
+collection; forgetting the <code>random_id</code> moves would keep the files and still regenerate the secrets.</p>
+<p>The same thing can be done with <code>terraform state mv 'local_file.vhost[0]' 'local_file.vhost[&quot;shop&quot;]'</code>
+(note the quoting), but <code>moved</code> blocks are reviewed with the change and show up in the plan.</p>
+<h3>Reading the plan</h3>
+<table>
+<thead>
+<tr>
+<th>Plan text</th>
+<th>Meaning here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>local_file.vhost[1] must be replaced</code> with <code>filename … # forces replacement</code></td>
+<td>index 1 now describes a different file; <code>local_file</code> cannot rename a file in place</td>
+</tr>
+<tr>
+<td><code>(because index [2] is out of range for count)</code></td>
+<td>the list got shorter; the last index has nothing to describe</td>
+</tr>
+<tr>
+<td><code>(because resource does not use count)</code></td>
+<td>an index address remains after switching to <code>for_each</code>, and no <code>moved</code> claims it</td>
+</tr>
+<tr>
+<td><code>has moved to</code></td>
+<td>a <code>moved</code> block matched</td>
+</tr>
+<tr>
+<td><code>(because key [&quot;shop&quot;] is not in for_each map)</code></td>
+<td>a key was removed from the map</td>
+</tr>
+</tbody>
+</table>
+<p><code>Plan: 0 to add, 0 to change, 2 to destroy</code> after the rewrite is the target: two destroys, both for the
+blog.</p>
+<h3>Checking a change before applying it</h3>
+<ul>
+<li><code>terraform fmt -check</code> fails on files that are not in canonical format — cheap, and catches stray
+edits.</li>
+<li><code>terraform validate</code> checks syntax, references and types without touching state or providers’
+APIs — a mistyped <code>each.value.prot</code> fails here.</li>
+<li><code>terraform plan</code> shows what apply would do; read every <code>destroy</code>.</li>
+<li>After applying, <code>terraform plan -detailed-exitcode</code> exits 0 when the configuration and reality agree.</li>
+</ul>
+<p>A plan with a <code>-var</code> override is a safe way to rehearse the <em>next</em> change: what would removing <code>shop</code>
+do? With <code>for_each</code>, the answer names only <code>shop</code>.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the track’s lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. See what is live, and keep a copy of what must not change.</strong></p>
+<pre><code class="language-console">$ ls /etc/nginx-sites; grep -h -E 'listen|cookie_secret' /etc/nginx-sites/*.conf
+blog.conf
+docs.conf
+shop.conf
+    listen 8101;
+    set $cookie_secret &quot;535bb0ff9b932fee525e0febc9a99821&quot;;
+    listen 8102;
+    set $cookie_secret &quot;42d96e5fae1eab423461668c6d0d5b87&quot;;
+    listen 8100;
+    set $cookie_secret &quot;71308859d4fec3c48cd160e3b0bb4272&quot;;
+$ cd /srv/sites &amp;&amp; sudo terraform state list
+local_file.vhost[0]
+local_file.vhost[1]
+local_file.vhost[2]
+random_id.cookie_secret[0]
+random_id.cookie_secret[1]
+random_id.cookie_secret[2]
+$ sudo cp /etc/nginx-sites/docs.conf /etc/nginx-sites/shop.conf /tmp/ &amp;&amp; sudo chmod 644 /tmp/docs.conf /tmp/shop.conf
+</code></pre>
+<p>The files are listed alphabetically, so the <code>grep</code> output is blog, docs, shop: docs listens on 8102 with
+secret <code>42d96e5f…</code>. The state knows the instances only by index.</p>
+<p><strong>2. Read the configuration and the plan</strong> (filtered to the decisive lines):</p>
+<pre><code class="language-console">$ cat /srv/sites/main.tf
+variable &quot;sites&quot; {
+  type    = list(string)
+  default = [&quot;shop&quot;, &quot;docs&quot;]
+}
+
+resource &quot;random_id&quot; &quot;cookie_secret&quot; {
+  count       = length(var.sites)
+  byte_length = 16
+}
+
+resource &quot;local_file&quot; &quot;vhost&quot; {
+  count    = length(var.sites)
+  filename = &quot;/etc/nginx-sites/${var.sites[count.index]}.conf&quot;
+  content = templatefile(&quot;${path.module}/vhost.conf.tftpl&quot;, {
+    name   = var.sites[count.index]
+    port   = 8100 + count.index
+    secret = random_id.cookie_secret[count.index].hex
+  })
+  file_permission = &quot;0644&quot;
+}
+$ cd /srv/sites &amp;&amp; sudo env CHECKPOINT_DISABLE=1 terraform plan -no-color 2&gt;&amp;1 | grep -E '^  # |^Plan:|filename|listen|cookie_secret|forces replacement'
+random_id.cookie_secret[1]: Refreshing state... [id=U1uw_5uTL-5SXg_ryamYIQ]
+random_id.cookie_secret[2]: Refreshing state... [id=QtluX64eq0I0YWaMbQ1bhw]
+random_id.cookie_secret[0]: Refreshing state... [id=cTCIWdT-w8SM0WDjsLtCcg]
+  # local_file.vhost[1] must be replaced
+      ~ content              = &lt;&lt;-EOT # forces replacement
+                listen 8101;
+                set $cookie_secret &quot;535bb0ff9b932fee525e0febc9a99821&quot;;
+      ~ filename             = &quot;/etc/nginx-sites/blog.conf&quot; -&gt; &quot;/etc/nginx-sites/docs.conf&quot; # forces replacement
+  # local_file.vhost[2] will be destroyed
+  # (because index [2] is out of range for count)
+                listen 8102;
+                set $cookie_secret &quot;42d96e5fae1eab423461668c6d0d5b87&quot;;
+      - filename             = &quot;/etc/nginx-sites/docs.conf&quot; -&gt; null
+  # random_id.cookie_secret[2] will be destroyed
+  # (because index [2] is out of range for count)
+  - resource &quot;random_id&quot; &quot;cookie_secret&quot; {
+Plan: 1 to add, 0 to change, 3 to destroy.
+</code></pre>
+<p>Exactly the shift predicted: <code>vhost[1]</code> would turn <code>blog.conf</code> into <code>docs.conf</code> with port 8101 and the
+blog’s secret <code>535bb0ff…</code>, <code>vhost[2]</code> — the real <code>docs.conf</code> with 8102 — would be destroyed, and docs’s
+secret with it.</p>
+<p><strong>3. Rewrite the configuration with named sites, explicit ports and moves.</strong> <code>/srv/sites/main.tf</code>:</p>
+<pre><code class="language-hcl">variable &quot;sites&quot; {
+  description = &quot;Each site and its port. Ports are explicit, so removing a site moves nothing.&quot;
+  type        = map(object({ port = number }))
+  default = {
+    shop = { port = 8100 }
+    docs = { port = 8102 }
+  }
+}
+
+resource &quot;random_id&quot; &quot;cookie_secret&quot; {
+  for_each    = var.sites
+  byte_length = 16
+}
+
+resource &quot;local_file&quot; &quot;vhost&quot; {
+  for_each = var.sites
+  filename = &quot;/etc/nginx-sites/${each.key}.conf&quot;
+  content = templatefile(&quot;${path.module}/vhost.conf.tftpl&quot;, {
+    name   = each.key
+    port   = each.value.port
+    secret = random_id.cookie_secret[each.key].hex
+  })
+  file_permission = &quot;0644&quot;
+}
+
+# from positions to names: shop was [0], docs was [2]; the blog's [1] is destroyed
+moved {
+  from = random_id.cookie_secret[0]
+  to   = random_id.cookie_secret[&quot;shop&quot;]
+}
+
+moved {
+  from = random_id.cookie_secret[2]
+  to   = random_id.cookie_secret[&quot;docs&quot;]
+}
+
+moved {
+  from = local_file.vhost[0]
+  to   = local_file.vhost[&quot;shop&quot;]
+}
+
+moved {
+  from = local_file.vhost[2]
+  to   = local_file.vhost[&quot;docs&quot;]
+}
+</code></pre>
+<pre><code class="language-console">$ cd /srv/sites &amp;&amp; sudo env CHECKPOINT_DISABLE=1 terraform fmt -check &amp;&amp; sudo env CHECKPOINT_DISABLE=1 terraform validate -no-color
+Success! The configuration is valid.
+$ cd /srv/sites &amp;&amp; sudo env CHECKPOINT_DISABLE=1 terraform plan -no-color 2&gt;&amp;1 | grep -E '^  # |^Plan:'
+  # local_file.vhost[1] will be destroyed
+  # (because resource does not use count)
+  # local_file.vhost[2] has moved to local_file.vhost[&quot;docs&quot;]
+  # local_file.vhost[0] has moved to local_file.vhost[&quot;shop&quot;]
+  # random_id.cookie_secret[1] will be destroyed
+  # (because resource does not use count)
+  # random_id.cookie_secret[2] has moved to random_id.cookie_secret[&quot;docs&quot;]
+  # random_id.cookie_secret[0] has moved to random_id.cookie_secret[&quot;shop&quot;]
+Plan: 0 to add, 0 to change, 2 to destroy.
+</code></pre>
+<p>Four moves, and the only two destroys are index <code>[1]</code> — the blog.</p>
+<p><strong>4. Apply, and prove nothing else changed.</strong></p>
+<pre><code class="language-console">$ cd /srv/sites &amp;&amp; sudo env CHECKPOINT_DISABLE=1 terraform apply -auto-approve -no-color 2&gt;&amp;1 | grep -E 'Destroying|Destruction complete|Creating|Creation complete|^Apply complete'
+local_file.vhost[1]: Destroying... [id=b43f6bd102757fe86bc5423cd68a64ee450ce75e]
+local_file.vhost[1]: Destruction complete after 0s
+random_id.cookie_secret[1]: Destroying... [id=U1uw_5uTL-5SXg_ryamYIQ]
+random_id.cookie_secret[1]: Destruction complete after 0s
+Apply complete! Resources: 0 added, 0 changed, 2 destroyed.
+$ cd /srv/sites &amp;&amp; sudo env CHECKPOINT_DISABLE=1 terraform plan -detailed-exitcode -no-color 2&gt;&amp;1 | tail -n 2; echo &quot;exit=${PIPESTATUS[0]}&quot;
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+exit=0
+$ cd /srv/sites &amp;&amp; sudo terraform state list
+local_file.vhost[&quot;docs&quot;]
+local_file.vhost[&quot;shop&quot;]
+random_id.cookie_secret[&quot;docs&quot;]
+random_id.cookie_secret[&quot;shop&quot;]
+$ ls /etc/nginx-sites; cmp /tmp/docs.conf /etc/nginx-sites/docs.conf &amp;&amp; cmp /tmp/shop.conf /etc/nginx-sites/shop.conf &amp;&amp; echo &quot;shop and docs: byte-identical&quot;
+docs.conf
+shop.conf
+shop and docs: byte-identical
+</code></pre>
+<p>The blog’s file and secret are gone, the state is keyed by name, and <code>shop.conf</code> and <code>docs.conf</code> are
+byte-for-byte what they were before — same ports, same secrets.</p>
+<p><strong>5. Rehearse the next removal.</strong></p>
+<pre><code class="language-console">$ cd /srv/sites &amp;&amp; sudo env CHECKPOINT_DISABLE=1 terraform plan -no-color -var 'sites={docs={port=8102}}' 2&gt;&amp;1 | grep -E '^  # |^Plan:'
+  # local_file.vhost[&quot;shop&quot;] will be destroyed
+  # (because key [&quot;shop&quot;] is not in for_each map)
+  # random_id.cookie_secret[&quot;shop&quot;] will be destroyed
+  # (because key [&quot;shop&quot;] is not in for_each map)
+Plan: 0 to add, 0 to change, 2 to destroy.
+</code></pre>
+<p>Removing <code>shop</code> now plans to touch only <code>shop</code>. That is the property the refactoring bought.</p>
+<p><strong>6. Grade.</strong> The blog gone from disk and state, shop and docs unchanged with a clean plan, and every
+instance keyed by name — before and after the reboot.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Applying the <code>count</code> plan “because the blog is being removed anyway”.</strong> docs gets the blog’s port and
+secret, and <code>docs.conf</code> is deleted by the destroy of <code>[2]</code>. Sessions are invalidated and the site moves
+port.</p>
+<p><strong>Keeping <code>count</code> and putting <code>&quot;blog&quot;</code> back as an empty placeholder.</strong> It works until the next removal,
+and turns the list into a record of history that everyone must know not to touch.</p>
+<p><strong>Switching to <code>for_each</code> without <code>moved</code> blocks.</strong> Every instance is destroyed and recreated; every
+cookie secret is regenerated. The files may end up identical except for the secrets, which is the part
+that mattered.</p>
+<p><strong>Adding moves for <code>local_file.vhost</code> only.</strong> The files keep their addresses, and <code>random_id</code> instances are
+recreated with new values, which the files then pick up on the same apply.</p>
+<p><strong><code>toset(var.sites)</code> with the old list and <code>8100 + index(...)</code> for the port.</strong> The port is still derived
+from a position, so removing an element still shifts the ports after it. Store the data you mean.</p>
+<p><strong>A move from <code>[1]</code> to <code>[&quot;docs&quot;]</code>.</strong> Index 1 was the blog. The move would carry the blog’s secret to docs,
+and the plan would then show docs’s file being rewritten with it.</p>
+<p><strong><code>terraform state rm</code> for the blog instances.</strong> Terraform forgets them but the blog’s file and secret
+stay on disk, unmanaged. Let the plan destroy them.</p>
+<p><strong>Skipping <code>fmt</code> and <code>validate</code>.</strong> They are free and immediate; a typo in <code>each.value.port</code> otherwise
+surfaces in the middle of reading a plan.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-hcl">resource &quot;x&quot; &quot;y&quot; {
+  count = length(var.list)          # instances [0], [1], … — for interchangeable things
+  name  = var.list[count.index]
+}
+
+resource &quot;x&quot; &quot;y&quot; {
+  for_each = var.map                # instances [&quot;key&quot;] — for named things
+  name     = each.key
+  size     = each.value.size
+}
+
+moved {
+  from = x.y[0]
+  to   = x.y[&quot;shop&quot;]
+}
+</code></pre>
+<pre><code class="language-console">$ terraform state list                               # [0] = count, [&quot;key&quot;] = for_each
+$ terraform fmt -check &amp;&amp; terraform validate
+$ terraform plan | grep -E '^  # |^Plan:'            # the actions and their reasons
+$ terraform plan -var 'sites={docs={port=8102}}'     # rehearse a change without editing files
+$ terraform apply
+$ terraform plan -detailed-exitcode; echo $?         # 0 = nothing left to do
+$ terraform state mv 'x.y[0]' 'x.y[&quot;shop&quot;]'          # the one-off alternative to a moved block
+$ cmp before after                                   # prove a file did not change
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — Saved plans, and what “stale” protects</li>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — count gives instances numbers, and numbers shift</li>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — for_each gives instances names</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>The plan says three to destroy, and you only removed one</em> (<code>terraform</code>), <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>With <code>count = length([&quot;shop&quot;, &quot;blog&quot;, &quot;docs&quot;])</code>, what address does the docs site have, and what happens to it when <code>&quot;blog&quot;</code> is removed from the list?</p>
+<blockquote>
+<p><code>[2]</code>. After the removal docs is described by <code>[1]</code> — which is the blog’s existing instance, so it is replaced with docs’s name but the blog’s position-derived port and paired secret — and <code>[2]</code> is destroyed as out of range.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did the docs site inherit the blog’s cookie secret in the <code>count</code> plan?</p>
+<blockquote>
+<p>The secret was chosen by <code>random_id.cookie_secret[count.index]</code>; docs moved to index 1, whose <code>random_id</code> instance was the blog’s, while <code>cookie_secret[2]</code> was destroyed.</p>
+</blockquote>
+</li>
+<li>
+<p>How does <code>for_each</code> avoid the shift?</p>
+<blockquote>
+<p>Instances are addressed by map keys such as <code>[&quot;docs&quot;]</code>; removing a key affects only that key’s instances, whatever the order or number of the others.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must the port become explicit data when converting to <code>for_each</code>?</p>
+<blockquote>
+<p>With <code>count</code> it was derived from the index; there is no index in <code>for_each</code>, and deriving it from any position would shift it again when an element is removed. Storing <code>port</code> per site keeps it fixed.</p>
+</blockquote>
+</li>
+<li>
+<p>Which <code>moved</code> blocks does the conversion need, and why is there none for <code>[1]</code>?</p>
+<blockquote>
+<p>From <code>[0]</code> to <code>[&quot;shop&quot;]</code> and from <code>[2]</code> to <code>[&quot;docs&quot;]</code>, for both <code>random_id.cookie_secret</code> and <code>local_file.vhost</code>; <code>[1]</code> is the blog, which is meant to be destroyed.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>(because resource does not use count)</code> mean in a plan?</p>
+<blockquote>
+<p>An instance with an index address remains in state after the resource switched to <code>for_each</code>, and no <code>moved</code> block claims it, so Terraform will destroy it.</p>
+</blockquote>
+</li>
+<li>
+<p>How can you check what removing another site would do, without editing any file?</p>
+<blockquote>
+<p>Run <code>terraform plan -var 'sites={…}'</code> with the map minus that site, and read which addresses the plan destroys.</p>
+</blockquote>
+</li>
+<li>
+<p>After the apply, how do you prove shop and docs did not change?</p>
+<blockquote>
+<p><code>terraform plan -detailed-exitcode</code> exits 0, <code>terraform state list</code> shows keyed addresses, and <code>cmp</code> against copies taken before shows the files are byte-identical.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

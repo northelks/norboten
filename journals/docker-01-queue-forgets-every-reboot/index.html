@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A container is disposable; its data must not be · Norboten</title>
+<meta name="description" content="The job queue is Redis in a container, and every reboot empties it. Nothing crashes. Redis starts, answers PONG, accepts jobs, and on the next restart it starts">
+<link rel="canonical" href="https://norboten.org/journals/docker-01-queue-forgets-every-reboot/"><meta property="og:title" content="A container is disposable; its data must not be · Norboten">
+<meta property="og:description" content="The job queue is Redis in a container, and every reboot empties it. Nothing crashes. Redis starts, answers PONG, accepts jobs, and on the next restart it starts">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/docker-01-queue-forgets-every-reboot/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A container is disposable; its data must not be · Norboten">
+<meta name="twitter:description" content="The job queue is Redis in a container, and every reboot empties it. Nothing crashes. Redis starts, answers PONG, accepts jobs, and on the next restart it starts">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A container is disposable; its data must not be",
+  "description": "The job queue is Redis in a container, and every reboot empties it. Nothing crashes. Redis starts, answers PONG, accepts jobs, and on the next restart it starts",
+  "url": "https://norboten.org/journals/docker-01-queue-forgets-every-reboot/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2228,
+  "timeRequired": "PT35M",
+  "about": ["Containers", "Boot and systemd"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Queue That Forgets Every Reboot</div>
+    <h1>A container is disposable; its data must not be</h1>
+    <p class="muted">
+      35 minutes' reading · 2228 words ·<span class="tag">Containers</span><span class="tag">Boot and systemd</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 102 words</title><rect x="0.0" y="0" width="28.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 901 words</title><rect x="31.0" y="0" width="247.6" height="30" rx="4" fill="#1d2a23"/><text x="39.0" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 828 words</title><rect x="281.6" y="0" width="227.5" height="30" rx="4" fill="#4ade80"/><text x="289.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 301 words</title><rect x="512.2" y="0" width="82.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 151 words</title><rect x="597.9" y="0" width="41.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 103 words</title><rect x="642.4" y="0" width="28.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 314 words</title><rect x="673.7" y="0" width="86.3" height="30" rx="4" fill="#1d2a23"/><text x="681.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/docker-01-queue-forgets-every-reboot/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>The job queue is Redis in a container, and every reboot empties it. Nothing crashes. Redis starts,
+answers <code>PONG</code>, accepts jobs, and on the next restart it starts again, empty, exactly as configured.
+The unit that runs it says so in one line: <code>docker run --rm … redis-server --save &quot;&quot; --appendonly no</code>.
+<code>--rm</code> deletes the container when it stops, the data directory inside it goes with it, and Redis has
+been told never to write its data to disk anyway.</p>
+<p>That is the central fact of containers, stated as an incident: <strong>a container's filesystem is part of
+the container, and containers are meant to be thrown away.</strong> Anything that must survive — a database,
+a queue, uploaded files — has to live somewhere the container does not own: a volume or a directory
+bound from the host. And because this queue already holds fifty jobs that nobody may lose, the fix has
+an order to it: get the data out first, then replace the container.</p>
+<p>The same unit also publishes Redis on every address of the machine, without a password. That is the
+other container default worth knowing by heart: <code>-p 6379:6379</code> means <code>0.0.0.0:6379</code>.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Explain where a container writes files, what <code>--rm</code> removes, and what an image's <code>VOLUME</code> does.</li>
+<li>Choose between a named volume and a bind mount, and mount one at the path the service writes to.</li>
+<li>Migrate data out of a running container before replacing it (<code>redis-cli SAVE</code>, <code>docker cp</code>).</li>
+<li>Read Redis's persistence settings (<code>save</code>, <code>appendonly</code>) and know which ones survive a restart.</li>
+<li>Publish a port on the loopback only, and verify it with <code>docker port</code> and <code>ss</code>.</li>
+<li>Run a container from a systemd unit, change its command with a drop-in, and confirm it comes back
+at boot.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="where-a-containers-files-live">Where a container's files live</h3>
+<p>An image is a stack of read-only layers. <code>docker run</code> adds a thin <strong>writable layer</strong> on top, and every
+file the process creates or changes lands there. That layer belongs to the container: <code>docker restart</code>
+keeps it, <code>docker rm</code> deletes it, and <code>docker run --rm</code> deletes it automatically when the container
+stops. Recreating a container — which is what a systemd unit running <code>docker run --rm</code> does on every
+start — therefore starts from the image again, with nothing the previous process wrote.</p>
+<p>Some images declare <code>VOLUME /data</code> in their Dockerfile. The official Redis image does. For each new
+container, Docker then creates an <strong>anonymous volume</strong> — a directory under
+<code>/var/lib/docker/volumes/&lt;random id&gt;/_data</code> — and mounts it at <code>/data</code>. It survives <code>docker restart</code>,
+but <code>--rm</code> removes anonymous volumes together with the container, and a new container gets a new
+anonymous volume. So an anonymous volume looks like persistence in <code>docker inspect</code> and behaves like
+none under <code>--rm</code>.</p>
+<h3 id="named-volumes-and-bind-mounts">Named volumes and bind mounts</h3>
+<p>Two ways to put data outside the container's lifetime:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>docker<span class="hl-w"> </span>run<span class="hl-w"> </span>-v<span class="hl-w"> </span>jobs-data:/data<span class="hl-w"> </span>redis:7.4-alpine<span class="hl-w">          </span><span class="hl-c1"># a named volume, managed by Docker</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>run<span class="hl-w"> </span>-v<span class="hl-w"> </span>/var/lib/jobs-redis:/data<span class="hl-w"> </span>redis:7.4-alpine<span class="hl-w"> </span><span class="hl-c1"># a bind mount of a host directory</span>
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Named volume</th>
+<th>Bind mount</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Where</td>
+<td><code>/var/lib/docker/volumes/&lt;name&gt;/_data</code></td>
+<td>any host path you choose</td>
+</tr>
+<tr>
+<td>Created by</td>
+<td>Docker, on first use (or <code>docker volume create</code>)</td>
+<td>you</td>
+</tr>
+<tr>
+<td>Initial content</td>
+<td>copied from the image's directory on first use</td>
+<td>whatever the host directory holds</td>
+</tr>
+<tr>
+<td>Backup, inspection</td>
+<td>through Docker, or the path under <code>/var/lib/docker</code></td>
+<td>ordinary host tools</td>
+</tr>
+<tr>
+<td>Survives <code>--rm</code></td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p>Either one fixes the loss. A bind mount makes the data visible at a path of your choice — convenient
+for backups and for seeding a directory before the container first starts, as the walkthrough does.
+The official Redis image's entrypoint changes the ownership of <code>/data</code> to its <code>redis</code> user (UID 999)
+when it starts as root, which is why the host directory ends up owned by 999.</p>
+<h3 id="redis-persistence-briefly">Redis persistence, briefly</h3>
+<p>Redis keeps its dataset in memory. Two independent mechanisms write it to disk:</p>
+<ul>
+<li><strong>RDB snapshots.</strong> <code>save 3600 1 300 100 60 10000</code> means &quot;snapshot if at least 1 key changed in 3600
+seconds, or 100 in 300, or 10000 in 60&quot;. The snapshot is <code>dump.rdb</code> in the working directory
+(<code>/data</code> in the image). With save points configured, Redis also writes a final snapshot when it is
+shut down with <code>SIGTERM</code> — which <code>docker stop</code> sends — and loads <code>dump.rdb</code> at start.</li>
+<li><strong>AOF</strong>, the append-only file (<code>appendonly yes</code>), logs every write and loses less on a crash.</li>
+</ul>
+<p><code>--save &quot;&quot;</code> disables snapshots entirely, and <code>--appendonly no</code> keeps AOF off: together, &quot;never write to
+disk&quot;. The explicit command <code>SAVE</code> still writes a snapshot on demand, which is the lever for rescuing
+the data. Removing both options returns to the image's defaults, which include the save points above.</p>
+<p>A trap if you reach for AOF during a migration: turning on <code>appendonly yes</code> for a dataset that so far
+exists only as <code>dump.rdb</code> needs care, because with AOF enabled Redis loads from the AOF files at start.
+Snapshots are enough here and keep the migration simple.</p>
+<h3 id="migrating-before-replacing">Migrating before replacing</h3>
+<p>The order matters, because the fix itself restarts the service:</p>
+<ol>
+<li><strong>Make the running process write its data out.</strong> <code>redis-cli SAVE</code> writes <code>dump.rdb</code> into <code>/data</code>
+inside the container.</li>
+<li><strong>Copy it to where the new container will read it.</strong> <code>docker cp CONTAINER:/data/dump.rdb HOSTPATH</code>
+works on a running container.</li>
+<li><strong>Start the new container with that directory mounted at <code>/data</code>.</strong> Redis loads <code>dump.rdb</code> on start.</li>
+<li><strong>Verify the data, then restart once more</strong> to prove it survives the stop as well as the start.</li>
+</ol>
+<p>For a database with continuous writes you would stop writers first, or use the service's replication
+or dump tools; for a queue that nothing is consuming at the moment, a single <code>SAVE</code> is consistent.</p>
+<h3 id="publishing-a-port">Publishing a port</h3>
+<p><code>-p 6379:6379</code> is shorthand for <code>-p 0.0.0.0:6379:6379</code> (and the IPv6 equivalent): Docker listens on
+every interface of the host — here through <code>docker-proxy</code> — and forwards to the container. Docker also
+inserts its own iptables rules, so a host firewall that filters <code>INPUT</code> does not necessarily see this
+traffic. The reliable way to keep a port private is not to publish it widely in the first place:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>docker<span class="hl-w"> </span>run<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:6379:6379<span class="hl-w"> </span>…
+</code></pre>
+
+<p><code>docker port CONTAINER</code> shows what is published where, and <code>ss -ltn</code> shows what is actually listening.
+When only other containers need the service, publish nothing and connect over a Docker network.</p>
+<h3 id="a-container-under-systemd">A container under systemd</h3>
+<pre class="hl"><code class="language-ini"><span class="hl-k">[Service]</span>
+<span class="hl-na">ExecStartPre</span><span class="hl-o">=</span><span class="hl-s">-/usr/bin/docker rm -f jobs-redis</span>
+<span class="hl-na">ExecStart</span><span class="hl-o">=</span><span class="hl-s">/usr/bin/docker run --rm --name jobs-redis … redis:7.4-alpine redis-server</span>
+<span class="hl-na">ExecStop</span><span class="hl-o">=</span><span class="hl-s">/usr/bin/docker stop jobs-redis</span>
+<span class="hl-na">Restart</span><span class="hl-o">=</span><span class="hl-s">on-failure</span>
+</code></pre>
+
+<p><code>docker run</code> without <code>-d</code> stays in the foreground, so systemd supervises it like any service, and the
+container's output goes to the journal. <code>ExecStartPre=-…rm -f</code> clears a leftover container of the same
+name (the <code>-</code> means &quot;ignore failure&quot;). <code>ExecStop</code> stops the container gracefully, which gives Redis its
+<code>SIGTERM</code> and its final snapshot. <code>After=docker.service</code> and <code>Requires=docker.service</code> order it after the
+Docker daemon at boot and before it at shutdown. The unit and <code>docker.service</code> must both be enabled.</p>
+<p>Changing the command is a drop-in with the usual pattern: an empty <code>ExecStart=</code> to clear the list, then
+the new line.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the track's lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. See what is running, and how it is started.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>ps<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}'</span>
+<span class="hl-go">NAMES        IMAGE              PORTS                                       STATUS</span>
+<span class="hl-go">jobs-redis   redis:7.4-alpine   0.0.0.0:6379-&gt;6379/tcp, :::6379-&gt;6379/tcp   Up 1 second</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>jobs-redis.service
+<span class="hl-gp"># </span>/etc/systemd/system/jobs-redis.service
+<span class="hl-go">[Unit]</span>
+<span class="hl-go">Description=Redis for the report job queue</span>
+<span class="hl-go">After=docker.service</span>
+<span class="hl-go">Requires=docker.service</span>
+
+<span class="hl-go">[Service]</span>
+<span class="hl-go">ExecStartPre=-/usr/bin/docker rm -f jobs-redis</span>
+<span class="hl-go">ExecStart=/usr/bin/docker run --rm --name jobs-redis -p 6379:6379 redis:7.4-alpine redis-server --save "" --appendonly no</span>
+<span class="hl-go">ExecStop=/usr/bin/docker stop jobs-redis</span>
+<span class="hl-go">Restart=on-failure</span>
+
+<span class="hl-go">[Install]</span>
+<span class="hl-go">WantedBy=multi-user.target</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>jobs-redis<span class="hl-w"> </span>redis-cli<span class="hl-w"> </span>llen<span class="hl-w"> </span>jobs:pending
+<span class="hl-go">50</span>
+</code></pre>
+
+<p>Fifty jobs are in memory right now. Everything that follows must keep them.</p>
+<p><strong>2. Find out where the data would be written.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>inspect<span class="hl-w"> </span>jobs-redis<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{json .Mounts}}'</span>
+<span class="hl-go">[{"Type":"volume","Name":"33ad4b5431e57804fc7efa52ad64d32bec230638d06cb6af96781c9accfa4911","Source":"/var/lib/docker/volumes/33ad4b5431e57804fc7efa52ad64d32bec230638d06cb6af96781c9accfa4911/_data","Destination":"/data","Driver":"local","Mode":"","RW":true,"Propagation":""}]</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>jobs-redis<span class="hl-w"> </span>redis-cli<span class="hl-w"> </span>config<span class="hl-w"> </span>get<span class="hl-w"> </span>save<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>jobs-redis<span class="hl-w"> </span>redis-cli<span class="hl-w"> </span>config<span class="hl-w"> </span>get<span class="hl-w"> </span>appendonly
+<span class="hl-go">save</span>
+
+<span class="hl-go">appendonly</span>
+<span class="hl-go">no</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>jobs-redis<span class="hl-w"> </span>ls<span class="hl-w"> </span>-la<span class="hl-w"> </span>/data
+<span class="hl-go">total 8</span>
+<span class="hl-go">drwxr-xr-x    2 redis    redis         4096 Aug 18 16:56 .</span>
+<span class="hl-go">drwxr-xr-x    1 root     root          4096 Sep 14 03:55 ..</span>
+</code></pre>
+
+<p>There <em>is</em> a volume at <code>/data</code> — an anonymous one, with a random name, created because the image
+declares <code>VOLUME /data</code>. It is empty: <code>save</code> is an empty string and <code>appendonly</code> is <code>no</code>, so Redis never
+writes to it. And <code>--rm</code> would delete it with the container anyway.</p>
+<p><strong>3. Prove the loss on a throwaway container</strong>, never on the queue:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>run<span class="hl-w"> </span>-d<span class="hl-w"> </span>--rm<span class="hl-w"> </span>--name<span class="hl-w"> </span>demo<span class="hl-w"> </span>redis:7.4-alpine<span class="hl-w"> </span>redis-server<span class="hl-w"> </span>--save<span class="hl-w"> </span><span class="hl-s2">""</span><span class="hl-w"> </span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sleep<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>demo<span class="hl-w"> </span>redis-cli<span class="hl-w"> </span>rpush<span class="hl-w"> </span>q<span class="hl-w"> </span>a<span class="hl-w"> </span>b<span class="hl-w"> </span>c<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>restart<span class="hl-w"> </span>demo<span class="hl-w"> </span>&gt;/dev/null<span class="hl-p">;</span><span class="hl-w"> </span>sleep<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>demo<span class="hl-w"> </span>redis-cli<span class="hl-w"> </span>llen<span class="hl-w"> </span>q<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>stop<span class="hl-w"> </span>demo<span class="hl-w"> </span>&gt;/dev/null
+<span class="hl-go">3</span>
+<span class="hl-go">0</span>
+</code></pre>
+
+<p>Three items pushed, restart, zero items: with snapshots off, even a restart of the <em>same</em> container
+loses everything, because the data was only ever in memory.</p>
+<p><strong>4. Check who can reach it.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>port<span class="hl-w"> </span>jobs-redis
+<span class="hl-go">6379/tcp -&gt; 0.0.0.0:6379</span>
+<span class="hl-go">6379/tcp -&gt; [::]:6379</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ss<span class="hl-w"> </span>-ltnp<span class="hl-w"> </span><span class="hl-s1">'sport = :6379'</span>
+<span class="hl-go">State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess</span>
+<span class="hl-go">LISTEN 0      4096         0.0.0.0:6379      0.0.0.0:*    users:(("docker-proxy",pid=1187,fd=4))</span>
+<span class="hl-go">LISTEN 0      4096            [::]:6379         [::]:*    users:(("docker-proxy",pid=1193,fd=4))</span>
+<span class="hl-gp">$ </span>ip<span class="hl-w"> </span>-4<span class="hl-w"> </span>-brief<span class="hl-w"> </span>addr<span class="hl-w"> </span>show<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-v<span class="hl-w"> </span><span class="hl-s1">'^lo'</span>
+<span class="hl-go">eth0             UP             192.168.5.15/24 metric 200</span>
+<span class="hl-go">docker0          UP             172.17.0.1/16</span>
+</code></pre>
+
+<p>Listening on all addresses, IPv4 and IPv6, so anything that can reach <code>192.168.5.15</code> can talk to a Redis
+with no password.</p>
+<p><strong>5. Move the jobs out before touching the unit.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>jobs-redis<span class="hl-w"> </span>redis-cli<span class="hl-w"> </span>save
+<span class="hl-go">OK</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/var/lib/jobs-redis<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>cp<span class="hl-w"> </span>jobs-redis:/data/dump.rdb<span class="hl-w"> </span>/var/lib/jobs-redis/dump.rdb<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/var/lib/jobs-redis
+<span class="hl-go">total 4</span>
+<span class="hl-go">-rw------- 1 root root 381 Sep 14 03:55 dump.rdb</span>
+</code></pre>
+
+<p><code>SAVE</code> works even with automatic snapshots disabled. The 381-byte snapshot is now on the host, outside
+any container.</p>
+<p><strong>6. Replace the command: a bind mount, default persistence, loopback only.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/etc/systemd/system/jobs-redis.service.d<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'[Service]\nExecStart=\nExecStart=/usr/bin/docker run --rm --name jobs-redis -p 127.0.0.1:6379:6379 -v /var/lib/jobs-redis:/data redis:7.4-alpine redis-server\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>/etc/systemd/system/jobs-redis.service.d/persistent.conf
+<span class="hl-go">[Service]</span>
+<span class="hl-go">ExecStart=</span>
+<span class="hl-go">ExecStart=/usr/bin/docker run --rm --name jobs-redis -p 127.0.0.1:6379:6379 -v /var/lib/jobs-redis:/data redis:7.4-alpine redis-server</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>jobs-redis.service<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sleep<span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>jobs-redis<span class="hl-w"> </span>redis-cli<span class="hl-w"> </span>llen<span class="hl-w"> </span>jobs:pending
+<span class="hl-go">50</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>inspect<span class="hl-w"> </span>jobs-redis<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{range .Mounts}}{{.Type}} {{.Source}} -&gt; {{.Destination}}{{end}}'</span><span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>jobs-redis<span class="hl-w"> </span>redis-cli<span class="hl-w"> </span>config<span class="hl-w"> </span>get<span class="hl-w"> </span>save
+<span class="hl-go">bind /var/lib/jobs-redis -&gt; /data</span>
+<span class="hl-go">save</span>
+<span class="hl-go">3600 1 300 100 60 10000</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>port<span class="hl-w"> </span>jobs-redis<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>ss<span class="hl-w"> </span>-ltn<span class="hl-w"> </span><span class="hl-s1">'sport = :6379'</span>
+<span class="hl-go">6379/tcp -&gt; 127.0.0.1:6379</span>
+<span class="hl-go">State  Recv-Q Send-Q Local Address:Port Peer Address:Port</span>
+<span class="hl-go">LISTEN 0      4096       127.0.0.1:6379      0.0.0.0:*</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ls<span class="hl-w"> </span>-ln<span class="hl-w"> </span>/var/lib/jobs-redis
+<span class="hl-go">total 4</span>
+<span class="hl-go">-rw------- 1 999 0 381 Sep 14 03:55 dump.rdb</span>
+</code></pre>
+
+<p>The new container loaded the fifty jobs from the snapshot. <code>/data</code> is now a bind mount, the save points
+are the image's defaults, the port is on the loopback only, and the entrypoint gave the snapshot to
+UID 999, the <code>redis</code> user inside the image.</p>
+<p><strong>7. Restart once more — the test that matters.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>jobs-redis.service<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sleep<span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>jobs-redis<span class="hl-w"> </span>redis-cli<span class="hl-w"> </span>lrange<span class="hl-w"> </span>jobs:pending<span class="hl-w"> </span><span class="hl-m">0</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>jobs-redis<span class="hl-w"> </span>redis-cli<span class="hl-w"> </span>llen<span class="hl-w"> </span>jobs:pending
+<span class="hl-go">report:001</span>
+<span class="hl-go">report:002</span>
+<span class="hl-go">report:003</span>
+<span class="hl-go">50</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>jobs-redis.service<span class="hl-w"> </span>-b<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'Saving|DB saved|DB loaded|Ready to accept'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">5</span>
+<span class="hl-go">1:M 14 Sep 2026 03:55:15.068 * Ready to accept connections tcp</span>
+<span class="hl-go">1:M 14 Sep 2026 03:55:17.165 * Saving the final RDB snapshot before exiting.</span>
+<span class="hl-go">1:M 14 Sep 2026 03:55:17.166 * DB saved on disk</span>
+<span class="hl-go">1:M 14 Sep 2026 03:55:17.423 * DB loaded from disk: 0.000 seconds</span>
+<span class="hl-go">1:M 14 Sep 2026 03:55:17.423 * Ready to accept connections tcp</span>
+</code></pre>
+
+<p>Redis's own log tells the story of the restart: <code>docker stop</code> sent <code>SIGTERM</code>, Redis wrote a final
+snapshot to the bind-mounted directory, and the new container loaded it. The jobs are still in order.</p>
+<p><strong>8. Grade.</strong> The fifty jobs were present on persistent storage and Redis was reachable only through
+the loopback, before the reboot and after it.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Editing the unit first and migrating afterwards.</strong> The restart that applies the drop-in replaces the
+container, and the jobs go with it. Data first, container second.</p>
+<p><strong>Removing <code>--save &quot;&quot;</code> and calling it fixed.</strong> Redis now snapshots — into the anonymous volume, which
+<code>--rm</code> deletes when the container stops. <code>docker inspect</code> shows a volume at <code>/data</code> and a save policy,
+and the next stop of the unit still takes the snapshot away with the container.</p>
+<p><strong>Dropping <code>--rm</code> instead of adding a volume.</strong> The container, its writable layer and its anonymous
+volume now survive a stop, but <code>ExecStartPre=-docker rm -f jobs-redis</code> removes it at the next start, and
+any <code>docker run</code> that recreates it (an upgrade to a new image tag) starts empty. Data must not depend on
+one particular container existing.</p>
+<p><strong>Copying <code>dump.rdb</code> after stopping the container.</strong> With <code>--rm</code>, stopping deletes the container and
+its volume; there is nothing left to copy.</p>
+<p><strong><code>-v jobs-data:/data</code> with a named volume, then copying the dump to <code>/var/lib/jobs-redis</code>.</strong> The two
+are different places. Put the snapshot where the new container will mount from (for a named volume,
+start a container with it and <code>docker cp</code> into that one).</p>
+<p><strong>Publishing on <code>0.0.0.0</code> and relying on the host firewall.</strong> Docker programs its own iptables rules
+for published ports, which a simple <code>INPUT</code> rule may never see. Bind to <code>127.0.0.1</code> when only this host
+needs it.</p>
+<p><strong><code>appendonly yes</code> added during the same restart.</strong> With AOF enabled, Redis reads its AOF files at start;
+switching it on while the dataset exists only as <code>dump.rdb</code> needs the documented conversion steps.
+Migrate with snapshots first, then change persistence modes deliberately if you need AOF.</p>
+<p><strong>Testing with <code>docker restart</code> only.</strong> A restart keeps the container, so it cannot reveal the <code>--rm</code>
+problem. Restart the systemd unit, which recreates the container, and then reboot.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>docker<span class="hl-w"> </span>ps<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}'</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>inspect<span class="hl-w"> </span>NAME<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{json .Mounts}}'</span><span class="hl-w">          </span><span class="hl-c1"># anonymous volume, named volume or bind</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>inspect<span class="hl-w"> </span>NAME<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{.HostConfig.PortBindings}}'</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>port<span class="hl-w"> </span>NAME<span class="hl-w">                                         </span><span class="hl-c1"># what is published, on which address</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>NAME<span class="hl-w"> </span>redis-cli<span class="hl-w"> </span>config<span class="hl-w"> </span>get<span class="hl-w"> </span>save<span class="hl-w">               </span><span class="hl-c1"># "" = snapshots off</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>NAME<span class="hl-w"> </span>redis-cli<span class="hl-w"> </span>save<span class="hl-w">                          </span><span class="hl-c1"># write dump.rdb now</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>cp<span class="hl-w"> </span>NAME:/data/dump.rdb<span class="hl-w"> </span>/var/lib/app/<span class="hl-w">              </span><span class="hl-c1"># copy out of a running container</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>run<span class="hl-w"> </span>-v<span class="hl-w"> </span>/host/dir:/data<span class="hl-w"> </span>…<span class="hl-w">                          </span><span class="hl-c1"># bind mount</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>run<span class="hl-w"> </span>-v<span class="hl-w"> </span>name:/data<span class="hl-w"> </span>…<span class="hl-w">                               </span><span class="hl-c1"># named volume</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>run<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:6379:6379<span class="hl-w"> </span>…<span class="hl-w">                      </span><span class="hl-c1"># publish on the loopback only</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>volume<span class="hl-w"> </span>ls<span class="hl-p">;</span><span class="hl-w"> </span>docker<span class="hl-w"> </span>volume<span class="hl-w"> </span>inspect<span class="hl-w"> </span>NAME
+<span class="hl-gp">$ </span>ss<span class="hl-w"> </span>-ltnp<span class="hl-w"> </span><span class="hl-s1">'sport = :6379'</span><span class="hl-w">                                 </span><span class="hl-c1"># who listens, on which address</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>UNIT<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>edit<span class="hl-w"> </span>UNIT<span class="hl-w">             </span><span class="hl-c1"># the unit and a drop-in</span>
+<span class="hl-gp">$ </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>UNIT<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w">                                </span><span class="hl-c1"># the container's own log under systemd</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>The container that ran fine until the machine rebooted</em> (topic journal <code>containers</code>) — Where the data lives</li>
+<li><em>Resolves here, listens there, routes until Tuesday</em> (topic journal <code>networking</code>) — Listening on loopback, or on everything</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.docker.com/engine/storage/volumes/</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>The container that ran fine until the machine rebooted</em> (<code>containers</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>What does <code>docker run --rm</code> delete when the container stops?</p>
+<blockquote>
+<p>The container, its writable layer, and its anonymous volumes (such as the one created for an image's <code>VOLUME</code>); named volumes and bind-mounted host directories are kept.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did <code>docker inspect</code> show a volume at <code>/data</code> even though the unit mounted nothing?</p>
+<blockquote>
+<p>The Redis image declares <code>VOLUME /data</code>, so Docker creates an anonymous volume for each container — which <code>--rm</code> removes with it.</p>
+</blockquote>
+</li>
+<li>
+<p>What do <code>--save &quot;&quot;</code> and <code>--appendonly no</code> together mean for Redis?</p>
+<blockquote>
+<p>Neither RDB snapshots nor the AOF are written: the dataset exists only in memory and is lost whenever the process stops.</p>
+</blockquote>
+</li>
+<li>
+<p>In what order must the fix be done, and why?</p>
+<blockquote>
+<p>First write the data out (<code>redis-cli SAVE</code>) and copy <code>dump.rdb</code> to the host directory; then change and restart the unit — the restart replaces the container and would lose data that was still only inside it.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does Redis's log show &quot;Saving the final RDB snapshot before exiting&quot; after the fix?</p>
+<blockquote>
+<p><code>docker stop</code> (the unit's <code>ExecStop</code>) sends <code>SIGTERM</code>, and with save points configured Redis writes a snapshot on shutdown into <code>/data</code>, now a bind mount.</p>
+</blockquote>
+</li>
+<li>
+<p>What address does <code>-p 6379:6379</code> listen on, and how do you restrict it?</p>
+<blockquote>
+<p>All IPv4 and IPv6 addresses of the host (<code>0.0.0.0</code> and <code>[::]</code>); publish as <code>-p 127.0.0.1:6379:6379</code> to listen on the loopback only.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is testing with <code>docker restart</code> not enough to prove persistence here?</p>
+<blockquote>
+<p>A restart keeps the same container and its writable layer and anonymous volume, so it hides the loss; restarting the unit recreates the container, and a reboot is the real test.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did the host copy of <code>dump.rdb</code> become owned by UID 999?</p>
+<blockquote>
+<p>The official image's entrypoint changes ownership of <code>/data</code> to its <code>redis</code> user (UID 999) when the container starts as root.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

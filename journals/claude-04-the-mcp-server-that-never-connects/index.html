@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>An MCP server has to be enabled, startable, allowed and given its secret · Norboten</title>
+<meta name="description" content="The Model Context Protocol lets Claude Code use tools that live outside it: a ticket queue, a database, an internal API. A project declares its servers in .mcp.">
+<link rel="canonical" href="https://norboten.org/journals/claude-04-the-mcp-server-that-never-connects/"><meta property="og:title" content="An MCP server has to be enabled, startable, allowed and given its secret · Norboten">
+<meta property="og:description" content="The Model Context Protocol lets Claude Code use tools that live outside it: a ticket queue, a database, an internal API. A project declares its servers in .mcp.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/claude-04-the-mcp-server-that-never-connects/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="An MCP server has to be enabled, startable, allowed and given its secret · Norboten">
+<meta name="twitter:description" content="The Model Context Protocol lets Claude Code use tools that live outside it: a ticket queue, a database, an internal API. A project declares its servers in .mcp.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "An MCP server has to be enabled, startable, allowed and given its secret",
+  "description": "The Model Context Protocol lets Claude Code use tools that live outside it: a ticket queue, a database, an internal API. A project declares its servers in .mcp.",
+  "url": "https://norboten.org/journals/claude-04-the-mcp-server-that-never-connects/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1652,
+  "timeRequired": "PT35M",
+  "about": ["Claude Code", "AI Agents"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The MCP Server That Never Connects</div>
+    <h1>An MCP server has to be enabled, startable, allowed and given its secret</h1>
+    <p class="muted">
+      35 minutes' reading · 1652 words ·<span class="tag">Claude Code</span><span class="tag">AI Agents</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 85 words</title><rect x="0.0" y="0" width="31.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 573 words</title><rect x="34.9" y="0" width="214.7" height="30" rx="4" fill="#1d2a23"/><text x="42.9" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 552 words</title><rect x="252.6" y="0" width="206.9" height="30" rx="4" fill="#4ade80"/><text x="260.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 182 words</title><rect x="462.4" y="0" width="68.2" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 168 words</title><rect x="533.6" y="0" width="63.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 67 words</title><rect x="599.6" y="0" width="25.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 353 words</title><rect x="627.7" y="0" width="132.3" height="30" rx="4" fill="#1d2a23"/><text x="635.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/claude-04-the-mcp-server-that-never-connects/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>The Model Context Protocol lets Claude Code use tools that live outside it: a ticket queue, a
+database, an internal API. A project declares its servers in <code>.mcp.json</code>, Claude Code starts each
+one when a session starts, asks it which tools it has, and offers those tools to the model under
+names of its own. Between &quot;declared&quot; and &quot;the model gets the queue&quot; there are four separate gates,
+and a job that fails at any of them fails the same way — the model has nothing to call, or its call
+comes back empty, and it writes a digest that says so.</p>
+<p>This lab's digest fails at all four. The server is disabled by a settings file someone forgot about;
+its command does not exist on the machine; the job allows a tool name that does not exist; and the
+token reaches the server as the literal text <code>${TICKET_TOKEN}</code>. Last Friday's attempt at a fix also
+committed the token.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Declare a stdio MCP server in <code>.mcp.json</code> and know every place that can disable or override it.</li>
+<li>See whether a headless run's servers connected, and read a server's own messages.</li>
+<li>Name an MCP tool the way permission rules and hooks see it, and allow exactly that tool.</li>
+<li>Pass a server a secret from the job's environment with <code>${VAR}</code>, and predict what an unset variable
+does.</li>
+<li>Get a secret out of a repository — and know why that is not enough.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="declaring-a-server">Declaring a server</h3>
+<p><code>.mcp.json</code> at the project root is the <strong>project</strong> scope, meant to be committed:</p>
+<pre class="hl"><code class="language-json"><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-nt">"mcpServers"</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">    </span><span class="hl-nt">"tickets"</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">      </span><span class="hl-nt">"type"</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s2">"stdio"</span><span class="hl-p">,</span>
+<span class="hl-w">      </span><span class="hl-nt">"command"</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s2">"python3"</span><span class="hl-p">,</span>
+<span class="hl-w">      </span><span class="hl-nt">"args"</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p">[</span><span class="hl-s2">"/opt/tickets/tickets_mcp.py"</span><span class="hl-p">],</span>
+<span class="hl-w">      </span><span class="hl-nt">"env"</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p">{</span><span class="hl-nt">"TICKETS_TOKEN"</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s2">"${TICKETS_TOKEN}"</span><span class="hl-p">}</span>
+<span class="hl-w">    </span><span class="hl-p">}</span>
+<span class="hl-w">  </span><span class="hl-p">}</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<p>A stdio server is a program Claude Code starts and talks JSON-RPC to over its stdin and stdout; an
+<code>http</code> server is a URL with optional <code>headers</code>. The same name can also exist in the <strong>local</strong> scope
+(this project, stored in <code>~/.claude.json</code>, set with <code>claude mcp add</code>) and the <strong>user</strong> scope (all
+projects). When it does, local beats project beats user, and <strong>the whole entry is taken</strong> — fields
+are not merged.</p>
+<p>Interactive sessions ask before using a project's <code>.mcp.json</code> servers. A headless <code>-p</code> run loads them
+without asking. Three things keep one out:</p>
+<ul>
+<li><code>&quot;disabledMcpjsonServers&quot;: [&quot;tickets&quot;]</code> in a settings file;</li>
+<li><code>--strict-mcp-config</code> with <code>--mcp-config &lt;file&gt;</code>, which uses only the servers in that file;</li>
+<li><code>--setting-sources</code>, which chooses which settings files load.</li>
+</ul>
+<p><code>&quot;enableAllProjectMcpServers&quot;: true</code> and <code>&quot;enabledMcpjsonServers&quot;</code> approve servers; they do not
+start one that is disabled elsewhere.</p>
+<h3 id="variables-in-the-configuration">Variables in the configuration</h3>
+<p><code>${VAR}</code> and <code>${VAR:-default}</code> are expanded from Claude Code's own environment in <code>command</code>, <code>args</code>,
+<code>env</code>, <code>url</code> and <code>headers</code>. A variable that is not set and has no default is <strong>left as it is</strong>: the
+server starts and receives the text <code>${TICKET_TOKEN}</code>. <code>claude mcp list</code> notices, in its diagnostics:</p>
+<pre><code>[Contains warnings] Project config (shared via .mcp.json)
+ └ [Warning] [tickets] mcpServers.tickets: Missing environment variables: TICKET_TOKEN
+</code></pre>
+<p>This is the right way to give a server a secret: the committed file names the variable, the job's
+environment supplies the value, and nothing secret is in the repository.</p>
+<h3 id="did-it-connect">Did it connect?</h3>
+<p>The final <code>--output-format json</code> result says nothing per server. Two things do:</p>
+<ul>
+<li>the <strong>init event</strong> of <code>--output-format stream-json --verbose</code>, the first line a run prints, with
+<code>mcp_servers</code> (<code>connected</code>, <code>failed</code>, …) and the tool list;</li>
+<li><code>--debug-file &lt;path&gt;</code>, which records each server's start, its connection and <strong>its stderr</strong>.</li>
+</ul>
+<p>In a project nobody has trusted, <code>claude mcp list</code> shows <code>.mcp.json</code> servers as &quot;⏸ Pending approval
+(run <code>claude</code> to approve)&quot; instead of checking them — which says nothing about whether <code>-p</code> can
+start them.</p>
+<p>A stdio server must keep stdout for JSON-RPC and log to stderr. (Claude Code 2.1.270 skipped a stray
+non-JSON line on stdout in testing, but a server that prints its logs there is one careless <code>print</code>
+from corrupting a message.)</p>
+<h3 id="tool-names-and-permissions">Tool names and permissions</h3>
+<p>A server's tool <code>list_tickets</code> becomes <strong><code>mcp__tickets__list_tickets</code></strong>, with the server's name from
+the configuration. Permission rules, <code>--allowedTools</code>, hooks' matchers and <code>permission_denials</code> all
+use that name; <code>mcp__tickets</code> (or <code>mcp__tickets__*</code>) covers all of a server's tools. In <code>dontAsk</code>, an MCP tool that is
+not allowed is refused like any other.</p>
+<h3 id="where-secrets-end-up">Where secrets end up</h3>
+<p>A token in a committed file is in every clone and in history. <code>git rm --cached</code> and a new commit
+remove it from the working tree and from the latest commit, not from the commits before: anyone with
+the repository can still read it with <code>git show &lt;old-commit&gt;:&lt;file&gt;</code>. A committed secret is a leaked
+secret — rotate it at the service that issued it. Rewriting history (<code>git filter-repo</code>) is a
+separate, disruptive step for a shared repository, and does not help with copies already fetched.</p>
+<p><code>.claude/settings.local.json</code> is meant to stay on one machine. Claude Code adds it to git's global
+excludes only when Claude Code itself creates the file; one created by hand must be ignored by hand.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed in the lab container (Claude Code 2.1.270, the scripted model). The digest ran without a
+single denial and produced nothing useful:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>tail<span class="hl-w"> </span>-n1<span class="hl-w"> </span>~/digest.json<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{result, num_turns, permission_denials}'</span>
+<span class="hl-go">{"result":"Morning digest: see the tickets above.","num_turns":2,"permission_denials":[]}</span>
+<span class="hl-gp">$ </span>git<span class="hl-w"> </span>ls-files
+<span class="hl-go">.claude/settings.local.json</span>
+<span class="hl-go">.mcp.json</span>
+<span class="hl-go">README.md</span>
+</code></pre>
+
+<p>No denial, because the tool the model asked for did not exist in the session. The init event shows no
+server at all, and <code>claude mcp list</code> has nothing to list either — but its diagnostics already spot the
+variable:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">set</span><span class="hl-w"> </span>-a<span class="hl-p">;</span><span class="hl-w"> </span>.<span class="hl-w"> </span>~/.config/support-digest/env<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">set</span><span class="hl-w"> </span>+a
+<span class="hl-gp">$ </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"hi"</span><span class="hl-w"> </span>--output-format<span class="hl-w"> </span>stream-json<span class="hl-w"> </span>--verbose<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'select(.type=="system" and .subtype=="init") | {mcp_servers}'</span>
+<span class="hl-go">{"mcp_servers":[]}</span>
+<span class="hl-gp">$ </span>claude<span class="hl-w"> </span>mcp<span class="hl-w"> </span>list
+<span class="hl-go">No MCP servers configured. Use `claude mcp add` to add a server.</span>
+<span class="hl-go">MCP config diagnostics ⚠</span>
+<span class="hl-go"> └ [Warning] [tickets] mcpServers.tickets: Missing environment variables: TICKET_TOKEN</span>
+<span class="hl-gp">$ </span>cat<span class="hl-w"> </span>.claude/settings.local.json
+<span class="hl-go">{</span>
+<span class="hl-go">  "disabledMcpjsonServers": ["tickets"],</span>
+<span class="hl-go">  "env": {"TICKETS_TOKEN": "tk_live_…"}</span>
+<span class="hl-go">}</span>
+</code></pre>
+
+<p>The local settings file switches the server off, holds the token, and is tracked. Take it out of the
+repository and ignore it; now the server is attempted, and fails:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>git<span class="hl-w"> </span>rm<span class="hl-w"> </span>-q<span class="hl-w"> </span>--cached<span class="hl-w"> </span>.claude/settings.local.json<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>rm<span class="hl-w"> </span>.claude/settings.local.json
+<span class="hl-gp">$ </span><span class="hl-nb">echo</span><span class="hl-w"> </span>.claude/settings.local.json<span class="hl-w"> </span>&gt;&gt;<span class="hl-w"> </span>.gitignore
+<span class="hl-gp">$ </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"hi"</span><span class="hl-w"> </span>--output-format<span class="hl-w"> </span>stream-json<span class="hl-w"> </span>--verbose<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'select(.subtype=="init") | {mcp_servers}'</span>
+<span class="hl-go">{"mcp_servers":[{"name":"tickets","status":"failed"}]}</span>
+<span class="hl-gp">$ </span><span class="hl-nb">command</span><span class="hl-w"> </span>-v<span class="hl-w"> </span>python<span class="hl-w"> </span>python3
+<span class="hl-go">/usr/bin/python3</span>
+</code></pre>
+
+<p><code>python</code> does not exist here. With <code>&quot;command&quot;: &quot;python3&quot;</code> the server connects and its tool appears —
+and the job refuses it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"hi"</span><span class="hl-w"> </span>--output-format<span class="hl-w"> </span>stream-json<span class="hl-w"> </span>--verbose<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'select(.subtype=="init") | {mcp_servers, tools: [.tools[] | select(startswith("mcp"))]}'</span>
+<span class="hl-go">{"mcp_servers":[{"name":"tickets","status":"connected"}],"tools":["mcp__tickets__list_tickets"]}</span>
+<span class="hl-gp">$ </span>~/bin/support-digest<span class="hl-p">;</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n1<span class="hl-w"> </span>~/digest.json<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'[.permission_denials[] | .tool_name]'</span>
+<span class="hl-go">["mcp__tickets__list_tickets"]</span>
+</code></pre>
+
+<p>The job allows <code>mcp__ticket__list_tickets</code> — one letter short. With the name corrected, nothing is
+refused, and the session transcript shows what the tool returned:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'s/mcp__ticket__list_tickets/mcp__tickets__list_tickets/'</span><span class="hl-w"> </span>~/bin/support-digest<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>~/bin/support-digest
+<span class="hl-gp">$ </span><span class="hl-nv">s</span><span class="hl-o">=</span><span class="hl-k">$(</span>ls<span class="hl-w"> </span>-t<span class="hl-w"> </span>~/.claude/projects/-home-learner-support-digest/*.jsonl<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-k">)</span>
+<span class="hl-gp">$ </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-err">'</span><span class="hl-k">select</span><span class="hl-o">(</span>.type<span class="hl-o">==</span><span class="hl-s2">"user"</span><span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>.message.content<span class="hl-o">[]</span>?<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-k">select</span><span class="hl-o">(</span>.type<span class="hl-o">==</span><span class="hl-s2">"tool_result"</span><span class="hl-o">)</span>
+<span class="hl-go">         | .content | if type=="array" then .[0].text else . end' "$s" | tail -1</span>
+<span class="hl-go">401 unauthorized: bad TICKETS_TOKEN</span>
+</code></pre>
+
+<p>The server is running and answering; it simply got <code>${TICKET_TOKEN}</code>. A debug log confirms the server
+itself is healthy — its stderr is captured there:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"hi"</span><span class="hl-w"> </span>--debug-file<span class="hl-w"> </span>/tmp/claude-debug.log<span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span>
+<span class="hl-gp">$ </span>grep<span class="hl-w"> </span>tickets<span class="hl-w"> </span>/tmp/claude-debug.log<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>cut<span class="hl-w"> </span>-c26-<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-3
+<span class="hl-go">[DEBUG] MCP server "tickets": Starting connection with timeout of 30000ms</span>
+<span class="hl-go">[ERROR] MCP server "tickets" Server stderr: tickets: starting</span>
+<span class="hl-go">[DEBUG] MCP server "tickets": Successfully connected (transport: stdio) in 12ms</span>
+</code></pre>
+
+<p>(The <code>[ERROR]</code> label is only how Claude Code files anything a server writes to stderr.) Correct the
+variable to <code>${TICKETS_TOKEN}</code>, which the job exports, and commit:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'s/\${TICKET_TOKEN}/\${TICKETS_TOKEN}/'</span><span class="hl-w"> </span>.mcp.json
+<span class="hl-gp">$ </span>git<span class="hl-w"> </span>add<span class="hl-w"> </span>-A<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>git<span class="hl-w"> </span>commit<span class="hl-w"> </span>-qm<span class="hl-w"> </span><span class="hl-s2">"tickets server: python3, the right variable, no local settings in git"</span>
+<span class="hl-gp">$ </span>git<span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span>tk_live<span class="hl-w"> </span>HEAD<span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"HEAD clean"</span>
+<span class="hl-go">HEAD clean</span>
+<span class="hl-gp">$ </span>git<span class="hl-w"> </span>grep<span class="hl-w"> </span>-l<span class="hl-w"> </span>tk_live<span class="hl-w"> </span><span class="hl-k">$(</span>git<span class="hl-w"> </span>rev-list<span class="hl-w"> </span>--all<span class="hl-k">)</span>
+<span class="hl-go">ec87913c2320a84b0f5069d57b51389fa7dcf916:.claude/settings.local.json</span>
+</code></pre>
+
+<p>The latest commit is clean; the first one still holds the token, which is why it must be rotated.</p>
+<pre><code>PASS 01_the_server_starts_for_the_job: The tickets server started; the model was offered mcp__tickets__list_tickets.
+PASS 02_the_job_may_call_the_tool: The job called mcp__tickets__list_tickets without being refused.
+PASS 03_the_tool_is_authorised: The tool returned the open queue, TCK-6821 included.
+PASS 04_no_token_in_the_repository: No tracked file, and nothing in the latest commit, holds the token.
+</code></pre>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Trusting <code>claude mcp list</code> in a project nobody trusted.</strong> &quot;Pending approval&quot; is about interactive
+approval; <code>-p</code> starts the server anyway. Use the init event or a debug log.</p>
+<p><strong>Pasting the token into <code>.mcp.json</code> to make the 401 go away.</strong> It works, and it commits the secret
+again. Name the variable; let the job's environment carry the value.</p>
+<p><strong>Deleting <code>settings.local.json</code> without ignoring it.</strong> The next person to create one commits it again.</p>
+<p><strong>Allowing the whole server when the job needs one tool.</strong> <code>mcp__tickets</code> (or <code>mcp__tickets__*</code>)
+allows every tool the server has today and every tool it adds next month. A job that lists tickets
+should be allowed <code>mcp__tickets__list_tickets</code>.</p>
+<p><strong>Editing the server.</strong> It worked all along. When a server answers &quot;unauthorized&quot;, find out what it
+was given before changing what it checks.</p>
+<p><strong>Running the job's <code>claude</code> without the job's environment.</strong> The job sources
+<code>~/.config/support-digest/env</code>; a <code>claude -p</code> in a fresh shell has no <code>TICKETS_TOKEN</code>, so every test
+from that shell reproduces the 401 whether or not <code>.mcp.json</code> is fixed.</p>
+<p><strong>Declaring success when the latest commit is clean.</strong> History still has the token. Rotate it.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># the project's servers, and the files that can switch them off</span>
+cat<span class="hl-w"> </span>.mcp.json
+grep<span class="hl-w"> </span>-rn<span class="hl-w"> </span><span class="hl-s1">'McpjsonServers\|enableAllProjectMcpServers'</span><span class="hl-w"> </span>.claude/<span class="hl-w"> </span>~/.claude/settings.json<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null
+claude<span class="hl-w"> </span>mcp<span class="hl-w"> </span>list<span class="hl-w">                         </span><span class="hl-c1"># config diagnostics (missing variables); untrusted: "pending"</span>
+
+<span class="hl-c1"># did this run's servers connect?</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"hi"</span><span class="hl-w"> </span>--output-format<span class="hl-w"> </span>stream-json<span class="hl-w"> </span>--verbose<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">  </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'select(.type=="system" and .subtype=="init") | {mcp_servers, tools: [.tools[]|select(startswith("mcp"))]}'</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"hi"</span><span class="hl-w"> </span>--debug-file<span class="hl-w"> </span>/tmp/claude-debug.log<span class="hl-w"> </span>&gt;/dev/null<span class="hl-p">;</span><span class="hl-w"> </span>grep<span class="hl-w"> </span><span class="hl-s1">'MCP server'</span><span class="hl-w"> </span>/tmp/claude-debug.log
+
+<span class="hl-c1"># run the server's command by hand, with the job's environment</span>
+<span class="hl-nb">set</span><span class="hl-w"> </span>-a<span class="hl-p">;</span><span class="hl-w"> </span>.<span class="hl-w"> </span>~/.config/support-digest/env<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">set</span><span class="hl-w"> </span>+a
+<span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'%s\n'</span><span class="hl-w"> </span><span class="hl-s1">'{"jsonrpc":"2.0","id":1,"method":"tools/list"}'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>python3<span class="hl-w"> </span>/opt/tickets/tickets_mcp.py
+
+<span class="hl-c1"># names and permissions</span>
+<span class="hl-c1">#   tool list_tickets on server tickets  →  mcp__tickets__list_tickets</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w"> </span>--permission-mode<span class="hl-w"> </span>dontAsk<span class="hl-w"> </span>--allowedTools<span class="hl-w"> </span><span class="hl-s2">"mcp__tickets__list_tickets"</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w"> </span>--strict-mcp-config<span class="hl-w"> </span>--mcp-config<span class="hl-w"> </span>ci-mcp.json<span class="hl-w">   </span><span class="hl-c1"># only these servers</span>
+
+<span class="hl-c1"># secrets: name the variable, never the value</span>
+<span class="hl-s2">"env"</span>:<span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-s2">"TICKETS_TOKEN"</span>:<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">TICKETS_TOKEN</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-o">}</span><span class="hl-w">        </span><span class="hl-c1"># unset → passed literally</span>
+<span class="hl-s2">"env"</span>:<span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-s2">"LOG_LEVEL"</span>:<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">LOG_LEVEL</span><span class="hl-k">:-</span><span class="hl-nv">info</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-o">}</span><span class="hl-w">          </span><span class="hl-c1"># with a default</span>
+
+<span class="hl-c1"># a committed secret</span>
+git<span class="hl-w"> </span>rm<span class="hl-w"> </span>--cached<span class="hl-w"> </span>.claude/settings.local.json<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span>.claude/settings.local.json<span class="hl-w"> </span>&gt;&gt;<span class="hl-w"> </span>.gitignore
+git<span class="hl-w"> </span>grep<span class="hl-w"> </span>-l<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$TOKEN</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-k">$(</span>git<span class="hl-w"> </span>rev-list<span class="hl-w"> </span>--all<span class="hl-k">)</span><span class="hl-w">          </span><span class="hl-c1"># still in history → rotate it</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://code.claude.com/docs/en/mcp</li>
+<li>https://code.claude.com/docs/en/permissions</li>
+<li>https://git-scm.com/docs/gitignore</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>Claude Code in a job</em> (<code>claude-code</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Name four independent reasons a <code>.mcp.json</code> server's tool is unusable in a headless job.</p>
+<blockquote>
+<p>The server is disabled (<code>disabledMcpjsonServers</code>, or excluded by <code>--strict-mcp-config</code> /
+<code>--setting-sources</code>); its command cannot start; the job does not allow the tool by its
+<code>mcp__server__tool</code> name in a strict mode; the server starts but is given a wrong credential.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you see whether each MCP server connected during a <code>claude -p</code> run?</p>
+<blockquote>
+<p>Run with <code>--output-format stream-json --verbose</code> and read <code>mcp_servers</code> in the first event (type
+<code>system</code>, subtype <code>init</code>), or use <code>--debug-file</code>, which logs each server's start and stderr.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a stdio server receive for <code>&quot;TOKEN&quot;: &quot;${TICKET_TOKEN}&quot;</code> when <code>TICKET_TOKEN</code> is unset?</p>
+<blockquote>
+<p>The literal string <code>${TICKET_TOKEN}</code>. Unset variables without a <code>:-default</code> are not expanded;
+<code>claude mcp list</code> reports them as missing in its diagnostics.</p>
+</blockquote>
+</li>
+<li>
+<p>A server named <code>tickets</code> offers <code>list_tickets</code>. Write the rule that allows only that tool, and the
+one that allows all its tools.</p>
+<blockquote>
+<p><code>mcp__tickets__list_tickets</code>; <code>mcp__tickets</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>The same server name is configured with <code>claude mcp add</code> (local scope) and in <code>.mcp.json</code>. Which
+configuration is used, and are their <code>env</code> blocks combined?</p>
+<blockquote>
+<p>The local one: local beats project beats user. The whole entry is taken; fields are not merged.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>claude mcp list</code> saying &quot;Pending approval&quot; not tell you whether the digest job can use the
+server?</p>
+<blockquote>
+<p>It reflects interactive approval in a project nobody trusted. <code>-p</code> loads <code>.mcp.json</code> servers
+without asking, so the job may start it anyway (or fail to, for other reasons).</p>
+</blockquote>
+</li>
+<li>
+<p>After <code>git rm --cached</code> of a file holding a token and a new commit, <code>git grep</code> over <code>HEAD</code> finds
+nothing. Is the token safe?</p>
+<blockquote>
+<p>No. Earlier commits still contain it (<code>git grep</code> over <code>git rev-list --all</code> finds it), and every
+clone has them. Rotate the token; rewriting history is a separate and disruptive step.</p>
+</blockquote>
+</li>
+<li>
+<p>Why should a stdio MCP server log to stderr?</p>
+<blockquote>
+<p>Its stdout is the JSON-RPC channel Claude Code reads. Anything else there risks corrupting or
+confusing messages; stderr is captured separately (visible in a debug log).</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

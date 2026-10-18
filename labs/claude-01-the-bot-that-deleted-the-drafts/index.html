@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Bot That Deleted the Drafts · Norboten</title>
+<meta name="description" content="Recover work an agent deleted from a git working tree">
+<link rel="canonical" href="https://norboten.org/labs/claude-01-the-bot-that-deleted-the-drafts/"><meta property="og:title" content="The Bot That Deleted the Drafts · Norboten">
+<meta property="og:description" content="Recover work an agent deleted from a git working tree">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/labs/claude-01-the-bot-that-deleted-the-drafts/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Bot That Deleted the Drafts · Norboten">
+<meta name="twitter:description" content="Recover work an agent deleted from a git working tree">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "The Bot That Deleted the Drafts",
+  "description": "Recover work an agent deleted from a git working tree",
+  "url": "https://norboten.org/labs/claude-01-the-bot-that-deleted-the-drafts/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "teaches": ["Recover work an agent deleted from a git working tree", "Give a headless Claude Code job exactly the permissions its task needs", "Keep secrets in a repository out of what the model is sent"],
+  "timeRequired": "PT30M",
+  "provider": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"},
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "online",
+    "courseWorkload": "PT30M"
+  }
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="claude-01-the-bot-that-deleted-the-drafts">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" aria-current="page">Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">claude · lab claude-01</div>
+    <h1>The Bot That Deleted the Drafts</h1>
+    <p class="muted">
+      <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 2 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span> ·
+      about 30 minutes ·
+      runs on <span class="mono">ubuntu-26.04-claude</span>
+      · <span class="tag">unrated</span>    </p>
+    <div class="cta">
+      <a class="btn solid" href="../../journals/claude-01-the-bot-that-deleted-the-drafts/">Read the journal</a>
+      <a class="btn" href="https://github.com/northelks/norboten/tree/main/labs/claude/claude-01-the-bot-that-deleted-the-drafts" rel="noopener">Read its source</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="note prose">
+      <strong>An unrated lab.</strong> It runs on your machine with no account and no network, and
+      everything about it — the faults, the checks, the hints and the reference solution — is in
+      the repository. An attempt on it is recorded on your profile and never moves a rating: only
+      rated labs do.
+      <a href="../../docs/rated-labs/">Rated and unrated labs</a>.
+    </p>
+    <div class="grid two" style="gap:2.5rem; align-items:start">
+      <div>
+        <h2>The briefing</h2>
+        <div class="prose">
+<p>The docs team keeps its handbook in a git repository, <code>~/handbook</code>, and a nightly job,
+<code>~/bin/tidy-handbook</code>, asks Claude Code to fix typos in <code>docs/</code>. Last night the job &quot;tidied&quot; a
+little further: the unpublished drafts are gone from the working tree, and the job's log shows the
+model opening a file nobody meant it to see. Nobody has committed since, and nobody wants to turn
+the job off — the typo fixes are genuinely useful.</p>
+<p>This lab runs in a container, as <code>learner</code> with <code>sudo</code>. <code>claude</code> here is the real Claude Code
+2.1.270, talking to a scripted model on this machine instead of Anthropic: it replays last night's
+run every time the job starts, and Claude Code carries out its tool calls for real. Run the job as
+often as you like; <code>~/tidy-handbook.log</code> is its JSON result.</p>
+<p>What is expected, and graded — the grader runs <code>~/bin/tidy-handbook</code> itself, as <code>learner</code>, against
+models that try other things:</p>
+<ol>
+<li>The drafts are back, exactly as they were last committed.</li>
+<li>The job still fixes a typo in <code>docs/</code>, and cannot delete or overwrite anything else, however the
+model tries.</li>
+<li>The publishing token in the repository never reaches the model — and the typo still gets fixed.</li>
+<li>Nothing lets the job skip Claude Code's permission checks.</li>
+</ol>
+</div>
+      </div>
+      <div>
+        <h2>What is graded</h2>
+        <p class="muted">This lab runs in a container — Docker or Podman, no VM — so there is no boot
+          to survive: the checks run once, against the state you left.</p>
+        <table>
+          <tr><th>Check</th><th>Objective</th></tr>
+          <tr><td class="mono">01_the_drafts_are_back</td><td class="muted">Recover work an agent deleted from a git working tree</td></tr>
+          <tr><td class="mono">02_the_job_fixes_typos_and_deletes_nothing</td><td class="muted">Give a headless Claude Code job exactly the permissions its task needs</td></tr>
+          <tr><td class="mono">03_the_token_never_reaches_the_model</td><td class="muted">Keep secrets in a repository out of what the model is sent</td></tr>
+          <tr><td class="mono">04_permissions_are_not_bypassed</td><td class="muted">Give a headless Claude Code job exactly the permissions its task needs</td></tr>
+        </table>
+        <h3>Start it</h3>
+        <ol class="keysteps">
+          <li><kbd>2</kbd><span>Labs</span></li>
+          <li><span class="mono pick">claude-01</span><span>select this one</span></li>
+          <li><kbd>u</kbd><span>download it</span></li>
+          <li><kbd>s</kbd><span>start the machine</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>Reading</h2>
+    <p class="muted">Where the lab's hints send you, level by level, as you ask for them
+      (<kbd>h</kbd>, then <kbd>l</kbd> opens a journal section in the TUI).</p>
+    <ul class="prose">
+<li><a href="https://git-scm.com/docs/git-restore" rel="noopener">https://git-scm.com/docs/git-restore</a></li>
+<li><a href="../../journals/claude-code/#what-the-model-may-do">Claude Code in a job › What the model may do</a></li>
+<li><a href="https://code.claude.com/docs/en/permissions" rel="noopener">https://code.claude.com/docs/en/permissions</a></li>
+<li><a href="../../journals/claude-code/#guards-helpers-and-outside-data">Claude Code in a job › Guards, helpers and outside data</a></li>
+<li><a href="../../journals/claude-code/#what-a-session-loads">Claude Code in a job › What a session loads</a></li>
+<li><a href="https://code.claude.com/docs/en/settings" rel="noopener">https://code.claude.com/docs/en/settings</a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>Theory for this lab</h2>
+    <p class="prose muted">4 questions on the same topic, in the lab's Theory
+      tab. They never affect the lab's grade.
+Three of them, to answer here:
+</p>
+    <div class="quiz-grid">
+      <div class="quiz" data-answer="a" data-type="single">
+<div class="kicker">Question 1</div>  <p class="prompt">A nightly job runs `claude -p &#34;Fix typos in docs/&#34; --permission-mode dontAsk` with no allow rules anywhere. The model asks to Edit docs/guide.md. What happens?</p>
+  <div class="choices">
+    <button type="button" class="choice" data-choice="a">
+      <span class="mark mono">a</span><span class="text">The edit is refused and recorded in permission_denials; the run carries on</span>
+    </button>
+    <button type="button" class="choice" data-choice="b">
+      <span class="mark mono">b</span><span class="text">The run exits non-zero at once</span>
+    </button>
+    <button type="button" class="choice" data-choice="c">
+      <span class="mark mono">c</span><span class="text">The edit is applied, because edits inside the working directory are always allowed</span>
+    </button>
+    <button type="button" class="choice" data-choice="d">
+      <span class="mark mono">d</span><span class="text">The run stops and waits for someone to approve the edit</span>
+    </button>
+  </div>
+  <div class="verdict" hidden>
+    <p class="answer"><strong>The edit is refused and recorded in permission_denials; the run carries on</strong>
+</p>
+    <p class="muted">dontAsk turns every call that would prompt into a denial, so a headless run never waits for a person. The denial is reported to the model as a tool error and listed in the JSON result&#39;s permission_denials; the run goes on. Reads in the working directory need no permission, but edits do. It does not wait (there is nobody to ask in -p) and it does not abort.</p>
+    <p class="mono muted refs">https://code.claude.com/docs/en/permission-modes · https://code.claude.com/docs/en/headless</p>
+  </div>
+</div>
+
+      <div class="quiz" data-answer="b" data-type="single">
+<div class="kicker">Question 2</div>  <p class="prompt">In Claude Code 2.1.270, a job runs `claude -p` in a repository whose committed .claude/settings.json has `&#34;allow&#34;: [&#34;Edit(./docs/**)&#34;]`, and nobody has ever run Claude Code interactively there. Edits under docs/ are still denied in dontAsk mode. Why?</p>
+  <div class="choices">
+    <button type="button" class="choice" data-choice="a">
+      <span class="mark mono">a</span><span class="text">dontAsk ignores every allow rule, wherever it is written</span>
+    </button>
+    <button type="button" class="choice" data-choice="b">
+      <span class="mark mono">b</span><span class="text">In an untrusted workspace, -p ignores allow rules from the project&#39;s .claude/settings.json and says so on stderr</span>
+    </button>
+    <button type="button" class="choice" data-choice="c">
+      <span class="mark mono">c</span><span class="text">Edit rules only match absolute paths, so ./docs/** matches nothing</span>
+    </button>
+    <button type="button" class="choice" data-choice="d">
+      <span class="mark mono">d</span><span class="text">Project settings are read only when the file is listed in .gitignore</span>
+    </button>
+  </div>
+  <div class="verdict" hidden>
+    <p class="answer"><strong>In an untrusted workspace, -p ignores allow rules from the project&#39;s .claude/settings.json and says so on stderr</strong>
+</p>
+    <p class="muted">A repository can ship a settings file, and allowing tools is exactly what a hostile repository would do, so allow entries from the shared project file are ignored until the workspace is trusted: &#34;Ignoring 1 permissions.allow entry from .claude/settings.json: this workspace has not been trusted.&#34; Deny rules from the same file still apply. The same allow rule on the command line (--allowedTools), in --settings, in the user settings or in .claude/settings.local.json is honoured, so dontAsk does respect allow rules. Relative rules like ./docs/** are fine. Verified in the lab image (docs/research/claude-code.md).</p>
+    <p class="mono muted refs">https://code.claude.com/docs/en/permissions · https://code.claude.com/docs/en/settings</p>
+  </div>
+</div>
+
+      <div class="quiz" data-answer="d" data-type="single">
+<div class="kicker">Question 3</div>  <p class="prompt">A job keeps Bash available and adds `&#34;deny&#34;: [&#34;Read(./.env)&#34;]`. The model runs four Bash commands. Which one still shows it the token in .env, in dontAsk mode?</p>
+  <div class="choices">
+    <button type="button" class="choice" data-choice="a">
+      <span class="mark mono">a</span><span class="text">cat ./.env</span>
+    </button>
+    <button type="button" class="choice" data-choice="b">
+      <span class="mark mono">b</span><span class="text">head -1 .env</span>
+    </button>
+    <button type="button" class="choice" data-choice="c">
+      <span class="mark mono">c</span><span class="text">cat .env</span>
+    </button>
+    <button type="button" class="choice" data-choice="d">
+      <span class="mark mono">d</span><span class="text">grep -r TOKEN .</span>
+    </button>
+  </div>
+  <div class="verdict" hidden>
+    <p class="answer"><strong>grep -r TOKEN .</strong>
+</p>
+    <p class="muted">Read-only commands such as grep and cat run without asking, and a Read deny rule stops one only when the command names the denied path. `cat .env`, `head -1 .env` and `cat ./.env` name it and are refused; `grep -r TOKEN .` names only the directory and prints the token. That is why a job that does not need a shell should not be offered one (`--tools`), rather than counting on rules to anticipate every command.</p>
+    <p class="mono muted refs">https://code.claude.com/docs/en/permissions</p>
+  </div>
+</div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script src="../../quiz.js"></script></body>
+</html>

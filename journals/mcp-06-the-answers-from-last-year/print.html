@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Answers From Last Year — Claude Code&#x27;s MCP scopes, and which one wins</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>The Answers From Last Year — Claude Code&#x27;s MCP scopes, and which one wins</h1>
+  <div class="meta">mcp, claude-code · 25 minutes · 1026 words</div>
+</header>
+<p>Claude Code reads MCP server definitions from three places, and the same name can appear in more than
+one. The repository’s <code>.mcp.json</code> is the one everybody reviews; the others live in <code>~/.claude.json</code>,
+outside any repository, where a colleague’s experiment from last year can sit unnoticed for ever. When
+two places define <code>docs</code>, one wins, and it is not necessarily the file you are looking at. This lab’s
+team kept reading a correct <code>.mcp.json</code> while their answers came from somewhere else — and, while
+looking, found the service key committed in the file they were reading.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Name Claude Code’s three MCP scopes, where each is stored, and which wins for a project.</li>
+<li>Find every definition of a server name and the one in effect, with <code>claude mcp</code>.</li>
+<li>Remove a definition from the right scope without touching the others.</li>
+<li>Keep a server’s secret out of <code>.mcp.json</code> with variable expansion, and know what it does when unset.</li>
+<li>Say what is left to do when a secret has already been committed.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Three scopes</h3>
+<ul>
+<li><strong>project</strong> — <code>.mcp.json</code> at the repository’s root, committed and shared: what the team agreed on.</li>
+<li><strong>local</strong> — <code>~/.claude.json</code>, under <code>projects[&quot;/path/to/repo&quot;].mcpServers</code>: yours, for this project
+only, never committed. <code>claude mcp add</code> writes here by default.</li>
+<li><strong>user</strong> — <code>~/.claude.json</code>, top-level <code>mcpServers</code>: yours, for every project.</li>
+</ul>
+<h3>Which one wins</h3>
+<p>For a name defined in more than one scope, the more personal definition wins for this project: local,
+then project, then user. Measured with Claude Code 2.1.270 in this lab’s image, with a server named
+<code>docs</code> defined in each scope and a tool that says which one it is:</p>
+<pre><code class="language-text">all three defined        → I am LOCAL
+local and project        → I am LOCAL
+project and user         → I am PROJECT
+project only             → I am PROJECT
+</code></pre>
+<p>So a local <code>docs</code> shadows the team’s, silently, in every run in that directory — interactive or
+headless, the job included. That is useful when you are testing a new server, and a trap once you forget
+it is there.</p>
+<h3>Seeing it</h3>
+<p><code>claude mcp list</code> shows the definitions in effect and their health, and — when a name is defined in
+several scopes with different commands — a <em>Conflicting scopes</em> diagnostic naming both, with the
+command to remove either. <code>claude mcp get docs</code> shows the scope a definition came from.
+<code>claude mcp remove docs -s local</code> removes one scope’s definition and leaves the others.</p>
+<h3>Secrets: <code>${VAR}</code> in <code>.mcp.json</code></h3>
+<p><code>.mcp.json</code> is committed, so a key written into it is published to everyone with the repository, and
+stays in its history. Claude Code expands <code>${VAR}</code> (and <code>${VAR:-default}</code>) in a server’s <code>command</code>,
+<code>args</code>, <code>env</code>, <code>url</code> and <code>headers</code> from its own environment. The job loads the key from
+<code>~/.config/handbook/env</code> before starting <code>claude</code>, so the server still gets it. When the variable is
+missing, <code>claude mcp list</code> warns: <em>Missing environment variables: DOCS_API_KEY</em>.</p>
+<h3>A committed secret is a burned secret</h3>
+<p>Removing the key from the file and committing fixes the next clone. Every existing clone, fork and
+backup still has it in history; the only real fix is to rotate the key at the service. The grader
+checks the files and the latest commit; a person has to do the rest.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the lab’s container (Ubuntu 26.04, Claude Code 2.1.270; JSON compacted, long lines
+trimmed). What the team reviewed:</p>
+<pre><code class="language-console">$ cat ~/handbook-bot/.mcp.json
+{&quot;mcpServers&quot;: {&quot;docs&quot;: {&quot;type&quot;: &quot;stdio&quot;, &quot;command&quot;: &quot;python3&quot;,
+  &quot;args&quot;: [&quot;/opt/docs-mcp/docs_mcp.py&quot;, &quot;--edition&quot;, &quot;3&quot;],
+  &quot;env&quot;: {&quot;DOCS_API_KEY&quot;: &quot;hb_59322a1e5347785048e7a5717df62fcf&quot;}}}}
+</code></pre>
+<p>What Claude Code runs, in that directory:</p>
+<pre><code class="language-console">$ claude mcp list
+docs: python3 /opt/docs-mcp/docs_mcp.py --edition 1 - ✔ Connected
+
+MCP config diagnostics ⚠
+[Conflicting scopes]
+├ Server &quot;docs&quot; is defined in multiple scopes with different endpoints: project (python3
+│ /opt/docs-mcp/docs_mcp.py --edition 3), local (python3 /opt/docs-mcp/docs_mcp.py --edition 1). ...
+└ Keep the correct endpoint and remove the others: `claude mcp remove docs -s project` or
+  `claude mcp remove docs -s local`
+$ claude mcp get docs
+docs:
+  Scope: Local config (private to you in this project)
+  Args: /opt/docs-mcp/docs_mcp.py --edition 1
+$ jq '.projects[&quot;/home/learner/handbook-bot&quot;].mcpServers' ~/.claude.json
+{&quot;docs&quot;: {&quot;type&quot;: &quot;stdio&quot;, &quot;command&quot;: &quot;python3&quot;, &quot;args&quot;: [&quot;/opt/docs-mcp/docs_mcp.py&quot;, &quot;--edition&quot;, &quot;1&quot;], ...}}
+</code></pre>
+<p>Edition 1 is last year’s. Remove the local definition — and only that one:</p>
+<pre><code class="language-console">$ claude mcp remove docs -s local
+Removed MCP server docs from local config
+File modified: /home/learner/.claude.json [project: /home/learner/handbook-bot]
+$ claude mcp list
+docs: python3 /opt/docs-mcp/docs_mcp.py --edition 3 - ⏸ Pending approval (run `claude` to approve)
+</code></pre>
+<p>(<em>Pending approval</em> is the interactive prompt for a project server; the headless job starts it.) Then
+the key: <code>&quot;DOCS_API_KEY&quot;: &quot;${DOCS_API_KEY}&quot;</code> in <code>.mcp.json</code>. Without the variable set, Claude Code says
+so:</p>
+<pre><code class="language-text">[Contains warnings] Project config (shared via .mcp.json)
+ └ [Warning] [docs] mcpServers.docs: Missing environment variables: DOCS_API_KEY
+</code></pre>
+<p>and with it loaded the way the job loads it, the warning is gone. Commit, and the latest commit is
+clean — the first one is not:</p>
+<pre><code class="language-console">$ git commit -qam &quot;docs: take the key from the environment&quot;; git grep -c hb_ HEAD || echo &quot;no key in HEAD&quot;
+no key in HEAD
+$ git log --oneline -S hb_
+5e5327b docs: take the key from the environment
+b45a2eb handbook-bot: the docs server, edition 3
+</code></pre>
+<p><code>git log -S</code> lists both commits that changed the key’s count — the one that removed it here, and the
+first one that added it. The job, afterwards:</p>
+<pre><code class="language-text">search: [handbook edition 3] Credential rotation: Database credentials are rotated every 90 days; the
+security lead approves each rotation.
+</code></pre>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong>Editing <code>.mcp.json</code> again.</strong> It was right; the answer comes from another scope.</li>
+<li><strong>Changing the local definition to edition 3.</strong> The job answers correctly, and the next change to the
+team’s <code>.mcp.json</code> is silently ignored on this machine again.</li>
+<li><strong><code>claude mcp remove docs</code> without <code>-s</code>.</strong> Know which definition you are removing; the diagnostic names
+both.</li>
+<li><strong>Deleting <code>~/.claude.json</code>.</strong> It holds much more than MCP servers: trust decisions, project history.</li>
+<li><strong>Removing the key from the file and calling it done.</strong> It is in the history; rotate it.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-text">claude mcp list                         # in effect, with health and scope conflicts
+claude mcp get NAME                     # one definition and its scope
+claude mcp remove NAME -s local|project|user
+jq '.projects[env.PWD].mcpServers, .mcpServers' ~/.claude.json    # local, then user
+&quot;env&quot;: {&quot;KEY&quot;: &quot;${KEY}&quot;}                # in .mcp.json; ${KEY:-default} for a fallback
+git log --oneline -S SECRET             # every commit that added or removed it
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>The Model Context Protocol</em> (topic journal <code>mcp</code>) — Clients, scopes and secrets</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://code.claude.com/docs/en/mcp</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>The Model Context Protocol</em> (<code>mcp</code>), <em>Claude Code in a job</em> (<code>claude-code</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Where are Claude Code’s local-scope and user-scope MCP servers stored?</p>
+<blockquote>
+<p>Both in <code>~/.claude.json</code>: local ones under <code>projects[&quot;&lt;project path&gt;&quot;].mcpServers</code>, user ones in the
+top-level <code>mcpServers</code>.</p>
+</blockquote>
+</li>
+<li>
+<p><code>docs</code> is defined in <code>.mcp.json</code> and in the user scope. Which runs in the project?</p>
+<blockquote>
+<p>The project’s — project beats user; a local-scope definition would beat both.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you find out that a name is defined in more than one scope?</p>
+<blockquote>
+<p><code>claude mcp list</code> reports a <em>Conflicting scopes</em> diagnostic naming each scope’s command, and
+<code>claude mcp get NAME</code> shows the scope of the one in effect.</p>
+</blockquote>
+</li>
+<li>
+<p>What does Claude Code do with <code>${DOCS_API_KEY}</code> in <code>.mcp.json</code> when the variable is not set?</p>
+<blockquote>
+<p>It cannot expand it and warns about a missing environment variable in <code>claude mcp list</code>; set it in
+Claude Code’s environment, or give a default with <code>${DOCS_API_KEY:-…}</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>The key is out of the latest commit. What is still to do, and why?</p>
+<blockquote>
+<p>Rotate the key: every clone and the repository’s history still contain it.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

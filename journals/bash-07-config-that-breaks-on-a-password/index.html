@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A value is data; sed&#39;s replacement is code · Norboten</title>
+<meta name="description" content="Filling placeholders in a template is the second thing every ops script learns to do, and sed s/@PLACEHOLDER@/$value/ is how almost everyone writes it. It works">
+<link rel="canonical" href="https://norboten.org/journals/bash-07-config-that-breaks-on-a-password/"><meta property="og:title" content="A value is data; sed&#39;s replacement is code · Norboten">
+<meta property="og:description" content="Filling placeholders in a template is the second thing every ops script learns to do, and sed s/@PLACEHOLDER@/$value/ is how almost everyone writes it. It works">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/bash-07-config-that-breaks-on-a-password/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A value is data; sed&#39;s replacement is code · Norboten">
+<meta name="twitter:description" content="Filling placeholders in a template is the second thing every ops script learns to do, and sed s/@PLACEHOLDER@/$value/ is how almost everyone writes it. It works">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A value is data; sed\u0027s replacement is code",
+  "description": "Filling placeholders in a template is the second thing every ops script learns to do, and sed s/@PLACEHOLDER@/$value/ is how almost everyone writes it. It works",
+  "url": "https://norboten.org/journals/bash-07-config-that-breaks-on-a-password/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1507,
+  "timeRequired": "PT35M",
+  "about": ["Bash", "Users and permissions"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Config That Breaks on a Password</div>
+    <h1>A value is data; sed&#39;s replacement is code</h1>
+    <p class="muted">
+      35 minutes' reading · 1507 words ·<span class="tag">Bash</span><span class="tag">Users and permissions</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 98 words</title><rect x="0.0" y="0" width="42.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 621 words</title><rect x="45.8" y="0" width="271.2" height="30" rx="4" fill="#1d2a23"/><text x="53.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 435 words</title><rect x="320.0" y="0" width="190.0" height="30" rx="4" fill="#4ade80"/><text x="328.0" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 165 words</title><rect x="513.0" y="0" width="72.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 97 words</title><rect x="588.0" y="0" width="42.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 39 words</title><rect x="633.4" y="0" width="17.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 244 words</title><rect x="653.4" y="0" width="106.6" height="30" rx="4" fill="#1d2a23"/><text x="661.4" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/bash-07-config-that-breaks-on-a-password/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Filling placeholders in a template is the second thing every ops script learns to do, and <code>sed s/@PLACEHOLDER@/$value/</code> is how almost everyone writes it. It works for a year, because the values
+are host names and port numbers. Then a password comes out of the vault with a <code>/</code>, an <code>&amp;</code> and a
+backslash in it, and the render either fails or — worse — produces a configuration that is quietly
+different from the value it was given.</p>
+<p>The reason is not that sed is fragile. It is that <code>s/…/…/</code> is a small program, and pasting a value
+into it makes the value part of that program. Exactly like SQL built by string concatenation, the
+question is never &quot;which characters do I escape&quot;, but &quot;how do I keep data out of the code&quot;.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Name the characters that are special in sed's <em>replacement</em> text, and in its pattern and delimiter.</li>
+<li>Substitute a value into a template without letting the value become code, using bash's own
+<code>${var//pattern/replacement}</code>.</li>
+<li>Explain why <code>&quot;$var&quot;</code> inside <code>${t//@P@/&quot;$var&quot;}</code> matters.</li>
+<li>Make a file that holds a secret private from the moment it exists, with <code>umask</code> rather than a later
+<code>chmod</code>.</li>
+<li>Fail a render when a value is missing, with <code>${var:?message}</code>, and keep the previous file.</li>
+<li>Read a unit that fails in <code>ExecStartPre=</code>, and know why editing the rendered file by hand does not
+last.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="what-is-special-in-a-s-command">What is special in a <code>s</code> command</h3>
+<p><code>s/pattern/replacement/flags</code> has three layers of syntax, and each has its own special characters:</p>
+<ul>
+<li>the <strong>delimiter</strong> — <code>/</code> by default. Any <code>/</code> inside the pattern or the replacement ends the command
+early; the value <code>k3y/&amp;Pa$$\1-vault</code> therefore turns into &quot;unknown option to <code>s</code>&quot;. Another
+delimiter (<code>s|…|…|</code>) only moves the problem to whatever character you chose.</li>
+<li>the <strong>replacement</strong> — <code>&amp;</code> stands for the whole matched text, <code>\1</code>…<code>\9</code> for capture groups, <code>\n</code>
+for a newline, and <code>\</code> escapes any of those. <code>a&amp;b</code> renders as <code>a@P@b</code>, silently: the placeholder
+is put back in place of the ampersand.</li>
+<li>the <strong>pattern</strong> — a basic regular expression, where <code>.</code>, <code>*</code>, <code>[</code>, <code>^</code> and <code>$</code> are meta-characters.
+Placeholders such as <code>@DB_PASSWORD@</code> contain none of these, which is why the pattern side is not
+the part that breaks here.</li>
+</ul>
+<p>The shell adds a layer of its own before sed sees anything: <code>&quot;s/@P@/$p/&quot;</code> is expanded by bash, so a
+<code>$</code> or a backslash in the value has already been through the shell's quoting rules.</p>
+<h3 id="substituting-without-a-language-in-between">Substituting without a language in between</h3>
+<p>Bash can replace text in a variable directly:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-nv">text</span><span class="hl-o">=</span><span class="hl-k">$(</span>&lt;<span class="hl-s2">"</span><span class="hl-nv">$TEMPLATE</span><span class="hl-s2">"</span><span class="hl-k">)</span>
+<span class="hl-nv">text</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">text</span><span class="hl-p">//@DB_PASSWORD@/</span><span class="hl-s2">"</span><span class="hl-nv">$password</span><span class="hl-s2">"</span><span class="hl-si">}</span>
+</code></pre>
+
+<p><code>${var//pattern/replacement}</code> replaces every occurrence. The pattern is a <em>glob</em> pattern, not a
+regular expression — a placeholder such as <code>@DB_PASSWORD@</code> has no glob characters, so it matches
+literally. The replacement is <strong>not</strong> a pattern at all; the only character that means anything there
+is <code>\</code>, and quoting the expansion (<code>&quot;$password&quot;</code>) makes even that literal. No delimiter, no <code>&amp;</code>, no
+<code>\1</code>: the value stays data.</p>
+<p><code>printf '%s\n' &quot;$text&quot; &gt; file</code> then writes the result — <code>printf</code> with a <code>%s</code> format, never
+<code>printf &quot;$text&quot;</code>, which would interpret <code>%</code> sequences in the data.</p>
+<p>Other tools that keep data separate from code: <code>envsubst</code> (from gettext) for <code>$VAR</code> templates, <code>jq --arg</code> for JSON, Python's <code>string.Template.substitute</code>, and any templating engine. The common shape
+is: the value is passed as a value, not spliced into a program.</p>
+<h3 id="a-secret-is-private-from-its-first-byte">A secret is private from its first byte</h3>
+<p>A new file's permissions are <code>0666</code> (or <code>0777</code> for programs) minus the process's <code>umask</code>. On this
+machine the default is <code>0002</code>, so a shell redirection creates <code>0664</code> — readable by everyone. A
+<code>chmod 600</code> afterwards closes the door, but the secret was already on disk and readable for the
+moment in between, and any reader that opened it in that moment keeps its descriptor.</p>
+<p><code>umask 077</code> before the file is created means it is never readable by anyone else. Setting the mode
+explicitly as well (<code>chmod 600</code>) covers the case where the file already existed. Writing to a
+temporary file in the same directory and renaming it over the target keeps the previous
+configuration when the render fails, and gives readers an atomic switch.</p>
+<h3 id="failing-on-a-missing-value">Failing on a missing value</h3>
+<p><code>. &quot;$VALUES&quot;</code> reads assignments from a file; if a name is not in it, the variable simply stays unset,
+and under <code>set -u</code> it is an error only when it is <em>used</em> — by which time the output may already have
+been truncated. <code>${DB_HOST:?DB_HOST is not set in $VALUES}</code> checks and reports in one step: with <code>set -e</code>, a non-interactive shell exits, printing that message to standard error. Unsetting the names
+before sourcing matters too, or a value inherited from the environment silently stands in for a
+missing one.</p>
+<h3 id="a-unit-that-renders-before-it-starts">A unit that renders before it starts</h3>
+<p><code>myapp.service</code> has <code>ExecStartPre=/usr/local/bin/render-config</code> and <code>ExecStart=/usr/local/bin/myapp-login</code>.
+systemd runs the <code>ExecStartPre=</code> commands first and fails the unit if one of them fails. Here the
+render <em>succeeded</em> — it exited 0 after sed's error — and the login failed, which is why the status
+shows <code>ExecStartPre</code> green and <code>ExecStart</code> red. It also means that editing <code>/etc/myapp/app.conf</code> by
+hand is pointless: the next start overwrites it.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Run on the lab's own machine: <code>ubuntu-26.04-devops</code>, GNU bash 5.3.9, GNU sed 4.9, before any change.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>status<span class="hl-w"> </span>myapp.service<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">6</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-12
+<span class="hl-go">× myapp.service - myapp, with its configuration rendered at start</span>
+<span class="hl-go">     Loaded: loaded (/etc/systemd/system/myapp.service; enabled; preset: enabled)</span>
+<span class="hl-go">     Active: failed (Result: exit-code) since Wed 2026-09-16 16:54:05 UTC; 114ms ago</span>
+<span class="hl-go">    Process: 1176 ExecStartPre=/usr/local/bin/render-config (code=exited, status=0/SUCCESS)</span>
+<span class="hl-go">    Process: 1179 ExecStart=/usr/local/bin/myapp-login (code=exited, status=1/FAILURE)</span>
+</code></pre>
+
+<p>The render reported success and left an empty file, because the redirection truncated <code>app.conf</code>
+before sed failed:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/myapp/secrets.env<span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/etc/myapp/
+<span class="hl-go">DB_HOST=db.internal</span>
+<span class="hl-go">DB_PASSWORD='k3y/&amp;Pa$$\1-vault'</span>
+<span class="hl-go">total 8</span>
+<span class="hl-go">-rw-r--r-- 1 root root   0 Sep 16 16:54 app.conf</span>
+<span class="hl-go">-rw-r--r-- 1 root root 151 Sep 16 16:54 app.conf.tmpl</span>
+<span class="hl-go">-rw------- 1 root root  52 Sep 16 16:54 secrets.env</span>
+</code></pre>
+
+<p>Two things to notice: <code>app.conf</code> is empty, and its mode is <code>0644</code> — the secrets file beside it is
+<code>0600</code>. Running the substitution by hand shows what sed received:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">p</span><span class="hl-o">=</span><span class="hl-s1">'k3y/&amp;Pa$$\1-vault'</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'password = @DB_PASSWORD@\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sed<span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-s2">"s/@DB_PASSWORD@/</span><span class="hl-nv">$p</span><span class="hl-s2">/"</span><span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"sed status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">sed: -e expression #1, char 21: unknown option to `s'</span>
+<span class="hl-go">sed status: 1</span>
+</code></pre>
+
+<p>The <code>/</code> in the value ended the <code>s</code> command, and what followed was read as flags. A value with only
+an <code>&amp;</code> is worse, because it does not fail at all:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">p</span><span class="hl-o">=</span><span class="hl-s1">'a&amp;b'</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'x = @P@\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sed<span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-s2">"s/@P@/</span><span class="hl-nv">$p</span><span class="hl-s2">/"</span>
+<span class="hl-go">x = a@P@b</span>
+</code></pre>
+
+<p>The ampersand was replaced by the matched text, so the placeholder is back in the output and nobody
+notices until the application uses it. The shell's own substitution has none of these layers:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">t</span><span class="hl-o">=</span><span class="hl-s1">'x = @P@'</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nv">p</span><span class="hl-o">=</span><span class="hl-s1">'k3y/&amp;Pa$$\1-vault'</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">t</span><span class="hl-p">//@P@/</span><span class="hl-s2">"</span><span class="hl-nv">$p</span><span class="hl-s2">"</span><span class="hl-si">}</span><span class="hl-s2">"</span>
+<span class="hl-go">x = k3y/&amp;Pa$$\1-vault</span>
+<span class="hl-gp">$ </span><span class="hl-nb">umask</span>
+<span class="hl-go">0002</span>
+</code></pre>
+
+<p>That <code>umask</code> is why a redirected file is world-readable. After the fix — <code>${text//…}</code> in place of
+sed, <code>${var:?}</code> for each value, <code>umask 077</code> with an explicit <code>chmod 600</code>, and a temporary file
+renamed into place:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>myapp.service<span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w"> </span>myapp.service<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>myapp.service<span class="hl-w"> </span>-b<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-2
+<span class="hl-go">active</span>
+<span class="hl-go">myapp: logged in to db.internal</span>
+<span class="hl-go">Finished myapp.service - myapp, with its configuration rendered at start.</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/etc/myapp/app.conf<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/myapp/app.conf
+<span class="hl-go">-rw------- 1 root root 157 Sep 16 16:54 /etc/myapp/app.conf</span>
+<span class="hl-gp"># </span>myapp<span class="hl-w"> </span>—<span class="hl-w"> </span>rendered<span class="hl-w"> </span>by<span class="hl-w"> </span>render-config<span class="hl-w"> </span>from<span class="hl-w"> </span>app.conf.tmpl<span class="hl-p">;</span><span class="hl-w"> </span>edits<span class="hl-w"> </span>here<span class="hl-w"> </span>are<span class="hl-w"> </span>overwritten
+<span class="hl-go">[database]</span>
+<span class="hl-go">host = db.internal</span>
+<span class="hl-go">user = myapp</span>
+<span class="hl-go">password = k3y/&amp;Pa$$\1-vault</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'RENDER_VALUES=/dev/null RENDER_OUT=/tmp/out.conf render-config'</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">/usr/local/bin/render-config: line 11: DB_HOST: DB_HOST is not set in /dev/null</span>
+<span class="hl-go">status: 1</span>
+</code></pre>
+
+<p>The password is in the file exactly as it is in the vault, the file is <code>0600</code>, and a values file
+without <code>DB_HOST</code> fails by name.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong>Escaping the value for sed.</strong> <code>${value//\//\\/}</code> and friends: a new escape for every special
+character, in a specific order, and a bug the first time a value contains one you forgot. Do not
+build an escaper; stop generating code.</li>
+<li><strong>Changing the delimiter.</strong> <code>s|@P@|$value|</code> moves the failure from <code>/</code> to <code>|</code>. Any delimiter can
+appear in a password.</li>
+<li><strong>Rotating the password to something &quot;safe&quot;.</strong> The brief says the password stays as it is, and so
+does reality: the value comes from a vault, and the next one will be worse.</li>
+<li><strong><code>chmod 600</code> after writing.</strong> The secret is world-readable while it is written. Set <code>umask 077</code>
+first.</li>
+<li><strong>Editing <code>/etc/myapp/app.conf</code>.</strong> <code>ExecStartPre=</code> renders it again on the next start.</li>
+<li><strong><code>set -u</code> alone for missing values.</strong> It errors when the variable is used, after the output has
+been truncated, and says nothing about which file should have contained it.</li>
+<li><strong><code>printf &quot;$text&quot;</code>.</strong> A <code>%</code> in the data becomes a format directive. <code>printf '%s\n' &quot;$text&quot;</code>.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-nv">text</span><span class="hl-o">=</span><span class="hl-k">$(</span>&lt;<span class="hl-s2">"</span><span class="hl-nv">$TEMPLATE</span><span class="hl-s2">"</span><span class="hl-k">)</span><span class="hl-w">                       </span><span class="hl-c1"># read a file into a variable</span>
+<span class="hl-nv">text</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">text</span><span class="hl-p">//@DB_HOST@/</span><span class="hl-s2">"</span><span class="hl-nv">$DB_HOST</span><span class="hl-s2">"</span><span class="hl-si">}</span><span class="hl-w">         </span><span class="hl-c1"># literal replacement, no escaping needed</span>
+<span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'%s\n'</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$text</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$tmp</span><span class="hl-s2">"</span><span class="hl-w">             </span><span class="hl-c1"># never printf "$text"</span>
+
+<span class="hl-nb">unset</span><span class="hl-w"> </span>DB_HOST<span class="hl-w"> </span>DB_PASSWORD<span class="hl-p">;</span><span class="hl-w"> </span>.<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$VALUES</span><span class="hl-s2">"</span><span class="hl-w">     </span><span class="hl-c1"># no leftovers from the environment</span>
+:<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">DB_HOST</span><span class="hl-p">:?DB_HOST is not set in </span><span class="hl-nv">$VALUES</span><span class="hl-si">}</span><span class="hl-s2">"</span>
+
+<span class="hl-nb">umask</span><span class="hl-w"> </span><span class="hl-m">077</span><span class="hl-w">                                  </span><span class="hl-c1"># before creating anything that holds a secret</span>
+<span class="hl-nv">tmp</span><span class="hl-o">=</span><span class="hl-k">$(</span>mktemp<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$OUT</span><span class="hl-s2">.XXXXXX"</span><span class="hl-k">)</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">trap</span><span class="hl-w"> </span><span class="hl-s1">'rm -f -- "$tmp"'</span><span class="hl-w"> </span>EXIT
+chmod<span class="hl-w"> </span><span class="hl-m">600</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$tmp</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>mv<span class="hl-w"> </span>-f<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$tmp</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$OUT</span><span class="hl-s2">"</span>
+
+<span class="hl-c1"># sed's replacement: &amp; = whole match, \1..\9 = groups, \ escapes, delimiter ends the command</span>
+systemctl<span class="hl-w"> </span>status<span class="hl-w"> </span>unit<span class="hl-w">          </span><span class="hl-c1"># ExecStartPre= failures are shown separately from ExecStart=</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<ul>
+<li><code>man 1 sed</code>, <em>The s Command</em>, for <code>&amp;</code>, <code>\1</code> and the delimiter.</li>
+<li><code>man 1 bash</code>, <em>Parameter Expansion</em>, for <code>${var//pattern/replacement}</code> and <code>${var:?word}</code>.</li>
+<li><code>man 2 umask</code>, and <code>man 1 envsubst</code> for <code>$VAR</code> templates.</li>
+<li><code>man 5 systemd.service</code>, <code>ExecStartPre=</code>.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Which three characters are special in sed's replacement text, and what does each mean?</p>
+<blockquote>
+<p><code>&amp;</code> (the whole matched text), <code>\</code> (escape, and <code>\1</code>…<code>\9</code> for capture groups) and the delimiter
+itself, which ends the replacement early.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does a value containing <code>&amp;</code> produce wrong output rather than an error?</p>
+<blockquote>
+<p><code>&amp;</code> is replaced by the text that matched — the placeholder — so the render succeeds and the
+result silently contains the placeholder instead of the value.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>${text//@P@/&quot;$password&quot;}</code> safe where sed is not?</p>
+<blockquote>
+<p>The replacement side of that expansion is not a pattern; quoting the expansion makes even a
+backslash literal, so the value cannot become syntax.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>chmod 600</code> after writing a secret not enough?</p>
+<blockquote>
+<p>The file exists with the umask's permissions while it is being written, so anyone can read it in
+that window, and a reader that opened it keeps access.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>: &quot;${DB_HOST:?DB_HOST is not set}&quot;</code> do when <code>DB_HOST</code> is unset?</p>
+<blockquote>
+<p>It writes the message to standard error and exits a non-interactive shell with a non-zero
+status, before anything is written.</p>
+</blockquote>
+</li>
+<li>
+<p>The unit's status shows <code>ExecStartPre</code> as success and <code>ExecStart</code> as failure. What does that tell
+you, and why is editing <code>app.conf</code> by hand useless?</p>
+<blockquote>
+<p>The render exited 0 but produced a configuration the application rejects; and <code>ExecStartPre=</code>
+runs on every start, so the rendered file is overwritten each time.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

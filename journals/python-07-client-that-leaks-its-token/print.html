@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A secret has three addresses: the log, the file and the process</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A secret has three addresses: the log, the file and the process</h1>
+  <div class="meta">python, users-permissions · 40 minutes · 1585 words</div>
+</header>
+<p>“Where is the token?” has more answers than people expect. It is in a file, which has an owner and a
+mode. It is in a process, which runs as some account. And it is in everything that process says
+about itself — the info line it prints on every run, the debug line with the headers, the URL it
+repeats in an error message, and from there in the journal, in whatever ships the journal onwards,
+and in the logs of every proxy between here and the partner.</p>
+<p>This lab fixes all three, and the order matters: a token that has been in the journal is a token that
+has to be rotated, however good the file permissions are afterwards.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Find every place a credential can reach a log: normal output, debug output, exception text, and
+the URL of a request.</li>
+<li>Keep a secret out of a URL, and say why a header is the right place for it.</li>
+<li>Set the owner and mode of a secret file so that exactly one account can read it.</li>
+<li>Create a system account with no shell, no home and no password, and run a service as it.</li>
+<li>Tell what a service runs as (<code>systemctl show -p User</code>) and check that the account cannot log in.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>A log is a copy of whatever you put in it</h3>
+<p><code>log.info(&quot;syncing with %s as %s&quot;, API, token)</code> is one line, and it ends in the journal, which is
+readable by root and by members of <code>systemd-journal</code>, kept for weeks, and often forwarded to a
+central system that a far wider group can search. A secret in a log is not “temporarily visible”; it
+is published.</p>
+<p>Three places in the client leak it, and each is its own habit:</p>
+<ul>
+<li><strong>the informational line</strong> — logging the credential alongside the endpoint, usually added while
+debugging “does it even read the file”;</li>
+<li><strong>the debug line</strong> — <code>log.debug(&quot;GET %s headers=%s&quot;, url, headers)</code> prints the whole
+<code>Authorization</code> header; a level nobody uses in production until the day they do;</li>
+<li><strong>the error path</strong> — <code>log.error(&quot;the partner API refused %s&quot;, url)</code>, where the URL carries
+<code>?token=…</code>. Errors are the lines most likely to be read, copied into a ticket and pasted into a
+chat.</li>
+</ul>
+<p>Log what identifies the request, not what authorises it: the endpoint, the status code, a request
+id, at most the last four characters of a key.</p>
+<h3>A token in a URL is a token in many logs</h3>
+<p>A query string travels in the request line. It is logged by the client, by every proxy, by the
+server’s access log, and it turns up in <code>Referer</code> headers of anything the response links to. It also
+survives inside the exception: <code>urllib.error.HTTPError</code> keeps the full URL in <code>.url</code> and
+<code>.filename</code>, so anything that logs the exception’s attributes, or re-formats the request, publishes
+it — even though <code>str(e)</code> is only <code>HTTP Error 403: Forbidden</code>.</p>
+<p><code>Authorization: Bearer …</code> is the header for the purpose. Headers are not written to access logs by
+default, and the standard tooling knows to treat that one as sensitive.</p>
+<h3>The file, the owner and the mode</h3>
+<p><code>/etc/partner/token</code> at mode <code>0644</code> owned by root is readable by every account on the machine — the
+web server, a CI runner, a colleague with a shell. <code>0600</code> is the mode for a secret, and the owner
+should be the account that needs it, which is the service’s account rather than root. The directory
+needs <code>0755</code> (or <code>0750</code> with the right group) so the account can reach the file at all: a mode on the
+file does not help if the directory denies access, and does not hurt if it grants it.</p>
+<p>Whatever the mode, a secret that has been in a log, in a repository, or in an image layer is
+compromised. Fixing the mode is the second step; rotating the credential is the first.</p>
+<h3>An account for the job</h3>
+<p>A service that reads one file and makes one HTTP request has no use for root. A dedicated system
+account limits what a bug — or an exploited dependency — can reach:</p>
+<pre><code class="language-console">useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin partner-sync
+passwd -l partner-sync
+</code></pre>
+<p><code>--system</code> takes a uid below 1000, which keeps it out of the range of human accounts and away from
+tools that list “the users of this machine”. <code>--shell /usr/sbin/nologin</code> and a locked password mean
+nobody can log in as it. <code>User=</code> in the unit — best as a drop-in, so the packaged unit file stays as
+it came — makes the service run as that account, and everything it reads and writes has to be
+readable and writable by it.</p>
+<p>systemd can go further with no account changes at all: <code>DynamicUser=yes</code> invents a transient user
+for each start, and <code>ProtectSystem=strict</code>, <code>PrivateTmp=yes</code>, <code>NoNewPrivileges=yes</code>,
+<code>ProtectHome=yes</code> and <code>LoadCredential=</code> narrow what any of them can touch. <code>LoadCredential=</code> is the
+modern answer for secrets: the file stays root-owned at <code>0600</code>, and systemd passes a copy to the
+service through <code>$CREDENTIALS_DIRECTORY</code>, readable by that unit alone.</p>
+<h2>A failure, walked through</h2>
+<p>Run on the lab’s own machine: <code>ubuntu-26.04-devops</code>, Python 3.14.4, before any change.</p>
+<p>The journal, after one ordinary successful run:</p>
+<pre><code class="language-console">$ sudo journalctl -u partner-sync.service -b --no-pager -o cat | head -4
+Starting partner-sync.service - Fetch the partner's orders...
+INFO syncing with http://127.0.0.1:8977/orders as ptk_live_7Qa4Zx91Nv3RbT0sKfLm
+INFO wrote 2 orders
+partner-sync.service: Deactivated successfully.
+</code></pre>
+<p>The file and the service:</p>
+<pre><code class="language-console">$ ls -l /etc/partner/token; cat /etc/partner/token
+-rw-r--r-- 1 root root 30 Sep 16 17:25 /etc/partner/token
+ptk_live_7Qa4Zx91Nv3RbT0sKfLm
+$ systemctl show partner-sync.service -p User -p Group --value; systemctl cat partner-sync.service | head -8
+
+
+# /etc/systemd/system/partner-sync.service
+[Unit]
+Description=Fetch the partner's orders
+After=partner-api.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/partner/sync.py
+</code></pre>
+<p>Two empty lines: <code>User=</code> and <code>Group=</code> are unset, so the service is root. At DEBUG the same token
+appears twice more, once in the URL and once in the header:</p>
+<pre><code class="language-console">$ sudo env PARTNER_LOG_LEVEL=DEBUG PARTNER_OUT=/tmp/o.json python3 /opt/partner/sync.py 2&gt;&amp;1 | head -3
+INFO syncing with http://127.0.0.1:8977/orders as ptk_live_7Qa4Zx91Nv3RbT0sKfLm
+DEBUG GET http://127.0.0.1:8977/orders?token=ptk_live_7Qa4Zx91Nv3RbT0sKfLm headers={'Authorization': 'Bearer ptk_live_7Qa4Zx91Nv3RbT0sKfLm', 'Accept': 'application/json'}
+INFO wrote 2 orders
+</code></pre>
+<p>A failing run is worse than it looks. The <code>log.error</code> line before the traceback prints the URL, so
+the token is in the journal again; and the <code>HTTPError</code> that ends the run still carries that URL in
+<code>.url</code> for anyone who logs it:</p>
+<pre><code class="language-console">$ sudo sh -c 'printf &quot;ptk_live_0000000000000000000000\n&quot; &gt; /tmp/wrong; PARTNER_TOKEN_FILE=/tmp/wrong PARTNER_OUT=/tmp/o.json python3 /opt/partner/sync.py 2&gt;&amp;1 | tail -3'
+  File &quot;/usr/lib/python3.14/urllib/request.py&quot;, line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 403: bad token
+</code></pre>
+<p>(Only the last three lines are shown; the <code>ERROR the partner API refused http://127.0.0.1:8977/orders?token=…</code> line is above them, and the whole run ends in an unhandled
+traceback rather than a message.)</p>
+<p>After the fix — the token only in the header, nothing about it logged at any level, the file owned by
+a new system account at <code>0600</code>, and <code>User=</code> in a drop-in:</p>
+<pre><code class="language-console">$ sudo systemctl restart partner-sync.service; sudo journalctl -u partner-sync.service -n 3 --no-pager -o cat
+INFO wrote 2 orders
+partner-sync.service: Deactivated successfully.
+Finished partner-sync.service - Fetch the partner's orders.
+$ ls -l /etc/partner/token; cat /etc/partner/token 2&gt;&amp;1
+-rw------- 1 partner-sync partner-sync 30 Sep 16 17:25 /etc/partner/token
+cat: /etc/partner/token: Permission denied
+$ systemctl show partner-sync.service -p User --value; id partner-sync; passwd -S partner-sync
+partner-sync
+uid=997(partner-sync) gid=983(partner-sync) groups=983(partner-sync)
+partner-sync L 2026-09-16 -1 -1 -1 -1
+</code></pre>
+<p><code>L</code> is a locked password. DEBUG now says what was requested and not with what, and a refused request
+is one line with the status code:</p>
+<pre><code class="language-console">$ sudo env PARTNER_LOG_LEVEL=DEBUG PARTNER_OUT=/tmp/o.json python3 /opt/partner/sync.py 2&gt;&amp;1 | head -3
+INFO syncing with http://127.0.0.1:8977/orders
+DEBUG GET http://127.0.0.1:8977/orders
+INFO wrote 2 orders
+$ sudo sh -c 'PARTNER_TOKEN_FILE=/tmp/wrong PARTNER_OUT=/tmp/o.json python3 /opt/partner/sync.py; echo &quot;exit: $?&quot;' 2&gt;&amp;1 | tail -2
+ERROR the partner API refused the request: HTTP 403
+exit: 1
+</code></pre>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong>Fixing the info line and leaving DEBUG.</strong> The debug line is the one that prints the headers, and
+somebody will raise the level during the next incident.</li>
+<li><strong>Masking with a filter</strong> (<code>logging.Filter</code> that rewrites the token). It helps, but only for
+messages that go through that logger — not for a traceback, and not for the URL an exception
+carries. Keep the secret out of the strings instead.</li>
+<li><strong>Deleting the token file</strong> or emptying it to pass a permissions check. The sync has to keep
+working; the lab’s first check is there for that.</li>
+<li><strong><code>chmod 600</code> and leaving the owner as root</strong>, then running the service as a new account. It then
+cannot read its own token. Owner and mode go together.</li>
+<li><strong><code>chmod 700 /etc/partner</code></strong> with the file owned by another account. The directory has to be
+traversable by the account that reads the file.</li>
+<li><strong>Using an ordinary human-range account</strong> (uid ≥ 1000), or one with a real shell. It shows up in
+user listings and can be logged in to.</li>
+<li><strong>Editing the packaged unit file in <code>/lib/systemd/system</code>.</strong> A drop-in under
+<code>/etc/systemd/system/&lt;unit&gt;.d/</code> survives package updates and shows up in <code>systemctl cat</code>.</li>
+<li><strong>Forgetting the output directory.</strong> The service writes <code>/var/lib/partner</code>; after the change it is
+no longer root that writes there.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-python">log.info(&quot;syncing with %s&quot;, API)                 # the endpoint, never the credential
+req = urllib.request.Request(API, headers={&quot;Authorization&quot;: f&quot;Bearer {token}&quot;})
+except urllib.error.HTTPError as e:
+    log.error(&quot;the API refused the request: HTTP %s&quot;, e.code)   # not e.url, not str(e)
+</code></pre>
+<pre><code class="language-console">useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin svc
+passwd -l svc
+chown svc:svc /etc/app/token &amp;&amp; chmod 600 /etc/app/token
+systemctl edit --force app.service        # a drop-in with [Service] User=svc
+systemctl show app.service -p User -p Group --value
+passwd -S svc                             # L = locked
+journalctl _SYSTEMD_INVOCATION_ID=$(systemctl show app -p InvocationID --value)
+</code></pre>
+<p>Further, in the unit: <code>DynamicUser=yes</code>, <code>LoadCredential=token:/etc/app/token</code>,
+<code>ProtectSystem=strict</code>, <code>NoNewPrivileges=yes</code>, <code>PrivateTmp=yes</code>.</p>
+<h2>Going deeper</h2>
+<ul>
+<li><code>man 5 systemd.exec</code> — <code>User=</code>, <code>DynamicUser=</code>, <code>LoadCredential=</code>, <code>ProtectSystem=</code> — and
+<code>man 5 systemd.unit</code> for drop-ins.</li>
+<li><code>man 8 useradd</code>, <code>man 1 passwd</code> (<code>-l</code>, <code>-S</code>), <code>man 1 chmod</code>, <code>man 1 chown</code>.</li>
+<li>The Python logging HOWTO, and <code>logging.Filter</code> for masking what cannot be kept out.</li>
+<li>OWASP’s guidance on secrets in logs and URLs.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Name three places a token can reach the journal from one small client.</p>
+<blockquote>
+<p>An informational line that logs it, a debug line that prints the request headers, and an error
+that repeats a URL with the token in its query string (including an unhandled <code>HTTPError</code>).</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>?token=…</code> worse than an <code>Authorization</code> header?</p>
+<blockquote>
+<p>The URL is in the request line, so it is logged by the client, by proxies and by the server’s
+access log, and it appears in exception text; the header is not logged by default.</p>
+</blockquote>
+</li>
+<li>
+<p>Which mode and owner does a service’s token file want, and what does the directory need?</p>
+<blockquote>
+<p><code>0600</code>, owned by the account the service runs as; the directory must let that account traverse
+it (<code>0755</code>, or <code>0750</code> with the right group).</p>
+</blockquote>
+</li>
+<li>
+<p>What do <code>--system</code>, <code>--shell /usr/sbin/nologin</code> and <code>passwd -l</code> each give you?</p>
+<blockquote>
+<p>A uid below 1000 (outside the human range), no login shell, and a password that cannot be used
+to authenticate.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you check what account a service runs as, without reading the unit file?</p>
+<blockquote>
+<p><code>systemctl show &lt;unit&gt; -p User -p Group --value</code>; an empty answer means root.</p>
+</blockquote>
+</li>
+<li>
+<p>The mode is fixed and the token is out of the logs. Is the credential safe?</p>
+<blockquote>
+<p>No. It was in the journal, so it must be rotated; permissions protect the next token, not the
+one that has already been published.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

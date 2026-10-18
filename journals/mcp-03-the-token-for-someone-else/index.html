@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Token for Someone Else — a remote MCP server checks who a token was issued for · Norboten</title>
+<meta name="description" content="A remote MCP server behind OAuth receives a bearer token with every request and has to decide whether to honour it. &amp;quot;Signed by an issuer I trust&amp;quot; is n">
+<link rel="canonical" href="https://norboten.org/journals/mcp-03-the-token-for-someone-else/"><meta property="og:title" content="The Token for Someone Else — a remote MCP server checks who a token was issued for · Norboten">
+<meta property="og:description" content="A remote MCP server behind OAuth receives a bearer token with every request and has to decide whether to honour it. &amp;quot;Signed by an issuer I trust&amp;quot; is n">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/mcp-03-the-token-for-someone-else/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Token for Someone Else — a remote MCP server checks who a token was issued for · Norboten">
+<meta name="twitter:description" content="A remote MCP server behind OAuth receives a bearer token with every request and has to decide whether to honour it. &amp;quot;Signed by an issuer I trust&amp;quot; is n">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "The Token for Someone Else \u2014 a remote MCP server checks who a token was issued for",
+  "description": "A remote MCP server behind OAuth receives a bearer token with every request and has to decide whether to honour it. \u0026quot;Signed by an issuer I trust\u0026quot; is n",
+  "url": "https://norboten.org/journals/mcp-03-the-token-for-someone-else/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1115,
+  "timeRequired": "PT30M",
+  "about": ["Model Context Protocol", "Networking"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Token for Someone Else</div>
+    <h1>The Token for Someone Else — a remote MCP server checks who a token was issued for</h1>
+    <p class="muted">
+      30 minutes' reading · 1115 words ·<span class="tag">Model Context Protocol</span><span class="tag">Networking</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 79 words</title><rect x="0.0" y="0" width="50.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 372 words</title><rect x="53.3" y="0" width="236.9" height="30" rx="4" fill="#1d2a23"/><text x="61.3" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 272 words</title><rect x="293.2" y="0" width="173.2" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 107 words</title><rect x="469.5" y="0" width="68.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 61 words</title><rect x="540.6" y="0" width="38.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 87 words</title><rect x="582.5" y="0" width="55.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 187 words</title><rect x="640.9" y="0" width="119.1" height="30" rx="4" fill="#1d2a23"/><text x="648.9" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/mcp-03-the-token-for-someone-else/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>A remote MCP server behind OAuth receives a bearer token with every request and has to decide whether
+to honour it. &quot;Signed by an issuer I trust&quot; is necessary and nowhere near enough: the same issuer signs
+tokens for every service it serves. A token carries an audience — the service it was issued for — and
+an expiry. A server that ignores the audience accepts the billing sync's token as readily as its own,
+and a server that ignores the expiry accepts a token that leaked last year. Each turns one stolen token
+into a key to everything that trusts the issuer.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Name the claims an MCP server must check in an access token, and what each prevents.</li>
+<li>Read a token's claims without its signing key, and tell which service it is for.</li>
+<li>Configure a resource server to accept only tokens issued for its own URL, and not after they expire.</li>
+<li>Get a client a token for the server it actually talks to.</li>
+<li>Recognise, in a client, the symptom of a server rightly refusing its token.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="a-token-is-a-signed-list-of-claims">A token is a signed list of claims</h3>
+<p>The tokens here are JWTs: three base64url parts — a header, the claims, a signature. <code>lab-idp show</code>
+decodes the middle part; anyone can read it, which is why a token must never be treated as secret
+<em>content</em>, only as a secret <em>credential</em>. The claims that matter: <code>iss</code>, who signed it; <code>aud</code>, which
+service it is for; <code>sub</code>, on whose behalf; <code>exp</code>, until when. The signature proves <code>lab-idp</code> wrote those
+claims. It says nothing about whether <em>this</em> server should accept them.</p>
+<h3 id="audience-the-one-check-that-stops-a-confused-deputy">Audience: the one check that stops a confused deputy</h3>
+<p>The MCP authorization specification requires a server to accept only tokens issued for itself —
+RFC 8707 resource indicators on the client side, an audience check on the server side — and forbids a
+server from passing a client's token on to another service. Without the check, any service's token
+works here, and a token this server receives could be replayed against any other lax service. With it,
+<code>audience</code> is the server's own URL, <code>http://127.0.0.1:8931/mcp</code>, and a token for
+<code>https://billing.example/api</code> is refused with <code>401</code> and <code>error=&quot;invalid_token&quot;</code>.</p>
+<h3 id="expiry">Expiry</h3>
+<p><code>exp</code> bounds how long a leaked token is useful. <code>verify_exp: false</code> removes the bound — the kind of
+setting someone adds while debugging a clock and forgets. Short lifetimes plus refresh tokens are how
+OAuth keeps a stolen access token cheap; they only work if the server looks at <code>exp</code>.</p>
+<h3 id="the-clients-side-one-token-per-audience">The client's side: one token per audience</h3>
+<p>The job reads <code>INVENTORY_TOKEN</code> from <code>~/.config/inventory/env</code>, and <code>.mcp.json</code> sends it as
+<code>Authorization: Bearer ${INVENTORY_TOKEN}</code>. The file held a copy of the billing sync's token because it
+worked. The fix is a token minted for the inventory server; a client that talks to two services holds
+two tokens. In a full OAuth flow the client asks for this with the <code>resource</code> parameter, and the
+authorization server stamps it into <code>aud</code>.</p>
+<h3 id="what-a-refused-client-looks-like">What a refused client looks like</h3>
+<p>When the server answers <code>401</code>, Claude Code does not report &quot;wrong audience&quot;. It treats the server as one
+that needs authentication, does not connect, and offers the model none of its tools — the job's model
+sees <code>No such tool available</code>. The server's log and its <code>WWW-Authenticate</code> header carry the reason.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the lab's container (Ubuntu 26.04, Claude Code 2.1.270; the settings file shown on one
+line). The server's settings, and the job's token:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/etc/inventory-mcp/config.json
+<span class="hl-go">{"issuer": "https://idp.lab", "audience": null, "verify_exp": false, "bind": "127.0.0.1", "port": 8931}</span>
+<span class="hl-gp">$ </span>.<span class="hl-w"> </span>~/.config/inventory/env<span class="hl-p">;</span><span class="hl-w"> </span>lab-idp<span class="hl-w"> </span>show<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$INVENTORY_TOKEN</span><span class="hl-s2">"</span>
+<span class="hl-go">{</span>
+<span class="hl-go">  "iss": "https://idp.lab",</span>
+<span class="hl-go">  "aud": "https://billing.example/api",</span>
+<span class="hl-go">  "sub": "billing-sync",</span>
+<span class="hl-go">  "iat": 1789498100,</span>
+<span class="hl-go">  "exp": 1792090100</span>
+<span class="hl-go">}</span>
+<span class="hl-gp">$ </span>tail<span class="hl-w"> </span>-3<span class="hl-w"> </span>/var/log/inventory-mcp.log
+<span class="hl-go">2026-09-15 18:48:21,109 list_hosts for billing-sync</span>
+</code></pre>
+
+<p>The inventory server logs its caller as <code>billing-sync</code>. Any token the provider signs works — a fresh
+one for billing, asked for by hand:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>lab-idp<span class="hl-w"> </span>mint<span class="hl-w"> </span>--audience<span class="hl-w"> </span>https://billing.example/api<span class="hl-w"> </span>--subject<span class="hl-w"> </span>someone-else<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/t
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s2">"%{http_code}\n"</span><span class="hl-w"> </span>-H<span class="hl-w"> </span><span class="hl-s2">"Authorization: Bearer </span><span class="hl-k">$(</span>cat<span class="hl-w"> </span>/tmp/t<span class="hl-k">)</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>-H<span class="hl-w"> </span><span class="hl-s2">"Content-Type: application/json"</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"jsonrpc":"2.0","id":1,"method":"tools/list"}'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>http://127.0.0.1:8931/mcp
+<span class="hl-go">200</span>
+</code></pre>
+
+<p>Set <code>audience</code> to the server's URL and <code>verify_exp</code> to true, <code>sudo inventory-mcp restart</code>, and the job's
+copied token is refused:</p>
+<pre class="hl"><code class="language-console"><span class="hl-go">HTTP/1.0 401 Unauthorized</span>
+<span class="hl-go">WWW-Authenticate: Bearer error="invalid_token", error_description="token is for 'https://billing.example/api', not this server"</span>
+</code></pre>
+
+<p>The job, run with the old token at this point, gets no tools at all:</p>
+<pre><code class="language-text">list_hosts: &lt;tool_use_error&gt;Error: No such tool available: mcp__inventory__list_hosts&lt;/tool_use_error&gt;
+</code></pre>
+<p>A token for the inventory server, into the job's environment:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">token</span><span class="hl-o">=</span><span class="hl-k">$(</span>sudo<span class="hl-w"> </span>lab-idp<span class="hl-w"> </span>mint<span class="hl-w"> </span>--audience<span class="hl-w"> </span>http://127.0.0.1:8931/mcp<span class="hl-w"> </span>--subject<span class="hl-w"> </span>inventory-report<span class="hl-k">)</span>
+<span class="hl-gp">$ </span>lab-idp<span class="hl-w"> </span>show<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$token</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s2">"aud|sub"</span>
+<span class="hl-go">  "aud": "http://127.0.0.1:8931/mcp",</span>
+<span class="hl-go">  "sub": "inventory-report",</span>
+<span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s2">"INVENTORY_TOKEN=%s\n"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$token</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-w"> </span>~/.config/inventory/env
+</code></pre>
+
+<p>and the job again:</p>
+<pre><code class="language-text">list_hosts: db-5857  database  Ubuntu 26.04
+web-1  web  Ubuntu 26.04
+legacy-2  batch  Ubuntu 20.04
+</code></pre>
+<p>The log now names the right caller, <code>list_hosts for inventory-report</code>. An expired token, minted with an
+issue time two hours ago and a one-hour lifetime, is refused too:
+<code>{&quot;error&quot;: &quot;invalid_token&quot;, &quot;error_description&quot;: &quot;token expired&quot;}</code>.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong>Minting a new token and stopping.</strong> The job works, and the server still takes every other service's
+token. The grader mints a billing token of its own.</li>
+<li><strong>Setting the audience to the billing API's URL.</strong> The copied token passes; the check now protects
+the wrong service.</li>
+<li><strong>Checking <code>sub</code> instead of <code>aud</code>.</strong> <code>sub</code> says on whose behalf; a billing token for the same person is
+still a billing token.</li>
+<li><strong>Turning off the signature check to &quot;just test&quot;.</strong> Then anyone can write the claims.</li>
+<li><strong>Pasting the token into <code>.mcp.json</code>.</strong> It works and ends up in the repository; <code>${INVENTORY_TOKEN}</code>
+keeps it in the job's environment.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre><code class="language-text">lab-idp show &quot;$TOKEN&quot;                                   # iss, aud, sub, iat, exp — no key needed
+sudo lab-idp mint --audience URL --subject NAME         # a token for one service
+curl -i -H &quot;Authorization: Bearer $TOKEN&quot; -H 'Content-Type: application/json' \
+  -d '{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:1,&quot;method&quot;:&quot;tools/list&quot;}' http://127.0.0.1:8931/mcp
+sudo inventory-mcp restart                              # settings are read at start
+tail -f /var/log/inventory-mcp.log                      # who called, what was refused, and why
+</code></pre>
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>The Model Context Protocol</em> (topic journal <code>mcp</code>) — Authorization for remote servers</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization</li>
+<li>https://www.rfc-editor.org/rfc/rfc9068</li>
+<li>https://www.rfc-editor.org/rfc/rfc8707</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>The Model Context Protocol</em> (<code>mcp</code>), <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>A token is correctly signed by the issuer the server trusts. Why may the server still refuse it?</p>
+<blockquote>
+<p>It may be for another service (<code>aud</code>), or past its <code>exp</code>; the signature proves only who wrote the
+claims.</p>
+</blockquote>
+</li>
+<li>
+<p>What does the MCP authorization specification require of a server about audiences?</p>
+<blockquote>
+<p>To accept only tokens issued for itself — its own resource identifier — and not to pass tokens it
+received on to other services.</p>
+</blockquote>
+</li>
+<li>
+<p>How can you tell which service a JWT was issued for without the signing key?</p>
+<blockquote>
+<p>Decode its middle, base64url part and read <code>aud</code>; the claims are signed, not encrypted.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a Claude Code job show when a remote server rightly refuses its token?</p>
+<blockquote>
+<p>The server is not connected: none of its tools are offered, so a call reports that no such tool is
+available. The reason is in the server's 401 and log.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>verify_exp: false</code> dangerous even if tokens are never logged?</p>
+<blockquote>
+<p>A token that leaks in any way stays valid for ever instead of for its lifetime.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

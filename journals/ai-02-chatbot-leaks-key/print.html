@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Every place a secret can leak from</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Every place a secret can leak from</h1>
+  <div class="meta">ai-services, users-permissions, logging-journald · 45 minutes · 4050 words</div>
+</header>
+<p>The security review found four things wrong with the chat gateway, and none of them is a bug in the
+usual sense. The code does what it was told. The upstream API key is simply <em>everywhere</em>: in a
+world-readable file and in the unit’s environment where <code>systemctl show</code> prints it to any account;
+and the clients’ tokens are in the journal, because the gateway logs request headers. (The review
+feared the upstream key was logged too. On the lab machine it was not — until a careless check for
+leaks put it there, which is a story this journal tells below.) Meanwhile the gateway will serve anyone who can
+reach the port, and nothing stops one script in a loop from spending a month’s budget in an afternoon.</p>
+<p>An AI gateway is a particularly good place to learn this, because it concentrates the two things that
+make a leak expensive: a secret that costs money per use, and an endpoint whose whole purpose is to
+spend it. But the lesson is general. <strong>A secret is only as private as the most readable place it has
+ever been written</strong> — and “written” includes environment variables, command lines, and logs, not just
+files. Fixing the file permissions is the easy fifth of the job.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>List the places a process’s secret can be read from — file, unit, command line, environment, log —
+and say which accounts can read each.</li>
+<li>Move a secret out of a systemd unit into a private file or a systemd credential, and verify that
+<code>systemctl show</code> no longer reveals it.</li>
+<li>Put bearer-token authentication in front of an internal service, and say why 401 and 403 are
+different answers.</li>
+<li>Rate-limit an expensive endpoint in nginx with <code>limit_req</code>, and explain rate, burst and <code>nodelay</code> in
+terms of the leaky bucket.</li>
+<li>Stop an application logging secrets, and deal with the secrets already in the journal.</li>
+<li>Explain why a secret that has leaked must be rotated even after every leak is closed.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Where a secret actually lives</h3>
+<p>A process’s secret can be read from more places than its author usually thinks about. Take the
+gateway as the security review found it:</p>
+<pre><code class="language-console">$ ls -l /etc/chat-gateway/upstream.key
+-rw-r--r-- 1 root root 45 Sep 12 09:02 /etc/chat-gateway/upstream.key     # every account
+
+$ systemctl show -p Environment chat-gateway          # run as an unprivileged user
+Environment=UPSTREAM_KEY=sk-norboten-3f9a…
+
+$ systemctl cat chat-gateway | grep KEY
+Environment=UPSTREAM_KEY=sk-norboten-3f9a…
+</code></pre>
+<p>The last two need no privilege at all. Unit files under <code>/etc/systemd/system</code> are world-readable by
+convention, and systemd’s D-Bus API exposes a unit’s properties — including its <code>Environment=</code> — to any
+local user. So <code>Environment=</code> in a unit is not a place to keep a secret; it is a place to <em>publish</em>
+one to everyone with a shell.</p>
+<p>The full map, for reference:</p>
+<table>
+<thead>
+<tr>
+<th>where</th>
+<th>who can read it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a file</td>
+<td>whatever its mode says — <code>0644</code> means every account</td>
+</tr>
+<tr>
+<td><code>Environment=</code> in a unit</td>
+<td><strong>every local user</strong>, via <code>systemctl show</code> / <code>systemctl cat</code></td>
+</tr>
+<tr>
+<td><code>EnvironmentFile=</code></td>
+<td>the file’s mode governs the file — but the values still end up in the process environment</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/environ</code></td>
+<td>the process owner and root (mode <code>0400</code>) — and every child process inherits the environment</td>
+</tr>
+<tr>
+<td>the command line (<code>ExecStart=… --key sk-…</code>)</td>
+<td><strong>every local user</strong>, via <code>ps</code> or <code>/proc/&lt;pid&gt;/cmdline</code></td>
+</tr>
+<tr>
+<td>the journal</td>
+<td>members of <code>adm</code>/<code>systemd-journal</code>, and root — and it is retained, and often shipped off the box</td>
+</tr>
+<tr>
+<td>shell history</td>
+<td>whoever typed <code>export KEY=…</code> — and whoever reads their <code>~/.bash_history</code></td>
+</tr>
+<tr>
+<td>a command run through <code>sudo</code></td>
+<td>the journal again: sudo logs every command it runs, <strong>arguments included</strong></td>
+</tr>
+<tr>
+<td>a core dump</td>
+<td>whoever can read <code>/var/lib/systemd/coredump</code></td>
+</tr>
+</tbody>
+</table>
+<p>Two entries in that table surprise people most. <strong>Command-line arguments are public</strong>: a secret passed
+as a flag is visible to <code>ps aux</code> for as long as the process runs, which is why well-behaved tools take
+secrets from files or stdin. And <strong>environment variables are inherited</strong>: a secret in the environment
+is handed to every subprocess the service starts — every <code>curl</code>, every shell-out, every crash
+reporter — whether or not it needs it.</p>
+<h3>Three good homes for a secret, in increasing order of isolation</h3>
+<p><strong>A private file the service reads by path.</strong> The gateway supports <code>UPSTREAM_KEY_FILE</code>, which is the
+most portable pattern: the secret is in one file, owned by the service account, readable by nobody
+else:</p>
+<pre><code class="language-console">$ sudo chown chatgw:chatgw /etc/chat-gateway/upstream.key
+$ sudo chmod 600 /etc/chat-gateway/upstream.key
+$ sudo -u nobody cat /etc/chat-gateway/upstream.key
+cat: /etc/chat-gateway/upstream.key: Permission denied
+</code></pre>
+<p><code>0600</code> owned by the service is correct. <code>0640 root:chatgw</code> is also correct and slightly better on a
+machine where you do not want the service able to <em>rewrite</em> its own secret; either way, the <code>o</code>
+triad is empty.</p>
+<p><strong><code>EnvironmentFile=</code> with a private file.</strong> Many applications only read their secrets from the
+environment. <code>EnvironmentFile=/etc/app/env</code> with that file at <code>0600 root:root</code> keeps the value out of
+<code>systemctl show</code> and out of the world-readable unit — systemd reads the file as root at start. The
+value still ends up in the process environment, with the inheritance caveat above.</p>
+<p><strong>A systemd credential.</strong> This is the mechanism designed for exactly this problem:</p>
+<pre><code class="language-ini">[Service]
+LoadCredential=upstream_key:/etc/chat-gateway/upstream.key
+</code></pre>
+<p>At start, systemd copies the file into a private, in-memory directory that only this unit’s processes
+can read, and sets <code>$CREDENTIALS_DIRECTORY</code> to point at it. The application reads
+<code>$CREDENTIALS_DIRECTORY/upstream_key</code>. The source file can then be <code>0600 root:root</code> — the service
+account never needs access to it at all — nothing appears in the environment, nothing is inherited,
+and the credential disappears when the unit stops. With <code>systemd-creds encrypt</code>, the stored file can
+even be encrypted to the machine’s TPM or host key, which makes a copied <code>/etc</code> useless. The gateway in
+this lab checks for a credential first, then a key file, then the environment, which is the right
+order of preference.</p>
+<p>Whichever you choose, verify from the outside as an unprivileged user — that is the view an attacker
+gets:</p>
+<pre><code class="language-console">$ sudo -u nobody systemctl show chat-gateway | grep -c sk-norboten
+0
+$ sudo -u nobody systemctl cat chat-gateway | grep -c sk-norboten
+0
+$ ps -eo args | grep -c '[s]k-norboten'
+0
+</code></pre>
+<h3>Removing it from the unit, really</h3>
+<p>There is a detail here that catches careful people. The key is in the unit file itself:</p>
+<pre><code class="language-ini">[Service]
+User=chatgw
+EnvironmentFile=/etc/chat-gateway/gateway.env
+Environment=UPSTREAM_KEY=sk-norboten-3f9a…
+</code></pre>
+<p>The drop-in reflex — override it in <code>chat-gateway.service.d/</code> with an empty <code>Environment=</code> — does
+reset the variable for the running process. But <code>systemctl cat</code> still prints the original file, key
+and all, because a drop-in is layered on top of the unit rather than replacing it. The value has to be
+deleted from the file it is written in:</p>
+<pre><code class="language-console">$ sudo sed -i '/^Environment=UPSTREAM_KEY=/d' /etc/systemd/system/chat-gateway.service
+$ sudo systemctl daemon-reload
+$ sudo systemctl restart chat-gateway
+</code></pre>
+<p>And check the rest of <code>/etc</code> while you are there. A secret that has been copied once has usually been
+copied twice — into a backup of the unit (<code>chat-gateway.service.bak</code>, <code>.orig</code>, <code>~</code>), into an old
+<code>env</code> file, into a note:</p>
+<pre><code class="language-console">$ sudo grep -rlF -f /etc/chat-gateway/upstream.key /etc 2&gt;/dev/null | xargs -r sudo stat -c '%a %U %n'
+600 chatgw /etc/chat-gateway/upstream.key
+600 root /etc/model-api/key
+</code></pre>
+<p>Read the shape of that <code>grep</code> before you type anything like it, because the obvious version is itself a
+leak. <code>sudo grep -rl &quot;$(sudo cat /etc/chat-gateway/upstream.key)&quot; /etc</code> finds the same two files — and
+puts the key into the system journal, because sudo logs each command it runs with its full argument
+list:</p>
+<pre><code>sudo[1246]: northelks : PWD=/ ; USER=root ; COMMAND=/usr/bin/grep -rl sk-norboten-87a81936e2272b54d3475d9764629233 /etc
+</code></pre>
+<p>That line is real. On the lab machine, after every other leak had been closed, it was the <em>only</em> line
+in the journal containing the key — written by the check for leaks. <code>-F -f FILE</code> reads the pattern
+from the file, so the command line holds a path instead of the secret; searched again afterwards, the
+journal still had just that one old line. The same logic applies to any tool that takes a secret as an
+argument: prefer the form that reads it from a file or from stdin.</p>
+<p>Two files, both now private. <code>/etc/model-api/key</code> is the upstream service’s own copy, which belongs to
+a different service and is <code>0600 root:root</code> already.</p>
+<h3>Authentication: who is asking</h3>
+<p>The gateway supports a shared bearer token, enabled by <code>REQUIRE_TOKEN=1</code>. The client sends:</p>
+<pre><code>Authorization: Bearer &lt;token&gt;
+</code></pre>
+<p>and the gateway compares it against the first line of <code>/etc/chat-gateway/clients.token</code>. Two
+response codes are involved and they are not interchangeable:</p>
+<ul>
+<li><strong>401 Unauthorized</strong> — “I do not know who you are”: no credentials, or credentials that do not
+verify. Retry with credentials.</li>
+<li><strong>403 Forbidden</strong> — “I know who you are, and you may not do this”. Retrying with the same
+credentials will not help.</li>
+</ul>
+<p>An anonymous request to a protected endpoint is a 401.</p>
+<p>A bearer token is a password with a different name, so everything true of passwords is true of it.
+It belongs in a file with a tight mode (<code>clients.token</code> is <code>0640 root:chatgw</code> — readable by the service,
+by root, by nobody else). It should be compared in constant time — <code>hmac.compare_digest</code> in Python,
+not <code>!=</code>, which returns faster the earlier the first wrong byte is and in principle leaks the token a
+character at a time. And it must never be logged, which is the next section.</p>
+<p>Where to enforce it is a design choice worth making consciously. In the application, as here, the
+check lives next to the code that needs it and cannot be bypassed by reaching the gateway’s port
+directly — and the gateway binds <code>127.0.0.1:8100</code>, so only the proxy can reach it anyway. At the
+proxy, nginx can do it with <code>auth_request</code> to a small auth endpoint, or with a <code>map</code> on
+<code>$http_authorization</code>; that protects several backends at once. Real deployments often do both. What
+matters is that a service that spends money never answers an unauthenticated request.</p>
+<h3>Rate limiting: the leaky bucket</h3>
+<p>nginx’s <code>limit_req</code> implements a leaky bucket, and the three numbers only make sense in those terms:</p>
+<pre><code class="language-nginx"># in the http context (conf.d/*.conf is included inside http{})
+limit_req_zone $binary_remote_addr zone=chatgw:10m rate=2r/s;
+
+server {
+    listen 8090;
+    location / {
+        limit_req zone=chatgw burst=5 nodelay;
+        limit_req_status 429;
+        proxy_pass http://127.0.0.1:8100;
+    }
+}
+</code></pre>
+<ul>
+<li><strong><code>rate=2r/s</code></strong> — the bucket drains at two requests per second, per key. nginx tracks this in
+milliseconds, so <code>2r/s</code> means “one every 500 ms”, not “two in any given second”.</li>
+<li><strong><code>burst=5</code></strong> — the bucket can hold five requests above the rate before it overflows. Without
+<code>burst</code> the default is zero, so the second request inside 500 ms is rejected — which is too strict for
+any real client.</li>
+<li><strong><code>nodelay</code></strong> — serve burst requests immediately rather than delaying each one until it fits the
+rate. Without <code>nodelay</code>, nginx <em>queues</em> excess requests and releases them at 2 r/s, so a client sees
+slow responses rather than refusals — gentler, and it ties up connections.</li>
+<li><strong><code>limit_req_status 429</code></strong> — the default rejection status is <strong>503</strong>, which tells clients and
+monitoring that the service is broken. <code>429 Too Many Requests</code> tells them to slow down, and it is what
+well-behaved clients back off on.</li>
+</ul>
+<p>The key is the other half of the design. <code>$binary_remote_addr</code> is the client IP in 4 or 16 bytes
+rather than a string, so a <code>10m</code> zone holds roughly 160,000 addresses. But limiting by IP has two
+well-known failure modes: every client behind one NAT or corporate proxy shares a single budget, and
+if nginx itself sits behind a load balancer, <em>every</em> request has the balancer’s address and one
+bucket throttles the whole company. For a token-authenticated API, limiting per token is often closer
+to the intent:</p>
+<pre><code class="language-nginx">limit_req_zone $http_authorization zone=pertoken:10m rate=2r/s;
+</code></pre>
+<p><code>limit_conn</code> is the companion for <em>concurrency</em> rather than rate — “at most two generations in flight
+per client” — which matters for model endpoints where a single request can hold a GPU for a minute.
+And <code>limit_req_dry_run on;</code> logs what would have been rejected without rejecting it, which is how you
+choose numbers on a live service.</p>
+<p>Rate limiting belongs at the proxy rather than in the application for the same reason a firewall
+belongs in front of a service: excess requests are turned away before they cost anything, including
+the application’s own threads. The briefing’s phrasing — “rejected before it reaches the model” — is
+precise.</p>
+<p>Test a limit with an actual burst, not a loop of sequential requests (which a 2 r/s limit may let
+through if each request takes more than half a second):</p>
+<pre><code class="language-console">$ tok=$(sudo head -1 /etc/chat-gateway/clients.token)
+$ seq 40 | xargs -P 10 -I{} curl -s -o /dev/null -w '%{http_code}\n' \
+    -H &quot;Authorization: Bearer $tok&quot; -d '{&quot;prompt&quot;:&quot;ping&quot;}' localhost:8090/ask \
+  | sort | uniq -c
+      6 200
+     34 429
+</code></pre>
+<p><code>xargs -P 10</code> runs ten at once; <code>sort | uniq -c</code> is the frequency count from the linux-04 journal.
+Some 200s (the rate plus the burst) and many 429s is the shape of a working limit. All 200 means no
+limit; all 429 means a limit that refuses normal use.</p>
+<h3>Logs are a copy of every secret they print</h3>
+<pre><code class="language-python">if LOG_HEADERS:
+    print(f&quot;request headers: {dict(self.headers)}&quot;, flush=True)
+</code></pre>
+<p>Every request’s <code>Authorization</code> header — a client token — goes to stdout, and systemd captures stdout
+into the journal. The journal is readable by root and by the <code>adm</code> and <code>systemd-journal</code> groups, it is
+retained for weeks, and on most real machines it is forwarded to a central log system where far more
+people can search it. A secret in a log has been <em>copied to everywhere the log goes</em>.</p>
+<p>The fix is to stop logging headers (<code>LOG_HEADERS=0</code>), and the general rules are worth writing down:</p>
+<ul>
+<li>never log <code>Authorization</code>, <code>Cookie</code>, <code>Set-Cookie</code>, <code>X-Api-Key</code>, or request bodies of authentication
+endpoints — redact them by name if you log headers at all;</li>
+<li>log <em>that</em> a request was authenticated and <em>as whom</em> (a client id), not the credential;</li>
+<li>nginx’s default access log format records none of these headers — keep it that way, and be careful
+with custom formats that add <code>$http_authorization</code>.</li>
+</ul>
+<p>Two journal mechanics are useful here. Every start of a unit gets a fresh <strong>invocation ID</strong>, and each
+journal entry records it, so you can look at exactly one run:</p>
+<pre><code class="language-console">$ id=$(systemctl show -p InvocationID --value chat-gateway)
+$ sudo journalctl _SYSTEMD_INVOCATION_ID=$id --no-pager
+</code></pre>
+<p>That is how you verify the fix — the current run is clean — without the older, leaked entries getting
+in the way. And those older entries do not disappear because you fixed the logging. If they matter,
+remove them:</p>
+<pre><code class="language-console">$ sudo journalctl --rotate                   # close the active journal files
+$ sudo journalctl --vacuum-time=1s           # delete archived files older than one second
+</code></pre>
+<p>That is a blunt instrument — it deletes <em>all</em> history, not just the leaked lines, since journal files
+cannot be edited — and it does nothing about copies already forwarded elsewhere.</p>
+<h3>A leaked secret is a burned secret</h3>
+<p>Which leads to the part of the job no configuration change performs. Everything above closes the
+leaks. It does not un-leak anything. The key sat in a world-readable file and in <code>systemctl show</code>, and
+the journal has held client tokens for as long as <code>LOG_HEADERS</code> was on. Anyone who read them still has
+them.</p>
+<p>So the professional finish is <strong>rotation</strong>: issue a new upstream key, revoke the old one at the
+provider, generate a new client token and hand it to the clients through a proper channel. The lab
+cannot do that for you — the stand-in model service owns its key — but on a real system, “we fixed the
+permissions” without “and we rotated the key” is a finding that stays open. Rotation is also why the
+secret should live in exactly one private file: replacing it is then one write and one restart, rather
+than an archaeology project.</p>
+<h2>A failure, walked through</h2>
+<p>The four findings are known. The job is to fix them without breaking the gateway, and to verify each
+from the outside.</p>
+<p><strong>1. See what an ordinary account sees.</strong> Do this before changing anything, so you can confirm the
+same commands come back clean afterwards:</p>
+<pre><code class="language-console">$ sudo -u nobody systemctl show -p Environment chat-gateway
+Environment=UPSTREAM_KEY=sk-norboten-3f9a…
+$ ls -l /etc/chat-gateway/
+-rw-r----- 1 root chatgw 33 Sep 12 09:02 clients.token
+-rw-r--r-- 1 root root   79 Sep 12 09:02 gateway.env
+-rw-r--r-- 1 root root   45 Sep 12 09:02 upstream.key
+$ cat /etc/chat-gateway/gateway.env
+REQUIRE_TOKEN=0
+LOG_HEADERS=1
+UPSTREAM_KEY_FILE=/etc/chat-gateway/upstream.key
+</code></pre>
+<p>The key file is world-readable, the unit publishes the key, authentication is off, header logging is
+on. <code>gateway.env</code> itself holds only switches and a path, so <code>0644</code> is fine for it — which is worth
+checking rather than assuming.</p>
+<p><strong>2. Make the key file private, and stop the unit carrying the key.</strong></p>
+<pre><code class="language-console">$ sudo chown chatgw:chatgw /etc/chat-gateway/upstream.key
+$ sudo chmod 600 /etc/chat-gateway/upstream.key
+$ sudo sed -i '/^Environment=UPSTREAM_KEY=/d' /etc/systemd/system/chat-gateway.service
+$ sudo systemctl daemon-reload
+</code></pre>
+<p>The gateway will now find the key through <code>UPSTREAM_KEY_FILE</code>, which is readable by its own account
+and nobody else. (<code>LoadCredential=upstream_key:/etc/chat-gateway/upstream.key</code> would be the stronger
+choice; the gateway reads a credential in preference to the file.)</p>
+<p><strong>3. Turn on authentication and turn off header logging</strong>, then restart so a fresh invocation begins:</p>
+<pre><code class="language-console">$ sudo sed -i 's/^REQUIRE_TOKEN=.*/REQUIRE_TOKEN=1/; s/^LOG_HEADERS=.*/LOG_HEADERS=0/' \
+    /etc/chat-gateway/gateway.env
+$ sudo systemctl restart chat-gateway
+</code></pre>
+<p><strong>4. Verify authentication, and that the upstream still accepts the key</strong> — a 200 proves both, since
+the upstream refuses requests without it:</p>
+<pre><code class="language-console">$ curl -s -o /dev/null -w '%{http_code}\n' -d '{&quot;prompt&quot;:&quot;ping&quot;}' localhost:8090/ask
+401
+$ tok=$(sudo head -1 /etc/chat-gateway/clients.token)
+$ curl -s -H &quot;Authorization: Bearer $tok&quot; -d '{&quot;prompt&quot;:&quot;ping&quot;}' localhost:8090/ask
+{&quot;answer&quot;: &quot;stub answer for: ping&quot;}
+</code></pre>
+<p>Had step 2 broken the key lookup, this would be a 502 from the gateway: <code>upstream unavailable</code>. (For a
+lab test this is fine; on a shared machine note that <code>$tok</code> on curl’s command line is visible in <code>ps</code>
+while it runs. <code>curl -H @file</code> reads headers from a file instead — <code>sudo curl -s -H @/root/auth.hdr …</code>
+with a <code>0600</code> header file works identically.)</p>
+<p><strong>5. Verify the unit is clean, from the unprivileged view.</strong></p>
+<pre><code class="language-console">$ sudo -u nobody systemctl show chat-gateway | grep -c sk-norboten
+0
+$ sudo -u nobody systemctl cat chat-gateway | grep -c sk-norboten
+0
+$ sudo grep -rlF -f /etc/chat-gateway/upstream.key /etc 2&gt;/dev/null | xargs -r sudo stat -c '%a %U %n'
+600 chatgw /etc/chat-gateway/upstream.key
+600 root /etc/model-api/key
+</code></pre>
+<p><strong>6. Add the rate limit at the proxy.</strong> The zone goes in the <code>http</code> context — a file in <code>conf.d/</code> is
+included there — and the limit in the <code>location</code>:</p>
+<pre><code class="language-console">$ echo 'limit_req_zone $binary_remote_addr zone=chatgw:10m rate=2r/s;' | \
+    sudo tee /etc/nginx/conf.d/chat-limit.conf
+$ sudo tee /etc/nginx/conf.d/chat-proxy.conf &gt;/dev/null &lt;&lt;'CONF'
+server {
+    listen 8090;
+    server_name _;
+
+    location / {
+        limit_req zone=chatgw burst=5 nodelay;
+        limit_req_status 429;
+        proxy_pass http://127.0.0.1:8100;
+        proxy_set_header Authorization $http_authorization;
+    }
+}
+CONF
+$ sudo nginx -t &amp;&amp; sudo systemctl reload nginx
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+</code></pre>
+<p><strong>7. Test it with a real burst.</strong></p>
+<pre><code class="language-console">$ seq 40 | xargs -P 10 -I{} curl -s -o /dev/null -w '%{http_code}\n' \
+    -H &quot;Authorization: Bearer $tok&quot; -d '{&quot;prompt&quot;:&quot;ping&quot;}' localhost:8090/ask | sort | uniq -c
+      6 200
+     34 429
+$ sleep 3 ; curl -s -o /dev/null -w '%{http_code}\n' -H &quot;Authorization: Bearer $tok&quot; \
+    -d '{&quot;prompt&quot;:&quot;ping&quot;}' localhost:8090/ask
+200
+$ sudo tail -1 /var/log/nginx/error.log
+… [error] 1391#1391: *134 limiting requests, excess: 5.864 by zone &quot;chatgw&quot;, client: 127.0.0.1, …
+</code></pre>
+<p>nginx logs each rejection at <code>error</code> level with how far over the burst the request was. On a busy
+proxy that is a lot of lines; <code>limit_req_log_level warn</code> moves them down a level.</p>
+<p>Rejections under a burst, and normal service once the bucket drains — both halves matter.</p>
+<p><strong>8. Check this run’s log for secrets.</strong> Generate some traffic first, so the check is meaningful:</p>
+<pre><code class="language-console">$ id=$(systemctl show -p InvocationID --value chat-gateway)
+$ sudo journalctl _SYSTEMD_INVOCATION_ID=$id --no-pager | grep -cF -f /etc/chat-gateway/clients.token
+0
+$ sudo journalctl -u chat-gateway --no-pager | grep -cF -f /etc/chat-gateway/clients.token
+1
+$ sudo journalctl -u chat-gateway --no-pager | grep -m1 'request headers' | cut -c1-120
+… gateway.py[962]: request headers: {'Host': '127.0.0.1:8100', 'Connection': 'close', 'Content-Length': '17', …
+</code></pre>
+<p>This run is clean; the history is not — on the lab machine one earlier request was enough to put a
+client token in the journal, inside that header dump. (Searching with <code>-F -f</code> again, so the search does
+not add a copy.) Purge it if policy requires (<code>journalctl --rotate</code> then
+<code>--vacuum-time=1s</code>), and — separately — rotate the key and the client token, because both were
+readable for as long as that history exists.</p>
+<p><strong>9. Reboot, and repeat the outside checks.</strong></p>
+<pre><code class="language-console">$ sudo reboot
+$ systemctl is-active chat-gateway nginx model-api
+$ sudo -u nobody systemctl show chat-gateway | grep -c sk-norboten
+$ curl -s -o /dev/null -w '%{http_code}\n' -d '{&quot;prompt&quot;:&quot;ping&quot;}' localhost:8090/ask      # 401
+$ seq 40 | xargs -P 10 -I{} curl -s -o /dev/null -w '%{http_code}\n' \
+    -H &quot;Authorization: Bearer $tok&quot; -d '{&quot;prompt&quot;:&quot;ping&quot;}' localhost:8090/ask | sort | uniq -c
+</code></pre>
+<h2>Common wrong turns</h2>
+<p><strong>Overriding <code>Environment=UPSTREAM_KEY</code> in a drop-in instead of deleting it.</strong> The process no longer
+receives the key, and <code>systemctl cat</code> still prints the original unit file with the key in it — to any
+account. A drop-in layers on top of a unit; it does not redact it.</p>
+<p><strong>Moving the key to the <code>ExecStart</code> line.</strong> <code>ExecStart=/opt/chat-gateway/gateway.py --key sk-…</code> is
+worse than <code>Environment=</code>: the command line is visible in <code>ps</code> and <code>/proc/&lt;pid&gt;/cmdline</code> for as long as
+the process runs, to every user.</p>
+<p><strong>Moving the key into <code>gateway.env</code> and leaving that file at <code>0644</code>.</strong> <code>EnvironmentFile=</code> keeps the value
+out of <code>systemctl show</code>, and a world-readable file hands it straight back. The file that holds the
+secret needs the private mode, whichever file it is.</p>
+<p><strong><code>chmod 600</code> without <code>chown</code>.</strong> A <code>0600 root:root</code> key file is private — and unreadable by the gateway,
+which runs as <code>chatgw</code>. The upstream then rejects the gateway, and the symptom is a 502 that looks
+unrelated. Own it by the service, or use <code>LoadCredential=</code> so that systemd reads it as root.</p>
+<p><strong>Stopping at the file permissions.</strong> The review listed four findings; the key file is one. A gateway
+with a private key and no authentication is still a free inference endpoint for anyone who can reach
+the port.</p>
+<p><strong>Returning 403 to anonymous requests.</strong> 403 means “authenticated, and not allowed”. A missing token is
+401, and clients — and this lab’s check — distinguish them.</p>
+<p><strong>Comparing tokens with <code>==</code>.</strong> It works, and it returns earlier the sooner a byte differs, which is a
+timing side channel. Use a constant-time comparison (<code>hmac.compare_digest</code>).</p>
+<p><strong><code>limit_req</code> with no <code>burst</code>.</strong> The default burst is zero, so any client that sends two requests within
+500 ms (at <code>2r/s</code>) is rejected. Real clients — a page loading, a retry — are refused for normal
+behaviour.</p>
+<p><strong>Forgetting <code>limit_req_status 429</code>.</strong> The default is 503, which tells clients and monitoring the
+gateway is broken rather than that the caller is too fast. Well-behaved clients back off on 429 and
+retry on 503 — the opposite of what you want.</p>
+<p><strong>Putting <code>limit_req_zone</code> inside a <code>server</code> block.</strong> It is only valid in the <code>http</code> context; <code>nginx -t</code>
+refuses it. A separate file in <code>conf.d/</code> is the tidy way, since those files are included inside <code>http</code>.</p>
+<p><strong>Testing the limit with a sequential loop.</strong> If each request takes longer than the rate interval, a
+plain <code>for</code> loop never exceeds the limit and you conclude it is not working. Send a real concurrent
+burst (<code>xargs -P</code>).</p>
+<p><strong>Limiting by IP behind a load balancer.</strong> Every request arrives from the balancer’s address, so one
+bucket throttles every user at once. Use <code>real_ip_header</code>/<code>set_real_ip_from</code>, or key the zone on the
+client token.</p>
+<p><strong>Turning off header logging and assuming the journal is clean.</strong> The fix covers new entries only. The
+old ones — and every copy already forwarded to central logging — still contain the tokens.</p>
+<p><strong>Treating the fix as complete without rotating.</strong> A secret that was readable is compromised, whether
+or not anyone is known to have read it. Close the leaks, then replace the key and the client tokens.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># what an unprivileged account can see
+sudo -u nobody systemctl show UNIT | grep -i key
+sudo -u nobody systemctl cat UNIT  | grep -i key
+ps -eo args | grep '[s]ecret'                  # command lines are public
+sudo cat /proc/PID/environ | tr '\0' '\n'      # the process environment (owner and root)
+sudo grep -rlF -f /path/to/secretfile /etc     # every copy under /etc — NOT grep &quot;$SECRET&quot;:
+                                               #   sudo logs the command line, secret included
+
+# homes for a secret, best last
+chown SVC:SVC /etc/app/key ; chmod 600 /etc/app/key     # a private file, read by path
+# EnvironmentFile=/etc/app/env        with the env file 0600 root:root
+# LoadCredential=name:/etc/app/key    → $CREDENTIALS_DIRECTORY/name, this unit only
+systemd-creds encrypt --name=name plain.txt /etc/credstore.encrypted/name   # + LoadCredentialEncrypted=
+# never: Environment= in a unit, or a flag on ExecStart=
+sed -i '/^Environment=SECRET=/d' /etc/systemd/system/UNIT.service ; systemctl daemon-reload
+
+# authentication
+curl -s -o /dev/null -w '%{http_code}\n' URL                          # expect 401 anonymously
+curl -s -H &quot;Authorization: Bearer $tok&quot; URL                          # expect 200
+# 401 = who are you?   403 = I know who you are, and no.
+# compare tokens in constant time: hmac.compare_digest(a, b)
+
+# nginx rate limiting
+# http{}:     limit_req_zone $binary_remote_addr zone=NAME:10m rate=2r/s;
+#             limit_req_zone $http_authorization zone=pertoken:10m rate=2r/s;   (per client token)
+# location{}: limit_req zone=NAME burst=5 nodelay;
+#             limit_req_status 429;            (default is 503)
+#             limit_req_dry_run on;            (log, do not reject — for choosing numbers)
+#             limit_conn_zone / limit_conn     (concurrency rather than rate)
+nginx -t &amp;&amp; systemctl reload nginx
+seq 40 | xargs -P 10 -I{} curl -s -o /dev/null -w '%{http_code}\n' URL | sort | uniq -c
+
+# logs
+id=$(systemctl show -p InvocationID --value UNIT)
+journalctl _SYSTEMD_INVOCATION_ID=$id --no-pager       # this run only
+journalctl -u UNIT --no-pager | grep -cF -f SECRETFILE  # all of history (pattern from a file)
+journalctl --rotate ; journalctl --vacuum-time=1s      # purge (deletes ALL history)
+getent group adm systemd-journal                       # who can read the journal
+# never log: Authorization, Cookie, Set-Cookie, X-Api-Key, auth request bodies
+
+# after any leak
+# rotate the key at the provider, revoke the old one, reissue client tokens
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Nine letters and a refusal</em> (lab journal <code>hello</code>) — How the kernel picks a triad</li>
+<li><em>The log lines that were never written down</em> (topic journal <code>logging-journald</code>) — Everything a service prints becomes a journal entry</li>
+</ul>
+<p>Manual pages: <code>man 5 systemd.exec</code>.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://nginx.org/en/docs/http/ngx_http_limit_req_module.html</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>The log lines that were never written down</em> (<code>logging-journald</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>An API key is in a unit’s <code>Environment=</code> line and the unit file is <code>0644</code>. Name two commands an
+unprivileged user can use to read it, and explain why a drop-in that blanks the variable does not
+fix the finding.</p>
+<blockquote>
+<p><code>systemctl show -p Environment &lt;unit&gt;</code> and <code>systemctl cat &lt;unit&gt;</code> both work without privilege. A
+drop-in stops the process receiving the value, but a drop-in is layered on top of the unit rather
+than replacing it, so <code>systemctl cat</code> still prints the original file with the key in it. The line
+has to be deleted from the unit file.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is a secret on the <code>ExecStart=</code> command line worse than one in the environment?</p>
+<blockquote>
+<p>Command lines are readable by every user through <code>ps</code> and <code>/proc/&lt;pid&gt;/cmdline</code> for as long as the
+process runs. <code>/proc/&lt;pid&gt;/environ</code> is readable only by the process owner and root. (Both are
+worse than a private file or a credential.)</p>
+</blockquote>
+</li>
+<li>
+<p>Compare a <code>0600</code> key file read by path, <code>EnvironmentFile=</code>, and <code>LoadCredential=</code>. What does each
+still expose?</p>
+<blockquote>
+<p>A private file read by path exposes the secret to the service account, which must own it or be able
+to read it. <code>EnvironmentFile=</code> keeps it out of <code>systemctl show</code>, but the value ends up in the
+process environment and is inherited by every child process. <code>LoadCredential=</code> lets systemd read
+the source file as root and gives this unit alone a private in-memory copy, with nothing in the
+environment — the source can stay <code>0600 root:root</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>You <code>chmod 600</code> the key file and the gateway starts returning 502. What happened?</p>
+<blockquote>
+<p>The file is still owned by root, and the gateway runs as <code>chatgw</code>, so it can no longer read the key.
+It calls the upstream without a valid key and gets refused. <code>chown</code> the file to the service
+account, or use <code>LoadCredential=</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between 401 and 403, and which does an anonymous request to a protected
+endpoint deserve?</p>
+<blockquote>
+<p>401 means the request lacks valid credentials — authenticate and try again. 403 means the caller is
+known and is not permitted, so retrying with the same credentials is pointless. An anonymous
+request gets 401.</p>
+</blockquote>
+</li>
+<li>
+<p>Explain <code>rate=2r/s</code>, <code>burst=5</code> and <code>nodelay</code> in terms of the leaky bucket, and say why
+<code>limit_req_status 429</code> matters.</p>
+<blockquote>
+<p>The bucket drains at one request every 500 ms per key; <code>burst=5</code> lets up to five requests queue
+above that before the bucket overflows and requests are rejected; <code>nodelay</code> serves the burst
+immediately rather than spacing it out to the rate. The default rejection status is 503, which
+signals an outage — 429 tells clients to slow down, which is what well-behaved clients back off on.</p>
+</blockquote>
+</li>
+<li>
+<p>Why can limiting by <code>$binary_remote_addr</code> throttle an entire company at once, and what are two
+alternatives?</p>
+<blockquote>
+<p>Behind a load balancer or a shared NAT every request carries the same source address, so everyone
+shares one bucket. Restore the client address with <code>set_real_ip_from</code>/<code>real_ip_header</code>, or key the
+zone on something that identifies the client, such as <code>$http_authorization</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Header logging is off, this run’s journal is clean, and every file is private. Why is the job not
+finished?</p>
+<blockquote>
+<p>The old journal entries, and any copies forwarded to central logging, still contain the client
+tokens, and the key was readable for as long as the file and unit were exposed. Closing a leak does
+not un-leak anything: purge what you can, then rotate the upstream key and reissue the client
+tokens.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

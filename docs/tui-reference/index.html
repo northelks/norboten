@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TUI reference · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/docs/tui-reference/"><meta property="og:title" content="TUI reference · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/docs/tui-reference/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TUI reference · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" aria-current="page">Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      <div class="group">Getting started</div>
+      <a href="../../docs/getting-started/"
+>Install and first lab</a>
+      <a href="../../docs/tui-reference/"
+aria-current="page">TUI reference</a>
+      <a href="../../docs/faq/"
+>FAQ</a>
+      <div class="group">Contributing labs</div>
+      <a href="../../docs/writing-a-lab/"
+>Writing a lab</a>
+      <a href="../../docs/lab-spec/"
+>Lab specification</a>
+      <a href="../../docs/quiz-spec/"
+>Theory question spec</a>
+      <a href="../../docs/claude-code-plugin/"
+>The Claude Code plugin</a>
+      <div class="group">How it is built</div>
+      <a href="../../docs/architecture/"
+>Architecture</a>
+      <a href="../../docs/rated-labs/"
+>Rated and unrated labs</a>
+      <a href="../../docs/claude-code-in-norboten/"
+>How Norboten uses Claude</a>
+      <a href="../../docs/mcp/"
+>The MCP server</a>
+      <a href="../../docs/data-model/"
+>Data model</a>
+      <a href="../../docs/api-reference/"
+>API reference</a>
+      <a href="../../docs/pipelines/"
+>Pipelines</a>
+      <a href="../../docs/open-questions/"
+>Open questions</a>
+      <div class="group">Running it yourself</div>
+      <a href="../../docs/self-hosting/"
+>Self-hosting and configuration</a>
+      <a href="../../docs/deploy/"
+>Deploying the server</a>
+      <a href="../../docs/ci-cd/"
+>CI/CD</a>
+      <a href="../../docs/releasing/"
+>Releasing</a>
+    </nav>
+    <article class="prose">
+      <h1 id="tui-reference">TUI reference</h1>
+<p><code>norboten</code> with no arguments opens the terminal interface, and everything a learner does happens
+inside it. <code>?</code> shows every key from anywhere. Left on the command line are <code>norboten --version</code>,
+<code>norboten update</code>, <code>norboten uninstall</code>, and two hidden groups for lab authors and CI, listed at
+the end.</p>
+<h2 id="the-main-screen">The main screen</h2>
+<pre><code> 1  Home   2  Labs   3  Theory   4  Journals   5  Play   6  Ratings   7  You   8  System   [ norboten ]
+┌──────────────────────────────────────────────────────────────────────┐┌ account ──────────┐
+│ the section                                                          ││ who is signed in  │
+│                                                                      │└───────────────────┘
+│                                                                      │┌ doctor ───────────┐
+│                                                                      ││ ✓ platform …      │
+│                                                                      ││ READY             │
+│                                                                      │└───────────────────┘
+│                                                                      │┌ sessions ─────────┐
+│                                                                      ││ lab VMs and clocks│
+└──────────────────────────────────────────────────────────────────────┘└───────────────────┘
+┌ activity ───────────────────────────────────────────────────────────────────────────────────┐
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+ the keys that work where the cursor is
+</code></pre>
+<p>The sections run along the top line, each with its number, and <code>[ norboten ]</code> closes the line on
+the right; the section you are in is lit, and a click on one goes there too. Other screens keep only
+<code>[ norboten ]</code> on that line: what a screen is about is on the screen itself (a lab's id and title, a
+journal's title). There is no menu down the side, so the section has the
+whole width.</p>
+<p><strong>Doctor runs the moment the app opens</strong>, in the background, and its verdict stays in the right-hand
+column: platform, hardware acceleration, QEMU, the pinned Lima, the SSH client, socket path length,
+memory, disk, and — on x86 — whether the CPU has the <code>x86-64-v3</code> level Rocky Linux 10 requires. The
+System section shows the same findings with the fix for each.</p>
+<p>Below 130 columns the right-hand column folds away and the section gets the room.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Anywhere on the main screen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1</code>–<code>8</code></td>
+<td>Home · Labs · Theory · Journals · Play · Ratings · You · System</td>
+</tr>
+<tr>
+<td><code>←</code> <code>→</code></td>
+<td>the section to the left or to the right, wrapping round</td>
+</tr>
+<tr>
+<td><code>a</code></td>
+<td>sign in, or sign out</td>
+</tr>
+<tr>
+<td><code>d</code></td>
+<td>run doctor again</td>
+</tr>
+<tr>
+<td><code>?</code></td>
+<td>every key</td>
+</tr>
+<tr>
+<td><code>Ctrl+P</code></td>
+<td>the command palette: the sections, doctor, sign-in, setup, quit</td>
+</tr>
+<tr>
+<td><code>q</code></td>
+<td>quit, after a yes (<code>y</code>; <code>n</code> or <code>Esc</code> stays). Ctrl+Q asks the same</td>
+</tr>
+</tbody>
+</table>
+<p>The number keys do not reach a text field that has the cursor — <code>Tab</code> out of it first. The arrows
+stay with whatever uses them: a text field, the player on Play and the heatmap on a profile.
+norboten has one colour scheme, so the palette offers no themes.</p>
+<h2 id="setup">Setup</h2>
+<p>The first time norboten opens — straight after the installer — the setup screen comes up over the
+main screen: doctor's findings, the pinned Lima, the base image of the first lab, and the account,
+each with the key that deals with it.</p>
+<pre><code>✓ platform        macos on aarch64
+✗ qemu            QEMU is not installed
+                  i  brew install qemu
+· lima            Lima 2.2.0, ~35 MB   p downloads it
+· image           alpine, downloads when the lab starts
+· account         not signed in — optional, for ratings   a signs in
+
+ NOT READY   fix the items marked ✗ · Esc goes to the menu
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>i</code></td>
+<td>run the fix shown under a ✗ — the QEMU package for this system (<code>brew</code>, <code>apt-get</code>, <code>dnf</code>, <code>pacman</code>, <code>zypper</code>, <code>apk</code>) or joining the <code>kvm</code> group. It asks first, then hands the terminal over, so <code>sudo</code> can ask for a password; doctor runs again afterwards</td>
+</tr>
+<tr>
+<td><code>p</code></td>
+<td>download Lima and the first lab's base image now, with a progress bar</td>
+</tr>
+<tr>
+<td><code>a</code></td>
+<td>sign in</td>
+</tr>
+<tr>
+<td><code>Enter</code></td>
+<td>start <code>hello</code>, once doctor says READY</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>the main screen; <code>s</code> on System opens setup again</td>
+</tr>
+</tbody>
+</table>
+<h2 id="home">Home</h2>
+<p>The banner, three cards (labs passed, theory accuracy, your rating), and one list: the labs you have
+started and not finished, then the easiest ones you have not touched. <code>Enter</code> opens a lab.</p>
+<h2 id="labs">Labs</h2>
+<p>The catalogue, with the briefing of the lab under the cursor beside it: title, version, how many
+checks, whether it is graded after a reboot, its topics, and which of its base images are already
+downloaded (green). The columns are track, lab, level, time, status (your last session on it),
+<strong>Rated</strong> and the title, which comes last so that a narrow terminal cuts it rather than the others.
+Rated is <code>+</code> for a rated lab, whose result moves the board and which the server grades,
+<code>−</code> for an unrated one.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>↑</code> <code>↓</code></td>
+<td>move; the briefing follows</td>
+</tr>
+<tr>
+<td><code>Enter</code></td>
+<td>open the lab</td>
+</tr>
+<tr>
+<td><code>f</code></td>
+<td>next track filter: all, then each track in alphabetical order (ansible … terraform)</td>
+</tr>
+<tr>
+<td><code>u</code></td>
+<td>pull a published lab from the registry, by id (<code>id:version</code> for one version)</td>
+</tr>
+</tbody>
+</table>
+<p>Labs come from a source checkout when there is one, and otherwise from <code>~/.norboten/labs</code>, where <code>u</code>
+puts them.</p>
+<h2 id="a-lab">A lab</h2>
+<p>A lab opens full screen: tabs for <strong>Briefing</strong>, <strong>Checks</strong>, <strong>Hints</strong>, <strong>Tutor</strong>, <strong>Review</strong> and <strong>Solution</strong> on
+the left, a <strong>status</strong> panel and the key map on the right, and the lab's own activity log below.</p>
+<p>The status panel shows the VM's state, the image, the session state, rated or unrated, the clock
+(time left when the lab has a limit), attempts and best score, the hint level reached on each check,
+and — while the VM runs — the <code>ssh</code> command that reaches it from another terminal.</p>
+<p>Everything that touches the VM runs in the background, one action at a time. A second action while
+one runs is refused with a message, not queued.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>s</code></td>
+<td>start: download what is missing, boot, snapshot, break. A started lab resumes</td>
+</tr>
+<tr>
+<td><code>i</code></td>
+<td>choose the base image, from those the lab supports</td>
+</tr>
+<tr>
+<td><code>o</code></td>
+<td>a shell on the VM, as your account; <code>exit</code> returns to the TUI with the VM still running</td>
+</tr>
+<tr>
+<td><code>w</code></td>
+<td>live checks: the Checks tab refreshes every 2 seconds while you work elsewhere. <code>w</code> again stops</td>
+</tr>
+<tr>
+<td><code>x</code></td>
+<td>a quick check with no reboot. Feedback only: it can never pass a lab that needs a reboot</td>
+</tr>
+<tr>
+<td><code>c</code></td>
+<td>check, reboot, check again. Only this is a grade</td>
+</tr>
+<tr>
+<td><code>h</code></td>
+<td>the next hint for the check under the cursor on the Checks tab (the first failing one if none), with its reading: journal sections, manual pages, documentation</td>
+</tr>
+<tr>
+<td><code>l</code></td>
+<td>open the journal section the hint points at, scrolled to its heading (a list when there are several). Once the check passes, all of its reading is open to you</td>
+</tr>
+<tr>
+<td><code>C</code></td>
+<td>the coach, on or off: while live checks run (<code>w</code>), a note in the log when a check starts passing — with something to read — or breaks again</td>
+</tr>
+<tr>
+<td><code>t</code></td>
+<td>ask the tutor about that check, on this machine's model (Claude Code, then an API key, then a local Ollama; <code>m</code> on System pins one). It reads the machine's evidence and never sees the solution; with no model here it shows the hint ladder instead</td>
+</tr>
+<tr>
+<td><code>m</code></td>
+<td>after you pass or surrender: a review of the attempt — what the machine was saying, where your path went wrong, a faster one, a habit for next time. It reads the solution and the commands you ran, from your recordings (timed) and the VM's shell history (untimed)</td>
+</tr>
+<tr>
+<td><code>r</code></td>
+<td>reset to the clean snapshot and re-apply the faults (~10 s)</td>
+</tr>
+<tr>
+<td><code>k</code></td>
+<td>the serial console — for a machine with no network. <code>Ctrl-]</code> detaches. A container lab has none</td>
+</tr>
+<tr>
+<td><code>b</code></td>
+<td>press the VM's reset button and attach to the console it boots on, in time for the bootloader menu</td>
+</tr>
+<tr>
+<td><code>p</code></td>
+<td>a shell, recorded to <code>~/.norboten/plays/</code></td>
+</tr>
+<tr>
+<td><code>P</code></td>
+<td>a shell, recorded and streamed live to the site (asks first; needs an account)</td>
+</tr>
+<tr>
+<td><code>j</code></td>
+<td>the lab's journal</td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td>the lab's theory questions</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>surrender: the attempt stops counting and the reference solution appears</td>
+</tr>
+<tr>
+<td><code>v</code></td>
+<td>the reference solution — only after you pass or surrender</td>
+</tr>
+<tr>
+<td><code>z</code></td>
+<td>stop the VM; <code>s</code> resumes it</td>
+</tr>
+<tr>
+<td><code>D</code></td>
+<td>destroy the VM and the session (asks first)</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>back</td>
+</tr>
+</tbody>
+</table>
+<p>After <code>c</code>, the Checks table has a column per pass — <strong>Pre-reboot</strong> and <strong>Post-reboot</strong> — and a line
+under it: <strong>PASSED</strong>, <strong>NOT YET</strong>, or <strong>ALL PASS — NOT GRADED</strong> for a quick check that skipped a
+required reboot. When you are signed in, a graded attempt on an unrated lab is recorded on your
+profile and never moves the rating (docs/lab-spec.md §12).</p>
+<h3 id="a-rated-lab">A rated lab</h3>
+<p>A rated lab has a <code>+</code> in the catalogue's Rated column; it needs a sign-in and a reachable server, and the
+Labs section fetches the list when you are signed in. <code>s</code> starts it: the server issues an attempt and
+its clock, and the faults go straight into the machine. <code>c</code> collects the facts the lab looks at,
+reboots, collects again and sends both; the server judges them and the Checks tab shows pass or fail
+per check — never why, because that is the criterion. <code>S</code> gives the attempt up, rated as a loss, and
+<code>s</code> afterwards starts another on the same machine. There are no hints, live checks, quick check,
+tutor, review, reset or reference solution in a rated attempt: each would answer the question
+(docs/lab-spec.md §13).</p>
+<h2 id="theory">Theory</h2>
+<p>Every bank — the rated banks the server lists when you are signed in, the topic banks and each
+lab's own — with how many questions it has, how many you have answered, your accuracy and your best
+streak. The panel beside it describes the bank under the cursor.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Enter</code></td>
+<td>start a run on that bank</td>
+</tr>
+<tr>
+<td><code>r</code></td>
+<td>switch an unrated bank's runs between untimed and timed</td>
+</tr>
+<tr>
+<td><code>g</code></td>
+<td>draft more questions on that bank's subject, on your own Claude Code or keys</td>
+</tr>
+</tbody>
+</table>
+<p>In a run: <code>1</code>–<code>6</code> toggle an answer, <code>Enter</code> answers, <code>Enter</code> or <code>n</code> moves on, <code>Esc</code> leaves. A timed
+run times every question (15–30 seconds by difficulty, plus ten when it carries a snippet); when the
+clock runs out the question is answered for you, wrongly. On an unrated bank a finished timed run is
+recorded on your profile when you are signed in, and never rated.</p>
+<p>A <strong>rated</strong> bank is always timed, and it is the server's run: each question arrives without its
+answer, the server's clock is the one that counts, the explanation comes back with the verdict, and
+the finished run moves your topic rating (docs/quiz-spec.md §6).</p>
+<h3 id="questions-of-your-own">Questions of your own</h3>
+<p><code>g</code> asks how many questions to draft and, optionally, what about, and names the models it will use:
+Claude Code on your subscription when <code>claude</code> is installed and signed in, otherwise the keys you
+exported — <code>ANTHROPIC_API_KEY</code>, <code>OPENAI_API_KEY</code>, <code>GEMINI_API_KEY</code> — which need to reach a writer
+and two other models. Each question goes through the same pipeline as the published banks
+(docs/quiz-spec.md §5): written, answered blind by two other models, reviewed by a critic, its
+snippet run in Docker (without Docker, a question with a snippet is dropped), and compared with every
+question already there. The activity log shows each attempt.</p>
+<p>What passes becomes a bank marked <em>yours</em> in the list, kept in <code>~/.norboten/quizzes/</code>, with every
+attempt and its provenance in <code>~/.norboten/quizzes/_drafts/</code>. Nobody else has read these questions,
+so they are practice only: a run on them is never rated and never reported.</p>
+<h2 id="journals">Journals</h2>
+<p>Every journal in the checkout, with the one under the cursor rendered beside the list.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Enter</code></td>
+<td>read it full screen</td>
+</tr>
+<tr>
+<td><code>e</code></td>
+<td>export it as a PDF to <code>~/.norboten/journals/&lt;id&gt;.pdf</code></td>
+</tr>
+</tbody>
+</table>
+<p>A journal is the reading that goes with a lab or a topic: the mechanism, one failure walked through,
+the wrong turns people take, a cheat sheet and review questions. The PDF export needs the <code>pdf</code> extra
+(<code>curl -fsSL https://norboten.org/install.sh | NORBOTEN_EXTRAS=pdf sh</code>), which pulls in WeasyPrint and wants pango and cairo on the system.</p>
+<h2 id="play">Play</h2>
+<p>Recordings, from three places: sessions recorded on this machine (<code>p</code> on a lab), the recordings
+Norboten ships, and sessions on the site — live ones marked <code>●</code> — when the server can be reached.
+Choosing one loads it into a terminal emulator; the commands it contains are listed below the
+sources, and <code>✎</code> marks one after which a file changed.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>On the player</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Space</code></td>
+<td>play / pause</td>
+</tr>
+<tr>
+<td><code>←</code> or <code>[</code></td>
+<td>back three commands (pauses)</td>
+</tr>
+<tr>
+<td><code>→</code> or <code>]</code></td>
+<td>forward three commands (pauses)</td>
+</tr>
+<tr>
+<td><code>0</code> or <code>Backspace</code></td>
+<td>stop, back to the start</td>
+</tr>
+<tr>
+<td><code>Enter</code> on a command</td>
+<td>jump to it</td>
+</tr>
+<tr>
+<td><code>R</code></td>
+<td>reload the list</td>
+</tr>
+</tbody>
+</table>
+<p>Long pauses in a recording are cut to 1.2 seconds. A recording is an asciicast v2 file
+(<code>asciinema play</code> reads it) with a <code>.log.json</code> beside it holding the commands and the diffs they
+produced. File changes are tracked by keeping the guest's <code>/etc</code> under git for the duration, inside
+the VM. Theory is never recorded — only results.</p>
+<h2 id="ratings">Ratings</h2>
+<p>The boards: overall, and one per topic. They are sorted on rating minus two rating deviations, so a
+lucky first win does not top one. <code>Enter</code> on a player opens their profile. With no server the
+section says so; nothing else in the TUI needs one.</p>
+<h2 id="you">You</h2>
+<p>Not signed in: what an account adds, and <code>a</code> to sign in. Signing in is GitHub's device flow: the
+dialog shows a code in large type and <code>github.com/login/device</code>, where you type it — in any
+browser, on this machine or your phone, so a headless box signs in the same way. It opens a browser
+itself when this machine has one (not over SSH). <code>c</code> copies the code, <code>o</code> opens the page, <code>Esc</code> gives
+up; the dialog waits for GitHub on its own and closes once you have approved. <strong>Remember this
+machine</strong> (on by default, and it can still change while GitHub waits) keeps the token in
+<code>~/.norboten/credentials.json</code>, readable only by you, for ninety days; off, the token lives twelve
+hours in memory and quitting norboten signs you out. No GitHub token reaches this machine.</p>
+<p>Signed in without a nick: a form for the public nick and a two-letter country.</p>
+<p>Signed in: your profile, in the same order as on the site, with a link to your GitHub account — <strong>A year of work</strong> (a heatmap: <code>Tab</code> to
+it, then the arrows move a cursor over the days and the line under it lists that day's labs), then
+<strong>By topic</strong> with <strong>Strongest</strong>, then <strong>Recent attempts</strong> (<code>Enter</code> opens one: score, time, and how
+each topic rating moved).</p>
+<h2 id="system">System</h2>
+<p>The full doctor report with a fix for everything that is not green; the base images, which are
+downloaded and which labs use each; and this installation — version, <code>NORBOTEN_HOME</code>, the image
+store and its size, the checkout, the API, the tutor's model, and whether you are signed in.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>p</code></td>
+<td>pull the selected image now, with a progress bar</td>
+</tr>
+<tr>
+<td><code>x</code></td>
+<td>remove it (asks first); labs that use it download it again</td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td>the setup screen</td>
+</tr>
+<tr>
+<td><code>u</code></td>
+<td>update norboten, when <em>This installation</em> says a newer release is out: norboten closes, uv installs it, and the new version opens. Lab VMs keep running</td>
+</tr>
+<tr>
+<td><code>X</code></td>
+<td>uninstall norboten (asks first): norboten closes, then its lab VMs, <code>~/.norboten</code> and the program go</td>
+</tr>
+<tr>
+<td><code>m</code></td>
+<td>the model the tutor and the review use: <code>auto</code> (the first of Claude Code, an API key, a local Ollama) or one of those this machine has. Kept in <code>~/.norboten/settings.json</code></td>
+</tr>
+</tbody>
+</table>
+<p>Images are verified against the digest pinned in <code>images/registry.yaml</code>.</p>
+<h2 id="for-lab-authors-and-ci">For lab authors and CI</h2>
+<p>Hidden from <code>norboten --help</code>, and never needed to learn.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>norboten dev lint [paths]</code></td>
+<td>validate labs and journals against the spec — no VM needed</td>
+</tr>
+<tr>
+<td><code>norboten dev validate &lt;lab&gt; [--image X] [--keep]</code></td>
+<td>the solvability gate, locally</td>
+</tr>
+<tr>
+<td><code>norboten dev verify-quiz</code></td>
+<td>validate every question bank and run every executable verification</td>
+</tr>
+<tr>
+<td><code>norboten dev record &lt;slug&gt;</code></td>
+<td>record one of the site's canned sessions from <code>site/streams/&lt;slug&gt;.script</code></td>
+</tr>
+<tr>
+<td><code>norboten dev doctor</code></td>
+<td>doctor's findings as plain text, for a CI log; exits 1 when labs cannot run</td>
+</tr>
+<tr>
+<td><code>norboten image list</code></td>
+<td>every base image, which are downloaded, and which labs use them</td>
+</tr>
+<tr>
+<td><code>norboten image pull &lt;id&gt; [--force]</code></td>
+<td>download one</td>
+</tr>
+<tr>
+<td><code>norboten image rm &lt;id&gt;</code></td>
+<td>delete a downloaded image</td>
+</tr>
+<tr>
+<td><code>norboten image import &lt;id&gt; &lt;file&gt;</code></td>
+<td>import an image built locally with <code>make image</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="environment">Environment</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NORBOTEN_HOME</code></td>
+<td>where everything is kept (default <code>~/.norboten</code>)</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_LABS_DIR</code></td>
+<td>use labs from a checkout instead of the cache</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_IMAGE_MIRROR</code></td>
+<td>directory or URL holding locally built golden images</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_LAB_REGISTRY</code></td>
+<td>OCI repository prefix labs are pulled from</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_API</code></td>
+<td>the API to use for the boards, live sessions, the consultant and your account</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_DEBUG_USER</code></td>
+<td>stand in for a signed-in user against a local API with no pool configured</td>
+</tr>
+</tbody>
+</table>
+
+    </article>
+    <div class="toc">
+<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>      <a class="h2" href="#the-main-screen">The main screen</a>
+      <a class="h2" href="#setup">Setup</a>
+      <a class="h2" href="#home">Home</a>
+      <a class="h2" href="#labs">Labs</a>
+      <a class="h2" href="#a-lab">A lab</a>
+      <a class="h3" href="#a-rated-lab">A rated lab</a>
+      <a class="h2" href="#theory">Theory</a>
+      <a class="h3" href="#questions-of-your-own">Questions of your own</a>
+      <a class="h2" href="#journals">Journals</a>
+      <a class="h2" href="#play">Play</a>
+      <a class="h2" href="#ratings">Ratings</a>
+      <a class="h2" href="#you">You</a>
+      <a class="h2" href="#system">System</a>
+      <a class="h2" href="#for-lab-authors-and-ci">For lab authors and CI</a>
+      <a class="h2" href="#environment">Environment</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("../../search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+</body>
+</html>

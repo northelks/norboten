@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terraform knows your resources by their address</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Terraform knows your resources by their address</h1>
+  <div class="meta">terraform, users-permissions · 40 minutes · 2105 words</div>
+</header>
+<p>A pull request renamed two resources in <code>/srv/infra</code> — <code>random_password.key</code> became
+<code>random_password.session_key</code>, <code>local_file.env</code> became <code>local_file.app_env</code> — because the new names
+say what the things are. Nothing about the objects changed. The next <code>terraform plan</code> proposed to
+destroy the session key and create a new one, which would log out every customer, and to destroy and
+recreate the file that holds it.</p>
+<p>Terraform was not being obtuse. It identifies every object it manages by its <strong>address</strong> in the
+configuration, and it records that address, with the object’s attributes, in state. A rename in the
+code is, to Terraform, one address disappearing and another appearing: the object at the old address
+is no longer wanted, and nothing exists yet at the new one. The information “these are the same thing”
+is not in the configuration unless you put it there — with a <code>moved</code> block.</p>
+<p>The same plan also wanted to put back a file someone had edited by hand during an incident, and the
+state file that held the session key in plain text was readable by every account. This journal is
+about the relationship between configuration, state and reality, and how to change the first without
+destroying the third.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Explain what Terraform state records and why an address change looks like destroy-and-create.</li>
+<li>Refactor resource names with <code>moved</code> blocks (or <code>terraform state mv</code>), and verify with a plan before
+applying.</li>
+<li>Read a plan’s reasons: “not in configuration”, “will be created”, “has moved to”, “must be replaced”.</li>
+<li>Recognise drift, and decide whether to let Terraform correct it or to change the configuration.</li>
+<li>Say which secrets end up in state, and protect state files and their backups accordingly.</li>
+<li>Use <code>terraform plan -detailed-exitcode</code> as a machine-readable “anything to do?” check.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Configuration, state, reality</h3>
+<p>Terraform works with three things:</p>
+<ul>
+<li><strong>Configuration</strong> — the <code>.tf</code> files: what you want, by address (<code>random_password.session_key</code>).</li>
+<li><strong>State</strong> — <code>terraform.tfstate</code>: for each address, the object Terraform created and its last known
+attributes, including provider-generated values such as a random password’s <code>result</code>.</li>
+<li><strong>Reality</strong> — the actual objects: here, files on disk and values that exist only in state.</li>
+</ul>
+<p><code>terraform plan</code> refreshes state from reality (asking each provider to read its objects), then compares
+the refreshed state with the configuration and proposes actions to make reality match the
+configuration. <code>terraform state list</code> shows the addresses in state; <code>grep resource *.tf</code> shows the
+addresses in configuration. When they differ, the plan tells you why.</p>
+<h3>Why a rename becomes destroy-and-create</h3>
+<p>After the rename, state contains <code>random_password.key</code> and configuration contains
+<code>random_password.session_key</code>. The plan says exactly that:</p>
+<ul>
+<li><code>random_password.key will be destroyed (because random_password.key is not in configuration)</code></li>
+<li><code>random_password.session_key will be created</code></li>
+</ul>
+<p>For most resources that is expensive; for a <code>random_password</code> it is destructive in a subtle way: the new
+object gets a new random value. Anything derived from it — the session key in <code>/etc/shop/app.env</code> —
+changes on apply. The provider did exactly what the configuration asked.</p>
+<h3><code>moved</code> blocks</h3>
+<pre><code class="language-hcl">moved {
+  from = random_password.key
+  to   = random_password.session_key
+}
+</code></pre>
+<p>A <code>moved</code> block records that the object at one address now lives at another. During plan, Terraform
+updates the address in state before comparing, so the plan shows <code>random_password.key has moved to random_password.session_key</code> and no destroy. Moves apply to modules, <code>count</code>/<code>for_each</code> instances and
+whole resources alike.</p>
+<p>Two properties make <code>moved</code> better than the older command <code>terraform state mv</code>:</p>
+<ul>
+<li>It is <strong>code</strong>: reviewed in the same pull request as the rename, and applied by every workspace and
+every colleague’s state automatically, instead of a manual state edit someone has to remember.</li>
+<li>It shows up in the <strong>plan</strong>, so the move is visible before anything happens.</li>
+</ul>
+<p>Keep moved blocks until every state that could contain the old address has been applied — for a shared
+module, that can be a long time. A moved block whose <code>from</code> no longer exists anywhere is harmless.</p>
+<p><code>terraform state mv OLD NEW</code> still has its place for one-off surgery on a single state, and it writes a
+backup first.</p>
+<h3>Drift</h3>
+<p>Someone appended two lines to <code>/etc/shop/nginx-site.conf</code>, a file Terraform manages with <code>local_file</code>.
+When the <code>local</code> provider reads that resource during refresh and finds the file’s content no longer
+matches what it wrote, it reports the object as gone; the plan then shows <code>local_file.nginx_site will be created</code>. Other providers show drift as <code>~ update in-place</code> or <code>must be replaced</code>. In all cases the
+decision is the same and it is a human one:</p>
+<ul>
+<li>If the manual change was a temporary hack, <strong>let Terraform put reality back</strong> (apply).</li>
+<li>If the change is wanted, <strong>put it in the configuration</strong> first, so the plan becomes empty without
+undoing it.</li>
+</ul>
+<p><code>terraform plan -refresh-only</code> shows only the drift, without the configuration’s proposals, which helps
+when the two are mixed.</p>
+<h3>Secrets in state</h3>
+<p>State stores every attribute a provider returns. A <code>random_password</code>’s <code>result</code> is marked sensitive,
+which only means Terraform prints <code>(sensitive value)</code> in plans. In <code>terraform.tfstate</code> it is plain
+text, and so is the content of <code>local_file.app_env</code>. Whoever can read the state can read the secrets.</p>
+<p>For a local state file:</p>
+<ul>
+<li>mode 0600, owned by the account that runs Terraform;</li>
+<li><code>terraform.tfstate.backup</code> too — Terraform writes the previous state there on every apply, with the
+same secrets;</li>
+<li>never in Git (<code>*.tfstate*</code> in <code>.gitignore</code>).</li>
+</ul>
+<p>For a team, a remote backend with encryption and access control, and state locking, replaces the local
+file. Newer Terraform versions add ephemeral values and write-only arguments that keep some secrets out
+of state altogether; for generated secrets like this one, protecting state is the baseline.</p>
+<h3><code>-detailed-exitcode</code></h3>
+<p><code>terraform plan -detailed-exitcode</code> exits <code>0</code> when there is nothing to do, <code>2</code> when there are changes,
+and <code>1</code> on error. It turns “is this infrastructure exactly as configured?” into a status a script or a
+check can test — which is how the lab grades a clean plan. Add <code>-lock=false</code> only for read-only checks
+that must not wait on a lock.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the track’s lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed. Terraform’s
+providers come from the image’s local mirror; <code>CHECKPOINT_DISABLE=1</code> stops the version check.</p>
+<p><strong>1. Read the plan everyone was afraid of</strong> (filtered to the lines that carry the decisions):</p>
+<pre><code class="language-console">$ cd /srv/infra &amp;&amp; sudo env CHECKPOINT_DISABLE=1 terraform plan -no-color 2&gt;&amp;1 | grep -E '^  # |^Plan:|must be replaced|will be (created|destroyed)|forces replacement|^\s+[-+~]'
+  + create
+  - destroy
+  # local_file.app_env will be created
+  + resource &quot;local_file&quot; &quot;app_env&quot; {
+      + content              = (sensitive value)
+…
+      + filename             = &quot;/etc/shop/app.env&quot;
+      + id                   = (known after apply)
+  # local_file.env will be destroyed
+  # (because local_file.env is not in configuration)
+  - resource &quot;local_file&quot; &quot;env&quot; {
+      - content              = (sensitive value) -&gt; null
+…
+      - filename             = &quot;/etc/shop/app.env&quot; -&gt; null
+      - id                   = &quot;0d5937fb5cad3bcab0017ff8a6b92cc67197313d&quot; -&gt; null
+  # local_file.nginx_site will be created
+  + resource &quot;local_file&quot; &quot;nginx_site&quot; {
+      + content              = &lt;&lt;-EOT
+…
+  # random_password.key will be destroyed
+  # (because random_password.key is not in configuration)
+  - resource &quot;random_password&quot; &quot;key&quot; {
+…
+      - result      = (sensitive value) -&gt; null
+…
+  # random_password.session_key will be created
+  + resource &quot;random_password&quot; &quot;session_key&quot; {
+…
+      + result      = (sensitive value)
+…
+Plan: 3 to add, 0 to change, 2 to destroy.
+</code></pre>
+<p>(Lines marked <code>…</code> are the remaining attributes of each resource, omitted here.) Two destroys “because
+… is not in configuration”, three creates. <code>nginx_site</code> is being <em>created</em> although it exists — the
+drift.</p>
+<p><strong>2. Compare state with configuration, and look at the drifted file.</strong></p>
+<pre><code class="language-console">$ cd /srv/infra &amp;&amp; sudo terraform state list
+local_file.env
+local_file.nginx_site
+random_password.key
+$ grep -n '^resource' /srv/infra/main.tf
+6:resource &quot;random_password&quot; &quot;session_key&quot; {
+11:resource &quot;local_file&quot; &quot;app_env&quot; {
+17:resource &quot;local_file&quot; &quot;nginx_site&quot; {
+$ tail -n 3 /etc/shop/nginx-site.conf
+}
+# incident 2026-09-11: let the office in directly
+allow 203.0.113.0/24;
+</code></pre>
+<p>State has the old names; configuration has the new ones. The site file carries an incident-era edit
+that the configuration never had.</p>
+<p><strong>3. See what the state holds, and who can read it.</strong></p>
+<pre><code class="language-console">$ ls -l /srv/infra/terraform.tfstate*
+-rw-r--r-- 1 root root 4634 Sep 14 04:02 /srv/infra/terraform.tfstate
+$ sudo jq -r '.resources[] | select(.type==&quot;random_password&quot;) | .instances[0].attributes.result' /srv/infra/terraform.tfstate | cut -c1-6 | sed 's/$/… (first 6 characters)/'
+3dBlUW… (first 6 characters)
+$ sudo sed -n 's/^SESSION_KEY=\(.\{6\}\).*/SESSION_KEY=\1…/p' /etc/shop/app.env
+SESSION_KEY=3dBlUW…
+</code></pre>
+<p>The session key is in the state in plain text (only its first characters are shown here), matching the
+live file — and the state is world-readable.</p>
+<p><strong>4. Declare the renames.</strong> <code>/srv/infra/moved.tf</code>:</p>
+<pre><code class="language-hcl"># the resources were renamed; these keep the existing objects instead of replacing them
+moved {
+  from = random_password.key
+  to   = random_password.session_key
+}
+
+moved {
+  from = local_file.env
+  to   = local_file.app_env
+}
+</code></pre>
+<pre><code class="language-console">$ cd /srv/infra &amp;&amp; sudo env CHECKPOINT_DISABLE=1 terraform plan -no-color 2&gt;&amp;1 | grep -E '^  # |^Plan:|has moved to|must be replaced'
+  # local_file.env has moved to local_file.app_env
+  # local_file.nginx_site will be created
+  # random_password.key has moved to random_password.session_key
+Plan: 1 to add, 0 to change, 0 to destroy.
+</code></pre>
+<p>No destroys left. The only action is putting back the hand-edited file — which is wanted here: the
+incident exception was temporary.</p>
+<p><strong>5. Apply, then plan again.</strong></p>
+<pre><code class="language-console">$ cd /srv/infra &amp;&amp; sudo env CHECKPOINT_DISABLE=1 terraform apply -auto-approve -no-color 2&gt;&amp;1 | grep -E 'Moving|Destroying|Destruction complete|Creating|Creation complete|^Apply complete'
+local_file.nginx_site: Creating...
+local_file.nginx_site: Creation complete after 0s [id=318de722cf0f0b8137a229f55664760dd1018e07]
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+$ cd /srv/infra &amp;&amp; sudo env CHECKPOINT_DISABLE=1 terraform plan -detailed-exitcode -no-color 2&gt;&amp;1 | tail -n 3; echo &quot;exit=${PIPESTATUS[0]}&quot;
+
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+exit=0
+$ cd /srv/infra &amp;&amp; sudo terraform state list
+local_file.app_env
+local_file.nginx_site
+random_password.session_key
+$ sudo jq -r '.resources[] | select(.type==&quot;random_password&quot;) | .instances[0].attributes.result' /srv/infra/terraform.tfstate | cut -c1-6 | sed 's/$/… (first 6 characters)/'; sudo sed -n 's/^SESSION_KEY=\(.\{6\}\).*/SESSION_KEY=\1…/p' /etc/shop/app.env
+3dBlUW… (first 6 characters)
+SESSION_KEY=3dBlUW…
+$ tail -n 3 /etc/shop/nginx-site.conf
+    server_name shop.example.test;
+    root /srv/www/current;
+}
+</code></pre>
+<p>The moves happened as part of the apply without any destroy, the state now uses the new addresses, the
+session key is unchanged, the site file is back to its configured content, and the plan exits 0.</p>
+<p><strong>6. Protect the state and its backup.</strong></p>
+<pre><code class="language-console">$ ls -l /srv/infra/terraform.tfstate*
+-rw-r--r-- 1 root root 4654 Sep 14 04:02 /srv/infra/terraform.tfstate
+-rw-r--r-- 1 root root 4634 Sep 14 04:02 /srv/infra/terraform.tfstate.backup
+$ sudo chmod 600 /srv/infra/terraform.tfstate /srv/infra/terraform.tfstate.backup &amp;&amp; ls -l /srv/infra/terraform.tfstate*
+-rw------- 1 root root 4654 Sep 14 04:02 /srv/infra/terraform.tfstate
+-rw------- 1 root root 4634 Sep 14 04:02 /srv/infra/terraform.tfstate.backup
+$ cd /srv/infra &amp;&amp; sudo env CHECKPOINT_DISABLE=1 terraform plan -no-color 2&gt;&amp;1 | tail -n 2 &amp;&amp; ls -l /srv/infra/terraform.tfstate*
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+-rw------- 1 root root 4654 Sep 14 04:02 /srv/infra/terraform.tfstate
+-rw------- 1 root root 4634 Sep 14 04:02 /srv/infra/terraform.tfstate.backup
+</code></pre>
+<p>The apply created a <code>.backup</code> — with the previous state and the same secret — world-readable like the
+state itself. Both are 0600 now. A plan that changes nothing does not rewrite them; check the modes
+again after future applies, or keep the state somewhere whose permissions do not depend on each write.</p>
+<p><strong>7. Grade.</strong> A clean plan, the original key under its new address and in the file, and root-only
+state — before and after the reboot.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Renaming the resources back.</strong> The plan becomes empty and the team’s agreed names are lost; the next
+rename hits the same wall. <code>moved</code> is how refactoring is supposed to work.</p>
+<p><strong><code>terraform apply</code> after a quick look at “3 to add”.</strong> The two destroys are in the same plan. Read the
+<code>Plan:</code> line in full, and every <code>will be destroyed</code>.</p>
+<p><strong><code>terraform import random_password.session_key …</code>.</strong> Import brings an existing real object under an
+address; the object here already <em>is</em> under management, at another address. Import would leave the old
+address to be destroyed, and not every resource type supports import at all.</p>
+<p><strong><code>terraform state rm random_password.key</code> followed by apply.</strong> Terraform forgets the old key and
+creates a new one for the new address — exactly the regeneration you were avoiding.</p>
+<p><strong><code>lifecycle { prevent_destroy = true }</code> on the new address.</strong> It protects the new address, which has
+nothing to destroy; the plan to destroy the old address still stands.</p>
+<p><strong>Editing <code>terraform.tfstate</code> by hand.</strong> It usually works once and corrupts serial numbers or lineage the
+next time. Use <code>moved</code> or <code>terraform state mv</code>, which write backups.</p>
+<p><strong>Silencing the drift with <code>lifecycle { ignore_changes = [content] }</code>.</strong> The incident edit then stays
+forever, unreviewed, in a file the configuration claims to manage.</p>
+<p><strong>Protecting <code>terraform.tfstate</code> and forgetting <code>.backup</code>.</strong> The backup holds the previous state, with the
+same secrets.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console">$ terraform plan                                   # refresh, compare, propose
+$ terraform plan -detailed-exitcode                # 0 nothing to do, 2 changes, 1 error
+$ terraform plan -refresh-only                     # only the drift between state and reality
+$ terraform state list                             # addresses in state
+$ terraform state show random_password.session_key # one object's recorded attributes
+$ terraform state mv OLD NEW                       # one-off move in one state (writes a backup)
+$ terraform apply -auto-approve                    # in automation, apply a reviewed plan instead
+$ jq '.resources[].type' terraform.tfstate         # what the state holds (it is JSON)
+$ chmod 600 terraform.tfstate terraform.tfstate.backup
+</code></pre>
+<pre><code class="language-hcl">moved {
+  from = random_password.key          # old address
+  to   = random_password.session_key  # new address
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Plan says</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>will be destroyed (because … is not in configuration)</code></td>
+<td>an address exists only in state</td>
+</tr>
+<tr>
+<td><code>will be created</code></td>
+<td>an address exists only in configuration — or the object vanished or drifted (provider-specific)</td>
+</tr>
+<tr>
+<td><code>has moved to</code></td>
+<td>a <code>moved</code> block matched; no destroy</td>
+</tr>
+<tr>
+<td><code>must be replaced</code> / <code>forces replacement</code></td>
+<td>an argument that cannot change in place differs</td>
+</tr>
+<tr>
+<td><code>~ update in-place</code></td>
+<td>an attribute differs and can be changed</td>
+</tr>
+</tbody>
+</table>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — State maps addresses to real objects</li>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — Drift</li>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — Refactoring without destroying: moved</li>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — Sensitive is a display setting</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>The plan says three to destroy, and you only removed one</em> (<code>terraform</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Why does renaming a resource in the configuration produce a destroy and a create?</p>
+<blockquote>
+<p>Terraform identifies objects by address; after the rename, state has an object at the old address that is no longer in configuration (destroy) and configuration has a new address with no object (create).</p>
+</blockquote>
+</li>
+<li>
+<p>What does a <code>moved</code> block do during plan, and why is it preferable to <code>terraform state mv</code>?</p>
+<blockquote>
+<p>It rewrites the address in state before comparison, so the plan shows a move instead of destroy and create; it lives in version control, is reviewed with the rename, and applies to every state that runs the configuration.</p>
+</blockquote>
+</li>
+<li>
+<p>Why would destroying and recreating <code>random_password.key</code> log out customers, even though the configuration of the new resource is identical?</p>
+<blockquote>
+<p>A new <code>random_password</code> generates a new random value, and the session key file is derived from it.</p>
+</blockquote>
+</li>
+<li>
+<p>The plan says <code>local_file.nginx_site will be created</code> although the file exists. What happened?</p>
+<blockquote>
+<p>The file was edited by hand; the local provider saw its content no longer matched what it wrote and reported the object as gone, so Terraform plans to write it again.</p>
+</blockquote>
+</li>
+<li>
+<p>Which files contain the session key in plain text, and what mode should they have?</p>
+<blockquote>
+<p><code>/etc/shop/app.env</code>, <code>terraform.tfstate</code> and <code>terraform.tfstate.backup</code>; the state files should be 0600 and owned by the account that runs Terraform (and never committed).</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>terraform plan -detailed-exitcode</code> return, and why is it useful in a check?</p>
+<blockquote>
+<p>0 when there are no changes, 2 when there are changes, 1 on error — a status a script can test to prove the infrastructure matches its configuration.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>terraform state rm random_password.key</code> not a fix?</p>
+<blockquote>
+<p>It makes Terraform forget the existing object; the new address still has no object, so the next apply creates a new random password anyway.</p>
+</blockquote>
+</li>
+<li>
+<p>When should drift be applied away, and when should the configuration change instead?</p>
+<blockquote>
+<p>Apply it away when the manual change was unwanted or temporary; change the configuration first when the manual change is correct and must be kept.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

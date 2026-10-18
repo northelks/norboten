@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terraform knows your resources by their address · Norboten</title>
+<meta name="description" content="A pull request renamed two resources in /srv/infra — random_password.key became random_password.session_key, local_file.env became local_file.app_env — because ">
+<link rel="canonical" href="https://norboten.org/journals/terraform-01-rename-that-wants-to-destroy/"><meta property="og:title" content="Terraform knows your resources by their address · Norboten">
+<meta property="og:description" content="A pull request renamed two resources in /srv/infra — random_password.key became random_password.session_key, local_file.env became local_file.app_env — because ">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/terraform-01-rename-that-wants-to-destroy/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Terraform knows your resources by their address · Norboten">
+<meta name="twitter:description" content="A pull request renamed two resources in /srv/infra — random_password.key became random_password.session_key, local_file.env became local_file.app_env — because ">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Terraform knows your resources by their address",
+  "description": "A pull request renamed two resources in /srv/infra \u2014 random_password.key became random_password.session_key, local_file.env became local_file.app_env \u2014 because ",
+  "url": "https://norboten.org/journals/terraform-01-rename-that-wants-to-destroy/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2105,
+  "timeRequired": "PT40M",
+  "about": ["Terraform", "Users and permissions"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Rename That Wants to Destroy</div>
+    <h1>Terraform knows your resources by their address</h1>
+    <p class="muted">
+      40 minutes' reading · 2105 words ·<span class="tag">Terraform</span><span class="tag">Users and permissions</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 93 words</title><rect x="0.0" y="0" width="26.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 702 words</title><rect x="29.7" y="0" width="201.6" height="30" rx="4" fill="#1d2a23"/><text x="37.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 873 words</title><rect x="234.3" y="0" width="250.7" height="30" rx="4" fill="#4ade80"/><text x="242.3" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 223 words</title><rect x="488.0" y="0" width="64.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 200 words</title><rect x="555.0" y="0" width="57.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 146 words</title><rect x="615.4" y="0" width="41.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 347 words</title><rect x="660.4" y="0" width="99.6" height="30" rx="4" fill="#1d2a23"/><text x="668.4" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/terraform-01-rename-that-wants-to-destroy/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>A pull request renamed two resources in <code>/srv/infra</code> — <code>random_password.key</code> became
+<code>random_password.session_key</code>, <code>local_file.env</code> became <code>local_file.app_env</code> — because the new names
+say what the things are. Nothing about the objects changed. The next <code>terraform plan</code> proposed to
+destroy the session key and create a new one, which would log out every customer, and to destroy and
+recreate the file that holds it.</p>
+<p>Terraform was not being obtuse. It identifies every object it manages by its <strong>address</strong> in the
+configuration, and it records that address, with the object's attributes, in state. A rename in the
+code is, to Terraform, one address disappearing and another appearing: the object at the old address
+is no longer wanted, and nothing exists yet at the new one. The information &quot;these are the same thing&quot;
+is not in the configuration unless you put it there — with a <code>moved</code> block.</p>
+<p>The same plan also wanted to put back a file someone had edited by hand during an incident, and the
+state file that held the session key in plain text was readable by every account. This journal is
+about the relationship between configuration, state and reality, and how to change the first without
+destroying the third.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Explain what Terraform state records and why an address change looks like destroy-and-create.</li>
+<li>Refactor resource names with <code>moved</code> blocks (or <code>terraform state mv</code>), and verify with a plan before
+applying.</li>
+<li>Read a plan's reasons: &quot;not in configuration&quot;, &quot;will be created&quot;, &quot;has moved to&quot;, &quot;must be replaced&quot;.</li>
+<li>Recognise drift, and decide whether to let Terraform correct it or to change the configuration.</li>
+<li>Say which secrets end up in state, and protect state files and their backups accordingly.</li>
+<li>Use <code>terraform plan -detailed-exitcode</code> as a machine-readable &quot;anything to do?&quot; check.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="configuration-state-reality">Configuration, state, reality</h3>
+<p>Terraform works with three things:</p>
+<ul>
+<li><strong>Configuration</strong> — the <code>.tf</code> files: what you want, by address (<code>random_password.session_key</code>).</li>
+<li><strong>State</strong> — <code>terraform.tfstate</code>: for each address, the object Terraform created and its last known
+attributes, including provider-generated values such as a random password's <code>result</code>.</li>
+<li><strong>Reality</strong> — the actual objects: here, files on disk and values that exist only in state.</li>
+</ul>
+<p><code>terraform plan</code> refreshes state from reality (asking each provider to read its objects), then compares
+the refreshed state with the configuration and proposes actions to make reality match the
+configuration. <code>terraform state list</code> shows the addresses in state; <code>grep resource *.tf</code> shows the
+addresses in configuration. When they differ, the plan tells you why.</p>
+<h3 id="why-a-rename-becomes-destroy-and-create">Why a rename becomes destroy-and-create</h3>
+<p>After the rename, state contains <code>random_password.key</code> and configuration contains
+<code>random_password.session_key</code>. The plan says exactly that:</p>
+<ul>
+<li><code>random_password.key will be destroyed (because random_password.key is not in configuration)</code></li>
+<li><code>random_password.session_key will be created</code></li>
+</ul>
+<p>For most resources that is expensive; for a <code>random_password</code> it is destructive in a subtle way: the new
+object gets a new random value. Anything derived from it — the session key in <code>/etc/shop/app.env</code> —
+changes on apply. The provider did exactly what the configuration asked.</p>
+<h3 id="moved-blocks"><code>moved</code> blocks</h3>
+<pre class="hl"><code class="language-hcl"><span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_password.key</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_password.session_key</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<p>A <code>moved</code> block records that the object at one address now lives at another. During plan, Terraform
+updates the address in state before comparing, so the plan shows <code>random_password.key has moved to random_password.session_key</code> and no destroy. Moves apply to modules, <code>count</code>/<code>for_each</code> instances and
+whole resources alike.</p>
+<p>Two properties make <code>moved</code> better than the older command <code>terraform state mv</code>:</p>
+<ul>
+<li>It is <strong>code</strong>: reviewed in the same pull request as the rename, and applied by every workspace and
+every colleague's state automatically, instead of a manual state edit someone has to remember.</li>
+<li>It shows up in the <strong>plan</strong>, so the move is visible before anything happens.</li>
+</ul>
+<p>Keep moved blocks until every state that could contain the old address has been applied — for a shared
+module, that can be a long time. A moved block whose <code>from</code> no longer exists anywhere is harmless.</p>
+<p><code>terraform state mv OLD NEW</code> still has its place for one-off surgery on a single state, and it writes a
+backup first.</p>
+<h3 id="drift">Drift</h3>
+<p>Someone appended two lines to <code>/etc/shop/nginx-site.conf</code>, a file Terraform manages with <code>local_file</code>.
+When the <code>local</code> provider reads that resource during refresh and finds the file's content no longer
+matches what it wrote, it reports the object as gone; the plan then shows <code>local_file.nginx_site will be created</code>. Other providers show drift as <code>~ update in-place</code> or <code>must be replaced</code>. In all cases the
+decision is the same and it is a human one:</p>
+<ul>
+<li>If the manual change was a temporary hack, <strong>let Terraform put reality back</strong> (apply).</li>
+<li>If the change is wanted, <strong>put it in the configuration</strong> first, so the plan becomes empty without
+undoing it.</li>
+</ul>
+<p><code>terraform plan -refresh-only</code> shows only the drift, without the configuration's proposals, which helps
+when the two are mixed.</p>
+<h3 id="secrets-in-state">Secrets in state</h3>
+<p>State stores every attribute a provider returns. A <code>random_password</code>'s <code>result</code> is marked sensitive,
+which only means Terraform prints <code>(sensitive value)</code> in plans. In <code>terraform.tfstate</code> it is plain
+text, and so is the content of <code>local_file.app_env</code>. Whoever can read the state can read the secrets.</p>
+<p>For a local state file:</p>
+<ul>
+<li>mode 0600, owned by the account that runs Terraform;</li>
+<li><code>terraform.tfstate.backup</code> too — Terraform writes the previous state there on every apply, with the
+same secrets;</li>
+<li>never in Git (<code>*.tfstate*</code> in <code>.gitignore</code>).</li>
+</ul>
+<p>For a team, a remote backend with encryption and access control, and state locking, replaces the local
+file. Newer Terraform versions add ephemeral values and write-only arguments that keep some secrets out
+of state altogether; for generated secrets like this one, protecting state is the baseline.</p>
+<h3 id="-detailed-exitcode"><code>-detailed-exitcode</code></h3>
+<p><code>terraform plan -detailed-exitcode</code> exits <code>0</code> when there is nothing to do, <code>2</code> when there are changes,
+and <code>1</code> on error. It turns &quot;is this infrastructure exactly as configured?&quot; into a status a script or a
+check can test — which is how the lab grades a clean plan. Add <code>-lock=false</code> only for read-only checks
+that must not wait on a lock.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the track's lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed. Terraform's
+providers come from the image's local mirror; <code>CHECKPOINT_DISABLE=1</code> stops the version check.</p>
+<p><strong>1. Read the plan everyone was afraid of</strong> (filtered to the lines that carry the decisions):</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/infra<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">CHECKPOINT_DISABLE</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-no-color<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'^  # |^Plan:|must be replaced|will be (created|destroyed)|forces replacement|^\s+[-+~]'</span>
+<span class="hl-go">  + create</span>
+<span class="hl-go">  - destroy</span>
+<span class="hl-gp">  # </span>local_file.app_env<span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>created
+<span class="hl-go">  + resource "local_file" "app_env" {</span>
+<span class="hl-go">      + content              = (sensitive value)</span>
+<span class="hl-go">…</span>
+<span class="hl-go">      + filename             = "/etc/shop/app.env"</span>
+<span class="hl-go">      + id                   = (known after apply)</span>
+<span class="hl-gp">  # </span>local_file.env<span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>local_file.env<span class="hl-w"> </span>is<span class="hl-w"> </span>not<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>configuration<span class="hl-o">)</span>
+<span class="hl-go">  - resource "local_file" "env" {</span>
+<span class="hl-go">      - content              = (sensitive value) -&gt; null</span>
+<span class="hl-go">…</span>
+<span class="hl-go">      - filename             = "/etc/shop/app.env" -&gt; null</span>
+<span class="hl-go">      - id                   = "0d5937fb5cad3bcab0017ff8a6b92cc67197313d" -&gt; null</span>
+<span class="hl-gp">  # </span>local_file.nginx_site<span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>created
+<span class="hl-go">  + resource "local_file" "nginx_site" {</span>
+<span class="hl-go">      + content              = &lt;&lt;-EOT</span>
+<span class="hl-go">…</span>
+<span class="hl-gp">  # </span>random_password.key<span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>random_password.key<span class="hl-w"> </span>is<span class="hl-w"> </span>not<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>configuration<span class="hl-o">)</span>
+<span class="hl-go">  - resource "random_password" "key" {</span>
+<span class="hl-go">…</span>
+<span class="hl-go">      - result      = (sensitive value) -&gt; null</span>
+<span class="hl-go">…</span>
+<span class="hl-gp">  # </span>random_password.session_key<span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>created
+<span class="hl-go">  + resource "random_password" "session_key" {</span>
+<span class="hl-go">…</span>
+<span class="hl-go">      + result      = (sensitive value)</span>
+<span class="hl-go">…</span>
+<span class="hl-go">Plan: 3 to add, 0 to change, 2 to destroy.</span>
+</code></pre>
+
+<p>(Lines marked <code>…</code> are the remaining attributes of each resource, omitted here.) Two destroys &quot;because
+… is not in configuration&quot;, three creates. <code>nginx_site</code> is being <em>created</em> although it exists — the
+drift.</p>
+<p><strong>2. Compare state with configuration, and look at the drifted file.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/infra<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>terraform<span class="hl-w"> </span>state<span class="hl-w"> </span>list
+<span class="hl-go">local_file.env</span>
+<span class="hl-go">local_file.nginx_site</span>
+<span class="hl-go">random_password.key</span>
+<span class="hl-gp">$ </span>grep<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s1">'^resource'</span><span class="hl-w"> </span>/srv/infra/main.tf
+<span class="hl-go">6:resource "random_password" "session_key" {</span>
+<span class="hl-go">11:resource "local_file" "app_env" {</span>
+<span class="hl-go">17:resource "local_file" "nginx_site" {</span>
+<span class="hl-gp">$ </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span>/etc/shop/nginx-site.conf
+<span class="hl-go">}</span>
+<span class="hl-gp"># </span>incident<span class="hl-w"> </span><span class="hl-m">2026</span>-09-11:<span class="hl-w"> </span><span class="hl-nb">let</span><span class="hl-w"> </span>the<span class="hl-w"> </span>office<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>directly
+<span class="hl-go">allow 203.0.113.0/24;</span>
+</code></pre>
+
+<p>State has the old names; configuration has the new ones. The site file carries an incident-era edit
+that the configuration never had.</p>
+<p><strong>3. See what the state holds, and who can read it.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/srv/infra/terraform.tfstate*
+<span class="hl-go">-rw-r--r-- 1 root root 4634 Sep 14 04:02 /srv/infra/terraform.tfstate</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'.resources[] | select(.type=="random_password") | .instances[0].attributes.result'</span><span class="hl-w"> </span>/srv/infra/terraform.tfstate<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>cut<span class="hl-w"> </span>-c1-6<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sed<span class="hl-w"> </span><span class="hl-s1">'s/$/… (first 6 characters)/'</span>
+<span class="hl-go">3dBlUW… (first 6 characters)</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sed<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s1">'s/^SESSION_KEY=\(.\{6\}\).*/SESSION_KEY=\1…/p'</span><span class="hl-w"> </span>/etc/shop/app.env
+<span class="hl-go">SESSION_KEY=3dBlUW…</span>
+</code></pre>
+
+<p>The session key is in the state in plain text (only its first characters are shown here), matching the
+live file — and the state is world-readable.</p>
+<p><strong>4. Declare the renames.</strong> <code>/srv/infra/moved.tf</code>:</p>
+<pre class="hl"><code class="language-hcl"><span class="hl-c1"># the resources were renamed; these keep the existing objects instead of replacing them</span>
+<span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_password.key</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_password.session_key</span>
+<span class="hl-p">}</span>
+
+<span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">local_file.env</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">local_file.app_env</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/infra<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">CHECKPOINT_DISABLE</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-no-color<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'^  # |^Plan:|has moved to|must be replaced'</span>
+<span class="hl-gp">  # </span>local_file.env<span class="hl-w"> </span>has<span class="hl-w"> </span>moved<span class="hl-w"> </span>to<span class="hl-w"> </span>local_file.app_env
+<span class="hl-gp">  # </span>local_file.nginx_site<span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>created
+<span class="hl-gp">  # </span>random_password.key<span class="hl-w"> </span>has<span class="hl-w"> </span>moved<span class="hl-w"> </span>to<span class="hl-w"> </span>random_password.session_key
+<span class="hl-go">Plan: 1 to add, 0 to change, 0 to destroy.</span>
+</code></pre>
+
+<p>No destroys left. The only action is putting back the hand-edited file — which is wanted here: the
+incident exception was temporary.</p>
+<p><strong>5. Apply, then plan again.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/infra<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">CHECKPOINT_DISABLE</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>apply<span class="hl-w"> </span>-auto-approve<span class="hl-w"> </span>-no-color<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'Moving|Destroying|Destruction complete|Creating|Creation complete|^Apply complete'</span>
+<span class="hl-go">local_file.nginx_site: Creating...</span>
+<span class="hl-go">local_file.nginx_site: Creation complete after 0s [id=318de722cf0f0b8137a229f55664760dd1018e07]</span>
+<span class="hl-go">Apply complete! Resources: 1 added, 0 changed, 0 destroyed.</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/infra<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">CHECKPOINT_DISABLE</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-detailed-exitcode<span class="hl-w"> </span>-no-color<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-si">${</span><span class="hl-nv">PIPESTATUS</span><span class="hl-p">[0]</span><span class="hl-si">}</span><span class="hl-s2">"</span>
+
+<span class="hl-go">Terraform has compared your real infrastructure against your configuration</span>
+<span class="hl-go">and found no differences, so no changes are needed.</span>
+<span class="hl-go">exit=0</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/infra<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>terraform<span class="hl-w"> </span>state<span class="hl-w"> </span>list
+<span class="hl-go">local_file.app_env</span>
+<span class="hl-go">local_file.nginx_site</span>
+<span class="hl-go">random_password.session_key</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'.resources[] | select(.type=="random_password") | .instances[0].attributes.result'</span><span class="hl-w"> </span>/srv/infra/terraform.tfstate<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>cut<span class="hl-w"> </span>-c1-6<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sed<span class="hl-w"> </span><span class="hl-s1">'s/$/… (first 6 characters)/'</span><span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>sed<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s1">'s/^SESSION_KEY=\(.\{6\}\).*/SESSION_KEY=\1…/p'</span><span class="hl-w"> </span>/etc/shop/app.env
+<span class="hl-go">3dBlUW… (first 6 characters)</span>
+<span class="hl-go">SESSION_KEY=3dBlUW…</span>
+<span class="hl-gp">$ </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span>/etc/shop/nginx-site.conf
+<span class="hl-go">    server_name shop.example.test;</span>
+<span class="hl-go">    root /srv/www/current;</span>
+<span class="hl-go">}</span>
+</code></pre>
+
+<p>The moves happened as part of the apply without any destroy, the state now uses the new addresses, the
+session key is unchanged, the site file is back to its configured content, and the plan exits 0.</p>
+<p><strong>6. Protect the state and its backup.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/srv/infra/terraform.tfstate*
+<span class="hl-go">-rw-r--r-- 1 root root 4654 Sep 14 04:02 /srv/infra/terraform.tfstate</span>
+<span class="hl-go">-rw-r--r-- 1 root root 4634 Sep 14 04:02 /srv/infra/terraform.tfstate.backup</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">600</span><span class="hl-w"> </span>/srv/infra/terraform.tfstate<span class="hl-w"> </span>/srv/infra/terraform.tfstate.backup<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/srv/infra/terraform.tfstate*
+<span class="hl-go">-rw------- 1 root root 4654 Sep 14 04:02 /srv/infra/terraform.tfstate</span>
+<span class="hl-go">-rw------- 1 root root 4634 Sep 14 04:02 /srv/infra/terraform.tfstate.backup</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/infra<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">CHECKPOINT_DISABLE</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-no-color<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/srv/infra/terraform.tfstate*
+<span class="hl-go">Terraform has compared your real infrastructure against your configuration</span>
+<span class="hl-go">and found no differences, so no changes are needed.</span>
+<span class="hl-go">-rw------- 1 root root 4654 Sep 14 04:02 /srv/infra/terraform.tfstate</span>
+<span class="hl-go">-rw------- 1 root root 4634 Sep 14 04:02 /srv/infra/terraform.tfstate.backup</span>
+</code></pre>
+
+<p>The apply created a <code>.backup</code> — with the previous state and the same secret — world-readable like the
+state itself. Both are 0600 now. A plan that changes nothing does not rewrite them; check the modes
+again after future applies, or keep the state somewhere whose permissions do not depend on each write.</p>
+<p><strong>7. Grade.</strong> A clean plan, the original key under its new address and in the file, and root-only
+state — before and after the reboot.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Renaming the resources back.</strong> The plan becomes empty and the team's agreed names are lost; the next
+rename hits the same wall. <code>moved</code> is how refactoring is supposed to work.</p>
+<p><strong><code>terraform apply</code> after a quick look at &quot;3 to add&quot;.</strong> The two destroys are in the same plan. Read the
+<code>Plan:</code> line in full, and every <code>will be destroyed</code>.</p>
+<p><strong><code>terraform import random_password.session_key …</code>.</strong> Import brings an existing real object under an
+address; the object here already <em>is</em> under management, at another address. Import would leave the old
+address to be destroyed, and not every resource type supports import at all.</p>
+<p><strong><code>terraform state rm random_password.key</code> followed by apply.</strong> Terraform forgets the old key and
+creates a new one for the new address — exactly the regeneration you were avoiding.</p>
+<p><strong><code>lifecycle { prevent_destroy = true }</code> on the new address.</strong> It protects the new address, which has
+nothing to destroy; the plan to destroy the old address still stands.</p>
+<p><strong>Editing <code>terraform.tfstate</code> by hand.</strong> It usually works once and corrupts serial numbers or lineage the
+next time. Use <code>moved</code> or <code>terraform state mv</code>, which write backups.</p>
+<p><strong>Silencing the drift with <code>lifecycle { ignore_changes = [content] }</code>.</strong> The incident edit then stays
+forever, unreviewed, in a file the configuration claims to manage.</p>
+<p><strong>Protecting <code>terraform.tfstate</code> and forgetting <code>.backup</code>.</strong> The backup holds the previous state, with the
+same secrets.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w">                                   </span><span class="hl-c1"># refresh, compare, propose</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-detailed-exitcode<span class="hl-w">                </span><span class="hl-c1"># 0 nothing to do, 2 changes, 1 error</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-refresh-only<span class="hl-w">                     </span><span class="hl-c1"># only the drift between state and reality</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>state<span class="hl-w"> </span>list<span class="hl-w">                             </span><span class="hl-c1"># addresses in state</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>state<span class="hl-w"> </span>show<span class="hl-w"> </span>random_password.session_key<span class="hl-w"> </span><span class="hl-c1"># one object's recorded attributes</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>state<span class="hl-w"> </span>mv<span class="hl-w"> </span>OLD<span class="hl-w"> </span>NEW<span class="hl-w">                       </span><span class="hl-c1"># one-off move in one state (writes a backup)</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>apply<span class="hl-w"> </span>-auto-approve<span class="hl-w">                    </span><span class="hl-c1"># in automation, apply a reviewed plan instead</span>
+<span class="hl-gp">$ </span>jq<span class="hl-w"> </span><span class="hl-s1">'.resources[].type'</span><span class="hl-w"> </span>terraform.tfstate<span class="hl-w">         </span><span class="hl-c1"># what the state holds (it is JSON)</span>
+<span class="hl-gp">$ </span>chmod<span class="hl-w"> </span><span class="hl-m">600</span><span class="hl-w"> </span>terraform.tfstate<span class="hl-w"> </span>terraform.tfstate.backup
+</code></pre>
+
+<pre class="hl"><code class="language-hcl"><span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_password.key</span><span class="hl-c1">          # old address</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_password.session_key</span><span class="hl-c1">  # new address</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>Plan says</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>will be destroyed (because … is not in configuration)</code></td>
+<td>an address exists only in state</td>
+</tr>
+<tr>
+<td><code>will be created</code></td>
+<td>an address exists only in configuration — or the object vanished or drifted (provider-specific)</td>
+</tr>
+<tr>
+<td><code>has moved to</code></td>
+<td>a <code>moved</code> block matched; no destroy</td>
+</tr>
+<tr>
+<td><code>must be replaced</code> / <code>forces replacement</code></td>
+<td>an argument that cannot change in place differs</td>
+</tr>
+<tr>
+<td><code>~ update in-place</code></td>
+<td>an attribute differs and can be changed</td>
+</tr>
+</tbody>
+</table>
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — State maps addresses to real objects</li>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — Drift</li>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — Refactoring without destroying: moved</li>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — Sensitive is a display setting</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>The plan says three to destroy, and you only removed one</em> (<code>terraform</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Why does renaming a resource in the configuration produce a destroy and a create?</p>
+<blockquote>
+<p>Terraform identifies objects by address; after the rename, state has an object at the old address that is no longer in configuration (destroy) and configuration has a new address with no object (create).</p>
+</blockquote>
+</li>
+<li>
+<p>What does a <code>moved</code> block do during plan, and why is it preferable to <code>terraform state mv</code>?</p>
+<blockquote>
+<p>It rewrites the address in state before comparison, so the plan shows a move instead of destroy and create; it lives in version control, is reviewed with the rename, and applies to every state that runs the configuration.</p>
+</blockquote>
+</li>
+<li>
+<p>Why would destroying and recreating <code>random_password.key</code> log out customers, even though the configuration of the new resource is identical?</p>
+<blockquote>
+<p>A new <code>random_password</code> generates a new random value, and the session key file is derived from it.</p>
+</blockquote>
+</li>
+<li>
+<p>The plan says <code>local_file.nginx_site will be created</code> although the file exists. What happened?</p>
+<blockquote>
+<p>The file was edited by hand; the local provider saw its content no longer matched what it wrote and reported the object as gone, so Terraform plans to write it again.</p>
+</blockquote>
+</li>
+<li>
+<p>Which files contain the session key in plain text, and what mode should they have?</p>
+<blockquote>
+<p><code>/etc/shop/app.env</code>, <code>terraform.tfstate</code> and <code>terraform.tfstate.backup</code>; the state files should be 0600 and owned by the account that runs Terraform (and never committed).</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>terraform plan -detailed-exitcode</code> return, and why is it useful in a check?</p>
+<blockquote>
+<p>0 when there are no changes, 2 when there are changes, 1 on error — a status a script can test to prove the infrastructure matches its configuration.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>terraform state rm random_password.key</code> not a fix?</p>
+<blockquote>
+<p>It makes Terraform forget the existing object; the new address still has no object, so the next apply creates a new random password anyway.</p>
+</blockquote>
+</li>
+<li>
+<p>When should drift be applied away, and when should the configuration change instead?</p>
+<blockquote>
+<p>Apply it away when the manual change was unwanted or temporary; change the configuration first when the manual change is correct and must be kept.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nothing matched is an answer, not a failure · Norboten</title>
+<meta name="description" content="set -euo pipefail is good advice, and the review that asked for it was right. What the review did not say is that set -e acts on a single signal — a non-zero ex">
+<link rel="canonical" href="https://norboten.org/journals/bash-06-report-that-dies-on-a-quiet-night/"><meta property="og:title" content="Nothing matched is an answer, not a failure · Norboten">
+<meta property="og:description" content="set -euo pipefail is good advice, and the review that asked for it was right. What the review did not say is that set -e acts on a single signal — a non-zero ex">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/bash-06-report-that-dies-on-a-quiet-night/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Nothing matched is an answer, not a failure · Norboten">
+<meta name="twitter:description" content="set -euo pipefail is good advice, and the review that asked for it was right. What the review did not say is that set -e acts on a single signal — a non-zero ex">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Nothing matched is an answer, not a failure",
+  "description": "set -euo pipefail is good advice, and the review that asked for it was right. What the review did not say is that set -e acts on a single signal \u2014 a non-zero ex",
+  "url": "https://norboten.org/journals/bash-06-report-that-dies-on-a-quiet-night/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1304,
+  "timeRequired": "PT30M",
+  "about": ["Bash", "Logging and journald"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Report That Dies on a Quiet Night</div>
+    <h1>Nothing matched is an answer, not a failure</h1>
+    <p class="muted">
+      30 minutes' reading · 1304 words ·<span class="tag">Bash</span><span class="tag">Logging and journald</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 90 words</title><rect x="0.0" y="0" width="44.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 455 words</title><rect x="47.3" y="0" width="223.9" height="30" rx="4" fill="#1d2a23"/><text x="55.3" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 382 words</title><rect x="274.2" y="0" width="188.0" height="30" rx="4" fill="#4ade80"/><text x="282.2" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 152 words</title><rect x="465.1" y="0" width="74.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 140 words</title><rect x="542.9" y="0" width="68.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 65 words</title><rect x="614.8" y="0" width="32.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 224 words</title><rect x="649.8" y="0" width="110.2" height="30" rx="4" fill="#1d2a23"/><text x="657.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/bash-06-report-that-dies-on-a-quiet-night/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p><code>set -euo pipefail</code> is good advice, and the review that asked for it was right. What the review did
+not say is that <code>set -e</code> acts on a single signal — a non-zero exit status — and that several
+perfectly ordinary commands use a non-zero status to mean &quot;I looked, and there was nothing&quot;, not &quot;I
+failed&quot;. <code>grep</code> is the famous one. Add <code>pipefail</code>, and a night with no server errors becomes a failed
+unit and an emptied report.</p>
+<p>The second bug in the same one-line pipeline is quieter and older than the review: <code>uniq -c</code> counts
+runs of <em>adjacent</em> equal lines, so an endpoint that appears in three separate places in the log is
+reported three times with three small counts. Both come from the same habit — reading a pipeline as
+a sentence rather than as five programs with their own rules.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Name grep's three exit statuses and say what each one means.</li>
+<li>Explain what <code>set -e</code> and <code>pipefail</code> do to a pipeline whose first command finds nothing.</li>
+<li>Tell an empty result from an error, and write a script that treats them differently.</li>
+<li>Count occurrences correctly with <code>sort | uniq -c</code>, and sort the result by count and then by name.</li>
+<li>Keep a report intact when a run fails, instead of truncating it before the work starts.</li>
+<li>Read a failed oneshot unit: <code>systemctl show</code>, <code>journalctl -u</code>.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="three-exit-statuses-not-two">Three exit statuses, not two</h3>
+<p><code>grep</code> exits 0 when at least one line matched, <strong>1 when no line matched</strong>, and 2 when something
+actually went wrong — a file it cannot open, a bad pattern. The distinction is deliberate and
+documented, and it is what makes <code>if grep -q …</code> work. <code>awk</code>, by contrast, exits 0 whether or not any
+line matched its pattern: &quot;no matching lines&quot; is not an error condition for it at all.</p>
+<p>Other commands share grep's convention: <code>diff</code> (1 = differences found), <code>cmp</code>, <code>test</code>/<code>[</code>. None of
+them is broken; they answer a question, and the answer is in the status.</p>
+<h3 id="what-set--e-and-pipefail-make-of-that">What <code>set -e</code> and <code>pipefail</code> make of that</h3>
+<p><code>set -e</code> ends the script when a command exits non-zero — outside the places where a status is being
+tested (<code>if</code>, <code>while</code>, <code>&amp;&amp;</code>, <code>||</code>, a <code>!</code> negation). A pipeline's status is normally the status of its
+<strong>last</strong> command, so <code>grep … | awk … | sort</code> is 0 even when grep found nothing. <code>set -o pipefail</code>
+changes that: the pipeline's status becomes the last non-zero status in it. Together, the two turn
+&quot;nothing matched&quot; into &quot;stop the script&quot;.</p>
+<p>The redirection has already happened by then. In <code>grep … | … &gt; &quot;$REPORT&quot;</code> the shell opens and
+truncates the report before the pipeline runs, so a quiet night leaves a zero-byte report <em>and</em> a
+failed unit.</p>
+<h3 id="counting-with-uniq">Counting with <code>uniq</code></h3>
+<p><code>uniq</code> compares each line with the one before it only. It is a streaming tool with a one-line memory,
+which is why it is fast and why it needs sorted input: <code>sort | uniq -c</code> is the idiom, and <code>sort -u</code>
+is the shorthand when the counts are not needed.</p>
+<p>Sorting the counts afterwards needs care too. <code>sort -rn</code> on <code>&lt;count&gt; &lt;path&gt;</code> lines sorts by the whole
+line numerically, which is fine for the counts but leaves equal counts in whatever order they arrived.
+<code>sort -k1,1nr -k2,2</code> says exactly what is meant: first key numeric and reversed, second key the path,
+ascending — a stable, reproducible report.</p>
+<h3 id="not-a-failure-and-not-silence-either">Not a failure, and not silence either</h3>
+<p>The fix is not <code>|| true</code> on the end of the pipeline. That makes every failure invisible, including
+the log that has been rotated away or a disk that is full — and this lab's third check exists to
+catch exactly that shortcut. Separate the two questions:</p>
+<ul>
+<li><em>Can I read the input?</em> Test it, and fail loudly if not.</li>
+<li><em>Did the input contain anything?</em> Let the tool answer; zero is a number.</li>
+</ul>
+<p>Using <code>awk</code> for the selection does both at once: it exits 0 on a quiet log, and non-zero when it
+cannot open the file, so the pipeline's status keeps its meaning under <code>pipefail</code>.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Run on the lab's own machine: <code>ubuntu-26.04-devops</code>, GNU bash 5.3.9, before any change.</p>
+<p>The unit's run, on a night with no server errors in the log:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>errors-report.service<span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>errors-report.service<span class="hl-w"> </span>-p<span class="hl-w"> </span>Result<span class="hl-w"> </span>-p<span class="hl-w"> </span>ExecMainStatus<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>errors-report.service<span class="hl-w"> </span>-b<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-3
+<span class="hl-go">Result=exit-code</span>
+<span class="hl-go">ExecMainStatus=1</span>
+<span class="hl-go">errors-report.service: Main process exited, code=exited, status=1/FAILURE</span>
+<span class="hl-go">errors-report.service: Failed with result 'exit-code'.</span>
+<span class="hl-go">Failed to start errors-report.service - Server errors per endpoint, for the morning stand-up.</span>
+</code></pre>
+
+<p>The report it left is empty, although the log has six lines:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>wc<span class="hl-w"> </span>-l<span class="hl-w"> </span>/var/log/shop/access.log<span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/var/lib/shop/errors.txt<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"[end of report]"</span>
+<span class="hl-go">6 /var/log/shop/access.log</span>
+<span class="hl-go">[end of report]</span>
+</code></pre>
+
+<p>The status of the <code>grep</code> in that pipeline is the whole story:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>grep<span class="hl-w"> </span><span class="hl-s1">'" 5[0-9][0-9] '</span><span class="hl-w"> </span>/var/log/shop/access.log<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"grep status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">grep status: 1</span>
+</code></pre>
+
+<p>And that status, under <code>set -e</code> with <code>pipefail</code>, ends the script — even though the rest of the
+pipeline ran happily:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>bash<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'set -euo pipefail; grep missing /etc/hostname | wc -l; echo "reached the next line"'</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"script status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">0</span>
+<span class="hl-go">script status: 1</span>
+</code></pre>
+
+<p><code>wc -l</code> printed its <code>0</code>; the line after it never ran. The counting bug is easy to see beside its
+fix — the same five lines, with and without a <code>sort</code> in front of <code>uniq</code>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'/cart\n/pay\n/cart\n/cart\n/pay\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>uniq<span class="hl-w"> </span>-c
+<span class="hl-go">      1 /cart</span>
+<span class="hl-go">      1 /pay</span>
+<span class="hl-go">      2 /cart</span>
+<span class="hl-go">      1 /pay</span>
+<span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'/cart\n/pay\n/cart\n/cart\n/pay\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sort<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>uniq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sort<span class="hl-w"> </span>-k1,1nr<span class="hl-w"> </span>-k2,2
+<span class="hl-go">      3 /cart</span>
+<span class="hl-go">      2 /pay</span>
+</code></pre>
+
+<p>After the fix — the log checked for readability, <code>awk</code> in place of <code>grep</code> for the selection, <code>sort</code>
+before <code>uniq -c</code>, a second <code>awk</code> for the total, and the report written to a temporary file and
+renamed — a bad night, a quiet night and a missing log all behave:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>/usr/local/bin/errors-report<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/var/lib/shop/errors.txt
+<span class="hl-go">status: 0</span>
+<span class="hl-go">1 /cart</span>
+<span class="hl-go">total 1</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'grep -v 502 /var/log/shop/access.log &gt; /tmp/quiet.log'</span><span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">LOG</span><span class="hl-o">=</span>/tmp/quiet.log<span class="hl-w"> </span><span class="hl-nv">REPORT</span><span class="hl-o">=</span>/tmp/quiet.txt<span class="hl-w"> </span>/usr/local/bin/errors-report<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/tmp/quiet.txt
+<span class="hl-go">status: 0</span>
+<span class="hl-go">total 0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">LOG</span><span class="hl-o">=</span>/nonexistent<span class="hl-w"> </span><span class="hl-nv">REPORT</span><span class="hl-o">=</span>/tmp/quiet.txt<span class="hl-w"> </span>/usr/local/bin/errors-report<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/tmp/quiet.txt
+<span class="hl-go">errors-report: cannot read /nonexistent</span>
+<span class="hl-go">status: 1</span>
+<span class="hl-go">total 0</span>
+</code></pre>
+
+<p>The quiet night is <code>total 0</code> with status 0; the missing log is a message on standard error, status 1,
+and the previous report untouched.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong><code>grep … || true</code>.</strong> The quiet night passes, and so does every real failure: an unreadable log, a
+rotated log, a typo in the path. The lab's third check fails anyone who does this.</li>
+<li><strong><code>set +e</code> around the pipeline.</strong> Same objection, with more lines.</li>
+<li><strong><code>grep -c</code> for the total.</strong> It also exits 1 when the count is zero, so the &quot;total&quot; line brings the
+problem back on the last line of the script.</li>
+<li><strong>Keeping <code>uniq -c</code> and sorting afterwards.</strong> Sorting the wrong counts does not make them right;
+the input to <code>uniq</code> is what has to be sorted.</li>
+<li><strong><code>sort -rn</code> alone.</strong> It works on the numbers but leaves equal counts in arbitrary order, so the
+report changes between runs for no reason.</li>
+<li><strong>Muting the alert.</strong> A unit that fails every quiet night trains everyone to ignore it, which is
+how the counting bug survived for weeks.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash">grep<span class="hl-w"> </span>pattern<span class="hl-w"> </span>file<span class="hl-w">                  </span><span class="hl-c1"># 0 matched · 1 no match · 2 error</span>
+awk<span class="hl-w"> </span><span class="hl-s1">'/pattern/ { … }'</span><span class="hl-w"> </span>file<span class="hl-w">         </span><span class="hl-c1"># 0 whether or not anything matched; non-zero if it cannot read</span>
+<span class="hl-nb">set</span><span class="hl-w"> </span>-o<span class="hl-w"> </span>pipefail<span class="hl-w">                    </span><span class="hl-c1"># a pipeline's status = its last non-zero status</span>
+<span class="hl-k">if</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-q<span class="hl-w"> </span>pattern<span class="hl-w"> </span>file<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span><span class="hl-w"> </span>…<span class="hl-w">    </span><span class="hl-c1"># a status being tested does not trigger set -e</span>
+
+sort<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>uniq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sort<span class="hl-w"> </span>-k1,1nr<span class="hl-w"> </span>-k2,2<span class="hl-w">    </span><span class="hl-c1"># count occurrences, most frequent first, ties by name</span>
+awk<span class="hl-w"> </span><span class="hl-s1">'{ print $1, $2; n += $1 } END { print "total", n + 0 }'</span>
+
+<span class="hl-o">[</span><span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$LOG</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"cannot read </span><span class="hl-nv">$LOG</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+<span class="hl-nv">tmp</span><span class="hl-o">=</span><span class="hl-k">$(</span>mktemp<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$REPORT</span><span class="hl-s2">.XXXXXX"</span><span class="hl-k">)</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">trap</span><span class="hl-w"> </span><span class="hl-s1">'rm -f -- "$tmp"'</span><span class="hl-w"> </span>EXIT
+…<span class="hl-w"> </span>&gt;<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$tmp</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>mv<span class="hl-w"> </span>-f<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$tmp</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$REPORT</span><span class="hl-s2">"</span>
+
+systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>unit<span class="hl-w"> </span>-p<span class="hl-w"> </span>Result<span class="hl-w"> </span>-p<span class="hl-w"> </span>ExecMainStatus
+journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>unit<span class="hl-w"> </span>-b<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<ul>
+<li><code>man 1 grep</code>, <em>EXIT STATUS</em>, and <code>man 1 awk</code>.</li>
+<li><code>man 1 bash</code>, <em>SHELL BUILTIN COMMANDS: set</em>, for the exact rule <code>-e</code> follows and where it does not
+apply.</li>
+<li><code>man 1 sort</code> (<code>-k</code>, <code>-n</code>, <code>-r</code>, <code>-u</code>) and <code>man 1 uniq</code>.</li>
+<li>The logging journal, <a href="../../journals/logging-journald/">the log lines that were never written down</a>,
+for where an access log comes from in the first place.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>What do grep's exit statuses 0, 1 and 2 mean?</p>
+<blockquote>
+<p>0: at least one line matched. 1: no line matched. 2: an error, such as a file it could not read.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did a quiet night fail the script even though <code>sort</code> at the end of the pipeline succeeded?</p>
+<blockquote>
+<p><code>pipefail</code> makes the pipeline's status the last non-zero status in it — grep's 1 — and <code>set -e</code>
+ends the script on a non-zero status.</p>
+</blockquote>
+</li>
+<li>
+<p>Why was the report empty rather than stale after the failure?</p>
+<blockquote>
+<p>The redirection truncates the report when the pipeline is set up, before any of it runs.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>uniq -c</code> report <code>/cart</code> several times?</p>
+<blockquote>
+<p><code>uniq</code> only compares adjacent lines, so each separate run of <code>/cart</code> is counted on its own; the
+input has to be sorted first.</p>
+</blockquote>
+</li>
+<li>
+<p>What is wrong with ending the pipeline in <code>|| true</code>?</p>
+<blockquote>
+<p>It hides every failure, not just the empty result: an unreadable or missing log then produces a
+successful run with an empty report.</p>
+</blockquote>
+</li>
+<li>
+<p>Which command would you use instead of grep to select lines when a pipeline runs under <code>pipefail</code>,
+and why?</p>
+<blockquote>
+<p><code>awk</code>: it exits 0 whether or not anything matched, and non-zero only when something really went
+wrong, so the pipeline's status keeps its meaning.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

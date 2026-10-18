@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The log lines that were never written down · Norboten</title>
+<meta name="description" content="After an incident, the logs are the only witness, and everyone assumes the witness saw everything. It did not. A logging pipeline makes decisions of its own: it">
+<link rel="canonical" href="https://norboten.org/journals/logging-journald/"><meta property="og:title" content="The log lines that were never written down · Norboten">
+<meta property="og:description" content="After an incident, the logs are the only witness, and everyone assumes the witness saw everything. It did not. A logging pipeline makes decisions of its own: it">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/logging-journald/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The log lines that were never written down · Norboten">
+<meta name="twitter:description" content="After an incident, the logs are the only witness, and everyone assumes the witness saw everything. It did not. A logging pipeline makes decisions of its own: it">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "The log lines that were never written down",
+  "description": "After an incident, the logs are the only witness, and everyone assumes the witness saw everything. It did not. A logging pipeline makes decisions of its own: it",
+  "url": "https://norboten.org/journals/logging-journald/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2479,
+  "timeRequired": "PT35M",
+  "about": ["Logging and journald"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal</div>
+    <h1>The log lines that were never written down</h1>
+    <p class="muted">
+      35 minutes' reading · 2479 words ·<span class="tag">Logging and journald</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 80 words</title><rect x="0.0" y="0" width="20.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 1126 words</title><rect x="23.9" y="0" width="293.9" height="30" rx="4" fill="#1d2a23"/><text x="31.9" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 377 words</title><rect x="320.8" y="0" width="98.4" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 258 words</title><rect x="422.2" y="0" width="67.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#symptoms-and-causes"><title>Symptoms and causes — 176 words</title><rect x="492.5" y="0" width="45.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 209 words</title><rect x="541.4" y="0" width="54.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#exercises"><title>Exercises — 113 words</title><rect x="599.0" y="0" width="29.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#sources"><title>Sources — 42 words</title><rect x="631.5" y="0" width="11.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 439 words</title><rect x="645.4" y="0" width="114.6" height="30" rx="4" fill="#1d2a23"/><text x="653.4" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#symptoms-and-causes">Symptoms and causes</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#exercises">Exercises</a></li>
+          <li><a href="#sources">Sources</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>After an incident, the logs are the only witness, and everyone assumes the witness saw everything.
+It did not. A logging pipeline makes decisions of its own: it drops messages from a service that logs
+too fast, it files a program's error output under &quot;info&quot;, it keeps a second copy somewhere else with a
+different set of rules, and it deletes old entries to make room. None of that is a failure of the logging
+system. All of it is invisible unless you know where to look — and the time to learn it is before the
+incident, not while reading a log with a hole in the middle.</p>
+<p>Every number below was produced on a Rocky Linux 10 lab machine, where systemd-journald collects
+everything and rsyslog copies it on to <code>/var/log/messages</code>, as on any RHEL-family server.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Say how a service's output reaches the journal, and which priority it gets on the way.</li>
+<li>Recognise journald's rate limiting, find the message that reports it, and set a per-service limit.</li>
+<li>Explain why <code>/var/log/messages</code> and the journal can disagree about the same service.</li>
+<li>Query the journal precisely: by unit, by identifier, by priority, by invocation, by boot.</li>
+<li>Know where the journal stores data, how big it may grow, and how to see and change that.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="everything-a-service-prints-becomes-a-journal-entry">Everything a service prints becomes a journal entry</h3>
+<p>A systemd service's standard output and standard error are connected to journald by default
+(<code>StandardOutput=journal</code>). Each line becomes an entry with structured fields — the message, the unit,
+the PID, the syslog identifier, a <strong>priority</strong>. A program can also send to the journal through syslog
+(<code>logger</code>, <code>syslog(3)</code>) or the journal API; those entries are attributed to the unit the process runs in
+as well.</p>
+<p>A tiny script run as <code>prio.service</code>, writing four ways:</p>
+<pre class="hl"><code class="language-sh"><span class="hl-nb">echo</span><span class="hl-w"> </span>plain<span class="hl-w"> </span>stdout
+<span class="hl-nb">echo</span><span class="hl-w"> </span>to<span class="hl-w"> </span>stderr<span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span>
+<span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"&lt;3&gt;tagged error"</span>
+logger<span class="hl-w"> </span>-p<span class="hl-w"> </span>user.warning<span class="hl-w"> </span>-t<span class="hl-w"> </span>chatty2<span class="hl-w"> </span>warned<span class="hl-w"> </span>via<span class="hl-w"> </span>logger
+</code></pre>
+
+<p>and what the journal recorded, as <code>PRIORITY  _SYSTEMD_UNIT  SYSLOG_IDENTIFIER | MESSAGE</code>:</p>
+<pre><code>6 prio.service prio    | plain stdout
+6 prio.service prio    | to stderr
+3 prio.service prio    | tagged error
+4 prio.service chatty2 | warned via logger
+</code></pre>
+<p>Three things to take from that.</p>
+<p><strong>Standard error is not an error.</strong> Both streams are logged at priority 6, <code>info</code>. A program that writes
+its failures to stderr — which is correct practice — does not produce <code>err</code> entries, and a filter on
+priority will not find them:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>prio<span class="hl-w"> </span>-b<span class="hl-w"> </span>-p<span class="hl-w"> </span>err<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat
+<span class="hl-go">tagged error</span>
+</code></pre>
+
+<p><strong>Priority can be set per line</strong> by prefixing it <code>&lt;N&gt;</code> (0 emerg … 3 err, 4 warning, 6 info, 7 debug):
+<code>&lt;3&gt;tagged error</code> arrived as priority 3 with the prefix removed. That is <code>SyslogLevelPrefix=</code>, on by
+default, and it is how a service written for systemd marks its errors without a logging library.</p>
+<p><strong><code>-u</code> means the unit, <code>-t</code> means the identifier.</strong> The <code>logger</code> line has identifier <code>chatty2</code>, but it
+ran inside <code>prio.service</code>, so <code>journalctl -u prio</code> shows it and <code>journalctl -t chatty2</code> shows it too. A
+query by <code>-t</code> for a program's name misses everything that program printed to stdout (identifier
+<code>prio</code>); a query by <code>-u</code> catches everything the unit's processes produced.</p>
+<h3 id="journald-rate-limits-per-service">journald rate-limits per service</h3>
+<p>journald protects itself from a service that floods it: by default, more than 10,000 messages in 30
+seconds from one service and the rest of that interval is dropped. The documented detail that matters
+is that the burst is <strong>multiplied by a factor derived from free disk space</strong>, so the real limit depends
+on the machine.</p>
+<p>A stand-in batch job printing 100,000 tagged lines as fast as it could:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>chatty
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-b<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'^runA order'</span>
+<span class="hl-go">35000</span>
+</code></pre>
+
+<p>35,000 kept — <code>runA order 0</code> through <code>runA order 34999</code>, the default 10,000 scaled by 3.5 on this
+machine's free space — and 65,000 gone. The only
+record of it is a message journald writes <em>after</em> the interval, when the service next logs:</p>
+<pre><code>systemd-journald[594]: Suppressed 65000 messages from chatty.service
+</code></pre>
+<p>Note what the surviving lines are: the <strong>first</strong> 35,000. A job that logs its progress and then, at the
+end, its one error, has its error dropped. An earlier run of 200,000 lines, started while the previous
+run's window was still open, kept 15,000 and reported <code>Suppressed 185000 messages</code> — the limit is per
+service <em>per interval</em>, shared by consecutive runs.</p>
+<p>A unit can set its own limit:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-k">[Service]</span>
+<span class="hl-na">LogRateLimitIntervalSec</span><span class="hl-o">=</span><span class="hl-s">30s</span>
+<span class="hl-na">LogRateLimitBurst</span><span class="hl-o">=</span><span class="hl-s">1000</span>
+</code></pre>
+
+<p>With that, the same job (5,000 lines) kept 3,500 — the per-unit burst of 1,000 scaled by the same factor
+of 3.5. <code>LogRateLimitBurst=0</code> turns the limit off for that unit, which is reasonable for a service whose
+full output you need and whose volume you trust, and a bad idea for anything that can loop.</p>
+<h3 id="rsyslog-keeps-a-second-copy-with-its-own-limit">rsyslog keeps a second copy, with its own limit</h3>
+<p>On RHEL-family systems rsyslog reads the journal through its <code>imjournal</code> module and writes the classic
+files, <code>/var/log/messages</code> among them:</p>
+<pre><code>module(load=&quot;imjournal&quot;             # provides access to the systemd journal
+       UsePid=&quot;system&quot;
+       FileCreateMode=&quot;0644&quot;
+       StateFile=&quot;imjournal.state&quot;)
+</code></pre>
+<p><code>imjournal</code> has a rate limit of its own (documented default: 20,000 messages per 600 seconds), and when
+it applies, rsyslog says so in the journal:</p>
+<pre><code>rsyslogd[1167]: imjournal from &lt;lima-nb-hello:chatty&gt;: begin to drop messages due to rate-limiting
+</code></pre>
+<p>After the runs above, the two logs disagreed flatly:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'order .* processed'</span><span class="hl-w"> </span>/var/log/messages
+<span class="hl-go">19941</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'runA order'</span><span class="hl-w"> </span>/var/log/messages
+<span class="hl-go">0</span>
+</code></pre>
+
+<p><code>/var/log/messages</code> held about 20,000 lines from the first runs and <strong>none</strong> from the later one, which
+the journal had 35,000 lines of — rsyslog's ten-minute window was already spent. So &quot;grep the messages
+file&quot; and &quot;query the journal&quot; are two different witnesses with two different blind spots, and a
+colleague who says the log shows nothing may be reading the other one. (Ubuntu's cloud image keeps
+both too: rsyslog writes <code>/var/log/syslog</code> from the journal. A container has neither, and there a
+program's own log file is the only witness.)</p>
+<h3 id="where-the-journal-lives-and-how-big-it-gets">Where the journal lives, and how big it gets</h3>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>systemd-journald<span class="hl-w"> </span>-b<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span><span class="hl-s1">'System Journal'</span>
+<span class="hl-go">systemd-journald[594]: System Journal (/var/log/journal/a92…/) is 16M, max 1.4G, 1.4G free.</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>--disk-usage
+<span class="hl-go">Archived and active journals take up 48M in the file system.</span>
+</code></pre>
+
+<p>With persistent storage (see the rhcsa-05 journal for <code>Storage=</code>), entries go to <code>/var/log/journal/</code>;
+before that directory is usable, and with volatile storage, to <code>/run/log/journal/</code>. journald reports its
+limits at start: here at most 1.4 GiB — by default 10% of the filesystem, capped at 4 GiB — and it removes
+the oldest archived files to stay under <code>SystemMaxUse=</code>. So the journal is never &quot;full&quot;; it quietly gets
+<em>shorter</em>. <code>journalctl --list-boots</code> shows how far back it goes, and <code>--vacuum-size=</code>, <code>--vacuum-time=</code>
+trim it on demand.</p>
+<p>The effective configuration is the main file plus drop-ins, in order, and <code>systemd-analyze</code> prints the
+merged result:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemd-analyze<span class="hl-w"> </span>cat-config<span class="hl-w"> </span>systemd/journald.conf<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-v<span class="hl-w"> </span><span class="hl-s1">'^#'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-v<span class="hl-w"> </span><span class="hl-s1">'^$'</span>
+<span class="hl-go">[Journal]</span>
+<span class="hl-go">Audit=</span>
+<span class="hl-go">[Journal]</span>
+<span class="hl-go">Storage=persistent</span>
+</code></pre>
+
+<h3 id="asking-precise-questions">Asking precise questions</h3>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>chatty<span class="hl-w"> </span>-b<span class="hl-w">                        </span><span class="hl-c1"># this unit, this boot</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span><span class="hl-nv">_SYSTEMD_INVOCATION_ID</span><span class="hl-o">=</span><span class="hl-k">$(</span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>-p<span class="hl-w"> </span>InvocationID<span class="hl-w"> </span>--value<span class="hl-w"> </span>chatty<span class="hl-k">)</span><span class="hl-w">   </span><span class="hl-c1"># this run</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-b<span class="hl-w"> </span>-p<span class="hl-w"> </span>warning<span class="hl-w">                        </span><span class="hl-c1"># priority 4 and more severe</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-t<span class="hl-w"> </span>chatty2<span class="hl-w">                           </span><span class="hl-c1"># by syslog identifier</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>prio<span class="hl-w"> </span>-o<span class="hl-w"> </span>json<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-w">            </span><span class="hl-c1"># every field of an entry</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-k<span class="hl-w"> </span>-b<span class="hl-w">                                </span><span class="hl-c1"># the kernel's messages</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>--since<span class="hl-w"> </span><span class="hl-s1">'10 min ago'</span><span class="hl-w"> </span>-u<span class="hl-w"> </span>shop<span class="hl-w">         </span><span class="hl-c1"># a time window</span>
+</code></pre>
+
+<p><code>-o json</code> (or <code>-o verbose</code>) is the answer to &quot;why did my filter not match&quot;: it shows the fields an entry
+really has. And <code>InvocationID</code> only exists while the unit is loaded with a current run — for a finished
+oneshot, <code>systemctl show -p InvocationID</code> can come back empty, and the query above matches nothing. Use a
+time window for runs that have ended.</p>
+<p>Reading the system journal needs privilege: an ordinary account sees only its own entries unless it is
+in <code>adm</code>, <code>systemd-journal</code> or <code>wheel</code> (see the linux-02 journal).</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>A nightly import processed 100,000 records and failed at the end. The on-call engineer greps
+<code>/var/log/messages</code> and finds nothing from the import at all. The journal shows progress lines and then
+simply stops, well before the end. Nobody can see the error.</p>
+<p><strong>1. Count what the journal has, and look for the report of what it does not.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-b<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'^runA order'</span>
+<span class="hl-go">35000</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-b<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>Suppressed
+<span class="hl-go">systemd-journald[594]: Suppressed 65000 messages from chatty.service</span>
+</code></pre>
+
+<p>The journal kept the first 35,000 lines and dropped 65,000, and it says so — once, afterwards, in a line
+from <code>systemd-journald</code>, not from the job. The error was among the dropped lines.</p>
+<p><strong>2. Explain the other log.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'runA order'</span><span class="hl-w"> </span>/var/log/messages
+<span class="hl-go">0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-b<span class="hl-w"> </span>-t<span class="hl-w"> </span>rsyslogd<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>rate
+<span class="hl-go">rsyslogd[1167]: imjournal from &lt;lima-nb-hello:chatty&gt;: begin to drop messages due to rate-limiting</span>
+</code></pre>
+
+<p>rsyslog had its own window already used up by an earlier run, and dropped every line of this one.</p>
+<p><strong>3. Check whether the error could have been found by priority.</strong> The job writes errors to stderr:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>prio<span class="hl-w"> </span>-b<span class="hl-w"> </span>-p<span class="hl-w"> </span>err<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat
+<span class="hl-go">tagged error</span>
+</code></pre>
+
+<p>Only a line with an explicit <code>&lt;3&gt;</code> prefix is an <code>err</code>. Plain stderr is <code>info</code>, so <code>journalctl -p err</code>
+would not have found the job's failure even if it had been kept.</p>
+<p><strong>4. Fix the service, not the logging system.</strong> A job that prints a line per record is logging data, not
+events. Make the progress summary periodic (every 10,000 records), write the failure with a priority,
+and give the unit a limit that matches what it legitimately produces:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-k">[Service]</span>
+<span class="hl-na">LogRateLimitIntervalSec</span><span class="hl-o">=</span><span class="hl-s">30s</span>
+<span class="hl-na">LogRateLimitBurst</span><span class="hl-o">=</span><span class="hl-s">5000</span>
+</code></pre>
+
+<pre class="hl"><code class="language-python"><span class="hl-nb">print</span><span class="hl-p">(</span><span class="hl-sa">f</span><span class="hl-s2">"&lt;3&gt;import failed at record </span><span class="hl-si">{</span><span class="hl-n">i</span><span class="hl-si">}</span><span class="hl-s2">: </span><span class="hl-si">{</span><span class="hl-n">err</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-p">,</span> <span class="hl-n">flush</span><span class="hl-o">=</span><span class="hl-kc">True</span><span class="hl-p">)</span>
+</code></pre>
+
+<p><strong>5. Verify the limit and the priority.</strong> Run the job at its real volume, count the lines, confirm no
+<code>Suppressed</code> report follows the next run, and query <code>-p err</code>: the failure is now the one thing a priority
+filter finds.</p>
+<p><strong>6. Decide which log is authoritative.</strong> On this machine the journal kept more than
+<code>/var/log/messages</code> and carries the structured fields; make it the source for investigations and for
+forwarding, and treat the rsyslog copy as a convenience with its own limits.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Assuming the log has every line.</strong> journald and rsyslog both drop floods, silently in the moment. Look
+for <code>Suppressed N messages from UNIT</code> and <code>imjournal … drop messages due to rate-limiting</code>.</p>
+<p><strong>Looking for the error at the end of a truncated log.</strong> Rate limiting keeps the <em>first</em> messages of an
+interval, so the end — where failures usually are — is what goes.</p>
+<p><strong>Filtering on <code>-p err</code> to find a service's failures.</strong> stdout and stderr are both <code>info</code> (6). Only
+explicit priorities — a <code>&lt;3&gt;</code> prefix, syslog with a level — produce <code>err</code>.</p>
+<p><strong>Querying by <code>-t PROGRAM</code> for a service's output.</strong> The identifier of stdout lines is the executable
+name, and child programs using <code>logger</code> have their own. <code>-u UNIT</code> catches all of it.</p>
+<p><strong>Treating <code>/var/log/messages</code> and the journal as the same log.</strong> They are filled by different code with
+different limits; after a flood they disagreed by tens of thousands of lines.</p>
+<p><strong>Turning rate limiting off globally.</strong> <code>RateLimitBurst=0</code> in <code>journald.conf</code> lets one looping service
+fill the disk and push out every other service's history. Set a limit per unit instead.</p>
+<p><strong>Expecting the journal to report &quot;disk full&quot;.</strong> It deletes its oldest files to stay under
+<code>SystemMaxUse=</code>. Check <code>--list-boots</code> and <code>--disk-usage</code> to see how far back the evidence really goes.</p>
+<p><strong>Querying by <code>InvocationID</code> after the run has finished.</strong> For a finished oneshot the property may be
+empty and the query matches nothing. Use a time window.</p>
+<p><strong>Reading the journal without privilege.</strong> An ordinary account sees only its own entries, and the
+empty result looks like &quot;nothing was logged&quot;.</p>
+<h2 id="symptoms-and-causes">Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a service's messages stop mid-burst; journald logs &quot;Suppressed N messages&quot;</td>
+<td>the per-unit rate limit</td>
+<td><code>journalctl -u systemd-journald</code>; <code>RateLimitIntervalSec=</code>, <code>RateLimitBurst=</code></td>
+</tr>
+<tr>
+<td>last boot's logs are missing</td>
+<td>the journal is volatile (<code>Storage=volatile</code>, or <code>auto</code> with no <code>/var/log/journal</code>)</td>
+<td><code>journalctl --list-boots</code>; <code>ls /var/log/journal</code></td>
+</tr>
+<tr>
+<td><code>/var/log/journal</code> grows until the disk fills</td>
+<td>no size limit, or one larger than the filesystem allows</td>
+<td><code>journalctl --disk-usage</code>; <code>SystemMaxUse=</code></td>
+</tr>
+<tr>
+<td><code>/var/log/messages</code> or <code>/var/log/syslog</code> has lines the journal lacks, or the other way round</td>
+<td>rsyslog and journald have separate limits and filters</td>
+<td>both, side by side, for the same minute</td>
+</tr>
+<tr>
+<td>a unit's output is absent from the journal</td>
+<td>it logs to a file of its own, or its stdout goes elsewhere (<code>StandardOutput=</code>)</td>
+<td><code>systemctl show -p StandardOutput UNIT</code>; the program's configuration</td>
+</tr>
+<tr>
+<td>messages from a script have no unit</td>
+<td>it was run by hand or by cron, not as a unit</td>
+<td><code>journalctl -t IDENTIFIER</code>; <code>_SYSTEMD_UNIT=</code> in <code>-o verbose</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>querying
+<span class="hl-go">journalctl -u UNIT -b                      # unit, this boot (includes logger lines from its processes)</span>
+<span class="hl-go">journalctl -t IDENTIFIER                   # by syslog identifier</span>
+<span class="hl-go">journalctl -p err -b                       # priority 3 and worse: 0 emerg 1 alert 2 crit 3 err 4 warning 5 notice 6 info 7 debug</span>
+<span class="hl-go">journalctl --since '10 min ago' --until now</span>
+<span class="hl-go">journalctl _SYSTEMD_INVOCATION_ID=ID       # one run (while the unit still has one)</span>
+<span class="hl-go">journalctl -k -b ; journalctl -b -1        # kernel ; previous boot</span>
+<span class="hl-go">journalctl -u UNIT -o json | head -1       # the real fields — why a filter does not match</span>
+<span class="hl-go">journalctl -o cat                          # messages only</span>
+
+<span class="hl-gp"># </span>rate<span class="hl-w"> </span>limiting
+<span class="hl-go">journalctl -b | grep Suppressed            # "Suppressed N messages from UNIT" — after the interval</span>
+<span class="hl-gp"># </span>journald.conf<span class="hl-w">  </span><span class="hl-nv">RateLimitIntervalSec</span><span class="hl-o">=</span>30s<span class="hl-w"> </span><span class="hl-nv">RateLimitBurst</span><span class="hl-o">=</span><span class="hl-m">10000</span><span class="hl-w">   </span><span class="hl-o">(</span>burst<span class="hl-w"> </span>scaled<span class="hl-w"> </span>by<span class="hl-w"> </span>free<span class="hl-w"> </span>disk<span class="hl-w"> </span>space<span class="hl-o">)</span>
+<span class="hl-gp"># </span>unit<span class="hl-w">           </span><span class="hl-nv">LogRateLimitIntervalSec</span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">LogRateLimitBurst</span><span class="hl-o">=</span><span class="hl-w">     </span><span class="hl-o">(</span><span class="hl-nv">0</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span>off<span class="hl-w"> </span><span class="hl-k">for</span><span class="hl-w"> </span>that<span class="hl-w"> </span>unit<span class="hl-o">)</span>
+<span class="hl-go">journalctl -t rsyslogd | grep rate         # rsyslog imjournal drops, a separate limit</span>
+
+<span class="hl-gp"># </span>priorities<span class="hl-w"> </span>from<span class="hl-w"> </span>a<span class="hl-w"> </span>service
+<span class="hl-gp"># </span>stdout<span class="hl-w"> </span>and<span class="hl-w"> </span>stderr<span class="hl-w"> </span>→<span class="hl-w"> </span><span class="hl-m">6</span><span class="hl-w"> </span><span class="hl-o">(</span>info<span class="hl-o">)</span><span class="hl-p">;</span><span class="hl-w">  </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"&lt;3&gt;message"</span><span class="hl-w"> </span>→<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span><span class="hl-o">(</span>err<span class="hl-o">)</span><span class="hl-p">;</span><span class="hl-w">  </span>logger<span class="hl-w"> </span>-p<span class="hl-w"> </span>user.warning<span class="hl-w"> </span>→<span class="hl-w"> </span><span class="hl-m">4</span>
+
+<span class="hl-gp"># </span>storage
+<span class="hl-go">journalctl --disk-usage ; journalctl --list-boots</span>
+<span class="hl-go">journalctl -u systemd-journald -b | grep 'System Journal'     # current size, max, free</span>
+<span class="hl-go">journalctl --vacuum-size=500M ; journalctl --vacuum-time=2weeks</span>
+<span class="hl-go">systemd-analyze cat-config systemd/journald.conf               # merged configuration</span>
+</code></pre>
+
+<h2 id="exercises">Exercises</h2>
+<ol>
+<li>Write a unit that prints 2,000 lines in a second; read the journal for it and for journald itself.
+How many lines were kept, and where does journald say so?</li>
+<li>Compare <code>journalctl --list-boots</code> with <code>Storage=volatile</code> and with <code>Storage=persistent</code> across a
+reboot of a lab machine.</li>
+<li>Set <code>SystemMaxUse=</code> in a drop-in under <code>/etc/systemd/journald.conf.d/</code>, restart journald, and check
+<code>journalctl --disk-usage</code> and <code>journalctl --vacuum-size=</code> together.</li>
+<li>Find every field journald stored for one message with <code>journalctl -o verbose -n1 -u UNIT</code>, then
+select by one of them (<code>_PID=</code>, <code>_COMM=</code>, <code>PRIORITY=</code>).</li>
+<li>Log with <code>logger -t mytest hello</code> and find the line in the journal and in rsyslog's file. Which
+fields does each keep?</li>
+</ol>
+<h2 id="sources">Sources</h2>
+<ul>
+<li><code>man 5 journald.conf</code> — storage, size limits, rate limits, forwarding.</li>
+<li><code>man 1 journalctl</code> — selecting by unit, boot, priority, field, time.</li>
+<li><code>man 5 systemd.exec</code> — <code>StandardOutput=</code>, <code>StandardError=</code>, <code>LogRateLimitIntervalSec=</code> per unit.</li>
+<li>systemd's manual online: https://www.freedesktop.org/software/systemd/man/latest/journald.conf.html</li>
+<li>rsyslog's documentation: https://www.rsyslog.com/doc/</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>A service writes its errors to stderr. Why does <code>journalctl -u SERVICE -p err</code> show none of them, and
+how can the service mark a line as an error?</p>
+<blockquote>
+<p>Standard output and standard error are both logged at priority 6 (<code>info</code>). A line prefixed <code>&lt;3&gt;</code> is
+logged at priority 3 (<code>err</code>) with the prefix removed, as is a syslog message sent with an error
+level.</p>
+</blockquote>
+</li>
+<li>
+<p>A job logs 100,000 lines in a burst and the journal keeps 35,000. Which lines survive, and where is
+the evidence that the others were dropped?</p>
+<blockquote>
+<p>The first ones in the rate-limit interval; later lines — including a final error — are dropped. After
+the interval, when the service logs again, journald writes <em>Suppressed N messages from UNIT</em>.</p>
+</blockquote>
+</li>
+<li>
+<p>The documented default is 10,000 messages per 30 seconds. Why did the lab machine keep 35,000?</p>
+<blockquote>
+<p>The effective burst is multiplied by a factor derived from the journal's available disk space; on this
+machine the factor was 3.5. A per-unit <code>LogRateLimitBurst=1000</code> was scaled the same way, keeping
+3,500.</p>
+</blockquote>
+</li>
+<li>
+<p>The journal has thousands of lines from a service and <code>/var/log/messages</code> has none from the same run.
+How can both be right?</p>
+<blockquote>
+<p>rsyslog fills <code>/var/log/messages</code> by reading the journal through <code>imjournal</code>, which has its own rate
+limit and window. If that window was used up by an earlier flood, rsyslog drops the whole run and
+logs <em>imjournal … begin to drop messages due to rate-limiting</em>, while the journal applied its own,
+different limit.</p>
+</blockquote>
+</li>
+<li>
+<p>A program run by <code>backup.service</code> calls <code>logger -t backup-tool</code>. Does <code>journalctl -u backup</code> show those
+lines? Does <code>journalctl -t backup</code> show the service's stdout?</p>
+<blockquote>
+<p><code>-u backup</code> shows them, because entries are attributed to the unit the process runs in. <code>-t backup</code>
+shows only entries whose identifier is <code>backup</code>; stdout lines carry the executable's name and the
+logger lines carry <code>backup-tool</code>, so it may show neither.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>RateLimitBurst=0</code> in <code>journald.conf</code> a worse fix than <code>LogRateLimitBurst=</code> in one unit?</p>
+<blockquote>
+<p>Globally unlimited, one looping service can fill the journal's space and cause its oldest files — every
+other service's history — to be deleted. A per-unit limit raises the ceiling only for the service
+whose volume you trust.</p>
+</blockquote>
+</li>
+<li>
+<p>What happens when the journal reaches <code>SystemMaxUse=</code>, and how do you know how much history you still
+have?</p>
+<blockquote>
+<p>journald deletes the oldest archived journal files to stay under the limit, without any error. Check
+<code>journalctl --list-boots</code>, <code>journalctl --disk-usage</code>, and the <em>System Journal … max … free</em> line
+journald logs at start.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

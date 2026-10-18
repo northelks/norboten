@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>logrotate does exactly what it is told, and refuses what it cannot trust · Norboten</title>
+<meta name="description" content="A 300 MB log with a rotation policy beside it looks like logrotate is broken. It is not. It ran every night and, every night, wrote a line saying why it would n">
+<link rel="canonical" href="https://norboten.org/journals/linux-06-log-that-never-rotates/"><meta property="og:title" content="logrotate does exactly what it is told, and refuses what it cannot trust · Norboten">
+<meta property="og:description" content="A 300 MB log with a rotation policy beside it looks like logrotate is broken. It is not. It ran every night and, every night, wrote a line saying why it would n">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/linux-06-log-that-never-rotates/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="logrotate does exactly what it is told, and refuses what it cannot trust · Norboten">
+<meta name="twitter:description" content="A 300 MB log with a rotation policy beside it looks like logrotate is broken. It is not. It ran every night and, every night, wrote a line saying why it would n">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "logrotate does exactly what it is told, and refuses what it cannot trust",
+  "description": "A 300 MB log with a rotation policy beside it looks like logrotate is broken. It is not. It ran every night and, every night, wrote a line saying why it would n",
+  "url": "https://norboten.org/journals/linux-06-log-that-never-rotates/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2298,
+  "timeRequired": "PT35M",
+  "about": ["Logging and journald", "Users and permissions"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Log That Never Rotates</div>
+    <h1>logrotate does exactly what it is told, and refuses what it cannot trust</h1>
+    <p class="muted">
+      35 minutes' reading · 2298 words ·<span class="tag">Logging and journald</span><span class="tag">Users and permissions</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 122 words</title><rect x="0.0" y="0" width="32.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 820 words</title><rect x="35.7" y="0" width="219.7" height="30" rx="4" fill="#1d2a23"/><text x="43.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 650 words</title><rect x="258.4" y="0" width="174.2" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 291 words</title><rect x="435.6" y="0" width="78.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 239 words</title><rect x="516.6" y="0" width="64.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 108 words</title><rect x="583.6" y="0" width="28.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 539 words</title><rect x="615.6" y="0" width="144.4" height="30" rx="4" fill="#1d2a23"/><text x="623.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/linux-06-log-that-never-rotates/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>A 300 MB log with a rotation policy beside it looks like logrotate is broken. It is not. It ran every
+night and, every night, wrote a line saying why it would not touch this log — and nobody reads the
+output of a nightly job that exits quietly. The policy has three separate problems, and logrotate
+reacts to each in a different, deliberate way:</p>
+<ul>
+<li>the policy file is <strong>writable by everyone</strong>, so logrotate refuses to read it at all;</li>
+<li>the log directory is <strong>writable by a non-root user</strong>, so logrotate refuses to rename files in it
+as root, and asks — in its error message — to be told whom to act as;</li>
+<li>the policy, once it runs, <strong>keeps no history</strong> and <strong>hands the new log to root</strong>, which the service
+cannot write — the reason the one hand-forced rotation stopped the service logging.</li>
+</ul>
+<p>The lesson is less about the directives than about the method: <strong><code>logrotate -d</code> tells you what it
+would do and why, for free, without touching anything.</strong> Every fault in this lab is named in its
+output.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Say how logrotate is started, how it decides a log needs rotating, and where it remembers when it
+last did.</li>
+<li>Read <code>logrotate -d</code> output and find the reason a log is ignored, skipped or not due.</li>
+<li>Explain the two safety refusals — an unsafe configuration file and an unsafe log directory — and fix
+each without weakening the thing it protects.</li>
+<li>Choose between <code>create</code> and <code>copytruncate</code> for a program that keeps its log open, and say what each
+costs.</li>
+<li>Write a policy that rotates by size, keeps a bounded compressed history, and gives the new log to
+the right owner.</li>
+<li>Tell a log's apparent size from the space it occupies, and why logrotate uses the first.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="who-runs-logrotate-and-what-it-remembers">Who runs logrotate, and what it remembers</h3>
+<p>logrotate is not a daemon. Something starts it once a day: on Ubuntu 26.04 a systemd timer
+(<code>logrotate.timer</code>), on older systems or containers with cron a script in <code>/etc/cron.daily</code>. It reads
+<code>/etc/logrotate.conf</code>, which sets defaults and then <code>include /etc/logrotate.d</code>, where each package
+(and each administrator) drops a policy per service. For every log it considers it records the time of
+the last rotation in a <strong>state file</strong>, <code>/var/lib/logrotate/status</code>, and the next run compares against
+it. There is no daemon holding state and nothing to restart after editing a policy.</p>
+<p>In this lab's container nothing starts it; you run <code>logrotate /etc/logrotate.conf</code> yourself, which is
+exactly what the timer does.</p>
+<h3 id="when-a-log-is-due">When a log is due</h3>
+<p>A policy names one or more logs (globs are fine) and a block of directives. The decision to rotate is
+one of:</p>
+<ul>
+<li><strong>time-based</strong>: <code>daily</code>, <code>weekly</code>, <code>monthly</code>, <code>yearly</code> — due when that much time has passed since
+the state file's timestamp;</li>
+<li><strong><code>size 50M</code></strong>: due whenever the log is larger than that, regardless of time;</li>
+<li><strong><code>minsize</code> / <code>maxsize</code></strong>: combinations — rotate on schedule but only if at least this big, or on
+schedule <em>or</em> as soon as it passes this size.</li>
+</ul>
+<p>Size means the <strong>apparent</strong> size (<code>st_size</code>), the number <code>ls -l</code> prints. This lab's log is sparse:
+300 MB to <code>ls</code> and <code>logrotate</code>, 4 KB on disk to <code>du</code>. A log that is really that size on disk behaves
+the same way, only the disk fills.</p>
+<p><code>-f</code> forces rotation whatever the rule says; <code>-d</code> implies verbose and changes nothing, not even the
+state file; <code>-s file</code> uses another state file, which is how you test a policy without disturbing the
+real one.</p>
+<h3 id="what-rotation-does">What rotation does</h3>
+<p>For <code>rotate 7</code>, logrotate shifts <code>app.log.6.gz</code> to <code>.7.gz</code> and so on, deletes whatever falls off the
+end, renames <code>app.log</code> to <code>app.log.1</code>, and then deals with the fact that a program probably still has
+the old file open. <code>rotate 0</code> means the renamed file is deleted at once: rotation happens and no
+history is kept. <code>compress</code> gzips rotated files; <code>delaycompress</code> leaves <code>.1</code> uncompressed for one
+cycle, for programs that are still finishing writes to it.</p>
+<h3 id="the-open-file-problem-create-or-copytruncate">The open file problem: <code>create</code> or <code>copytruncate</code></h3>
+<p>A process that opened <code>app.log</code> holds a file descriptor, not a name. After a rename it keeps writing
+into what is now <code>app.log.1</code>. There are two ways to deal with that:</p>
+<ul>
+<li><strong><code>create mode owner group</code></strong> (the default in <code>/etc/logrotate.conf</code>) makes a fresh <code>app.log</code> right
+after the rename, and a <code>postrotate</code> script tells the program to reopen its log — usually a signal
+(<code>kill -HUP</code>, <code>systemctl reload</code>). The new file's owner and mode are whatever <code>create</code> says, and if
+the program runs as <code>shop</code> and <code>create</code> says <code>root root 0600</code>, the program cannot open it. That is
+the fault this lab planted, and why the service stopped logging.</li>
+<li><strong><code>copytruncate</code></strong> copies the log to <code>app.log.1</code> and truncates the original in place, so the
+program's descriptor stays valid and no reopen is needed. The cost: lines written between the copy
+and the truncate are lost, and a program that does not open its log with <code>O_APPEND</code> keeps writing at
+its old offset, leaving a sparse hole the size of the old log.</li>
+</ul>
+<p>A program that appends a line at a time (this lab's service opens, appends, closes) works with either,
+as long as the file it finds is writable by it.</p>
+<h3 id="why-logrotate-refuses-two-safety-checks">Why logrotate refuses: two safety checks</h3>
+<p>logrotate usually runs as root and renames, creates, deletes and runs scripts. Both refusals protect
+against an unprivileged user turning that into root's power.</p>
+<p><strong>The configuration file.</strong> A policy can contain <code>postrotate</code> shell commands that root will execute.
+If the file is writable by group or others, anyone could put commands there. logrotate prints
+<code>Potentially dangerous mode</code> and <code>Ignoring shop because it is writable by group or others</code>, and moves
+on. The fix is to make the file root's and <code>0644</code>, never to relax the check.</p>
+<p><strong>The log directory.</strong> If a directory is writable by someone other than root, that user can replace
+<code>app.log</code> with a symlink to <code>/etc/shadow</code> between logrotate's check and its rename or <code>create</code>, and
+root would do the rest. So logrotate skips logs in such a directory — <code>because parent directory has insecure permissions</code> — unless the policy says <strong><code>su user group</code></strong>, in which case it drops to that
+user for the rotation and can do nothing that user could not do anyway. The directory stays the
+service's, which it must be, because the service creates files in it.</p>
+<p>A side effect worth knowing: under <code>su shop shop</code>, logrotate <em>is</em> <code>shop</code> when it creates the new log,
+so <code>create 0600 root root</code> cannot give the file to root. The file comes out <code>shop</code>'s. The planted
+<code>create</code> is still wrong, and still breaks rotation for anyone who &quot;fixes&quot; the directory by handing it
+to root instead of adding <code>su</code>.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p><strong>1. Look at the log and the policy.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-la<span class="hl-w"> </span>/var/log/shop
+<span class="hl-go">drwxrwxr-x 2 shop shop      4096 Sep 14 10:00 .</span>
+<span class="hl-go">-rw-r----- 1 shop shop 314572800 Sep 14 10:00 app.log</span>
+<span class="hl-gp">$ </span>du<span class="hl-w"> </span>-h<span class="hl-w"> </span>--apparent-size<span class="hl-w"> </span>/var/log/shop/app.log<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>du<span class="hl-w"> </span>-h<span class="hl-w"> </span>/var/log/shop/app.log
+<span class="hl-go">300M	/var/log/shop/app.log</span>
+<span class="hl-go">4.0K	/var/log/shop/app.log</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/etc/logrotate.d/shop<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/logrotate.d/shop
+<span class="hl-go">-rw-rw-rw- 1 root root 90 Sep 14 10:00 /etc/logrotate.d/shop</span>
+<span class="hl-go">/var/log/shop/*.log {</span>
+<span class="hl-go">    size 50M</span>
+<span class="hl-go">    rotate 0</span>
+<span class="hl-go">    create 0600 root root</span>
+<span class="hl-go">    missingok</span>
+<span class="hl-go">}</span>
+</code></pre>
+
+<p>Already visible: the policy is world-writable, and the directory is group-writable by <code>shop</code>.</p>
+<p><strong>2. Ask logrotate what it would do.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>logrotate<span class="hl-w"> </span>-d<span class="hl-w"> </span>/etc/logrotate.conf<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-i<span class="hl-w"> </span>-A2<span class="hl-w"> </span>shop
+<span class="hl-go">warning: Potentially dangerous mode on shop: 0666</span>
+<span class="hl-go">error: Ignoring shop because it is writable by group or others.</span>
+<span class="hl-go">error: found error in file shop, skipping</span>
+</code></pre>
+
+<p><strong>3. Fix the first refusal and ask again.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">0644</span><span class="hl-w"> </span>/etc/logrotate.d/shop
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>logrotate<span class="hl-w"> </span>-d<span class="hl-w"> </span>/etc/logrotate.conf<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-A8<span class="hl-w"> </span><span class="hl-s1">'rotating pattern: /var/log/shop'</span>
+<span class="hl-go">rotating pattern: /var/log/shop/*.log 52428800 bytes empty log files are rotated, no old logs will be kept</span>
+<span class="hl-go">considering log /var/log/shop/app.log</span>
+<span class="hl-go">error: skipping "/var/log/shop/app.log" because parent directory has insecure permissions (It's world writable or writable by group which is not "root") Set "su" directive in config file to tell logrotate which user/group should be used for rotation.</span>
+</code></pre>
+
+<p>The next fault, and its fix, in one line. Note also &quot;no old logs will be kept&quot;: that is <code>rotate 0</code>.</p>
+<p><strong>4. Add <code>su</code> and watch the dry run go all the way through.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'s|^    size 50M|    su shop shop\n    size 50M|'</span><span class="hl-w"> </span>/etc/logrotate.d/shop
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>logrotate<span class="hl-w"> </span>-d<span class="hl-w"> </span>/etc/logrotate.conf<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-A14<span class="hl-w"> </span><span class="hl-s1">'rotating pattern: /var/log/shop'</span>
+<span class="hl-go">rotating pattern: /var/log/shop/*.log 52428800 bytes empty log files are rotated, no old logs will be kept</span>
+<span class="hl-go">switching euid from 0 to 997 and egid from 0 to 996 (pid 134)</span>
+<span class="hl-go">considering log /var/log/shop/app.log</span>
+<span class="hl-go">  log needs rotating</span>
+<span class="hl-go">rotating log /var/log/shop/app.log, log-&gt;rotateCount is 0</span>
+<span class="hl-go">renaming /var/log/shop/app.log to /var/log/shop/app.log.1</span>
+<span class="hl-go">disposeName will be /var/log/shop/app.log.1</span>
+<span class="hl-go">creating new /var/log/shop/app.log mode = 0600 uid = 0 gid = 0</span>
+</code></pre>
+
+<p>It now rotates, as <code>shop</code> (uid 997), and throws the history away.</p>
+<p><strong>5. See what <code>create 0600 root root</code> does when logrotate runs as root</strong> — the tempting alternative
+to <code>su</code> is to give the directory to root. Try it on a copy, never on the real log:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'mkdir -p /tmp/rt/log &amp;&amp; … &amp;&amp; chown root:root /tmp/rt/log &amp;&amp; chmod 755 /tmp/rt/log'</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>logrotate<span class="hl-w"> </span>-f<span class="hl-w"> </span>-s<span class="hl-w"> </span>/tmp/rt/state<span class="hl-w"> </span>/tmp/rt/as-root.conf<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/tmp/rt/log
+<span class="hl-go">-rw------- 1 root root 0 Sep 14 10:00 app.log</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>su<span class="hl-w"> </span>-s<span class="hl-w"> </span>/bin/sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'echo "order accepted" &gt;&gt; /tmp/rt/log/app.log'</span><span class="hl-w"> </span>shop
+<span class="hl-go">sh: 1: cannot create /tmp/rt/log/app.log: Permission denied</span>
+</code></pre>
+
+<p>That is last month's outage, reproduced in a scratch directory.</p>
+<p><strong>6. Write the policy that was intended, check it dry, then run it.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'/var/log/shop/*.log {\n    su shop shop\n    size 50M\n    rotate 7\n    compress\n    missingok\n    create 0640 shop shop\n}\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>/etc/logrotate.d/shop
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/etc/logrotate.d/shop
+<span class="hl-go">-rw-r--r-- 1 root root 120 Sep 14 10:00 /etc/logrotate.d/shop</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>logrotate<span class="hl-w"> </span>-d<span class="hl-w"> </span>/etc/logrotate.conf<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span><span class="hl-s1">'rotating pattern: /var/log/shop'</span>
+<span class="hl-go">rotating pattern: /var/log/shop/*.log 52428800 bytes empty log files are rotated, (7 rotations), old logs are removed</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>logrotate<span class="hl-w"> </span>/etc/logrotate.conf
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-la<span class="hl-w"> </span>/var/log/shop
+<span class="hl-go">-rw-r----- 1 shop shop      0 Sep 14 10:03 app.log</span>
+<span class="hl-go">-rw-r----- 1 shop shop 305356 Sep 14 10:03 app.log.1.gz</span>
+<span class="hl-gp">$ </span>/usr/local/bin/shop-log<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>tail<span class="hl-w"> </span>-1<span class="hl-w"> </span>/var/log/shop/app.log
+<span class="hl-go">2026-09-14T10:03:09Z order accepted</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>logrotate<span class="hl-w"> </span>-d<span class="hl-w"> </span>/etc/logrotate.conf<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-A4<span class="hl-w"> </span><span class="hl-s1">'considering log /var/log/shop/app.log'</span>
+<span class="hl-go">considering log /var/log/shop/app.log</span>
+<span class="hl-go">  Last rotated at 2026-09-14 10:03</span>
+<span class="hl-go">  log does not need rotating (log size is below the 'size' threshold)</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>grep<span class="hl-w"> </span>shop<span class="hl-w"> </span>/var/lib/logrotate/status
+<span class="hl-go">"/var/log/shop/app.log" 2026-9-14-10:3:7</span>
+</code></pre>
+
+<p>(<code>tee</code> writes with the file's existing mode, so the <code>0644</code> from step 3 survived.) The new log is
+<code>shop</code>'s, the service writes to it, the 300 MB of zeros compressed to 300 KB, and the state file has
+the rotation. The grader passed all five checks.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Making <code>/var/log/shop</code> root's to silence the &quot;insecure permissions&quot; error.</strong> The error goes away
+and the service can no longer create files in its own log directory — and with <code>create root root</code>, can
+no longer write its log after the first rotation.</p>
+<p><strong><code>chmod 0644</code> the policy and stopping there.</strong> Now it is read, and skipped. Always run <code>-d</code> again
+after each change; each fault hides the next.</p>
+<p><strong>Testing with <code>logrotate -f</code> on the real log.</strong> A forced rotation is a real rotation: it renames,
+deletes old history under <code>rotate 0</code>, and updates the state file. Test on a copy with <code>-s</code> and a
+scratch directory, or use <code>-d</code>.</p>
+<p><strong>Reading <code>-d</code> output and assuming it changed something.</strong> It changed nothing; the log is still 300 MB
+until logrotate runs without <code>-d</code>.</p>
+<p><strong>Adding <code>copytruncate</code> and <code>create</code> together.</strong> They are alternatives; with <code>copytruncate</code>, <code>create</code>
+is ignored. Pick one on purpose.</p>
+<p><strong>Using <code>copytruncate</code> for a busy log without accepting its cost.</strong> Lines written between the copy and
+the truncate are gone, and a writer without <code>O_APPEND</code> leaves a sparse file as big as the old log.</p>
+<p><strong>Forgetting <code>postrotate</code> for a daemon that keeps its log open.</strong> With <code>create</code> and no reopen signal,
+the daemon keeps writing into <code>app.log.1</code>, which is then compressed and eventually deleted under it.</p>
+<p><strong>Putting <code>size</code> and <code>daily</code> in the same block and expecting both.</strong> The last time rule wins. For &quot;on
+schedule, or sooner if large&quot;, use <code>daily</code> with <code>maxsize</code>.</p>
+<p><strong>Editing <code>/etc/logrotate.conf</code> to fix one service.</strong> Service policies belong in <code>/etc/logrotate.d/</code>,
+where a package update does not overwrite them and where they do not change every other log's
+defaults.</p>
+<p><strong>Believing <code>du</code> over <code>ls</code>.</strong> logrotate decides on <code>st_size</code>. A sparse or preallocated log can be due
+for rotation while occupying almost nothing.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># what would happen, and why — changes nothing</span>
+sudo<span class="hl-w"> </span>logrotate<span class="hl-w"> </span>-d<span class="hl-w"> </span>/etc/logrotate.conf
+sudo<span class="hl-w"> </span>logrotate<span class="hl-w"> </span>-d<span class="hl-w"> </span>/etc/logrotate.d/shop<span class="hl-w">          </span><span class="hl-c1"># one policy (defaults from logrotate.conf not applied)</span>
+<span class="hl-c1"># for real</span>
+sudo<span class="hl-w"> </span>logrotate<span class="hl-w"> </span>/etc/logrotate.conf<span class="hl-w">               </span><span class="hl-c1"># what the nightly timer runs</span>
+sudo<span class="hl-w"> </span>logrotate<span class="hl-w"> </span>-f<span class="hl-w"> </span>/etc/logrotate.d/shop<span class="hl-w">          </span><span class="hl-c1"># force, ignoring the size/time rule</span>
+sudo<span class="hl-w"> </span>logrotate<span class="hl-w"> </span>-v<span class="hl-w"> </span>-f<span class="hl-w"> </span>-s<span class="hl-w"> </span>/tmp/state<span class="hl-w"> </span>/tmp/test.conf<span class="hl-w"> </span><span class="hl-c1"># test a copy with its own state file</span>
+grep<span class="hl-w"> </span>shop<span class="hl-w"> </span>/var/lib/logrotate/status<span class="hl-w">              </span><span class="hl-c1"># when it last rotated</span>
+systemctl<span class="hl-w"> </span>list-timers<span class="hl-w"> </span>logrotate.timer<span class="hl-w">            </span><span class="hl-c1"># systemd: who starts it</span>
+
+<span class="hl-c1"># a policy</span>
+/var/log/shop/*.log<span class="hl-w"> </span><span class="hl-o">{</span>
+<span class="hl-w">    </span>su<span class="hl-w"> </span>shop<span class="hl-w"> </span>shop<span class="hl-w">            </span><span class="hl-c1"># rotate as the directory's owner when it is not root's</span>
+<span class="hl-w">    </span>size<span class="hl-w"> </span>50M<span class="hl-w">                </span><span class="hl-c1"># or: daily / weekly … ; maxsize 50M rotates early; minsize waits</span>
+<span class="hl-w">    </span>rotate<span class="hl-w"> </span><span class="hl-m">7</span><span class="hl-w">                </span><span class="hl-c1"># keep seven; 0 keeps none</span>
+<span class="hl-w">    </span>compress<span class="hl-w">                </span><span class="hl-c1"># gzip old logs</span>
+<span class="hl-w">    </span>delaycompress<span class="hl-w">           </span><span class="hl-c1"># …but not the newest, for one cycle</span>
+<span class="hl-w">    </span>missingok<span class="hl-w">               </span><span class="hl-c1"># no error if the log is absent</span>
+<span class="hl-w">    </span>notifempty<span class="hl-w">              </span><span class="hl-c1"># do not rotate empty logs</span>
+<span class="hl-w">    </span>create<span class="hl-w"> </span><span class="hl-m">0640</span><span class="hl-w"> </span>shop<span class="hl-w"> </span>shop<span class="hl-w">   </span><span class="hl-c1"># new log's mode and owner   (alternative: copytruncate)</span>
+<span class="hl-w">    </span>sharedscripts<span class="hl-w">           </span><span class="hl-c1"># run postrotate once for the whole glob</span>
+<span class="hl-w">    </span>postrotate
+<span class="hl-w">        </span>systemctl<span class="hl-w"> </span>reload<span class="hl-w"> </span>shop<span class="hl-w"> </span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-nb">true</span>
+<span class="hl-w">    </span>endscript
+<span class="hl-o">}</span>
+
+<span class="hl-c1"># the refusals</span>
+<span class="hl-c1"># "Ignoring X because it is writable by group or others"  → chmod 0644, owned by root</span>
+<span class="hl-c1"># "parent directory has insecure permissions … Set \"su\""  → su &lt;owner&gt; &lt;group&gt;, not chown root</span>
+
+<span class="hl-c1"># sizes</span>
+ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>app.log<span class="hl-w">                      </span><span class="hl-c1"># apparent size: what logrotate compares</span>
+du<span class="hl-w"> </span>-h<span class="hl-w"> </span>app.log<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>du<span class="hl-w"> </span>-h<span class="hl-w"> </span>--apparent-size<span class="hl-w"> </span>app.log
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>The space that belongs to a file with no name</em> (lab journal <code>linux-01-disk-full</code>) — copytruncate versus postrotate</li>
+<li><em>The log lines that were never written down</em> (topic journal <code>logging-journald</code>) — Where the journal lives, and how big it gets</li>
+</ul>
+<p>Manual pages: <code>man 8 logrotate</code>.</p>
+<p>The whole subject, end to end: the topic journal <em>The log lines that were never written down</em> (<code>logging-journald</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>logrotate ran every night and the log was never rotated, yet nothing failed loudly. Where would the
+reason have been, and how do you get it on demand?</p>
+<blockquote>
+<p>In the output of the nightly job (the journal of <code>logrotate.service</code> on Ubuntu 26.04, cron's mail on
+older systems), which nobody reads when the job exits. On demand: <code>logrotate -d /etc/logrotate.conf</code>, which explains every decision and changes nothing.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does logrotate ignore a policy file that is world-writable, instead of just warning?</p>
+<blockquote>
+<p>A policy can contain <code>postrotate</code> commands that root executes. A file anyone can write is a way
+for anyone to run commands as root, so logrotate will not read it at all.</p>
+</blockquote>
+</li>
+<li>
+<p>What attack does the &quot;parent directory has insecure permissions&quot; check prevent, and why is <code>su</code>
+the fix rather than <code>chown root</code>?</p>
+<blockquote>
+<p>A user who can write the directory could swap the log for a symlink to a sensitive file between
+logrotate's checks and its rename or create, and root would act on the target. With <code>su</code>,
+logrotate acts as that user and can do nothing the user could not. The directory must stay the
+service's, because the service creates its log there.</p>
+</blockquote>
+</li>
+<li>
+<p>What happens to a running program's writes after <code>app.log</code> is renamed to <code>app.log.1</code>, and what are
+the two ways logrotate deals with it?</p>
+<blockquote>
+<p>The program's descriptor still points at the renamed file, so it keeps writing to <code>app.log.1</code>.
+Either <code>create</code> a new file and have <code>postrotate</code> tell the program to reopen its log, or
+<code>copytruncate</code>: copy the contents away and truncate the original, so the descriptor stays valid.</p>
+</blockquote>
+</li>
+<li>
+<p>What is lost with <code>copytruncate</code>, and what goes wrong with a writer that does not use <code>O_APPEND</code>?</p>
+<blockquote>
+<p>Lines written between the copy and the truncate are lost. A writer without <code>O_APPEND</code> keeps its
+file offset, so its next write lands at the old end of the now-empty file, leaving a sparse hole
+as large as the log was.</p>
+</blockquote>
+</li>
+<li>
+<p>With <code>su shop shop</code> and <code>create 0600 root root</code>, who owns the new log? And with the directory given
+to root instead, and no <code>su</code>?</p>
+<blockquote>
+<p>With <code>su</code>, logrotate runs as <code>shop</code> and cannot give a file to root, so the new log is <code>shop</code>'s.
+Without <code>su</code>, logrotate runs as root, <code>create</code> succeeds exactly as written, and the file is
+<code>root:root 0600</code> — which <code>shop</code> cannot write.</p>
+</blockquote>
+</li>
+<li>
+<p>A log shows 300 MB in <code>ls -l</code> and 4 KB in <code>du</code>. Which does <code>size 50M</code> use, and why do the two
+differ?</p>
+<blockquote>
+<p>The apparent size, <code>st_size</code>, which <code>ls</code> shows. The file is sparse: most of it is holes that
+occupy no blocks, so <code>du</code>, which counts blocks, reports almost nothing.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you test a changed policy's real behaviour — renames, ownership, the new file — without
+rotating the production log or disturbing when it next rotates?</p>
+<blockquote>
+<p>Copy the policy with its paths pointed at a scratch directory set up with the same ownership and
+mode, and run <code>logrotate -f -s /tmp/state</code> on the copy: forced, with its own state file. <code>-d</code>
+alone shows decisions but not the resulting files.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

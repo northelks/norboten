@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A job that cannot fail cannot be trusted</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A job that cannot fail cannot be trusted</h1>
+  <div class="meta">python, boot-systemd · 35 minutes · 2437 words</div>
+</header>
+<p><code>sync.py</code> is twenty lines of perfectly readable Python. It fetches a list from an HTTP API and writes
+it to a file. The dashboards that read the file showed zero machines for an hour, and during that
+hour systemd reported every run of the job as a success, and the job’s own log said <code>done: 0 records</code> every five minutes. Nobody was lying. The job had been written so that <strong>there was no way
+for it to report a failure</strong>: it caught every exception, turned it into an empty list, wrote the
+empty list over the good data, and ended normally.</p>
+<p>Two days later the same job hung for hours on a slow API, and no later run could start. That is the
+other half of the same design: a network call with no deadline trusts the network to answer.</p>
+<p>This journal is about the difference between a script that runs and a job that can be operated. A job
+has callers — systemd, a timer, a monitoring check, the services that read its output — and each of
+them relies on a contract: the exit status says whether it worked, it finishes in bounded time, and
+its output is either the new data or the old data, never something in between.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Decide where an exception should be handled, and turn a failure into a non-zero exit status with a
+message on standard error.</li>
+<li>Put an explicit timeout on every network call, and say what <code>urllib</code> and <code>requests</code> do without one.</li>
+<li>Replace a file atomically with a temporary file, <code>fsync</code> and <code>os.replace</code>, and explain what a reader
+sees during an in-place write.</li>
+<li>Keep existing data when new data could not be fetched.</li>
+<li>Test failure modes with throwaway servers: one that errors, one that never answers.</li>
+<li>Trace a timer job’s configuration from <code>systemctl cat</code> through <code>EnvironmentFile=</code> to the port it
+calls.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>The broken contract</h3>
+<pre><code class="language-python">def fetch():
+    try:
+        with urllib.request.urlopen(API) as response:
+            return json.load(response)
+    except Exception as e:
+        print(f&quot;warning: {e}&quot;)
+        return []
+
+
+def main():
+    records = fetch()
+    with open(OUTPUT, &quot;w&quot;) as f:
+        json.dump(records, f, indent=2)
+    print(f&quot;done: {len(records)} records&quot;)
+
+
+main()
+</code></pre>
+<p>Four decisions, each reasonable in isolation, add up to a job that cannot fail:</p>
+<ol>
+<li><code>except Exception</code> catches everything — connection refused, HTTP 500, a timeout, invalid JSON, a
+bug in the code.</li>
+<li>Handling means printing a “warning” to <strong>standard output</strong> and returning a value that looks like
+valid data.</li>
+<li><code>main()</code> cannot tell “the API has no records” from “the API could not be reached”; both are <code>[]</code>.</li>
+<li>The script ends normally, so Python exits with status 0.</li>
+</ol>
+<p>systemd records a oneshot service as successful when its main process exits 0. From the outside, a run
+that fetched nothing because nothing answered is indistinguishable from a good run.</p>
+<h3>Exceptions belong where something can be done about them</h3>
+<p>Catching an exception is a claim: “I know what to do instead.” <code>fetch()</code> does not know — it has no
+good answer when the API fails. The only honest options for a low-level function are to let the
+exception propagate, or to wrap it in a more meaningful one. The decision belongs to the top of the
+program, where the policy lives: for this job, <em>do not touch the output, say what went wrong, exit
+non-zero</em>.</p>
+<pre><code class="language-python">def main():
+    try:
+        records = fetch()
+    except (OSError, ValueError, http.client.HTTPException) as e:
+        print(f&quot;sync: {API}: {e}&quot;, file=sys.stderr)
+        return 1
+    write_atomically(OUTPUT, records)
+    print(f&quot;done: {len(records)} records&quot;)
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())
+</code></pre>
+<p>The exception classes are not arbitrary. <code>urllib.error.URLError</code> (nothing answered, DNS failed,
+connection refused) is a subclass of <code>OSError</code>; so is <code>urllib.error.HTTPError</code> (a 4xx or 5xx answer),
+and so is <code>TimeoutError</code>. <code>json.JSONDecodeError</code> is a <code>ValueError</code>. A response cut short raises
+<code>http.client.IncompleteRead</code>, an <code>HTTPException</code>. Catching exactly those means a genuine bug — a
+<code>NameError</code>, a <code>KeyError</code> in your own code — still crashes with a traceback, which is what a bug
+should do. <code>sys.exit(main())</code> turns the return value into the process’s exit status.</p>
+<p>Diagnostics go to <code>sys.stderr</code>. Under systemd both streams end up in the journal, but the distinction
+still matters wherever the output is consumed — a shell pipeline, a cron mail, a wrapper that parses
+stdout.</p>
+<h3>Every network call needs a deadline</h3>
+<p><code>urllib.request.urlopen(url)</code> without <code>timeout=</code> uses the socket default, which is <strong>no timeout</strong>: a
+server that accepts the TCP connection and never sends a response keeps the call blocked forever. The
+same is true of <code>requests.get(url)</code>. A connection that is refused fails at once; a connection that is
+accepted and ignored — an overloaded backend, a half-dead proxy, a firewall that drops the reply —
+is the dangerous case, because nothing ever happens.</p>
+<pre><code class="language-python">urllib.request.urlopen(API, timeout=10)
+</code></pre>
+<p>The timeout applies to each blocking socket operation — connecting, and each read — not to the whole
+request, so a server that trickles one byte every nine seconds can still hold the call longer. For a
+hard wall-clock limit, put one around the whole job as well: systemd’s <code>TimeoutStartSec=</code> for a
+oneshot service, or <code>timeout 60 …</code> in a script. A hung oneshot service blocks its timer: the next
+activation cannot start while the unit is still activating.</p>
+<h3>What a reader sees during <code>open(path, &quot;w&quot;)</code></h3>
+<p>Opening a file for writing <strong>truncates it immediately</strong>. Between that moment and the moment the new
+content is fully written and flushed, any other process that reads the file sees an empty or partial
+document. For a JSON file read by dashboards every few seconds, that is a real window. If the writer
+crashes halfway, the partial file stays.</p>
+<p>The standard pattern avoids the window entirely:</p>
+<pre><code class="language-python">def write_atomically(path, records):
+    directory = os.path.dirname(path) or &quot;.&quot;
+    fd, tmp = tempfile.mkstemp(dir=directory, prefix=&quot;.records-&quot;, suffix=&quot;.tmp&quot;)
+    try:
+        with os.fdopen(fd, &quot;w&quot;) as f:
+            json.dump(records, f, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        os.chmod(tmp, 0o644)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        raise
+</code></pre>
+<ul>
+<li>The temporary file is created <strong>in the same directory</strong>: <code>os.replace</code> is a <code>rename(2)</code>, which is
+atomic only within one filesystem. <code>/tmp</code> may be a different filesystem, and then the rename fails.</li>
+<li><code>flush()</code> moves Python’s buffer to the kernel; <code>fsync()</code> asks the kernel to put it on disk, so a
+power loss after the rename does not leave a zero-length file.</li>
+<li><code>mkstemp</code> creates the file with mode 0600. The services that read the output need <code>chmod</code> before
+the rename.</li>
+<li><code>os.replace</code> swaps the directory entry in one step. A reader that opened the old file keeps reading
+the old content; a reader that opens the path after the rename gets the new file. Nobody sees half.</li>
+<li>On any failure the temporary file is removed, so aborted runs do not litter the directory.</li>
+</ul>
+<p>A useful tell: after an in-place write the file keeps its inode number; after an atomic replace it has
+a new one. The walkthrough uses <code>stat -c %i</code> to see which one a program does.</p>
+<h3>Keeping old data is a feature</h3>
+<p>“Do not overwrite good data with nothing” sounds obvious, and it is the most violated rule in data
+jobs. Stale-but-real data is almost always better than empty data: the dashboards can show a warning
+based on the file’s age, and the next successful run brings everything up to date. Empty data is
+indistinguishable from a real outage of the thing being reported on. The atomic write gives this for
+free, as long as the write happens only after a successful fetch.</p>
+<h3>How the job is configured</h3>
+<pre><code class="language-ini">[Service]
+Type=oneshot
+EnvironmentFile=/etc/sync/sync.env
+ExecStart=/usr/bin/python3 /opt/sync/sync.py
+</code></pre>
+<p><code>EnvironmentFile=</code> reads <code>KEY=value</code> lines into the service’s environment, and the script reads
+<code>SYNC_API</code> and <code>SYNC_OUTPUT</code> from it with <code>os.environ.get</code>, falling back to defaults. The defaults in
+the code are correct; the file overrides one of them with a wrong port. That is why the script
+“works” when someone runs it by hand without the environment file, and fails only under systemd.
+<code>systemctl cat</code> shows the unit and its drop-ins; <code>systemctl show -p Environment</code> shows inline
+<code>Environment=</code> values but not the contents of an <code>EnvironmentFile=</code>, so read that file directly.</p>
+<p>The timer (<code>OnBootSec=10s</code>, <code>OnUnitActiveSec=5min</code>) runs the service shortly after boot and five
+minutes after each run. <code>systemctl list-timers</code> shows the last and next activation.</p>
+<h3>Testing failures on purpose</h3>
+<p>A job’s failure paths are only tested if you make them happen. Two twenty-line test servers cover this
+job: one that answers every request with HTTP 500, and one that listens but never accepts, so a client
+connects and waits forever. Pointing the script at them through its own environment variables,
+against a scratch output file, shows exactly what a real outage would do — without touching the
+production API or the file the dashboards read.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the track’s lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. Ask systemd what happened.</strong> The timer fires ten seconds after boot; wait for it, then read the
+job’s journal (the journal of system units needs <code>sudo</code>, or membership in <code>adm</code> or <code>systemd-journal</code>):</p>
+<pre><code class="language-console">$ sleep 15; systemctl list-timers sync.timer --no-pager
+NEXT                            LEFT LAST                        PASSED UNIT       ACTIVATES
+Mon 2026-09-14 03:42:25 UTC 4min 55s Mon 2026-09-14 03:37:25 UTC 4s ago sync.timer sync.service
+
+1 timers listed.
+Pass --all to see loaded but inactive timers, too.
+$ sudo journalctl -u sync.service -b --no-pager | tail -n 6
+Sep 14 03:37:25 lima-nb-python-01 systemd[1]: Starting sync.service - Copy inventory records for the dashboards...
+Sep 14 03:37:25 lima-nb-python-01 python3[881]: warning: &lt;urlopen error [Errno 111] Connection refused&gt;
+Sep 14 03:37:25 lima-nb-python-01 python3[881]: done: 0 records
+Sep 14 03:37:25 lima-nb-python-01 systemd[1]: sync.service: Deactivated successfully.
+Sep 14 03:37:25 lima-nb-python-01 systemd[1]: Finished sync.service - Copy inventory records for the dashboards.
+$ systemctl show sync.service -p Result -p ExecMainStatus
+Result=success
+ExecMainStatus=0
+$ cat /var/lib/sync/records.json
+[]
+</code></pre>
+<p>The warning is right there — connection refused — followed by <code>done: 0 records</code> and systemd’s
+“Deactivated successfully”. Exit status 0, and an empty file.</p>
+<p><strong>2. Find where it points.</strong></p>
+<pre><code class="language-console">$ systemctl cat sync.service
+# /etc/systemd/system/sync.service
+[Unit]
+Description=Copy inventory records for the dashboards
+After=records-api.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/sync/sync.env
+ExecStart=/usr/bin/python3 /opt/sync/sync.py
+$ cat /etc/sync/sync.env
+SYNC_API=http://127.0.0.1:8091/records
+SYNC_OUTPUT=/var/lib/sync/records.json
+$ sudo ss -ltnp | grep -E ':8901|:8091'
+LISTEN 0      5          127.0.0.1:8901      0.0.0.0:*    users:((&quot;python3&quot;,pid=816,fd=3))
+$ curl -sS http://127.0.0.1:8091/records; echo &quot; exit=$?&quot;
+curl: (7) Failed to connect to 127.0.0.1 port 8091 after 0 ms: Could not connect to server
+ exit=7
+$ curl -sS http://127.0.0.1:8901/records; echo
+[{&quot;host&quot;: &quot;web01&quot;, &quot;role&quot;: &quot;web&quot;, &quot;rack&quot;: &quot;A3&quot;}, {&quot;host&quot;: &quot;web02&quot;, &quot;role&quot;: &quot;web&quot;, &quot;rack&quot;: &quot;A4&quot;}, {&quot;host&quot;: &quot;db01&quot;, &quot;role&quot;: &quot;database&quot;, &quot;rack&quot;: &quot;B1&quot;}]
+</code></pre>
+<p>The environment file names port 8091; the API listens on 8901. That explains the refused connection.
+But fixing the port alone would leave a job that lies the next time the API is down — so the code
+comes next.</p>
+<p><strong>3. Build two test servers</strong>, one that fails and one that never answers:</p>
+<pre><code class="language-python"># /tmp/s/fake_api.py
+import socket, sys, time
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+class Broken(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_error(500, &quot;database unavailable&quot;)
+    def log_message(self, *a):
+        pass
+
+if sys.argv[1] == &quot;error&quot;:
+    HTTPServer((&quot;127.0.0.1&quot;, 9500), Broken).serve_forever()
+else:  # listen, never accept, never answer
+    s = socket.socket(); s.bind((&quot;127.0.0.1&quot;, 9999)); s.listen(8); time.sleep(300)
+</code></pre>
+<p><strong>4. Run the old job against them</strong>, with a scratch output file holding “good” data:</p>
+<pre><code class="language-console">$ (python3 /tmp/s/fake_api.py error &amp; echo '[{&quot;host&quot;: &quot;keep-me&quot;}]' &gt; /tmp/s/records.json; sleep 1; SYNC_API=http://127.0.0.1:9500/records SYNC_OUTPUT=/tmp/s/records.json python3 /opt/sync/sync.py; echo &quot;exit=$?&quot;; cat /tmp/s/records.json; kill %1)
+warning: HTTP Error 500: database unavailable
+done: 0 records
+exit=0
+[]
+$ (python3 /tmp/s/fake_api.py silent &amp; sleep 1; time timeout 20 env SYNC_API=http://127.0.0.1:9999/records SYNC_OUTPUT=/tmp/s/records.json python3 /opt/sync/sync.py; echo &quot;exit=$?&quot;; kill %1)
+
+real	0m20.478s
+user	0m0.046s
+sys	0m0.012s
+exit=124
+</code></pre>
+<p>A server error destroyed the good data and exited 0. Against the silent server the script never
+returned: <code>timeout</code> killed it after 20 seconds (124 is <code>timeout</code>’s own status), and without <code>timeout</code>
+it would still be waiting.</p>
+<p><strong>5. Check whether the write is in place.</strong> Serve real records with Python’s built-in HTTP server and
+compare inode numbers:</p>
+<pre><code class="language-console">$ (python3 -m http.server -d /tmp/s 9600 &gt;/dev/null 2&gt;&amp;1 &amp; sleep 1; curl -s http://127.0.0.1:8901/records &gt; /tmp/s/good.json; stat -c 'inode %i' /tmp/s/records.json; SYNC_API=http://127.0.0.1:9600/good.json SYNC_OUTPUT=/tmp/s/records.json python3 /opt/sync/sync.py; stat -c 'inode %i' /tmp/s/records.json; kill %1)
+inode 15
+done: 3 records
+inode 15
+</code></pre>
+<p>Same inode: the file was truncated and rewritten where it stood.</p>
+<p><strong>6. Rewrite the job.</strong> The new <code>/opt/sync/sync.py</code>, written with <code>sudo tee /opt/sync/sync.py</code>:</p>
+<pre><code class="language-python">#!/usr/bin/env python3
+&quot;&quot;&quot;Copy the records from the inventory API into a JSON file other services read.&quot;&quot;&quot;
+
+import http.client
+import json
+import os
+import sys
+import tempfile
+import urllib.request
+
+API = os.environ.get(&quot;SYNC_API&quot;, &quot;http://127.0.0.1:8901/records&quot;)
+OUTPUT = os.environ.get(&quot;SYNC_OUTPUT&quot;, &quot;/var/lib/sync/records.json&quot;)
+TIMEOUT = 10
+
+
+def fetch():
+    # urlopen raises HTTPError for 4xx and 5xx answers, URLError when nothing answers
+    with urllib.request.urlopen(API, timeout=TIMEOUT) as response:
+        records = json.load(response)
+    if not isinstance(records, list):
+        raise ValueError(&quot;the API did not return a list&quot;)
+    return records
+
+
+def write_atomically(path, records):
+    directory = os.path.dirname(path) or &quot;.&quot;
+    fd, tmp = tempfile.mkstemp(dir=directory, prefix=&quot;.records-&quot;, suffix=&quot;.tmp&quot;)
+    try:
+        with os.fdopen(fd, &quot;w&quot;) as f:
+            json.dump(records, f, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        os.chmod(tmp, 0o644)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        raise
+
+
+def main():
+    try:
+        records = fetch()
+    except (OSError, ValueError, http.client.HTTPException) as e:
+        print(f&quot;sync: {API}: {e}&quot;, file=sys.stderr)
+        return 1
+    write_atomically(OUTPUT, records)
+    print(f&quot;done: {len(records)} records&quot;)
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())
+</code></pre>
+<p><strong>7. Run the same three tests.</strong></p>
+<pre><code class="language-console">$ (python3 /tmp/s/fake_api.py error &amp; echo '[{&quot;host&quot;: &quot;keep-me&quot;}]' &gt; /tmp/s/records.json; sleep 1; SYNC_API=http://127.0.0.1:9500/records SYNC_OUTPUT=/tmp/s/records.json python3 /opt/sync/sync.py; echo &quot;exit=$?&quot;; cat /tmp/s/records.json; kill %1)
+sync: http://127.0.0.1:9500/records: HTTP Error 500: database unavailable
+exit=1
+[{&quot;host&quot;: &quot;keep-me&quot;}]
+$ (python3 /tmp/s/fake_api.py silent &amp; sleep 1; time timeout 20 env SYNC_API=http://127.0.0.1:9999/records SYNC_OUTPUT=/tmp/s/records.json python3 /opt/sync/sync.py; echo &quot;exit=$?&quot;; kill %1)
+sync: http://127.0.0.1:9999/records: timed out
+
+real	0m10.091s
+user	0m0.057s
+sys	0m0.014s
+exit=1
+$ (python3 -m http.server -d /tmp/s 9600 &gt;/dev/null 2&gt;&amp;1 &amp; sleep 1; stat -c 'inode %i' /tmp/s/records.json; SYNC_API=http://127.0.0.1:9600/good.json SYNC_OUTPUT=/tmp/s/records.json python3 /opt/sync/sync.py; echo &quot;exit=$?&quot;; stat -c 'inode %i %a' /tmp/s/records.json; ls -a /tmp/s; kill %1)
+inode 15
+done: 3 records
+exit=0
+inode 17 644
+.
+..
+fake_api.py
+good.json
+records.json
+</code></pre>
+<p>The error leaves the old data and exits 1. The silent server is abandoned after the 10-second timeout
+with a clear message. A good run replaces the file — new inode, mode 644 — and leaves no temporary
+file behind.</p>
+<p><strong>8. Fix the configuration and run it the way the timer does.</strong></p>
+<pre><code class="language-console">$ sudo sed -i 's#^SYNC_API=.*#SYNC_API=http://127.0.0.1:8901/records#' /etc/sync/sync.env &amp;&amp; cat /etc/sync/sync.env
+SYNC_API=http://127.0.0.1:8901/records
+SYNC_OUTPUT=/var/lib/sync/records.json
+$ sudo systemctl start sync.service; systemctl show sync.service -p Result -p ExecMainStatus
+Result=success
+ExecMainStatus=0
+$ sudo journalctl -u sync.service -b --no-pager | tail -n 3
+Sep 14 03:38:07 lima-nb-python-01 python3[971]: done: 3 records
+Sep 14 03:38:07 lima-nb-python-01 systemd[1]: sync.service: Deactivated successfully.
+Sep 14 03:38:07 lima-nb-python-01 systemd[1]: Finished sync.service - Copy inventory records for the dashboards.
+$ jq -c '.[]' /var/lib/sync/records.json
+{&quot;host&quot;:&quot;web01&quot;,&quot;role&quot;:&quot;web&quot;,&quot;rack&quot;:&quot;A3&quot;}
+{&quot;host&quot;:&quot;web02&quot;,&quot;role&quot;:&quot;web&quot;,&quot;rack&quot;:&quot;A4&quot;}
+{&quot;host&quot;:&quot;db01&quot;,&quot;role&quot;:&quot;database&quot;,&quot;rack&quot;:&quot;B1&quot;}
+</code></pre>
+<p>Now “success” means something: it can only be reported after the API answered and the file was
+replaced.</p>
+<p><strong>9. Grade.</strong> The checks ran against the grader’s own failing, silent and good servers, the machine
+rebooted, and the timer’s first run after boot was checked too: all four passed in both passes.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Fixing only the port.</strong> The dashboards come back, and the next API outage empties them again while
+systemd reports success. The port was the trigger; the code was the incident.</p>
+<p><strong><code>except Exception: sys.exit(1)</code> in <code>fetch()</code>.</strong> It fixes the exit status, but a library function
+that exits the process cannot be reused or tested, and the catch-all still hides real bugs. Handle the
+expected failures once, at the top.</p>
+<p><strong><code>requests.get(url, timeout=None)</code> or no timeout “because the API is fast”.</strong> It is fast until the
+day it accepts connections and stops answering, which is precisely when the job must give up.</p>
+<p><strong>Writing the temporary file in <code>/tmp</code>.</strong> <code>os.replace</code> across filesystems fails with <code>OSError: [Errno 18] Invalid cross-device link</code>. Create the temporary file next to the target.</p>
+<p><strong>Forgetting the mode of the temporary file.</strong> <code>mkstemp</code> makes it 0600; after the rename the
+dashboards, running as other users, cannot read the new file. The failure appears only in the readers’
+logs.</p>
+<p><strong><code>shutil.move</code> instead of <code>os.replace</code>.</strong> When source and destination are on different filesystems,
+<code>shutil.move</code> silently falls back to copy-then-delete, which is not atomic. <code>os.rename</code> is atomic on
+POSIX; <code>os.replace</code> is the same operation, spelled so that it also overwrites on Windows.</p>
+<p><strong>Testing against the real API by stopping it.</strong> It works once, affects every other consumer, and
+cannot produce the “accepts but never answers” case at all. A throwaway server can.</p>
+<p><strong>Reading <code>systemctl status</code> and stopping there.</strong> “Deactivated successfully” only says the process
+exited 0. The job’s own lines in the journal, and the file it wrote, are the evidence.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-python">import sys, urllib.request, json, os, tempfile, http.client
+
+urllib.request.urlopen(url, timeout=10)          # always a timeout
+# HTTPError (4xx/5xx), URLError, TimeoutError are OSError; JSONDecodeError is ValueError
+try:
+    data = fetch()
+except (OSError, ValueError, http.client.HTTPException) as e:
+    print(f&quot;job: {e}&quot;, file=sys.stderr)
+    sys.exit(1)
+
+fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path))   # same filesystem as the target
+with os.fdopen(fd, &quot;w&quot;) as f:
+    json.dump(data, f); f.flush(); os.fsync(f.fileno())
+os.chmod(tmp, 0o644)
+os.replace(tmp, path)                            # atomic swap
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())                             # return value → exit status
+</code></pre>
+<pre><code class="language-console">$ systemctl list-timers NAME.timer              # last and next run
+$ sudo journalctl -u NAME.service -b            # what the job printed this boot
+$ systemctl show NAME.service -p Result -p ExecMainStatus
+$ systemctl cat NAME.service                    # unit, drop-ins, EnvironmentFile path
+$ sudo ss -ltnp                                 # who listens on which port
+$ curl -sS URL; echo &quot;exit=$?&quot;                  # 7 = could not connect
+$ stat -c '%i %a' FILE                          # inode and mode: in place or replaced?
+$ timeout 20 CMD; echo &quot;exit=$?&quot;                # 124 = killed by timeout
+$ python3 -m http.server -d DIR PORT            # serve files for a test
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Active, green, and not working</em> (topic journal <code>monitoring</code>) — A check is an exit status</li>
+<li><em>Active, green, and not working</em> (topic journal <code>monitoring</code>) — A check must have a deadline</li>
+<li><em>The log lines that were never written down</em> (topic journal <code>logging-journald</code>) — Asking precise questions</li>
+</ul>
+<p>Manual pages: <code>man 5 systemd.exec</code>.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.python.org/3/library/sys.html#sys.exit</li>
+<li>https://docs.python.org/3/library/urllib.request.html#urllib.request.urlopen</li>
+<li>https://docs.python.org/3/library/os.html#os.replace</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Why did systemd report every run of the broken job as successful?</p>
+<blockquote>
+<p>The script caught every exception, returned an empty list, wrote it and ended normally, so Python exited with status 0 — and a oneshot service whose main process exits 0 is a success.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>urllib.request.urlopen(url)</code> do when the server accepts the connection and never responds?</p>
+<blockquote>
+<p>It blocks indefinitely: without a <code>timeout</code> argument the socket has no timeout. The same holds for <code>requests.get</code> without <code>timeout=</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Which exception types should the job catch around the fetch, and why not <code>Exception</code>?</p>
+<blockquote>
+<p><code>OSError</code> (covers <code>URLError</code>, <code>HTTPError</code> and <code>TimeoutError</code>), <code>ValueError</code> (invalid JSON) and <code>http.client.HTTPException</code> (a truncated response). A catch-all would also hide real programming errors, which should crash with a traceback.</p>
+</blockquote>
+</li>
+<li>
+<p>What can a reader of the file see while <code>open(path, &quot;w&quot;)</code> and <code>json.dump</code> run?</p>
+<blockquote>
+<p>An empty or partially written file, because opening for writing truncates it at once; if the writer crashes, the partial file remains.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must the temporary file be created in the same directory as the target?</p>
+<blockquote>
+<p><code>os.replace</code> is a rename, which is atomic only within one filesystem; across filesystems it fails with “Invalid cross-device link”.</p>
+</blockquote>
+</li>
+<li>
+<p>After switching to <code>tempfile.mkstemp</code> and <code>os.replace</code>, the dashboards cannot read the file. Why?</p>
+<blockquote>
+<p><code>mkstemp</code> creates the file with mode 0600 and the rename keeps that mode; the file needs <code>chmod 0644</code> (or whatever the readers need) before the rename.</p>
+</blockquote>
+</li>
+<li>
+<p>How can you tell from the shell whether a program rewrote a file in place or replaced it?</p>
+<blockquote>
+<p>Compare <code>stat -c %i FILE</code> before and after: an in-place write keeps the inode number, a replacement via rename gives the path a new inode.</p>
+</blockquote>
+</li>
+<li>
+<p>The job worked when run by hand but failed under systemd. Where did the difference come from?</p>
+<blockquote>
+<p>From <code>EnvironmentFile=/etc/sync/sync.env</code>, which set <code>SYNC_API</code> to port 8091; run by hand without it, the script used its correct default of 8901.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

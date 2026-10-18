@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A model server has no passwords, so the network and the proxy are its only locks</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A model server has no passwords, so the network and the proxy are its only locks</h1>
+  <div class="meta">ollama, networking, users-permissions · 30 minutes · 1493 words</div>
+</header>
+<p>Ollama is a program that loads language models and serves them over HTTP on port 11434. Its API is
+small and powerful: list models, generate text, chat, embed, and also pull new models from the
+internet and delete existing ones. It has no accounts and no passwords. Whoever can open a TCP
+connection to the port can do all of it.</p>
+<p>That is a reasonable design for a program meant to run on one machine for one person, and it means
+exposing it is entirely your job. This lab’s server was exposed in the most common way: a web page
+could not reach it, so someone made it listen on every address and accept requests from every web
+origin. Undoing that correctly needs three separate controls — the bind address, the proxy’s
+authentication, and the origin check — and the third one breaks the web page again if the first two
+are all you fix.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Find where a service’s environment comes from when a drop-in overrides the unit.</li>
+<li>Bind Ollama to loopback and verify it from another address.</li>
+<li>Put HTTP basic authentication in front of it in nginx, with a hashed password file the workers can
+read.</li>
+<li>Explain what <code>OLLAMA_ORIGINS</code> controls, why <code>*</code> is wrong, and why a proxied browser request is still
+subject to it.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Configuration through the environment</h3>
+<p>Ollama is configured almost entirely by environment variables read by <code>ollama serve</code>:</p>
+<table>
+<thead>
+<tr>
+<th>variable</th>
+<th>default</th>
+<th>controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OLLAMA_HOST</code></td>
+<td><code>127.0.0.1:11434</code></td>
+<td>the address and port the server listens on (and the client connects to)</td>
+</tr>
+<tr>
+<td><code>OLLAMA_ORIGINS</code></td>
+<td>local origins only</td>
+<td>extra web origins allowed to call the API from a browser</td>
+</tr>
+<tr>
+<td><code>OLLAMA_MODELS</code></td>
+<td><code>~/.ollama/models</code> of the serving user</td>
+<td>where model blobs and manifests are stored</td>
+</tr>
+<tr>
+<td><code>OLLAMA_KEEP_ALIVE</code></td>
+<td><code>5m</code></td>
+<td>how long a model stays in memory after a request</td>
+</tr>
+<tr>
+<td><code>OLLAMA_CONTEXT_LENGTH</code></td>
+<td>4096</td>
+<td>the default context window</td>
+</tr>
+<tr>
+<td><code>OLLAMA_NUM_PARALLEL</code></td>
+<td>1</td>
+<td>requests one loaded model serves at the same time</td>
+</tr>
+</tbody>
+</table>
+<p>Under systemd these arrive as <code>Environment=</code> lines. The unit file is one place; <strong>drop-ins</strong> in
+<code>/etc/systemd/system/ollama.service.d/*.conf</code> are another, applied after it — a later assignment to
+the same variable wins. <code>systemctl edit ollama</code> writes exactly such a drop-in, which is why a setting
+can disappear from the unit and still be in effect. <code>systemctl cat ollama</code> shows the unit and every
+drop-in with its path; <code>systemctl show -p Environment ollama</code> shows the result.</p>
+<h3>The bind address is the first lock</h3>
+<p><code>OLLAMA_HOST=0.0.0.0:11434</code> makes the server accept connections on every interface. From that moment
+anything that can route to the machine — the office network, a VPN, a misconfigured port forward — can
+generate text with your CPU, fetch models into your disk, or delete the ones you have. <code>ss -ltnp</code> shows
+the truth: <code>127.0.0.1:11434</code> is local, <code>*:11434</code> or <code>0.0.0.0:11434</code> is not.</p>
+<p>Bound to loopback, the only way in is through something on the machine — the proxy — which is where
+authentication, rate limits, TLS and access logs can live.</p>
+<h3>Basic authentication in nginx</h3>
+<pre><code class="language-nginx">server {
+    listen 8080;
+    auth_basic &quot;models&quot;;
+    auth_basic_user_file /etc/nginx/models.htpasswd;
+    location / { proxy_pass http://127.0.0.1:11434; … }
+}
+</code></pre>
+<p>The password file holds <code>user:hash</code> lines. nginx accepts several hash formats; <code>openssl passwd -apr1</code>
+produces the Apache MD5 variant without installing <code>apache2-utils</code>. The file is read by nginx’s worker
+processes, which run as <code>www-data</code>, so it must be readable by that group and by nobody else:
+<code>root:www-data 0640</code>. Without credentials nginx answers <strong>401</strong> with a <code>WWW-Authenticate</code> header; with
+wrong ones, 401 again. Basic authentication sends the password on every request, base64-encoded, not
+encrypted — on anything but a trusted network it belongs behind TLS.</p>
+<h3>Origins: what a browser is allowed to do</h3>
+<p>A web page’s JavaScript can send requests to other sites, and browsers add an <code>Origin</code> header saying
+which site the page came from. Servers decide whether to accept them. Ollama accepts requests with no
+<code>Origin</code> (curl, scripts) and from its own local origins, and refuses others with <strong>403</strong> unless they are
+listed in <code>OLLAMA_ORIGINS</code>. <code>OLLAMA_ORIGINS=*</code> accepts every site — so any page a colleague opens could
+use the server from inside their browser, which sits inside the network.</p>
+<p>A proxy does not change this. nginx forwards the browser’s <code>Origin</code> header, so a request from
+<code>https://chat.internal.example</code> through an authenticated nginx still reaches Ollama with that origin — and
+is refused unless that exact origin is allowed. That is why the chat page “could not reach it” in the first
+place, and why fixing the bind address alone brings the original complaint back.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the lab VM (Ollama 0.34.0, nginx 1.26). From the machine’s own network address, the server
+answers anything:</p>
+<pre><code class="language-console">$ sudo ss -ltnp | grep -E '11434|:8080'
+LISTEN 0 511   0.0.0.0:8080  0.0.0.0:* users:((&quot;nginx&quot;,pid=1001,fd=5),…)
+LISTEN 0 4096        *:11434       *:* users:((&quot;ollama&quot;,pid=987,fd=3))
+$ curl -s http://192.168.5.15:11434/api/tags | jq -c '[.models[].name]'
+[&quot;all-minilm:latest&quot;,&quot;qwen2.5:0.5b&quot;]
+$ curl -s http://192.168.5.15:11434/api/generate \
+    -d '{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;prompt&quot;:&quot;Say hi&quot;,&quot;stream&quot;:false,&quot;options&quot;:{&quot;num_predict&quot;:5}}' | jq -c '{response}'
+{&quot;response&quot;:&quot;Hello! How can I&quot;}
+$ curl -s -D - -o /dev/null -H 'Origin: https://evil.example' http://127.0.0.1:11434/api/tags | grep -iE '^HTTP|access-control'
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+</code></pre>
+<p>The unit itself looks fine; the drop-in does not:</p>
+<pre><code class="language-console">$ systemctl cat ollama --no-pager | tail -5
+# /etc/systemd/system/ollama.service.d/override.conf
+[Service]
+# the chat page could not reach it, so: every address, every origin
+Environment=&quot;OLLAMA_HOST=0.0.0.0:11434&quot;
+Environment=&quot;OLLAMA_ORIGINS=*&quot;
+</code></pre>
+<p>Remove both lines’ damage — loopback, no wildcard origin — and add a password to nginx:</p>
+<pre><code class="language-console">$ sudo sed -i 's/0.0.0.0:11434/127.0.0.1:11434/; /OLLAMA_ORIGINS/d' /etc/systemd/system/ollama.service.d/override.conf
+$ sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart ollama
+$ sudo ss -ltnp | grep 11434
+LISTEN 0 4096 127.0.0.1:11434 0.0.0.0:* users:((&quot;ollama&quot;,pid=1110,fd=3))
+$ printf 'team:%s\n' &quot;$(sudo openssl passwd -apr1 -stdin &lt; &lt;(sudo cat /root/team-password))&quot; \
+    | sudo tee /etc/nginx/models.htpasswd &gt;/dev/null
+$ sudo chown root:www-data /etc/nginx/models.htpasswd &amp;&amp; sudo chmod 640 /etc/nginx/models.htpasswd
+$ # auth_basic and auth_basic_user_file added to models.conf
+$ sudo nginx -t &amp;&amp; sudo systemctl reload nginx
+$ curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/api/tags
+401
+$ curl -s -u &quot;team:$P&quot; http://127.0.0.1:8080/api/tags | jq -c '[.models[].name]'
+[&quot;all-minilm:latest&quot;,&quot;qwen2.5:0.5b&quot;]
+</code></pre>
+<p>Secure — and the chat page is broken again:</p>
+<pre><code class="language-console">$ curl -s -o /dev/null -w '%{http_code}\n' -u &quot;team:$P&quot; -H 'Origin: https://chat.internal.example' http://127.0.0.1:8080/api/tags
+403
+</code></pre>
+<p>nginx let the page in; Ollama refused its origin. Allow that one origin, not all of them:</p>
+<pre><code class="language-console">$ printf 'Environment=&quot;OLLAMA_ORIGINS=https://chat.internal.example&quot;\n' | sudo tee -a /etc/systemd/system/ollama.service.d/override.conf
+$ sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart ollama
+$ curl -s -D - -o /dev/null -u &quot;team:$P&quot; -H 'Origin: https://chat.internal.example' http://127.0.0.1:8080/api/tags | grep -iE '^HTTP|access-control'
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: https://chat.internal.example
+$ curl -s -o /dev/null -w 'evil direct %{http_code}\n' -H 'Origin: https://evil.example' http://127.0.0.1:11434/api/tags
+evil direct 403
+$ curl -s -m 3 -o /dev/null -w 'from the network %{http_code}\n' http://192.168.5.15:11434/api/tags
+from the network 000
+$ curl -s -m 3 -o /dev/null -w 'proxy from the network %{http_code}\n' http://192.168.5.15:8080/api/tags
+proxy from the network 401
+</code></pre>
+<p><code>000</code> is curl reporting that no connection was made. The grader then passes all three checks, and again
+after the reboot.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Firewalling port 11434 and leaving <code>0.0.0.0</code>.</strong> It works until a rule is reordered, a second interface
+appears or a container network bridges past it. Bind loopback; firewall as well if you like.</p>
+<p><strong>Editing <code>ollama.service</code> and not the drop-in.</strong> The drop-in is applied afterwards and wins. Read
+<code>systemctl cat</code>, not the unit file.</p>
+<p><strong>Forgetting <code>daemon-reload</code>.</strong> systemd keeps the old definition until told to reread it; <code>restart</code> alone
+restarts the old configuration.</p>
+<p><strong><code>OLLAMA_ORIGINS=*</code> to fix the 403.</strong> It fixes the chat page by letting every page in.</p>
+<p><strong>A password file owned <code>root:root 0600</code>.</strong> nginx’s master reads the configuration as root, but the
+workers check passwords as <code>www-data</code>; every login fails with 500 and a permission error in the log.</p>
+<p><strong>Plain-text passwords in the file.</strong> nginx does support them with a <code>{PLAIN}</code> prefix, and then anyone who
+can read the file has them. Hash them.</p>
+<p><strong>Testing the reload with an immediate request.</strong> A reload replaces workers gracefully; the first request
+may still see the old configuration.</p>
+<p><strong>Treating basic authentication as encryption.</strong> It is base64. Put TLS in front of it on anything but
+loopback or a trusted segment.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># where the settings come from
+systemctl cat ollama
+systemctl show -p Environment ollama
+sudo systemctl edit ollama             # creates …/ollama.service.d/override.conf
+
+# is it exposed?
+sudo ss -ltnp | grep 11434             # 127.0.0.1:11434 good; *:11434 / 0.0.0.0 exposed
+curl -s -m 3 http://$(hostname -I | cut -d' ' -f1):11434/api/tags
+
+# loopback + one allowed browser origin
+[Service]
+Environment=&quot;OLLAMA_HOST=127.0.0.1:11434&quot;
+Environment=&quot;OLLAMA_ORIGINS=https://chat.internal.example&quot;
+sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart ollama
+
+# basic auth in nginx
+printf 'team:%s\n' &quot;$(openssl passwd -apr1 'secret')&quot; | sudo tee /etc/nginx/models.htpasswd
+sudo chown root:www-data /etc/nginx/models.htpasswd &amp;&amp; sudo chmod 640 /etc/nginx/models.htpasswd
+#   auth_basic &quot;models&quot;;  auth_basic_user_file /etc/nginx/models.htpasswd;
+sudo nginx -t &amp;&amp; sudo systemctl reload nginx
+
+# test like a browser
+curl -s -o /dev/null -w '%{http_code}\n' -H 'Origin: https://evil.example' http://127.0.0.1:11434/api/tags   # 403
+curl -s -D - -o /dev/null -u team:secret -H 'Origin: https://chat.internal.example' http://127.0.0.1:8080/api/tags
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Resolves here, listens there, routes until Tuesday</em> (topic journal <code>networking</code>) — Listening on loopback, or on everything</li>
+<li><em>Ollama on a server</em> (topic journal <code>ollama</code>) — The service</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.ollama.com/faq</li>
+<li>https://nginx.org/en/docs/http/ngx_http_auth_basic_module.html</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>Ollama on a server</em> (<code>ollama</code>), <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>What can someone who reaches an exposed Ollama port do, and what does Ollama check first?</p>
+<blockquote>
+<p>List, run, pull and delete models, using your CPU, memory and disk. Ollama checks no credentials; it
+only checks the Origin header of browser requests.</p>
+</blockquote>
+</li>
+<li>
+<p><code>ollama.service</code> sets <code>OLLAMA_HOST=127.0.0.1:11434</code> but the server listens on <code>*:11434</code>. How do you find
+out why?</p>
+<blockquote>
+<p><code>systemctl cat ollama</code> shows the unit and every drop-in; a drop-in applied after the unit sets a
+different value. <code>systemctl show -p Environment ollama</code> shows the effective environment.</p>
+</blockquote>
+</li>
+<li>
+<p>After fixing a drop-in, <code>systemctl restart ollama</code> still binds the old address. What was skipped?</p>
+<blockquote>
+<p><code>systemctl daemon-reload</code>. Until then systemd uses the unit definition it loaded earlier.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does nginx return 500 for every login when the password file is <code>root:root 0600</code>?</p>
+<blockquote>
+<p>Passwords are checked by the worker processes, which run as <code>www-data</code> and cannot read the file.
+<code>root:www-data 0640</code> lets them read it and nobody else.</p>
+</blockquote>
+</li>
+<li>
+<p>Through an authenticated proxy, a request from <code>https://chat.internal.example</code> gets 403. Which program
+refuses it, and why does curl without headers get 200?</p>
+<blockquote>
+<p>Ollama. nginx forwards the browser’s <code>Origin</code> header, and Ollama refuses origins not in its defaults or
+<code>OLLAMA_ORIGINS</code>. curl sends no <code>Origin</code>, which Ollama accepts.</p>
+</blockquote>
+</li>
+<li>
+<p>What is wrong with <code>OLLAMA_ORIGINS=*</code>, even on a machine behind a firewall?</p>
+<blockquote>
+<p>Any web page a user on the network opens can call the server from their browser, which is inside the
+firewall. The origin check is what stops that; <code>*</code> turns it off.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a <code>000</code> status from <code>curl -w '%{http_code}'</code> mean?</p>
+<blockquote>
+<p>No HTTP response at all: the connection was refused, timed out or could not be made — here, because
+nothing listens on that address.</p>
+</blockquote>
+</li>
+<li>
+<p>Why should basic authentication be combined with TLS off the local machine?</p>
+<blockquote>
+<p>The credentials travel base64-encoded in every request, readable by anyone who can see the traffic.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

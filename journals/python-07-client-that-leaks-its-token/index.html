@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A secret has three addresses: the log, the file and the process · Norboten</title>
+<meta name="description" content="&amp;quot;Where is the token?&amp;quot; has more answers than people expect. It is in a file, which has an owner and a mode. It is in a process, which runs as some acco">
+<link rel="canonical" href="https://norboten.org/journals/python-07-client-that-leaks-its-token/"><meta property="og:title" content="A secret has three addresses: the log, the file and the process · Norboten">
+<meta property="og:description" content="&amp;quot;Where is the token?&amp;quot; has more answers than people expect. It is in a file, which has an owner and a mode. It is in a process, which runs as some acco">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/python-07-client-that-leaks-its-token/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A secret has three addresses: the log, the file and the process · Norboten">
+<meta name="twitter:description" content="&amp;quot;Where is the token?&amp;quot; has more answers than people expect. It is in a file, which has an owner and a mode. It is in a process, which runs as some acco">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A secret has three addresses: the log, the file and the process",
+  "description": "\u0026quot;Where is the token?\u0026quot; has more answers than people expect. It is in a file, which has an owner and a mode. It is in a process, which runs as some acco",
+  "url": "https://norboten.org/journals/python-07-client-that-leaks-its-token/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1585,
+  "timeRequired": "PT40M",
+  "about": ["Python", "Users and permissions"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Client That Leaks Its Token</div>
+    <h1>A secret has three addresses: the log, the file and the process</h1>
+    <p class="muted">
+      40 minutes' reading · 1585 words ·<span class="tag">Python</span><span class="tag">Users and permissions</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 97 words</title><rect x="0.0" y="0" width="40.2" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 626 words</title><rect x="43.2" y="0" width="259.5" height="30" rx="4" fill="#1d2a23"/><text x="51.2" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 455 words</title><rect x="305.7" y="0" width="188.6" height="30" rx="4" fill="#4ade80"/><text x="313.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 218 words</title><rect x="497.3" y="0" width="90.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 96 words</title><rect x="590.7" y="0" width="39.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 54 words</title><rect x="633.5" y="0" width="22.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 244 words</title><rect x="658.9" y="0" width="101.1" height="30" rx="4" fill="#1d2a23"/><text x="666.9" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/python-07-client-that-leaks-its-token/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>&quot;Where is the token?&quot; has more answers than people expect. It is in a file, which has an owner and a
+mode. It is in a process, which runs as some account. And it is in everything that process says
+about itself — the info line it prints on every run, the debug line with the headers, the URL it
+repeats in an error message, and from there in the journal, in whatever ships the journal onwards,
+and in the logs of every proxy between here and the partner.</p>
+<p>This lab fixes all three, and the order matters: a token that has been in the journal is a token that
+has to be rotated, however good the file permissions are afterwards.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Find every place a credential can reach a log: normal output, debug output, exception text, and
+the URL of a request.</li>
+<li>Keep a secret out of a URL, and say why a header is the right place for it.</li>
+<li>Set the owner and mode of a secret file so that exactly one account can read it.</li>
+<li>Create a system account with no shell, no home and no password, and run a service as it.</li>
+<li>Tell what a service runs as (<code>systemctl show -p User</code>) and check that the account cannot log in.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="a-log-is-a-copy-of-whatever-you-put-in-it">A log is a copy of whatever you put in it</h3>
+<p><code>log.info(&quot;syncing with %s as %s&quot;, API, token)</code> is one line, and it ends in the journal, which is
+readable by root and by members of <code>systemd-journal</code>, kept for weeks, and often forwarded to a
+central system that a far wider group can search. A secret in a log is not &quot;temporarily visible&quot;; it
+is published.</p>
+<p>Three places in the client leak it, and each is its own habit:</p>
+<ul>
+<li><strong>the informational line</strong> — logging the credential alongside the endpoint, usually added while
+debugging &quot;does it even read the file&quot;;</li>
+<li><strong>the debug line</strong> — <code>log.debug(&quot;GET %s headers=%s&quot;, url, headers)</code> prints the whole
+<code>Authorization</code> header; a level nobody uses in production until the day they do;</li>
+<li><strong>the error path</strong> — <code>log.error(&quot;the partner API refused %s&quot;, url)</code>, where the URL carries
+<code>?token=…</code>. Errors are the lines most likely to be read, copied into a ticket and pasted into a
+chat.</li>
+</ul>
+<p>Log what identifies the request, not what authorises it: the endpoint, the status code, a request
+id, at most the last four characters of a key.</p>
+<h3 id="a-token-in-a-url-is-a-token-in-many-logs">A token in a URL is a token in many logs</h3>
+<p>A query string travels in the request line. It is logged by the client, by every proxy, by the
+server's access log, and it turns up in <code>Referer</code> headers of anything the response links to. It also
+survives inside the exception: <code>urllib.error.HTTPError</code> keeps the full URL in <code>.url</code> and
+<code>.filename</code>, so anything that logs the exception's attributes, or re-formats the request, publishes
+it — even though <code>str(e)</code> is only <code>HTTP Error 403: Forbidden</code>.</p>
+<p><code>Authorization: Bearer …</code> is the header for the purpose. Headers are not written to access logs by
+default, and the standard tooling knows to treat that one as sensitive.</p>
+<h3 id="the-file-the-owner-and-the-mode">The file, the owner and the mode</h3>
+<p><code>/etc/partner/token</code> at mode <code>0644</code> owned by root is readable by every account on the machine — the
+web server, a CI runner, a colleague with a shell. <code>0600</code> is the mode for a secret, and the owner
+should be the account that needs it, which is the service's account rather than root. The directory
+needs <code>0755</code> (or <code>0750</code> with the right group) so the account can reach the file at all: a mode on the
+file does not help if the directory denies access, and does not hurt if it grants it.</p>
+<p>Whatever the mode, a secret that has been in a log, in a repository, or in an image layer is
+compromised. Fixing the mode is the second step; rotating the credential is the first.</p>
+<h3 id="an-account-for-the-job">An account for the job</h3>
+<p>A service that reads one file and makes one HTTP request has no use for root. A dedicated system
+account limits what a bug — or an exploited dependency — can reach:</p>
+<pre class="hl"><code class="language-console"><span class="hl-go">useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin partner-sync</span>
+<span class="hl-go">passwd -l partner-sync</span>
+</code></pre>
+
+<p><code>--system</code> takes a uid below 1000, which keeps it out of the range of human accounts and away from
+tools that list &quot;the users of this machine&quot;. <code>--shell /usr/sbin/nologin</code> and a locked password mean
+nobody can log in as it. <code>User=</code> in the unit — best as a drop-in, so the packaged unit file stays as
+it came — makes the service run as that account, and everything it reads and writes has to be
+readable and writable by it.</p>
+<p>systemd can go further with no account changes at all: <code>DynamicUser=yes</code> invents a transient user
+for each start, and <code>ProtectSystem=strict</code>, <code>PrivateTmp=yes</code>, <code>NoNewPrivileges=yes</code>,
+<code>ProtectHome=yes</code> and <code>LoadCredential=</code> narrow what any of them can touch. <code>LoadCredential=</code> is the
+modern answer for secrets: the file stays root-owned at <code>0600</code>, and systemd passes a copy to the
+service through <code>$CREDENTIALS_DIRECTORY</code>, readable by that unit alone.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Run on the lab's own machine: <code>ubuntu-26.04-devops</code>, Python 3.14.4, before any change.</p>
+<p>The journal, after one ordinary successful run:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>partner-sync.service<span class="hl-w"> </span>-b<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-4
+<span class="hl-go">Starting partner-sync.service - Fetch the partner's orders...</span>
+<span class="hl-go">INFO syncing with http://127.0.0.1:8977/orders as ptk_live_7Qa4Zx91Nv3RbT0sKfLm</span>
+<span class="hl-go">INFO wrote 2 orders</span>
+<span class="hl-go">partner-sync.service: Deactivated successfully.</span>
+</code></pre>
+
+<p>The file and the service:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/etc/partner/token<span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/partner/token
+<span class="hl-go">-rw-r--r-- 1 root root 30 Sep 16 17:25 /etc/partner/token</span>
+<span class="hl-go">ptk_live_7Qa4Zx91Nv3RbT0sKfLm</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>partner-sync.service<span class="hl-w"> </span>-p<span class="hl-w"> </span>User<span class="hl-w"> </span>-p<span class="hl-w"> </span>Group<span class="hl-w"> </span>--value<span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>partner-sync.service<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-8
+
+
+<span class="hl-gp"># </span>/etc/systemd/system/partner-sync.service
+<span class="hl-go">[Unit]</span>
+<span class="hl-go">Description=Fetch the partner's orders</span>
+<span class="hl-go">After=partner-api.service</span>
+
+<span class="hl-go">[Service]</span>
+<span class="hl-go">Type=oneshot</span>
+<span class="hl-go">ExecStart=/usr/bin/python3 /opt/partner/sync.py</span>
+</code></pre>
+
+<p>Two empty lines: <code>User=</code> and <code>Group=</code> are unset, so the service is root. At DEBUG the same token
+appears twice more, once in the URL and once in the header:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">PARTNER_LOG_LEVEL</span><span class="hl-o">=</span>DEBUG<span class="hl-w"> </span><span class="hl-nv">PARTNER_OUT</span><span class="hl-o">=</span>/tmp/o.json<span class="hl-w"> </span>python3<span class="hl-w"> </span>/opt/partner/sync.py<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-3
+<span class="hl-go">INFO syncing with http://127.0.0.1:8977/orders as ptk_live_7Qa4Zx91Nv3RbT0sKfLm</span>
+<span class="hl-go">DEBUG GET http://127.0.0.1:8977/orders?token=ptk_live_7Qa4Zx91Nv3RbT0sKfLm headers={'Authorization': 'Bearer ptk_live_7Qa4Zx91Nv3RbT0sKfLm', 'Accept': 'application/json'}</span>
+<span class="hl-go">INFO wrote 2 orders</span>
+</code></pre>
+
+<p>A failing run is worse than it looks. The <code>log.error</code> line before the traceback prints the URL, so
+the token is in the journal again; and the <code>HTTPError</code> that ends the run still carries that URL in
+<code>.url</code> for anyone who logs it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'printf "ptk_live_0000000000000000000000\n" &gt; /tmp/wrong; PARTNER_TOKEN_FILE=/tmp/wrong PARTNER_OUT=/tmp/o.json python3 /opt/partner/sync.py 2&gt;&amp;1 | tail -3'</span>
+<span class="hl-go">  File "/usr/lib/python3.14/urllib/request.py", line 611, in http_error_default</span>
+<span class="hl-go">    raise HTTPError(req.full_url, code, msg, hdrs, fp)</span>
+<span class="hl-go">urllib.error.HTTPError: HTTP Error 403: bad token</span>
+</code></pre>
+
+<p>(Only the last three lines are shown; the <code>ERROR the partner API refused http://127.0.0.1:8977/orders?token=…</code> line is above them, and the whole run ends in an unhandled
+traceback rather than a message.)</p>
+<p>After the fix — the token only in the header, nothing about it logged at any level, the file owned by
+a new system account at <code>0600</code>, and <code>User=</code> in a drop-in:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>partner-sync.service<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>partner-sync.service<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span>--no-pager<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat
+<span class="hl-go">INFO wrote 2 orders</span>
+<span class="hl-go">partner-sync.service: Deactivated successfully.</span>
+<span class="hl-go">Finished partner-sync.service - Fetch the partner's orders.</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/etc/partner/token<span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/partner/token<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span>
+<span class="hl-go">-rw------- 1 partner-sync partner-sync 30 Sep 16 17:25 /etc/partner/token</span>
+<span class="hl-go">cat: /etc/partner/token: Permission denied</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>partner-sync.service<span class="hl-w"> </span>-p<span class="hl-w"> </span>User<span class="hl-w"> </span>--value<span class="hl-p">;</span><span class="hl-w"> </span>id<span class="hl-w"> </span>partner-sync<span class="hl-p">;</span><span class="hl-w"> </span>passwd<span class="hl-w"> </span>-S<span class="hl-w"> </span>partner-sync
+<span class="hl-go">partner-sync</span>
+<span class="hl-go">uid=997(partner-sync) gid=983(partner-sync) groups=983(partner-sync)</span>
+<span class="hl-go">partner-sync L 2026-09-16 -1 -1 -1 -1</span>
+</code></pre>
+
+<p><code>L</code> is a locked password. DEBUG now says what was requested and not with what, and a refused request
+is one line with the status code:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">PARTNER_LOG_LEVEL</span><span class="hl-o">=</span>DEBUG<span class="hl-w"> </span><span class="hl-nv">PARTNER_OUT</span><span class="hl-o">=</span>/tmp/o.json<span class="hl-w"> </span>python3<span class="hl-w"> </span>/opt/partner/sync.py<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-3
+<span class="hl-go">INFO syncing with http://127.0.0.1:8977/orders</span>
+<span class="hl-go">DEBUG GET http://127.0.0.1:8977/orders</span>
+<span class="hl-go">INFO wrote 2 orders</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'PARTNER_TOKEN_FILE=/tmp/wrong PARTNER_OUT=/tmp/o.json python3 /opt/partner/sync.py; echo "exit: $?"'</span><span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-2
+<span class="hl-go">ERROR the partner API refused the request: HTTP 403</span>
+<span class="hl-go">exit: 1</span>
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong>Fixing the info line and leaving DEBUG.</strong> The debug line is the one that prints the headers, and
+somebody will raise the level during the next incident.</li>
+<li><strong>Masking with a filter</strong> (<code>logging.Filter</code> that rewrites the token). It helps, but only for
+messages that go through that logger — not for a traceback, and not for the URL an exception
+carries. Keep the secret out of the strings instead.</li>
+<li><strong>Deleting the token file</strong> or emptying it to pass a permissions check. The sync has to keep
+working; the lab's first check is there for that.</li>
+<li><strong><code>chmod 600</code> and leaving the owner as root</strong>, then running the service as a new account. It then
+cannot read its own token. Owner and mode go together.</li>
+<li><strong><code>chmod 700 /etc/partner</code></strong> with the file owned by another account. The directory has to be
+traversable by the account that reads the file.</li>
+<li><strong>Using an ordinary human-range account</strong> (uid ≥ 1000), or one with a real shell. It shows up in
+user listings and can be logged in to.</li>
+<li><strong>Editing the packaged unit file in <code>/lib/systemd/system</code>.</strong> A drop-in under
+<code>/etc/systemd/system/&lt;unit&gt;.d/</code> survives package updates and shows up in <code>systemctl cat</code>.</li>
+<li><strong>Forgetting the output directory.</strong> The service writes <code>/var/lib/partner</code>; after the change it is
+no longer root that writes there.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-python"><span class="hl-n">log</span><span class="hl-o">.</span><span class="hl-n">info</span><span class="hl-p">(</span><span class="hl-s2">"syncing with </span><span class="hl-si">%s</span><span class="hl-s2">"</span><span class="hl-p">,</span> <span class="hl-n">API</span><span class="hl-p">)</span>                 <span class="hl-c1"># the endpoint, never the credential</span>
+<span class="hl-n">req</span> <span class="hl-o">=</span> <span class="hl-n">urllib</span><span class="hl-o">.</span><span class="hl-n">request</span><span class="hl-o">.</span><span class="hl-n">Request</span><span class="hl-p">(</span><span class="hl-n">API</span><span class="hl-p">,</span> <span class="hl-n">headers</span><span class="hl-o">=</span><span class="hl-p">{</span><span class="hl-s2">"Authorization"</span><span class="hl-p">:</span> <span class="hl-sa">f</span><span class="hl-s2">"Bearer </span><span class="hl-si">{</span><span class="hl-n">token</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-p">})</span>
+<span class="hl-k">except</span> <span class="hl-n">urllib</span><span class="hl-o">.</span><span class="hl-n">error</span><span class="hl-o">.</span><span class="hl-n">HTTPError</span> <span class="hl-k">as</span> <span class="hl-n">e</span><span class="hl-p">:</span>
+    <span class="hl-n">log</span><span class="hl-o">.</span><span class="hl-n">error</span><span class="hl-p">(</span><span class="hl-s2">"the API refused the request: HTTP </span><span class="hl-si">%s</span><span class="hl-s2">"</span><span class="hl-p">,</span> <span class="hl-n">e</span><span class="hl-o">.</span><span class="hl-n">code</span><span class="hl-p">)</span>   <span class="hl-c1"># not e.url, not str(e)</span>
+</code></pre>
+
+<pre class="hl"><code class="language-console"><span class="hl-go">useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin svc</span>
+<span class="hl-go">passwd -l svc</span>
+<span class="hl-go">chown svc:svc /etc/app/token &amp;&amp; chmod 600 /etc/app/token</span>
+<span class="hl-go">systemctl edit --force app.service        # a drop-in with [Service] User=svc</span>
+<span class="hl-go">systemctl show app.service -p User -p Group --value</span>
+<span class="hl-go">passwd -S svc                             # L = locked</span>
+<span class="hl-go">journalctl _SYSTEMD_INVOCATION_ID=$(systemctl show app -p InvocationID --value)</span>
+</code></pre>
+
+<p>Further, in the unit: <code>DynamicUser=yes</code>, <code>LoadCredential=token:/etc/app/token</code>,
+<code>ProtectSystem=strict</code>, <code>NoNewPrivileges=yes</code>, <code>PrivateTmp=yes</code>.</p>
+<h2 id="going-deeper">Going deeper</h2>
+<ul>
+<li><code>man 5 systemd.exec</code> — <code>User=</code>, <code>DynamicUser=</code>, <code>LoadCredential=</code>, <code>ProtectSystem=</code> — and
+<code>man 5 systemd.unit</code> for drop-ins.</li>
+<li><code>man 8 useradd</code>, <code>man 1 passwd</code> (<code>-l</code>, <code>-S</code>), <code>man 1 chmod</code>, <code>man 1 chown</code>.</li>
+<li>The Python logging HOWTO, and <code>logging.Filter</code> for masking what cannot be kept out.</li>
+<li>OWASP's guidance on secrets in logs and URLs.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Name three places a token can reach the journal from one small client.</p>
+<blockquote>
+<p>An informational line that logs it, a debug line that prints the request headers, and an error
+that repeats a URL with the token in its query string (including an unhandled <code>HTTPError</code>).</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>?token=…</code> worse than an <code>Authorization</code> header?</p>
+<blockquote>
+<p>The URL is in the request line, so it is logged by the client, by proxies and by the server's
+access log, and it appears in exception text; the header is not logged by default.</p>
+</blockquote>
+</li>
+<li>
+<p>Which mode and owner does a service's token file want, and what does the directory need?</p>
+<blockquote>
+<p><code>0600</code>, owned by the account the service runs as; the directory must let that account traverse
+it (<code>0755</code>, or <code>0750</code> with the right group).</p>
+</blockquote>
+</li>
+<li>
+<p>What do <code>--system</code>, <code>--shell /usr/sbin/nologin</code> and <code>passwd -l</code> each give you?</p>
+<blockquote>
+<p>A uid below 1000 (outside the human range), no login shell, and a password that cannot be used
+to authenticate.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you check what account a service runs as, without reading the unit file?</p>
+<blockquote>
+<p><code>systemctl show &lt;unit&gt; -p User -p Group --value</code>; an empty answer means root.</p>
+</blockquote>
+</li>
+<li>
+<p>The mode is fixed and the token is out of the logs. Is the credential safe?</p>
+<blockquote>
+<p>No. It was in the journal, so it must be rotated; permissions protect the next token, not the
+one that has already been published.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-hosting and configuration · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/docs/self-hosting/"><meta property="og:title" content="Self-hosting and configuration · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/docs/self-hosting/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Self-hosting and configuration · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" aria-current="page">Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      <div class="group">Getting started</div>
+      <a href="../../docs/getting-started/"
+>Install and first lab</a>
+      <a href="../../docs/tui-reference/"
+>TUI reference</a>
+      <a href="../../docs/faq/"
+>FAQ</a>
+      <div class="group">Contributing labs</div>
+      <a href="../../docs/writing-a-lab/"
+>Writing a lab</a>
+      <a href="../../docs/lab-spec/"
+>Lab specification</a>
+      <a href="../../docs/quiz-spec/"
+>Theory question spec</a>
+      <a href="../../docs/claude-code-plugin/"
+>The Claude Code plugin</a>
+      <div class="group">How it is built</div>
+      <a href="../../docs/architecture/"
+>Architecture</a>
+      <a href="../../docs/rated-labs/"
+>Rated and unrated labs</a>
+      <a href="../../docs/claude-code-in-norboten/"
+>How Norboten uses Claude</a>
+      <a href="../../docs/mcp/"
+>The MCP server</a>
+      <a href="../../docs/data-model/"
+>Data model</a>
+      <a href="../../docs/api-reference/"
+>API reference</a>
+      <a href="../../docs/pipelines/"
+>Pipelines</a>
+      <a href="../../docs/open-questions/"
+>Open questions</a>
+      <div class="group">Running it yourself</div>
+      <a href="../../docs/self-hosting/"
+aria-current="page">Self-hosting and configuration</a>
+      <a href="../../docs/deploy/"
+>Deploying the server</a>
+      <a href="../../docs/ci-cd/"
+>CI/CD</a>
+      <a href="../../docs/releasing/"
+>Releasing</a>
+    </nav>
+    <article class="prose">
+      <h1 id="self-hosting-and-configuration">Self-hosting and configuration</h1>
+<p>Three ways to run the server side yourself, from least to most:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Command</th>
+<th>What you get</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>The API alone</strong></td>
+<td><code>uv run python -m uvicorn norboten_api.main:app --reload</code></td>
+<td>the API on :8000 with everything in memory — fine for developing the TUI or the API</td>
+</tr>
+<tr>
+<td><strong>The whole stack on a laptop</strong></td>
+<td><code>make stack-up</code></td>
+<td>the production compose project with a local override: site :8080, API :8000, Grafana :3000, sample data loaded</td>
+</tr>
+<tr>
+<td><strong>A real server</strong></td>
+<td><a href="../deploy/">Deploying the server</a></td>
+<td>the same compose project on an Ubuntu machine with TLS, backups and deploy-on-push</td>
+</tr>
+</tbody>
+</table>
+<p>Then point the TUI at it:</p>
+<pre class="hl"><code class="language-sh"><span class="hl-nv">NORBOTEN_API</span><span class="hl-o">=</span>http://localhost:8000<span class="hl-w"> </span>uv<span class="hl-w"> </span>run<span class="hl-w"> </span>norboten
+</code></pre>
+
+<p>The boards, live sessions, signing in and the consultant then use that server. Without
+<code>NORBOTEN_API</code>, the TUI uses <code>https://api.norboten.org</code>; without any reachable server, the labs,
+theory, journals, local recordings, the tutor and the review all still work — those two run on the
+learner's machine — and the Ratings and You sections say they are offline.</p>
+<h2 id="the-apis-settings">The API's settings</h2>
+<p>Every setting is an environment variable with the <code>NORBOTEN_</code> prefix
+(<code>api/src/norboten_api/settings.py</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NORBOTEN_DATABASE_URL</code></td>
+<td><code>memory://</code></td>
+<td><code>postgresql://user:password@host:5432/db</code>; memory keeps everything in the process</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_REDIS_URL</code></td>
+<td><em>(empty)</em></td>
+<td><code>redis://host:6379/0</code>; empty keeps live frames and rate limits in the process — only correct with one worker</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_REQUIRE_AUTH</code></td>
+<td><code>false</code></td>
+<td><code>true</code> on a server: every signed endpoint needs a token; <code>false</code> also accepts <code>X-Debug-User</code></td>
+</tr>
+<tr>
+<td><code>NORBOTEN_SITE_URL</code></td>
+<td><code>https://norboten.org</code></td>
+<td>the site, for the links the API hands out (the account page, the MCP sign-in page)</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_API_URL</code></td>
+<td><code>https://api.norboten.org</code></td>
+<td>the API's own public address: the OAuth issuer, and <code>&lt;api&gt;/mcp</code> is the MCP server's resource identifier</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_MCP_PER_MINUTE</code></td>
+<td><code>120</code></td>
+<td>MCP requests per client per minute</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_MCP_STATE_KEY</code></td>
+<td><em>(empty)</em></td>
+<td>seals a <code>quiz_me</code> question between its two requests; every worker needs the same one, and empty (a key per process) is right with one worker only</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_TELEGRAM_BOT_TOKEN</code>, <code>NORBOTEN_TELEGRAM_CHAT</code></td>
+<td><em>(empty)</em></td>
+<td>a real session going live is announced to this chat (<code>announce.py</code>); empty sends nothing</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_GITHUB_CLIENT_ID</code>, <code>NORBOTEN_GITHUB_CLIENT_SECRET</code></td>
+<td><em>(empty)</em></td>
+<td><strong>required to sign anyone in</strong>: the GitHub OAuth App (callback <code>&lt;api&gt;/auth/github/callback</code>, Enable Device Flow ticked). Empty and every sign-in endpoint answers 503 &quot;sign-in is not configured on this server&quot;</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_GITHUB_URL</code>, <code>NORBOTEN_GITHUB_API_URL</code></td>
+<td><code>https://github.com</code>, <code>https://api.github.com</code></td>
+<td>GitHub's two hosts; only a rehearsal points them at a stub</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_SIGN_INS_PER_MINUTE</code></td>
+<td><code>10</code></td>
+<td>sign-ins one client may start, and one-time codes it may exchange, per minute</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_DISCORD_CLIENT_ID</code>, <code>NORBOTEN_DISCORD_CLIENT_SECRET</code>, <code>NORBOTEN_DISCORD_BOT_TOKEN</code></td>
+<td><em>(empty)</em></td>
+<td>optional: linking Discord on the account page, and the weekly digest as a direct message from the bot. Empty and Discord is hidden and no digest is sent</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_DISCORD_GUILD_ID</code></td>
+<td><em>(empty)</em></td>
+<td>the Norboten Discord server that &quot;join the server&quot; adds a member to</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_DISCORD_API_URL</code>, <code>NORBOTEN_DISCORD_AUTHORIZE_URL</code></td>
+<td>Discord's</td>
+<td>only a rehearsal changes them</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_ALLOWED_ORIGINS</code></td>
+<td><code>https://norboten.org,https://www.norboten.org</code></td>
+<td>browser origins allowed by CORS</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_OLLAMA_URL</code></td>
+<td><em>(empty)</em></td>
+<td><code>http://ollama:11434</code>; empty means no local model</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_CONSULTANT_MODELS</code></td>
+<td><code>ollama/qwen2.5:0.5b</code></td>
+<td>tried in order; the first this server can reach answers the consultant</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_CHAT_PER_MINUTE</code></td>
+<td><code>20</code></td>
+<td>consultant questions per client per minute</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_TELEMETRY_ENABLED</code></td>
+<td><code>true</code></td>
+<td>accept opt-in stuck-point telemetry</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_RATED_DIR</code></td>
+<td><em>(empty)</em></td>
+<td>the rated labs and banks, mounted read-only (<code>/app/rated</code> in the compose file); empty or missing means this server has none — a self-hosted server has no rated content unless it brings its own</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_STRIPE_SECRET_KEY</code></td>
+<td><em>(empty)</em></td>
+<td>donations: <code>sk_live_…</code>, or <code>sk_test_…</code> to rehearse. Empty and the donate page says the card path is off on this deployment</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_DONATIONS_PER_MINUTE</code></td>
+<td><code>6</code></td>
+<td>Checkout Sessions one client may start per minute</td>
+</tr>
+</tbody>
+</table>
+<p>The server uses Ollama models only (<code>ollama/&lt;name&gt;</code>); it reads no hosted model key, so a key in its
+environment changes nothing.</p>
+<h2 id="the-stacks-settings">The stack's settings</h2>
+<p><code>deploy/.env</code> on a server (written by Ansible from the vault), <code>deploy/.env.local</code> on a laptop
+(written by <code>make stack-up</code> with fresh passwords). See <code>deploy/.env.example</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NORBOTEN_DOMAIN</code></td>
+<td>the apex; <code>api.</code>, <code>status.</code> and <code>www.</code> are derived</td>
+</tr>
+<tr>
+<td><code>ACME_EMAIL</code></td>
+<td>Let's Encrypt's contact for expiry notices</td>
+</tr>
+<tr>
+<td><code>API_IMAGE</code>, <code>API_TAG</code></td>
+<td>the API image; <code>deploy.sh</code> rewrites the tag</td>
+</tr>
+<tr>
+<td><code>API_WORKERS</code></td>
+<td>uvicorn workers, default 2</td>
+</tr>
+<tr>
+<td><code>POSTGRES_PASSWORD</code>, <code>GRAFANA_ADMIN_PASSWORD</code></td>
+<td>required; <code>openssl rand -base64 32</code></td>
+</tr>
+<tr>
+<td><code>MCP_STATE_KEY</code></td>
+<td>the MCP server's shared state key (<code>NORBOTEN_MCP_STATE_KEY</code>); <code>install-server.py</code> generates one</td>
+</tr>
+<tr>
+<td><code>API_URL</code></td>
+<td>overrides <code>NORBOTEN_API_URL</code>; default <code>https://api.&lt;domain&gt;</code></td>
+</tr>
+<tr>
+<td><code>OLLAMA_MODEL</code></td>
+<td>the model <code>ollama-pull</code> fetches; default <code>qwen2.5:0.5b</code></td>
+</tr>
+<tr>
+<td><code>OLLAMA_MEMORY</code></td>
+<td>Ollama's memory limit, default <code>1g</code>; past it only Ollama is killed, and it restarts. It runs one request and keeps one model loaded at a time, with a 4,096-token context</td>
+</tr>
+<tr>
+<td><code>TELEGRAM_BOT_TOKEN</code>, <code>TELEGRAM_CHAT</code></td>
+<td>live sessions announced by the API; empty sends nothing</td>
+</tr>
+<tr>
+<td><code>GITHUB_CLIENT_ID</code>, <code>GITHUB_CLIENT_SECRET</code></td>
+<td>the GitHub OAuth App; without it nobody can sign in. A laptop stack needs an app of its own, with the callback <code>http://localhost:8000/auth/github/callback</code>, and without one uses the debug identity</td>
+</tr>
+<tr>
+<td><code>DISCORD_CLIENT_ID</code>, <code>DISCORD_CLIENT_SECRET</code>, <code>DISCORD_BOT_TOKEN</code>, <code>DISCORD_GUILD_ID</code></td>
+<td>optional: Discord linking and the Sunday digest; without the bot token the digest timer stays off</td>
+</tr>
+<tr>
+<td><code>CONSULTANT_MODELS</code></td>
+<td>overrides <code>NORBOTEN_CONSULTANT_MODELS</code></td>
+</tr>
+<tr>
+<td><code>SITE_DIR</code></td>
+<td>where Caddy serves the site from, default <code>./site</code></td>
+</tr>
+<tr>
+<td><code>RATED_DIR</code></td>
+<td>the rated content on the host, default <code>/opt/norboten/rated</code>; mounted into the API read-only, never into the image</td>
+</tr>
+<tr>
+<td><code>BACKUP_DIR</code>, <code>BACKUP_KEEP_DAYS</code></td>
+<td>local dumps, default <code>/var/backups/norboten</code>, 14</td>
+</tr>
+<tr>
+<td><code>BACKUP_TARGET</code>, <code>RESTIC_PASSWORD</code></td>
+<td>an off-box restic repository, optional</td>
+</tr>
+<tr>
+<td><code>CADDY_GLOBAL</code></td>
+<td>extra Caddy global options; the rehearsal sets <code>local_certs</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-sites-settings">The site's settings</h2>
+<p><code>site/build.py</code> reads three variables; all three are empty or defaulted in a plain checkout, so a
+self-hosted build ships no third-party script at all.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NORBOTEN_SITE_API</code></td>
+<td><code>https://api.norboten.org</code></td>
+<td>the API the pages call for ratings, live sessions and the consultant</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_SITE_URL</code></td>
+<td><code>https://norboten.org</code></td>
+<td>the site's own address: canonical links, Open Graph and the JSON-LD</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_SITE_GA_ID</code></td>
+<td><em>(empty)</em></td>
+<td>a GA4 measurement ID (<code>G-…</code>) adds the analytics tag; empty adds no script and sets no cookie</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-clients-settings">The client's settings</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NORBOTEN_API</code></td>
+<td>the API the TUI talks to</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_HOME</code></td>
+<td>where everything local is kept, default <code>~/.norboten</code> (keep the path short: UNIX socket paths are limited to 104 bytes)</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_LABS_DIR</code></td>
+<td>labs from a directory instead of the cache</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_IMAGE_MIRROR</code></td>
+<td>a directory or URL of locally built golden images</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_LAB_REGISTRY</code></td>
+<td>the OCI repository prefix labs are pulled from</td>
+</tr>
+<tr>
+<td><code>NORBOTEN_DEBUG_USER</code></td>
+<td>act as this user against an API with <code>NORBOTEN_REQUIRE_AUTH=false</code></td>
+</tr>
+<tr>
+<td><code>ANTHROPIC_API_KEY</code>, <code>OPENAI_API_KEY</code>, <code>GEMINI_API_KEY</code></td>
+<td>optional: models for the tutor, the review and drafting your own questions (<code>g</code> on Theory), after Claude Code</td>
+</tr>
+<tr>
+<td><code>OLLAMA_HOST</code></td>
+<td>an Ollama for the same, last in order; without it the TUI looks for one on <code>127.0.0.1:11434</code></td>
+</tr>
+<tr>
+<td><code>NORBOTEN_CLAUDE_BIN</code></td>
+<td>the Claude Code binary for <code>claude-code/…</code> model ids, default <code>claude</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="choosing-models">Choosing models</h2>
+<p>The server never calls a hosted model, and runs only one: the consultant's, on Ollama. The tutor
+and the review of a finished attempt run in the TUI on the learner's own model — Claude Code on
+their subscription, then an exported key, then a local Ollama, or the one pinned with <code>m</code> on System
+— and with none of them <code>t</code> shows each lab's four-level hint ladder. Theory questions are not generated on the server at all: they are drafted on a maintainer's machine
+on a Claude subscription and published in the repository's banks (docs/quiz-spec.md §5).</p>
+<p>A 0.5B model answers the consultant in seconds on a CPU, and its answers are plain. Most of what makes
+an answer right is the retrieval in front of it: on the ten questions in
+<code>api/tests/consultant_eval.py</code>, <code>qwen2.5:0.5b</code> gets 8 right and <code>qwen2.5:1.5b</code> 9, and the two it
+misses are numbers it misreads from the passage it was given. <code>OLLAMA_MODEL</code> and
+<code>CONSULTANT_MODELS</code> can name a larger one — <code>qwen2.5:1.5b</code> needs about 1.4 GB of memory while
+loaded, more than Ollama's 1 GB limit (raise <code>OLLAMA_MEMORY</code> on a server with room for it), and
+<code>qwen2.5:3b</code> about 4 GB to itself. Run the eval against the model before switching.</p>
+
+    </article>
+    <div class="toc">
+<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>      <a class="h2" href="#the-apis-settings">The API&#39;s settings</a>
+      <a class="h2" href="#the-stacks-settings">The stack&#39;s settings</a>
+      <a class="h2" href="#the-sites-settings">The site&#39;s settings</a>
+      <a class="h2" href="#the-clients-settings">The client&#39;s settings</a>
+      <a class="h2" href="#choosing-models">Choosing models</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("../../search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+</body>
+</html>

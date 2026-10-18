@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A script run by a timer inherits nothing you set up for yourself · Norboten</title>
+<meta name="description" content="&amp;quot;It works when I run it&amp;quot; is the most expensive sentence in operations, because it is true. The person saying it is logged in, in an interactive shell ">
+<link rel="canonical" href="https://norboten.org/journals/bash-04-job-that-works-only-by-hand/"><meta property="og:title" content="A script run by a timer inherits nothing you set up for yourself · Norboten">
+<meta property="og:description" content="&amp;quot;It works when I run it&amp;quot; is the most expensive sentence in operations, because it is true. The person saying it is logged in, in an interactive shell ">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/bash-04-job-that-works-only-by-hand/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A script run by a timer inherits nothing you set up for yourself · Norboten">
+<meta name="twitter:description" content="&amp;quot;It works when I run it&amp;quot; is the most expensive sentence in operations, because it is true. The person saying it is logged in, in an interactive shell ">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A script run by a timer inherits nothing you set up for yourself",
+  "description": "\u0026quot;It works when I run it\u0026quot; is the most expensive sentence in operations, because it is true. The person saying it is logged in, in an interactive shell ",
+  "url": "https://norboten.org/journals/bash-04-job-that-works-only-by-hand/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1474,
+  "timeRequired": "PT30M",
+  "about": ["Bash", "Boot and systemd"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Job That Works Only by Hand</div>
+    <h1>A script run by a timer inherits nothing you set up for yourself</h1>
+    <p class="muted">
+      30 minutes' reading · 1474 words ·<span class="tag">Bash</span><span class="tag">Boot and systemd</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 105 words</title><rect x="0.0" y="0" width="46.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 555 words</title><rect x="49.6" y="0" width="246.3" height="30" rx="4" fill="#1d2a23"/><text x="57.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 460 words</title><rect x="298.9" y="0" width="204.1" height="30" rx="4" fill="#4ade80"/><text x="306.9" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 205 words</title><rect x="506.0" y="0" width="91.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 104 words</title><rect x="600.0" y="0" width="46.2" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 50 words</title><rect x="649.2" y="0" width="22.2" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 193 words</title><rect x="674.4" y="0" width="85.6" height="30" rx="4" fill="#1d2a23"/><text x="682.4" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/bash-04-job-that-works-only-by-hand/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>&quot;It works when I run it&quot; is the most expensive sentence in operations, because it is true. The
+person saying it is logged in, in an interactive shell that has read a start-up file, sitting in a
+directory they chose, with a <code>PATH</code> somebody extended years ago. The timer that runs the same script
+at five in the morning has none of that: a short <code>PATH</code>, the root directory as its working directory,
+no terminal, and no start-up files at all.</p>
+<p><code>nightly-report</code> depends on two of those things without saying so — a helper found only through a
+<code>PATH</code> added in root's <code>.bashrc</code>, and a configuration file found only because the same <code>.bashrc</code>
+changes into <code>/opt/reports</code>. On top of that it cannot fail: whatever goes wrong, it empties the
+report and exits 0.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>List what a systemd service inherits — environment, working directory, start-up files — and how
+that differs from an interactive login shell.</li>
+<li>Explain when bash reads <code>.bashrc</code>, <code>.profile</code> and <code>/etc/environment</code>, and why none of them
+reaches a timer's run.</li>
+<li>Write a script that names everything it needs: an explicit <code>PATH</code>, absolute paths, configuration
+by absolute default.</li>
+<li>Explain the search rule of the <code>.</code> (source) command for a name without a slash.</li>
+<li>Keep the previous output when a run fails, by writing to a temporary file and renaming it.</li>
+<li>Reproduce a timer's environment by hand with <code>env -i</code> and <code>systemd-run</code>.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="two-kinds-of-shell-and-what-each-one-reads">Two kinds of shell, and what each one reads</h3>
+<p>Bash decides which start-up files to read from how it was started. A <strong>login</strong> shell reads
+<code>/etc/profile</code> and the first of <code>~/.bash_profile</code>, <code>~/.bash_login</code>, <code>~/.profile</code>. An <strong>interactive
+non-login</strong> shell reads <code>~/.bashrc</code>. A <strong>non-interactive</strong> shell — <code>bash script</code>, <code>bash -c '…'</code>, the
+interpreter named in a script's <code>#!</code> line — reads neither (only a file named in <code>$BASH_ENV</code>, if set).</p>
+<p>Ubuntu's default <code>~/.bashrc</code> also begins by checking whether the shell is interactive and returning
+immediately if it is not. Anything appended to the end of the file, as the <code>PATH</code> for the reporting
+tools was, exists only in shells where a person is typing.</p>
+<h3 id="what-a-service-gets-instead">What a service gets instead</h3>
+<p>systemd starts a service's process directly, not through a shell. The environment is built from the
+manager's own small default — a <code>PATH</code> of the standard system directories — plus whatever the unit
+sets with <code>Environment=</code> or <code>EnvironmentFile=</code>. The working directory is <code>/</code> unless
+<code>WorkingDirectory=</code> says otherwise, and <code>HOME</code> cannot be relied on — on this machine it arrives
+empty. There is no terminal. <code>/etc/environment</code> is read by PAM for logins, not by systemd for services.</p>
+<p><code>env -i</code> reproduces the empty end of that range from any shell: it starts a program with no
+environment at all. <code>systemd-run --wait --pipe</code> runs a command as a transient service, so it gets
+exactly what a real unit would.</p>
+<h3 id="how-a-script-finds-a-command">How a script finds a command</h3>
+<p>A command without a slash is searched for in each directory of <code>PATH</code>, in order. When <code>PATH</code> is
+unset, bash substitutes a built-in default of standard directories. A helper installed in
+<code>/opt/reports/tools/bin</code> is therefore found only by callers whose <code>PATH</code> includes that directory,
+which is to say only by the shells that read that one <code>.bashrc</code>.</p>
+<p>A script that must run anywhere sets its own <code>PATH</code> at the top, or calls its helpers by absolute
+path. Both make the dependency visible in the script, instead of in someone's shell configuration.</p>
+<h3 id="how--finds-a-file">How <code>.</code> finds a file</h3>
+<p><code>. report.conf</code> does not simply read <code>./report.conf</code>. For a name with no slash, bash first searches
+<code>PATH</code> for a readable file of that name, and only then (outside POSIX mode) looks in the current
+directory. Under the timer the current directory is <code>/</code>, so the configuration is not found at all;
+in an unlucky <code>PATH</code>, a different <code>report.conf</code> could be found instead. <code>. &quot;$conf&quot;</code> with an absolute
+default removes both surprises.</p>
+<h3 id="a-redirection-happens-first">A redirection happens first</h3>
+<p>In <code>{ …; } &gt; &quot;$out&quot;</code>, the shell opens <code>$out</code> for writing — truncating it — before the commands in the
+group run. If they then fail, the report is already gone. Writing to a temporary file in the same
+directory and renaming it over the report with <code>mv</code> only when everything worked means a failure
+leaves yesterday's report in place, and a reader never sees a half-written one. <code>rename(2)</code> within one
+file system is atomic.</p>
+<h3 id="exit-status-again">Exit status, again</h3>
+<p>Nothing in the original script checks that the configuration was read, and its last command is
+<code>echo &quot;report written…&quot;</code>, which succeeds. So the service's main process exits 0, and systemd records
+<code>Result=success</code> for a run that produced an empty report. <code>set -euo pipefail</code> plus an explicit test
+of the configuration file turn &quot;nothing to report&quot; into a failure the unit can show.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Run on the lab's own machine: <code>ubuntu-26.04-devops</code>, GNU bash 5.3.9, before any change.</p>
+<p>Starting the service the way the timer does, and reading its journal:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>nightly-report.service<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>nightly-report.service<span class="hl-w"> </span>-b<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-4
+<span class="hl-go">/opt/reports/bin/nightly-report: line 4: report.conf: No such file or directory</span>
+<span class="hl-go">report written to /var/lib/reports/latest.txt</span>
+<span class="hl-go">nightly-report.service: Deactivated successfully.</span>
+<span class="hl-go">Finished nightly-report.service - Disk use per project, for the morning mail.</span>
+</code></pre>
+
+<p>The script told the journal what went wrong and then told systemd that all was well. The report it
+left is a header and nothing else. In an interactive shell, the same script works:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>bash<span class="hl-w"> </span>-ic<span class="hl-w"> </span><span class="hl-s1">'/opt/reports/bin/nightly-report'</span><span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>cat<span class="hl-w"> </span>/var/lib/reports/latest.txt
+<span class="hl-go">report written to /var/lib/reports/latest.txt</span>
+<span class="hl-go">Disk use per project, 2026-09-16</span>
+<span class="hl-go">/srv/projects/alpha                             300 KiB</span>
+<span class="hl-go">/srv/projects/beta                              124 KiB</span>
+</code></pre>
+
+<p>A non-interactive shell as root — no <code>-i</code> — fails exactly like the timer, and the start of root's
+<code>.bashrc</code> shows why:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>bash<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'/opt/reports/bin/nightly-report'</span><span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">/opt/reports/bin/nightly-report: line 4: report.conf: No such file or directory</span>
+<span class="hl-go">report written to /var/lib/reports/latest.txt</span>
+<span class="hl-go">exit status: 0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>head<span class="hl-w"> </span>-12<span class="hl-w"> </span>/root/.bashrc<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s1">'interactive'</span><span class="hl-w"> </span>-A3
+<span class="hl-go">5:# If not running interactively, don't do anything</span>
+<span class="hl-go">6-[ -z "$PS1" ] &amp;&amp; return</span>
+<span class="hl-go">7-</span>
+</code></pre>
+
+<p>What a service actually starts with can be seen directly, with a transient unit:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemd-run<span class="hl-w"> </span>--wait<span class="hl-w"> </span>--pipe<span class="hl-w"> </span>-q<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'echo "PATH=$PATH"; pwd; echo "HOME=${HOME-unset}"'</span>
+<span class="hl-go">PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin</span>
+<span class="hl-go">/</span>
+<span class="hl-go">HOME=</span>
+</code></pre>
+
+<p>No <code>/opt/reports/tools/bin</code>, and <code>/</code> as the working directory. The search rule of <code>.</code> is easy to
+demonstrate as well — a <code>report.conf</code> found through <code>PATH</code> wins over none at all:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/tmp<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s1">'echo found the one in PATH'</span><span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/report.conf<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nv">PATH</span><span class="hl-o">=</span>/tmp:<span class="hl-nv">$PATH</span><span class="hl-w"> </span>bash<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'. report.conf'</span>
+<span class="hl-go">found the one in PATH</span>
+</code></pre>
+
+<p>Finally, what a missing configuration does to the previous report:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'echo "Disk use per project, yesterday" &gt; /root/old.txt; REPORT_CONF=/nonexistent REPORT_OUT=/root/old.txt /opt/reports/bin/nightly-report 2&gt;&amp;1; echo "exit status: $?"; wc -c /root/old.txt'</span>
+<span class="hl-go">/opt/reports/bin/nightly-report: line 4: /nonexistent: No such file or directory</span>
+<span class="hl-go">report written to /root/old.txt</span>
+<span class="hl-go">exit status: 0</span>
+<span class="hl-go">33 /root/old.txt</span>
+</code></pre>
+
+<p>Yesterday's 32-byte report was replaced by today's header, and the exit status is still 0.</p>
+<p>After the fix — <code>PATH</code> set inside the script, the configuration by absolute default and checked
+before use, the report written to a temporary file and renamed — an empty environment is enough:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-nv">REPORT_OUT</span><span class="hl-o">=</span>/tmp/new.txt<span class="hl-w"> </span>/opt/reports/bin/nightly-report<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit status: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/tmp/new.txt
+<span class="hl-go">report written to /tmp/new.txt</span>
+<span class="hl-go">exit status: 0</span>
+<span class="hl-go">Disk use per project, 2026-09-16</span>
+<span class="hl-go">/srv/projects/alpha                             300 KiB</span>
+<span class="hl-go">/srv/projects/beta                              124 KiB</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'echo "Disk use per project, yesterday" &gt; /root/old.txt; REPORT_CONF=/nonexistent REPORT_OUT=/root/old.txt /opt/reports/bin/nightly-report 2&gt;&amp;1; echo "exit status: $?"; cat /root/old.txt'</span>
+<span class="hl-go">nightly-report: cannot read /nonexistent</span>
+<span class="hl-go">exit status: 1</span>
+<span class="hl-go">Disk use per project, yesterday</span>
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong>Adding the <code>PATH</code> to another start-up file</strong> — <code>/etc/profile</code>, <code>/etc/environment</code>, root's
+<code>.profile</code>. None of them is read by a service. The script still depends on its caller.</li>
+<li><strong>Fixing only the unit.</strong> <code>Environment=PATH=…</code> and <code>WorkingDirectory=/opt/reports</code> make the timer's
+run work, and the next person to run the script from cron, from Ansible or from another directory
+meets the same failure. Setting them in the unit as well is fine; relying on them is not.</li>
+<li><strong><code>cd &quot;$(dirname &quot;$0&quot;)&quot;</code> at the top.</strong> It finds the directory of the script, <code>/opt/reports/bin</code>,
+which is not where the configuration lives, and <code>$0</code> is not reliable when a script is sourced or
+started through a symlink.</li>
+<li><strong>Testing with <code>sudo -i</code>.</strong> An interactive login shell is the one environment the timer never has.
+Test with <code>env -i</code> and <code>systemd-run</code>.</li>
+<li><strong><code>set -e</code> alone.</strong> It stops the script at a failed <code>.</code>, before the report is touched — but a
+failure inside the redirected group, such as a helper that is not found, comes after the report
+has been truncated. The temporary file is what keeps yesterday's report in every case.</li>
+<li><strong>Trusting <code>Result=success</code>.</strong> It reports an exit status. Read the report, or make the script's exit
+status mean something.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># at the top of a script that runs unattended</span>
+<span class="hl-nb">set</span><span class="hl-w"> </span>-euo<span class="hl-w"> </span>pipefail
+<span class="hl-nv">PATH</span><span class="hl-o">=</span>/opt/reports/tools/bin:/usr/sbin:/usr/bin:/sbin:/bin
+<span class="hl-nv">conf</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">REPORT_CONF</span><span class="hl-k">:-</span><span class="hl-p">/opt/reports/report.conf</span><span class="hl-si">}</span>
+<span class="hl-o">[</span><span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$conf</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"cannot read </span><span class="hl-nv">$conf</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+.<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$conf</span><span class="hl-s2">"</span>
+
+<span class="hl-c1"># replace output only on success</span>
+<span class="hl-nv">tmp</span><span class="hl-o">=</span><span class="hl-k">$(</span>mktemp<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$out</span><span class="hl-s2">.XXXXXX"</span><span class="hl-k">)</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">trap</span><span class="hl-w"> </span><span class="hl-s1">'rm -f -- "$tmp"'</span><span class="hl-w"> </span>EXIT
+generate<span class="hl-w"> </span>&gt;<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$tmp</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>mv<span class="hl-w"> </span>-f<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$tmp</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$out</span><span class="hl-s2">"</span>
+
+env<span class="hl-w"> </span>-i<span class="hl-w"> </span>/path/to/script<span class="hl-w">                        </span><span class="hl-c1"># nothing inherited</span>
+sudo<span class="hl-w"> </span>systemd-run<span class="hl-w"> </span>--wait<span class="hl-w"> </span>--pipe<span class="hl-w"> </span>-q<span class="hl-w"> </span>cmd<span class="hl-w">         </span><span class="hl-c1"># exactly what a service gets</span>
+systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>unit<span class="hl-w"> </span>-p<span class="hl-w"> </span>Result<span class="hl-w"> </span>-p<span class="hl-w"> </span>ExecMainStatus
+sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>unit<span class="hl-w"> </span>-b<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w">             </span><span class="hl-c1"># what the run printed</span>
+</code></pre>
+
+<p>In a unit, when it has to: <code>Environment=</code>, <code>EnvironmentFile=</code>, <code>WorkingDirectory=</code>, <code>User=</code>.</p>
+<h2 id="going-deeper">Going deeper</h2>
+<ul>
+<li><code>man 1 bash</code>, <em>INVOCATION</em>, for exactly which files each kind of shell reads.</li>
+<li><code>man 5 systemd.exec</code>, <em>Environment variables in spawned processes</em> and <code>WorkingDirectory=</code>.</li>
+<li><code>man 1 env</code> and <code>man 1 systemd-run</code>, for reproducing an unattended environment by hand.</li>
+<li>The monitoring journal, <a href="../../journals/monitoring/#a-check-is-an-exit-status">a check is an exit status</a>.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Which of root's start-up files does a service started by systemd read?</p>
+<blockquote>
+<p>None. systemd starts the process directly, with its own environment; <code>.bashrc</code>, <code>.profile</code> and
+<code>/etc/environment</code> belong to shells and logins.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did the report work in <code>sudo bash -ic</code> but not in <code>sudo bash -c</code>?</p>
+<blockquote>
+<p>Only the interactive shell reads <code>.bashrc</code>, and Ubuntu's <code>.bashrc</code> returns early in a
+non-interactive shell, before the lines that extend <code>PATH</code> and change directory.</p>
+</blockquote>
+</li>
+<li>
+<p>What is a service's working directory unless the unit says otherwise?</p>
+<blockquote>
+<p>The root directory, <code>/</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Where does <code>. report.conf</code> look for the file?</p>
+<blockquote>
+<p>In the directories of <code>PATH</code> first, then (outside POSIX mode) in the current directory.</p>
+</blockquote>
+</li>
+<li>
+<p>Why was yesterday's report emptied even though the run failed?</p>
+<blockquote>
+<p>The output redirection truncates the file before the commands that fill it run; writing to a
+temporary file and renaming it on success keeps the old one.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you run a command with exactly the environment a systemd service would have?</p>
+<blockquote>
+<p><code>systemd-run --wait --pipe</code> runs it as a transient service; <code>env -i</code> gives the empty-environment
+extreme from any shell.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

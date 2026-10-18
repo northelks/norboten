@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theory question spec · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/docs/quiz-spec/"><meta property="og:title" content="Theory question spec · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/docs/quiz-spec/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Theory question spec · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" aria-current="page">Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      <div class="group">Getting started</div>
+      <a href="../../docs/getting-started/"
+>Install and first lab</a>
+      <a href="../../docs/tui-reference/"
+>TUI reference</a>
+      <a href="../../docs/faq/"
+>FAQ</a>
+      <div class="group">Contributing labs</div>
+      <a href="../../docs/writing-a-lab/"
+>Writing a lab</a>
+      <a href="../../docs/lab-spec/"
+>Lab specification</a>
+      <a href="../../docs/quiz-spec/"
+aria-current="page">Theory question spec</a>
+      <a href="../../docs/claude-code-plugin/"
+>The Claude Code plugin</a>
+      <div class="group">How it is built</div>
+      <a href="../../docs/architecture/"
+>Architecture</a>
+      <a href="../../docs/rated-labs/"
+>Rated and unrated labs</a>
+      <a href="../../docs/claude-code-in-norboten/"
+>How Norboten uses Claude</a>
+      <a href="../../docs/mcp/"
+>The MCP server</a>
+      <a href="../../docs/data-model/"
+>Data model</a>
+      <a href="../../docs/api-reference/"
+>API reference</a>
+      <a href="../../docs/pipelines/"
+>Pipelines</a>
+      <a href="../../docs/open-questions/"
+>Open questions</a>
+      <div class="group">Running it yourself</div>
+      <a href="../../docs/self-hosting/"
+>Self-hosting and configuration</a>
+      <a href="../../docs/deploy/"
+>Deploying the server</a>
+      <a href="../../docs/ci-cd/"
+>CI/CD</a>
+      <a href="../../docs/releasing/"
+>Releasing</a>
+    </nav>
+    <article class="prose">
+      <h1 id="theory-question-specification">Theory question specification</h1>
+<p><strong>Status: normative.</strong> The TUI, the question-bank linter and the drafting pipeline
+(<code>cli/src/norboten/questions/</code>) all implement this document. Machine-readable form:
+<code>cli/src/norboten/models.py</code> (<code>QuestionBank</code>, <code>Question</code>); <code>make schema</code> exports
+<code>docs/schema/quiz.schema.json</code>.</p>
+<p>Theory is a separate way to practise. It <strong>never</strong> affects a lab's grade — labs are graded only
+against machine state.</p>
+<hr />
+<h2 id="1-where-questions-live">1. Where questions live</h2>
+<table>
+<thead>
+<tr>
+<th>Location</th>
+<th>Shown as</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>quizzes/&lt;topic&gt;.yaml</code></td>
+<td>a topic in the TUI's <strong>Theory</strong> section (Linux, networking, Bash, Python, Ansible, Terraform, Claude Code, Ollama, memory &amp; CS)</td>
+</tr>
+<tr>
+<td><code>labs/&lt;track&gt;/&lt;lab&gt;/theory.yaml</code></td>
+<td>the lab's <strong>Theory</strong> tab</td>
+</tr>
+<tr>
+<td><code>~/.norboten/quizzes/&lt;topic&gt;-yours.yaml</code></td>
+<td>a learner's own practice bank, drafted with <code>g</code> (section 5)</td>
+</tr>
+<tr>
+<td><code>rated/quizzes/&lt;topic&gt;.yaml</code></td>
+<td>a <strong>rated</strong> bank, in the private repository; served only by the API (section 6)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-a-question-bank">2. A question bank</h2>
+<pre class="hl"><code class="language-yaml"><span class="hl-nt">schema_version</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">1</span>
+<span class="hl-nt">topic</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">networking</span><span class="hl-w">                </span><span class="hl-c1"># slug; for a lab's theory.yaml, the lab id</span>
+<span class="hl-nt">topics</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-nv">networking</span><span class="hl-p hl-p-Indicator">,</span><span class="hl-w"> </span><span class="hl-nv">firewall-selinux</span><span class="hl-p hl-p-Indicator">]</span><span class="hl-w">   </span><span class="hl-c1"># taxonomy slugs (lab-spec §12); questions inherit them</span>
+<span class="hl-nt">title</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Networking</span>
+<span class="hl-nt">description</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Addresses, routes, sockets and name resolution, from a Linux shell.</span>
+<span class="hl-nt">questions</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">id</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">net-004</span><span class="hl-w">                  </span><span class="hl-c1"># &lt;prefix&gt;-NNN, unique across every bank in the repo</span>
+<span class="hl-w">    </span><span class="hl-nt">type</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">single</span><span class="hl-w">                 </span><span class="hl-c1"># single | multiple</span>
+<span class="hl-w">    </span><span class="hl-nt">difficulty</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">2</span><span class="hl-w">                </span><span class="hl-c1"># 1-5</span>
+<span class="hl-w">    </span><span class="hl-nt">prompt</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Which command shows listening TCP sockets together with the owning process?</span>
+<span class="hl-w">    </span><span class="hl-nt">choices</span><span class="hl-p">:</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">{</span><span class="hl-nt">id</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">a</span><span class="hl-p hl-p-Indicator">,</span><span class="hl-nt"> text</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"ss</span><span class="hl-nv"> </span><span class="hl-s">-tlnp"</span><span class="hl-p hl-p-Indicator">}</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">{</span><span class="hl-nt">id</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">b</span><span class="hl-p hl-p-Indicator">,</span><span class="hl-nt"> text</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"ip</span><span class="hl-nv"> </span><span class="hl-s">route</span><span class="hl-nv"> </span><span class="hl-s">show"</span><span class="hl-p hl-p-Indicator">}</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">{</span><span class="hl-nt">id</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">c</span><span class="hl-p hl-p-Indicator">,</span><span class="hl-nt"> text</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"netstat</span><span class="hl-nv"> </span><span class="hl-s">-r"</span><span class="hl-p hl-p-Indicator">}</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">{</span><span class="hl-nt">id</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">d</span><span class="hl-p hl-p-Indicator">,</span><span class="hl-nt"> text</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"arp</span><span class="hl-nv"> </span><span class="hl-s">-n"</span><span class="hl-p hl-p-Indicator">}</span>
+<span class="hl-w">    </span><span class="hl-nt">answer</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-nv">a</span><span class="hl-p hl-p-Indicator">]</span>
+<span class="hl-w">    </span><span class="hl-nt">explanation</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">&gt;-</span>
+<span class="hl-w">      </span><span class="hl-no">ss -t selects TCP, -l listening sockets, -n skips name resolution, -p shows the process.</span>
+<span class="hl-w">      </span><span class="hl-no">ip route and netstat -r print the routing table; arp -n the neighbour cache.</span>
+<span class="hl-w">    </span><span class="hl-nt">references</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-s">"man</span><span class="hl-nv"> </span><span class="hl-s">8</span><span class="hl-nv"> </span><span class="hl-s">ss"</span><span class="hl-p hl-p-Indicator">]</span>
+<span class="hl-w">    </span><span class="hl-nt">tags</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-nv">sockets</span><span class="hl-p hl-p-Indicator">]</span>
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>^[a-z0-9]+-\d{3}$</code>, unique across all banks.</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><code>single</code>: exactly one correct choice. <code>multiple</code>: one or more; the learner must select exactly the correct set.</td>
+</tr>
+<tr>
+<td><code>difficulty</code></td>
+<td>1–5. Also sets the clock a rated question runs against (section 3).</td>
+</tr>
+<tr>
+<td><code>topics</code></td>
+<td>Optional. Taxonomy slugs; narrows the bank's <code>topics</code> for this one question.</td>
+</tr>
+<tr>
+<td><code>prompt</code></td>
+<td>10–600 characters. A question, not a trick.</td>
+</tr>
+<tr>
+<td><code>code</code></td>
+<td>Optional snippet shown under the prompt, with <code>code_lang</code> (<code>bash</code>, <code>python</code>, <code>hcl</code>, <code>yaml</code>, <code>json</code>, <code>text</code>).</td>
+</tr>
+<tr>
+<td><code>choices</code></td>
+<td>3–6, ids <code>a</code>–<code>f</code> in order, texts unique. No &quot;all of the above&quot;, &quot;none of the above&quot;, &quot;both a and b&quot;. The right answer's position is spread across the bank, not always first.</td>
+</tr>
+<tr>
+<td><code>answer</code></td>
+<td>Choice ids; consistent with <code>type</code>.</td>
+</tr>
+<tr>
+<td><code>explanation</code></td>
+<td>≥ 30 characters. Why the answer is right <strong>and</strong> why the tempting wrong ones are wrong — naming a choice by what it says, never by its letter, because the TUI shows the choices in a random order.</td>
+</tr>
+<tr>
+<td><code>references</code></td>
+<td>≥ 1: a man page (<code>man 8 ss</code>) or an official documentation URL.</td>
+</tr>
+<tr>
+<td><code>verify</code></td>
+<td>Optional. See section 4. Required for generated questions about program output.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-grading-in-the-tui">3. Grading in the TUI</h2>
+<ul>
+<li>A run shows the questions, and each question's choices, in a random order.</li>
+<li>A single-choice question is right when the chosen id is the answer.</li>
+<li>A multiple-choice question is right only when the selected set equals the answer set — no
+partial credit, as in the exams this prepares for.</li>
+<li>After every answer the TUI shows the explanation and the references, right or wrong.</li>
+<li>Results are kept per topic in <code>~/.norboten/progress.json</code>: answered, correct, best streak.</li>
+</ul>
+<p><strong>Rated questions run against a clock</strong>, derived from the difficulty — a question you have to
+think about is not a question you have to look up:</p>
+<table>
+<thead>
+<tr>
+<th>difficulty</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>seconds</td>
+<td>15</td>
+<td>15</td>
+<td>20</td>
+<td>25</td>
+<td>30</td>
+</tr>
+</tbody>
+</table>
+<p>A question carrying a <code>code</code> snippet gets 10 seconds more, because it has to be read before it can
+be answered. When the clock runs out the question is recorded as wrong with nothing selected, and a
+correct answer that arrives late does not count either.</p>
+<p>Only a <strong>rated bank</strong> (section 6) is rated. On an unrated bank the same clock is there as a timed
+run, at exam pace, and the run is recorded on the profile without moving a rating — the bank's
+answers are public. Untimed runs are not sent at all. Theory keeps results only — no command logs,
+nothing to replay.</p>
+<hr />
+<h2 id="4-executable-verification">4. Executable verification</h2>
+<p>A question about what a snippet does carries the snippet in <code>verify</code>:</p>
+<pre class="hl"><code class="language-yaml"><span class="hl-w">    </span><span class="hl-nt">code</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">|</span>
+<span class="hl-w">      </span><span class="hl-no">x=5; x+=1; echo "$x"</span>
+<span class="hl-w">    </span><span class="hl-nt">code_lang</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">bash</span>
+<span class="hl-w">    </span><span class="hl-nt">verify</span><span class="hl-p">:</span>
+<span class="hl-w">      </span><span class="hl-nt">runtime</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">bash</span><span class="hl-w">              </span><span class="hl-c1"># bash | python</span>
+<span class="hl-w">      </span><span class="hl-nt">code</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">|</span>
+<span class="hl-w">        </span><span class="hl-no">x=5; x+=1; echo "$x"</span>
+<span class="hl-w">      </span><span class="hl-nt">expect</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">output_is_answer</span><span class="hl-w">   </span><span class="hl-c1"># the snippet's stdout, stripped, equals the correct choice's text</span>
+</code></pre>
+
+<p><code>norboten dev verify-quiz</code> runs every <code>verify</code> block in a throwaway container
+(<code>--network none</code>, read-only root, 10 s limit) and fails if the output does not match the key.
+It runs in CI for every bank, and in the drafting pipeline for every drafted question.</p>
+<hr />
+<h2 id="5-drafted-questions">5. Drafted questions</h2>
+<p>Questions are drafted by models and kept only after a pipeline that runs where they are drafted —
+never on the server, which neither generates nor stores questions. A draft survives only if it:</p>
+<ol>
+<li>validates against this spec;</li>
+<li>is answered <strong>identically to the key</strong> by at least two other models that never saw the key;</li>
+<li>passes a critic review (no factual error, no ambiguity, no second defensible answer);</li>
+<li>passes its <code>verify</code> block, when it has one;</li>
+<li>is not a near-duplicate of a question already in a bank or a draft (a text similarity of
+0.85 or more, <code>difflib</code>, on the prompt).</li>
+</ol>
+<p>It keeps its provenance — generator, verifiers and their answers, execution result, date.</p>
+<p><strong>A published bank</strong> is filled on a maintainer's machine, and published with the repository:</p>
+<pre class="hl"><code class="language-sh">uv<span class="hl-w"> </span>run<span class="hl-w"> </span>norboten<span class="hl-w"> </span>dev<span class="hl-w"> </span>draft-questions<span class="hl-w"> </span>networking<span class="hl-w"> </span>--count<span class="hl-w"> </span><span class="hl-m">5</span><span class="hl-w"> </span>--about<span class="hl-w"> </span><span class="hl-s2">"firewalld zones"</span>
+</code></pre>
+
+<p>By default every model is reached through the local Claude Code, headless and on a subscription
+(<code>claude-code/opus</code> writes, <code>claude-code/sonnet</code> and <code>claude-code/haiku</code> answer blind, Sonnet
+reviews), so no API key is needed; each run gets no tools and an empty working directory. Models
+of one family share blind spots, so where keys exist a mixed set (<code>--verifiers claude-code/sonnet,gpt-5-codex</code>) is the stronger check. What passes lands in
+<code>quizzes/_drafts/&lt;topic&gt;.yaml</code> with its provenance — never in a bank: a person reads each draft,
+moves the good ones in, and <code>norboten dev verify-quiz</code> runs again. The
+<code>/norboten-author:new-questions</code> skill of the Claude Code plugin walks through exactly this.</p>
+<p><strong>A learner's own bank</strong> comes from <code>g</code> on a Theory bank (docs/tui-reference.md): the same
+pipeline, with Claude Code on the learner's subscription when <code>claude</code> is installed, otherwise
+their exported <code>ANTHROPIC_API_KEY</code>, <code>OPENAI_API_KEY</code> or <code>GEMINI_API_KEY</code> — a writer and two other
+models are required. A question with a snippet is dropped when Docker cannot run it. Survivors go to
+<code>~/.norboten/quizzes/&lt;topic&gt;-yours.yaml</code> (all attempts, with provenance, in
+<code>~/.norboten/quizzes/_drafts/</code>). Nobody else has reviewed them, so such a bank is practice only:
+never rated, never sent to the server.</p>
+<hr />
+<h2 id="6-rated-banks">6. Rated banks</h2>
+<p>A rated bank has exactly the shape of section 2 and lives in the private repository
+(<code>rated/quizzes/&lt;topic&gt;.yaml</code>, docs/rated-labs.md). Nothing about it reaches a learner's disk: the
+server serves a run one question at a time and grades every answer itself.</p>
+<pre><code>POST /rated/quiz/sessions {topic}           → up to 10 of the bank's questions, shuffled; the first,
+                                               without answer, explanation or references
+POST /rated/quiz/sessions/{id}/answers      → right or wrong, the answer, the explanation, the
+       {question_id, selected}                references; the last one closes and rates the run
+POST /rated/quiz/sessions/{id}/next         → the next question; its clock starts now
+</code></pre>
+<ul>
+<li><strong>The clock is the server's.</strong> A question is timed from the moment it was served, against
+section 3's seconds plus two for the round trip. An answer after that is wrong, and an empty
+selection is how a client says its own clock ran out. Asking for the next question is separate
+from answering, so reading an explanation costs no time.</li>
+<li><strong>A run is one game</strong>, as in section 3: the bank's topics, the mean difficulty of the questions
+served, won at 70%. Every question served counts, answered or not — starting another run closes
+this one on what it had, and a run left for an hour expires the same way.</li>
+<li>A learner's own banks and the published banks under <code>quizzes/</code> are never rated.</li>
+</ul>
+
+    </article>
+    <div class="toc">
+<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>      <a class="h2" href="#1-where-questions-live">1. Where questions live</a>
+      <a class="h2" href="#2-a-question-bank">2. A question bank</a>
+      <a class="h2" href="#3-grading-in-the-tui">3. Grading in the TUI</a>
+      <a class="h2" href="#4-executable-verification">4. Executable verification</a>
+      <a class="h2" href="#5-drafted-questions">5. Drafted questions</a>
+      <a class="h2" href="#6-rated-banks">6. Rated banks</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("../../search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+</body>
+</html>

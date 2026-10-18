@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deploying the server · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/docs/deploy/"><meta property="og:title" content="Deploying the server · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/docs/deploy/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Deploying the server · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" aria-current="page">Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      <div class="group">Getting started</div>
+      <a href="../../docs/getting-started/"
+>Install and first lab</a>
+      <a href="../../docs/tui-reference/"
+>TUI reference</a>
+      <a href="../../docs/faq/"
+>FAQ</a>
+      <div class="group">Contributing labs</div>
+      <a href="../../docs/writing-a-lab/"
+>Writing a lab</a>
+      <a href="../../docs/lab-spec/"
+>Lab specification</a>
+      <a href="../../docs/quiz-spec/"
+>Theory question spec</a>
+      <a href="../../docs/claude-code-plugin/"
+>The Claude Code plugin</a>
+      <div class="group">How it is built</div>
+      <a href="../../docs/architecture/"
+>Architecture</a>
+      <a href="../../docs/rated-labs/"
+>Rated and unrated labs</a>
+      <a href="../../docs/claude-code-in-norboten/"
+>How Norboten uses Claude</a>
+      <a href="../../docs/mcp/"
+>The MCP server</a>
+      <a href="../../docs/data-model/"
+>Data model</a>
+      <a href="../../docs/api-reference/"
+>API reference</a>
+      <a href="../../docs/pipelines/"
+>Pipelines</a>
+      <a href="../../docs/open-questions/"
+>Open questions</a>
+      <div class="group">Running it yourself</div>
+      <a href="../../docs/self-hosting/"
+>Self-hosting and configuration</a>
+      <a href="../../docs/deploy/"
+aria-current="page">Deploying the server</a>
+      <a href="../../docs/ci-cd/"
+>CI/CD</a>
+      <a href="../../docs/releasing/"
+>Releasing</a>
+    </nav>
+    <article class="prose">
+      <h1 id="deploying-the-server">Deploying the server</h1>
+<p>Everything Norboten runs on the internet — the API, the database, Redis, the consultant's model,
+monitoring and the site — lives on <strong>one machine</strong> and starts with one command. This page is
+the whole procedure, from an empty account to a server that deploys itself on every push.</p>
+<p>Labs never run on the server. They run on each learner's own machine, under QEMU with hardware
+acceleration; the server only holds accounts, ratings, recordings and the site.</p>
+<h2 id="what-you-need">What you need</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A server</td>
+<td>Ubuntu 26.04 LTS (24.04 works too), 2 vCPU, 4 GB RAM, 40 GB disk, public IPv4 and IPv6. The smallest rehearsed is 1 vCPU, 2 GB, 20 GB (below). The project runs on a netcup VPS; any VPS or bare-metal box with Ubuntu and root SSH works the same way. Check netcup's current offers for a plan and its price.</td>
+</tr>
+<tr>
+<td>A domain</td>
+<td>Three names point at the server: the apex, <code>api.</code> and <code>status.</code> (plus <code>www.</code>, which redirects).</td>
+</tr>
+<tr>
+<td>On your machine</td>
+<td>An SSH key. Only for the laptop route: <code>ansible-core</code> ≥ 2.19 and <code>ansible-galaxy collection install -r ansible/requirements.yml</code>.</td>
+</tr>
+<tr>
+<td>Optional</td>
+<td>A restic repository for off-box backups. No model key: the server uses its own Ollama only.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-stack">The stack</h2>
+<p><code>deploy/compose.yaml</code> is the source of truth. The same file runs on the server and, with
+<code>compose.local.yaml</code>, on a laptop.</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Image</th>
+<th>Job</th>
+<th>Reachable at</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>caddy</td>
+<td><code>caddy:2.10-alpine</code></td>
+<td>TLS (Let's Encrypt, automatic, HTTP/3) · the static site · reverse proxy</td>
+<td><code>:80</code>, <code>:443</code></td>
+</tr>
+<tr>
+<td>api</td>
+<td><code>ghcr.io/&lt;owner&gt;/norboten-api:&lt;commit&gt;</code></td>
+<td>FastAPI, 2 uvicorn workers</td>
+<td><code>api.&lt;domain&gt;</code></td>
+</tr>
+<tr>
+<td>postgres</td>
+<td><code>postgres:17-alpine</code></td>
+<td>the database <code>norboten</code> (every table, <code>api/src/norboten_api/db.py</code>)</td>
+<td>compose network only</td>
+</tr>
+<tr>
+<td>redis</td>
+<td><code>redis:7.4-alpine</code></td>
+<td>live frames, rate limits, the board cache; no persistence</td>
+<td>compose network only</td>
+</tr>
+<tr>
+<td>ollama</td>
+<td><code>norboten-ollama:v0.34.0-cpu</code>, built on the server by <code>ollama/Dockerfile</code>: the official release without its GPU libraries, under 200 MB on disk instead of 9 GB</td>
+<td>the consultant's local model, capped at 1 GB, one request and one model at a time, and the first process killed when memory runs out; <code>ollama-pull</code> fetches it once</td>
+<td>compose network only</td>
+</tr>
+<tr>
+<td>prometheus</td>
+<td><code>prom/prometheus:v3.5.0</code></td>
+<td>scrapes the API, the host and Postgres; 30 days</td>
+<td>compose network only</td>
+</tr>
+<tr>
+<td>node-exporter, postgres-exporter</td>
+<td></td>
+<td>host and database metrics</td>
+<td>compose network only</td>
+</tr>
+<tr>
+<td>grafana</td>
+<td><code>grafana/grafana:12.1.0</code></td>
+<td>dashboards over Prometheus and Postgres, behind a login</td>
+<td><code>status.&lt;domain&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Only Caddy publishes ports. <code>/metrics</code> on the API returns 404 through Caddy and is read by
+Prometheus on the compose network. Server-sent events pass through Caddy unbuffered
+(<code>flush_interval -1</code>).</p>
+<h3 id="memory-and-what-fails-first">Memory, and what fails first</h3>
+<p>Ollama is the one part allowed to fail. It is limited to 1 GB without swap, and it carries
+<code>oom_score_adj</code> 1000, so when the machine runs out of memory the kernel kills it first; PostgreSQL
+(-900), Caddy (-800), the API and Redis (-500) come last. It restarts on its own, and while it is
+down the consultant answers with the matching passages instead of a model's reply.</p>
+<p>Measured with <code>CPUS=1 MEMORY=2GiB DISK=20GiB make server-rehearsal</code> (arm64, 2026-09-17):</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idle, the model not loaded</td>
+<td>992 MiB of 1,949 available; the API 232 MiB (two workers), Grafana 160, Ollama 36</td>
+</tr>
+<tr>
+<td>the model loaded (<code>qwen2.5:0.5b</code>)</td>
+<td>Ollama 712 MiB of its 1 GiB; 287 MiB available</td>
+</tr>
+<tr>
+<td>the nightly backup, the model loaded</td>
+<td>at least 307 MiB available</td>
+</tr>
+<tr>
+<td>a consultant answer on one vCPU</td>
+<td>19–23 s</td>
+</tr>
+<tr>
+<td>a host process taking memory until the kernel acts</td>
+<td>Ollama's model runner and Ollama killed, then the process itself; Ollama restarted once, nothing else restarted, <code>/readyz</code> ready, the site 200, the next answer 18 s</td>
+</tr>
+<tr>
+<td>disk after the install</td>
+<td>14 of 19 GB used: the images take 10.6 GB, Ollama's 7 GB of it</td>
+</tr>
+</tbody>
+</table>
+<p>On 20 GB, updating Ollama's image needs the old one removed first.</p>
+<h2 id="create-the-server">Create the server</h2>
+<p>netcup has no official Terraform provider, and the community ones manage a server that already
+exists rather than order one, so the machine is ordered by hand; everything after the first login is
+the repository's Ansible, run either <strong>on the server by the installer</strong> or from a laptop.</p>
+<ol>
+<li><strong>Order a VPS</strong> in the netcup Customer Control Panel (CCP) and open it in the Server Control
+Panel (SCP). Under <em>Media → Images</em>, install <strong>Ubuntu 26.04 LTS</strong> with your SSH public key; note
+the IPv4 and IPv6 addresses.</li>
+<li><strong>DNS.</strong> Point <code>@</code>, <code>www</code>, <code>api</code> and <code>status</code> at the server with A and AAAA records — in the
+CCP's DNS management if the domain is registered at netcup, otherwise at its registrar. A CAA
+record for <code>letsencrypt.org</code> is optional. Caddy cannot get certificates until the names resolve,
+so give them a few minutes before installing.</li>
+</ol>
+<h2 id="install-with-one-command-on-the-server">Install with one command, on the server</h2>
+<pre class="hl"><code class="language-sh">ssh<span class="hl-w"> </span>root@&lt;server&gt;
+git<span class="hl-w"> </span>clone<span class="hl-w"> </span>https://github.com/northelks/norboten.git<span class="hl-w"> </span>/opt/norboten-src
+python3<span class="hl-w"> </span>/opt/norboten-src/deploy/install-server.py<span class="hl-w"> </span>--domain<span class="hl-w"> </span>&lt;domain&gt;<span class="hl-w"> </span>--email<span class="hl-w"> </span>&lt;you@domain&gt;<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>--github-client-id<span class="hl-w"> </span>&lt;id&gt;<span class="hl-w"> </span>--github-client-secret<span class="hl-w"> </span>&lt;secret&gt;
+</code></pre>
+
+<p><strong>The GitHub OAuth App is not optional.</strong> Signing in is GitHub and nothing else, so a server without
+one comes up and works — and nobody can sign in to it. Create it first (below, &quot;Signing in&quot;). Without
+<code>--github-client-id</code> the installer finishes and says so; run it again with both flags once the app
+exists — everything else it keeps. Discord is optional: <code>--discord-client-id</code>,
+<code>--discord-client-secret</code>, <code>--discord-bot-token</code> and <code>--discord-guild-id</code> turn on linking and the
+weekly digest.</p>
+<p><code>deploy/install-server.py</code> needs nothing but Python, which Ubuntu has. It:</p>
+<ol>
+<li>checks the machine (Ubuntu LTS, root, memory, disk) and that every name resolves to it, and asks
+before going on if one does not;</li>
+<li>installs Ansible into its own virtualenv, <code>/opt/norboten-installer</code>;</li>
+<li>runs <code>ansible/playbooks/bootstrap.yml</code> on the server itself: the <code>deploy</code> user with every key
+root already accepts, a new key for GitHub Actions (<code>/root/norboten-ci/deploy_ed25519</code>), and
+passwordless sudo;</li>
+<li>runs <code>ansible/playbooks/server.yml</code> the same way (next section);</li>
+<li>pulls <code>ghcr.io/northelks/norboten-api:latest</code>, or builds the image from the clone when nothing
+has been published yet;</li>
+<li>brings the stack up with <code>deploy.sh</code>, which rolls back if the API never turns ready;</li>
+<li>builds the site from the clone into <code>/opt/norboten/site</code>;</li>
+<li>prints the addresses and exactly what to put into GitHub for deploys on push.</li>
+</ol>
+<p>The PostgreSQL and Grafana passwords are generated on the first run and kept in
+<code>/etc/norboten/install.json</code> (root only); running the installer again keeps them. Everything it runs
+is logged to <code>/var/log/norboten-install.log</code>. <code>--dry-run</code> prints the commands without running them,
+<code>--no-site</code> skips the site, <code>--build-api</code> builds the image even if one could be pulled.</p>
+<p>Before closing the root session, check from a second terminal that <code>ssh deploy@&lt;server&gt;</code> works:
+root and password logins are off from then on.</p>
+<h2 id="or-from-a-laptop">Or from a laptop</h2>
+<p>The same playbooks, over SSH:</p>
+<pre class="hl"><code class="language-sh">cp<span class="hl-w"> </span>ansible/inventory/production.yml.example<span class="hl-w"> </span>ansible/inventory/production.yml<span class="hl-w">   </span><span class="hl-c1"># address, domain, e-mail</span>
+make<span class="hl-w"> </span>bootstrap<span class="hl-w">                      </span><span class="hl-c1"># as root, once; KEY=path/to/key.pub for another key</span>
+<span class="hl-nb">cd</span><span class="hl-w"> </span>ansible
+cp<span class="hl-w"> </span>group_vars/all/vault.yml.example<span class="hl-w"> </span>group_vars/all/vault.yml
+<span class="hl-nv">$EDITOR</span><span class="hl-w"> </span>group_vars/all/vault.yml<span class="hl-w">    </span><span class="hl-c1"># openssl rand -base64 32 for each password</span>
+ansible-vault<span class="hl-w"> </span>encrypt<span class="hl-w"> </span>group_vars/all/vault.yml
+ansible-playbook<span class="hl-w"> </span>-i<span class="hl-w"> </span>inventory/production.yml<span class="hl-w"> </span>playbooks/server.yml<span class="hl-w"> </span>--ask-vault-pass<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">  </span>-e<span class="hl-w"> </span><span class="hl-nv">norboten_api_tag</span><span class="hl-o">=</span>latest
+</code></pre>
+
+<h2 id="what-the-playbooks-set-up">What the playbooks set up</h2>
+<p><code>server_base</code> hardens the host — no root or password SSH, <code>ufw</code> with only 22/tcp, 80/tcp, 443/tcp and
+443/udp open, fail2ban, unattended security upgrades — and installs Docker Engine and the compose
+plugin from Ubuntu's own archive. <code>norboten_stack</code> copies <code>deploy/</code> to <code>/opt/norboten</code>, writes
+<code>/opt/norboten/.env</code> (mode 0600), runs <code>deploy.sh</code>, and installs the nightly backup and analytics
+timers. The first run pulls about 3 GB of images; Ollama then downloads its model in the background.
+Backups are the nightly database dumps below, copied off the machine by restic when a target is set;
+netcup's own snapshots, taken in the SCP, are an optional extra.</p>
+<p>Check it:</p>
+<pre class="hl"><code class="language-sh">curl<span class="hl-w"> </span>https://api.&lt;domain&gt;/readyz<span class="hl-w">      </span><span class="hl-c1"># {"status":"ready","checks":{"database":"ok","redis":"ok"}}</span>
+curl<span class="hl-w"> </span>-I<span class="hl-w"> </span>https://&lt;domain&gt;/
+ssh<span class="hl-w"> </span>deploy@&lt;server&gt;<span class="hl-w"> </span><span class="hl-s1">'cd /opt/norboten &amp;&amp; sudo docker compose ps'</span>
+</code></pre>
+
+<h2 id="signing-in-discord-announcements-and-the-digest">Signing in, Discord, announcements and the digest</h2>
+<h3 id="signing-in-the-github-oauth-app">Signing in: the GitHub OAuth App</h3>
+<p>GitHub → Settings → Developer settings → OAuth Apps → <strong>New OAuth App</strong>:</p>
+<ul>
+<li>Homepage URL <code>https://&lt;domain&gt;</code>, Authorization callback URL <code>https://api.&lt;domain&gt;/auth/github/callback</code>
+— an OAuth App has exactly one callback, so a laptop stack needs a second app (&quot;Norboten (local)&quot;,
+callback <code>http://localhost:8000/auth/github/callback</code>);</li>
+<li>tick <strong>Enable Device Flow</strong>: the terminal signs in with it;</li>
+<li>no scopes are requested, ever; generate a client secret.</li>
+</ul>
+<p>Put the client id and secret in the vault as <code>norboten_github_client_id</code> and
+<code>norboten_github_client_secret</code> (or pass them to the installer), then re-run <code>server.yml</code>. Secrets go
+into the vault or to the installer, never into a chat or a commit.</p>
+<h3 id="discord-linking-and-the-digest-optional">Discord: linking and the digest (optional)</h3>
+<p>Discord Developer Portal → <strong>New Application</strong>:</p>
+<ul>
+<li>OAuth2 → Redirects: <code>https://api.&lt;domain&gt;/auth/discord/callback</code> (and
+<code>http://localhost:8000/auth/discord/callback</code> for a laptop);</li>
+<li>Bot → reset and copy the token; no privileged intents are needed — the bot never connects to the
+gateway, it only sends direct messages over REST;</li>
+<li>OAuth2 → URL Generator, scope <code>bot</code>, permissions <strong>Create Instant Invite</strong> and <strong>Send Messages</strong>:
+open the URL and add the bot to the Norboten server;</li>
+<li>the server's id (Developer Mode on, right-click the server, Copy Server ID).</li>
+</ul>
+<p>Vault: <code>norboten_discord_client_id</code>, <code>norboten_discord_client_secret</code>, <code>norboten_discord_bot_token</code>,
+<code>norboten_discord_guild_id</code>; re-run <code>server.yml</code>. The account page then offers <strong>Connect Discord</strong>
+(with &quot;join the Norboten server&quot;, off by default), and the Sunday digest timer turns itself on.</p>
+<h3 id="announcements-and-donations">Announcements and donations</h3>
+<p>These are built in and off until they have somewhere to send to:</p>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>Where it is set</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Telegram: a live session going public</td>
+<td><code>norboten_telegram_bot_token</code>, <code>norboten_telegram_chat</code> (Ansible vault), re-run <code>server.yml</code></td>
+</tr>
+<tr>
+<td>The Sunday learner digest</td>
+<td>nothing more: the timer turns itself on once <code>norboten_discord_bot_token</code> is set</td>
+</tr>
+<tr>
+<td>Discord and Telegram release announcements</td>
+<td>GitHub secrets <code>DISCORD_WEBHOOK</code>, <code>TELEGRAM_BOT_TOKEN</code> and variable <code>TELEGRAM_CHAT</code></td>
+</tr>
+<tr>
+<td>Donations on the site</td>
+<td><code>norboten_stripe_secret_key</code> (Ansible vault), re-run <code>server.yml</code>. Without it the donate page says card donations are off on this deployment and shows the other ways to help; nothing else on the site changes</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Donations.</strong> The API creates one Stripe Checkout Session per click (<code>POST /donations/checkout</code>)
+with an inline price, so no product or price has to exist in the Stripe account, and the donor
+finishes on Stripe's own page: no card detail ever reaches this server, and nothing about a
+donation is stored here. The tiles are €5, €10, €15, €20, €25 and €50, monthly or one-off, and a
+free amount between €2 and €5000; <code>site/build.py</code> (<code>DONATION_TIERS</code>) and
+<code>api/src/norboten_api/routers/donate.py</code> (<code>TIERS</code>) have to agree. Rehearse with an <code>sk_test_…</code> key
+and Stripe's test cards before putting the live one in the vault.</p>
+<h2 id="deploy-on-every-push">Deploy on every push</h2>
+<p><code>.github/workflows/deploy.yml</code> does, on each push to <code>main</code>:</p>
+<ol>
+<li><strong>test</strong> — ruff, the whole pytest suite with PostgreSQL and Redis as service containers, and
+the node checks for the terminal player and the consultant's fallback;</li>
+<li><strong>image</strong> — builds <code>api/Dockerfile</code> for amd64 and arm64 and pushes
+<code>ghcr.io/&lt;owner&gt;/norboten-api:&lt;commit&gt;</code> and <code>:latest</code>;</li>
+<li><strong>site</strong> — generates the sample population and builds <code>site/dist</code> against <code>https://api.&lt;domain&gt;</code>;</li>
+<li><strong>rollout</strong> — rsyncs <code>deploy/</code> and <code>site/dist</code> to the server over SSH, runs
+<code>sudo /opt/norboten/deploy.sh &lt;commit&gt;</code>, and checks <code>/readyz</code> and the site from outside.</li>
+</ol>
+<p>It needs, in the repository's settings:</p>
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Name</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>variable</td>
+<td><code>SERVER_HOST</code></td>
+<td>the server's address; without it the rollout job is skipped</td>
+</tr>
+<tr>
+<td>variable</td>
+<td><code>SERVER_HOST_KEY</code></td>
+<td><code>ssh-keyscan -t ed25519 &lt;server&gt;</code> — pinned, never trusted on first use</td>
+</tr>
+<tr>
+<td>variable</td>
+<td><code>NORBOTEN_DOMAIN</code></td>
+<td>e.g. <code>norboten.org</code></td>
+</tr>
+<tr>
+<td>secret</td>
+<td><code>DEPLOY_SSH_KEY</code></td>
+<td>the private key the installer made (<code>/root/norboten-ci/deploy_ed25519</code>; delete the file afterwards), or the one you gave <code>make bootstrap</code></td>
+</tr>
+<tr>
+<td>environment</td>
+<td><code>production</code></td>
+<td>add required reviewers here if a push should wait for approval</td>
+</tr>
+</tbody>
+</table>
+<p>The GHCR package must be public, or the server must <code>docker login ghcr.io</code> once with a read-only
+token.</p>
+<h2 id="rollback">Rollback</h2>
+<p><code>deploy.sh &lt;tag&gt;</code> pulls the image, restarts the API, and waits up to two minutes for <code>/readyz</code>. If
+it never turns ready, it puts the previous tag back, restarts that, and exits non-zero — so a bad
+image fails the workflow and leaves the previous version serving. The tag in use is in
+<code>/opt/norboten/.deployed</code>, the one before it in <code>.deployed.previous</code>.</p>
+<p>To go back deliberately:</p>
+<ul>
+<li><strong>from GitHub</strong> — Actions → deploy → Run workflow → <code>api_tag</code> = the commit to return to. It
+checks out that commit's <code>deploy/</code>, skips the build, and rolls out the image already in GHCR;</li>
+<li><strong>on the server</strong> — <code>sudo /opt/norboten/deploy.sh $(cat /opt/norboten/.deployed.previous)</code>.</li>
+</ul>
+<p>The database schema only ever grows (every statement in <code>db.SCHEMA</code> is <code>IF NOT EXISTS</code>), so an
+older API runs against a newer database.</p>
+<h2 id="backups">Backups</h2>
+<p><code>/opt/norboten/backup.sh</code> runs nightly at 03:20 (<code>norboten-backup.timer</code>):</p>
+<ol>
+<li><code>pg_dump -Fc</code> of <code>norboten</code> into <code>/var/backups/norboten</code>, on the server's disk;</li>
+<li><strong>restores the dump into a scratch database</strong> and counts users and attempts — a dump that does
+not restore fails the run, and <code>systemctl status norboten-backup</code> shows it;</li>
+<li>deletes dumps older than 14 days;</li>
+<li>with <code>BACKUP_TARGET</code> set, copies the directory off-box with restic and keeps 14 daily and 8
+weekly snapshots.</li>
+</ol>
+<p>Restore:</p>
+<pre class="hl"><code class="language-sh">sudo<span class="hl-w"> </span>/opt/norboten/restore.sh<span class="hl-w"> </span>/var/backups/norboten/norboten-&lt;stamp&gt;.dump
+</code></pre>
+
+<p>Redis is not backed up: nothing in it has to survive. Ollama's model re-downloads. Caddy's
+certificates are re-issued if the disk is lost.</p>
+<h2 id="operations">Operations</h2>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Command, in <code>/opt/norboten</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>status</td>
+<td><code>sudo docker compose ps</code></td>
+</tr>
+<tr>
+<td>logs</td>
+<td><code>sudo docker compose logs -f --tail 100 api</code></td>
+</tr>
+<tr>
+<td>a shell in the database</td>
+<td><code>sudo docker compose exec postgres psql -U norboten</code></td>
+</tr>
+<tr>
+<td>restart one service</td>
+<td><code>sudo docker compose restart api</code></td>
+</tr>
+<tr>
+<td>change a secret</td>
+<td>edit the vault, rerun the playbook</td>
+</tr>
+<tr>
+<td>a larger model</td>
+<td><code>OLLAMA_MODEL=qwen2.5:3b</code> in the vault, rerun, and set <code>NORBOTEN_CONSULTANT_MODELS</code></td>
+</tr>
+<tr>
+<td>disk</td>
+<td><code>sudo docker system df</code>; images from old deploys are pruned on every successful deploy</td>
+</tr>
+<tr>
+<td>a manual backup</td>
+<td><code>sudo ./backup.sh</code></td>
+</tr>
+<tr>
+<td>redraw the Analytics page now</td>
+<td><code>sudo systemctl start norboten-analytics</code> (nightly at 04:10 otherwise)</td>
+</tr>
+<tr>
+<td>send the learner digest now</td>
+<td><code>sudo systemctl start norboten-digest</code> (Sundays at 18:00 otherwise; only with <code>norboten_discord_bot_token</code> set). <code>sudo docker compose --profile jobs run --rm digest python -m norboten_api.digest --dry-run</code> prints it instead</td>
+</tr>
+</tbody>
+</table>
+<p>Grafana (<code>status.&lt;domain&gt;</code>, user <code>admin</code>) has Prometheus and the Norboten database provisioned as
+data sources, and two dashboards in the folder <strong>Norboten</strong>, both provisioned from
+<code>deploy/grafana/provisioning/dashboards</code> — they come back as they are on every restart, so edits
+made in the browser are not kept:</p>
+<table>
+<thead>
+<tr>
+<th>Dashboard</th>
+<th>Datasource</th>
+<th>What it answers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Service</strong></td>
+<td>Prometheus</td>
+<td>Is the API up and how fast is it (rate by status, median/p95/p99, the five slowest route templates), can Prometheus reach every target, how the host is doing — and how much room is left on <code>/</code>, which is the first thing to fail on a 20 GB server</td>
+</tr>
+<tr>
+<td><strong>Norboten</strong></td>
+<td>Postgres</td>
+<td>What learners did: accounts, attempts by day passed against failed, the labs being worked on, the events the API wrote down, ratings by topic. The sample population is excluded everywhere (<code>users.seed</code>), so these are real accounts only</td>
+</tr>
+</tbody>
+</table>
+<p>Streams keep working through an API restart: viewers' browsers reconnect and replay from the
+recording.</p>
+<h2 id="everything-on-a-laptop">Everything on a laptop</h2>
+<p><code>make stack-up</code> runs the same compose file with <code>compose.local.yaml</code>: the API built from your
+checkout, the site from <code>site/dist</code>, plain HTTP, the sample population loaded, and the debug
+identity accepted. The site is on <a href="http://localhost:8080">http://localhost:8080</a>, the API on <a href="http://localhost:8000">http://localhost:8000</a>,
+Grafana on <a href="http://localhost:3000">http://localhost:3000</a>. Point the TUI at it with
+<code>NORBOTEN_API=http://localhost:8000 uv run norboten</code>. <code>make stack-down</code> stops it; <code>V=1</code> deletes its
+data too.</p>
+<p>Lab VMs still run on the host under QEMU, never inside Docker — there is no nested virtualization
+for QEMU on macOS, and a lab needs a real kernel.</p>
+<h2 id="rehearsing-the-deploy">Rehearsing the deploy</h2>
+<p><code>make server-rehearsal</code> rehearses all of the above on a local Ubuntu LTS VM (Lima, 4 CPUs, 6 GB; <code>CPUS</code>, <code>MEMORY</code> and <code>DISK</code> size a new one): the
+production playbook configures it — hardening, firewall, Docker, the compose project, the timers —
+and the same <code>deploy.sh</code> rolls the API out. Three things differ, the three a laptop cannot have:
+the API image is built locally and loaded into the VM instead of pulled from GHCR, the domain is
+<code>norboten.test</code>, and Caddy issues certificates from its own CA (<code>CADDY_GLOBAL=local_certs</code>)
+instead of Let's Encrypt. When it finishes it prints the API's readiness and the site's status
+through Caddy on <a href="https://norboten.test:8443">https://norboten.test:8443</a> (curl with <code>-k</code> and <code>--resolve</code>). <code>make server-rehearsal-down</code> deletes the VM.</p>
+<p>The first rehearsal found two faults a real first deploy would have hit, both fixed: a compose
+restart ran before the API image existed, and one image that could not be pulled aborted the
+pulls of all the others.</p>
+<h2 id="hosted-labs">Hosted labs</h2>
+<p>Running learners' lab VMs on the server would need <code>/dev/kvm</code>. Cloud VPS instances do not offer
+nested virtualization, so that is only possible on bare metal (a dedicated root server), and it is
+not built.</p>
+
+    </article>
+    <div class="toc">
+<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>      <a class="h2" href="#what-you-need">What you need</a>
+      <a class="h2" href="#the-stack">The stack</a>
+      <a class="h3" href="#memory-and-what-fails-first">Memory, and what fails first</a>
+      <a class="h2" href="#create-the-server">Create the server</a>
+      <a class="h2" href="#install-with-one-command-on-the-server">Install with one command, on the server</a>
+      <a class="h2" href="#or-from-a-laptop">Or from a laptop</a>
+      <a class="h2" href="#what-the-playbooks-set-up">What the playbooks set up</a>
+      <a class="h2" href="#signing-in-discord-announcements-and-the-digest">Signing in, Discord, announcements and the digest</a>
+      <a class="h3" href="#signing-in-the-github-oauth-app">Signing in: the GitHub OAuth App</a>
+      <a class="h3" href="#discord-linking-and-the-digest-optional">Discord: linking and the digest (optional)</a>
+      <a class="h3" href="#announcements-and-donations">Announcements and donations</a>
+      <a class="h2" href="#deploy-on-every-push">Deploy on every push</a>
+      <a class="h2" href="#rollback">Rollback</a>
+      <a class="h2" href="#backups">Backups</a>
+      <a class="h2" href="#operations">Operations</a>
+      <a class="h2" href="#everything-on-a-laptop">Everything on a laptop</a>
+      <a class="h2" href="#rehearsing-the-deploy">Rehearsing the deploy</a>
+      <a class="h2" href="#hosted-labs">Hosted labs</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("../../search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+</body>
+</html>

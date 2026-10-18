@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enabled, masked, wanted — and none of them the same thing · Norboten</title>
+<meta name="description" content="An admin starts the inventory API by hand and it works. The machine reboots and the API is gone, and now systemctl start fails too. Somewhere in the middle of t">
+<link rel="canonical" href="https://norboten.org/journals/rhcsa-02-systemd-and-boot/"><meta property="og:title" content="Enabled, masked, wanted — and none of them the same thing · Norboten">
+<meta property="og:description" content="An admin starts the inventory API by hand and it works. The machine reboots and the API is gone, and now systemctl start fails too. Somewhere in the middle of t">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/rhcsa-02-systemd-and-boot/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Enabled, masked, wanted — and none of them the same thing · Norboten">
+<meta name="twitter:description" content="An admin starts the inventory API by hand and it works. The machine reboots and the API is gone, and now systemctl start fails too. Somewhere in the middle of t">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Enabled, masked, wanted \u2014 and none of them the same thing",
+  "description": "An admin starts the inventory API by hand and it works. The machine reboots and the API is gone, and now systemctl start fails too. Somewhere in the middle of t",
+  "url": "https://norboten.org/journals/rhcsa-02-systemd-and-boot/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 3592,
+  "timeRequired": "PT40M",
+  "about": ["Boot and systemd"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The API That Vanishes on Reboot</div>
+    <h1>Enabled, masked, wanted — and none of them the same thing</h1>
+    <p class="muted">
+      40 minutes' reading · 3592 words ·<span class="tag">Boot and systemd</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 123 words</title><rect x="0.0" y="0" width="20.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 1917 words</title><rect x="23.8" y="0" width="324.5" height="30" rx="4" fill="#1d2a23"/><text x="31.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 994 words</title><rect x="351.3" y="0" width="168.2" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 450 words</title><rect x="522.5" y="0" width="76.2" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 293 words</title><rect x="601.7" y="0" width="49.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 61 words</title><rect x="654.3" y="0" width="10.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 546 words</title><rect x="667.6" y="0" width="92.4" height="30" rx="4" fill="#1d2a23"/><text x="675.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/rhcsa-02-systemd-and-boot/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>An admin starts the inventory API by hand and it works. The machine reboots and the API is gone,
+and now <code>systemctl start</code> fails too. Somewhere in the middle of that story is the sentence that
+explains the whole lab: <strong>the hand-start worked because a human had already done, once, what
+nothing does at boot.</strong></p>
+<p>There are four separate faults on this machine, and they are all the same <em>kind</em> of fault — a unit
+whose definition does not say what its author thought it said. A drop-in that points at a program
+that does not exist. A unit that was masked &quot;temporarily&quot; last month. A dependency that orders two
+services without ever asking for the second one. A default target that was changed and never
+changed back. None of them is subtle once you know which question to ask systemd; all of them are
+invisible if you only read the file you expect to be reading.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Say precisely what <code>enabled</code>, <code>active</code>, <code>static</code> and <code>masked</code> each mean, and which of them
+<code>systemctl start</code> changes.</li>
+<li>Find a unit's <em>effective</em> definition — vendor file plus every drop-in — instead of the file you
+assumed was in charge.</li>
+<li>Write a drop-in that adds a directive, and one that replaces a list-valued directive, and know
+why the second needs an empty assignment first.</li>
+<li>Tell an ordering dependency from a requirement dependency, and pick between <code>Wants=</code>,
+<code>Requires=</code> and <code>BindsTo=</code> on purpose.</li>
+<li>Read <code>systemctl status</code> and <code>journalctl -u … -b</code> well enough to know why a start failed without
+retrying it.</li>
+<li>Change what the machine boots into, and explain why that is different from changing what it is
+running now.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="where-units-come-from-and-who-wins">Where units come from, and who wins</h3>
+<p>The same unit name can be defined in several places, and the search path has a strict order —
+first match wins, later directories override earlier ones:</p>
+<pre><code>/etc/systemd/system/     ← the administrator's. Highest priority. Yours.
+/run/systemd/system/     ← runtime, generated; gone at reboot
+/usr/lib/systemd/system/ ← the vendor's, shipped by packages. Never edit these.
+</code></pre>
+<p>Three ways to change a vendor unit, in increasing order of violence:</p>
+<ol>
+<li><strong>A drop-in</strong>: <code>/etc/systemd/system/&lt;unit&gt;.d/&lt;name&gt;.conf</code>, holding only the directives you want
+to change. The vendor file is still read; your fragment is merged on top. This survives package
+updates and leaves a record of exactly what you changed.</li>
+<li><strong>A full override</strong>: copy the unit into <code>/etc/systemd/system/</code> and edit it. Now the vendor file
+is ignored completely — including any improvements it gains later.</li>
+<li><strong>A mask</strong>: <code>/etc/systemd/system/&lt;unit&gt;</code> as a symlink to <code>/dev/null</code>. The unit becomes
+unstartable, by anything, including as a dependency of something else.</li>
+</ol>
+<p>Because of all this, never answer the question &quot;what does this unit do?&quot; by reading a file. Ask:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>inventory-api
+<span class="hl-gp"># </span>/usr/lib/systemd/system/inventory-api.service
+<span class="hl-go">[Unit]</span>
+<span class="hl-go">Description=Inventory API</span>
+<span class="hl-go">After=network.target config-sync.service</span>
+<span class="hl-go">…</span>
+<span class="hl-gp"># </span>/etc/systemd/system/inventory-api.service.d/override.conf
+<span class="hl-go">[Service]</span>
+<span class="hl-go">ExecStart=</span>
+<span class="hl-go">ExecStart=/usr/local/bin/inventory-api.py</span>
+</code></pre>
+
+<p><code>systemctl cat</code> prints the vendor file <em>and every drop-in</em>, each with the path it came from, in
+merge order. <code>systemd-delta</code> lists every unit on the system that is overridden or extended, which
+is the first command to run on a machine you have inherited. And when you want the merged, resolved
+value of one directive rather than the files it came from:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>-p<span class="hl-w"> </span>ExecStart<span class="hl-w"> </span>--value<span class="hl-w"> </span>inventory-api
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>-p<span class="hl-w"> </span>Wants<span class="hl-w"> </span>-p<span class="hl-w"> </span>Requires<span class="hl-w"> </span>-p<span class="hl-w"> </span>After<span class="hl-w"> </span>inventory-api
+</code></pre>
+
+<p><code>show</code> is systemd's own view — after merging, after generators, after resolution. It is the ground
+truth, and it is what a grader should ask.</p>
+<h3 id="drop-ins-and-the-empty-assignment">Drop-ins and the empty assignment</h3>
+<p>Most directives are single-valued: a later assignment replaces an earlier one. Some are
+<strong>list-valued</strong> — <code>ExecStart=</code>, <code>After=</code>, <code>Wants=</code>, <code>Environment=</code>, <code>ExecStartPre=</code> — and there a
+later assignment <em>appends</em>. To replace a list you must first clear it, by assigning nothing:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-k">[Service]</span>
+<span class="hl-na">ExecStart</span><span class="hl-o">=</span>
+<span class="hl-na">ExecStart</span><span class="hl-o">=</span><span class="hl-s">/usr/local/bin/inventory-api.py</span>
+</code></pre>
+
+<p>That is what the break in this lab does, and it is worth recognising because it is also the correct
+idiom when you genuinely want to change a command line. The empty line resets the list; the second
+line becomes its only member. Remove the empty line and you have declared two <code>ExecStart=</code> lines —
+which for a <code>Type=simple</code> service is a hard error (<em>&quot;Service has more than one ExecStart= setting,
+which is only allowed for Type=oneshot services&quot;</em>), and the unit will not load at all.</p>
+<p>A drop-in also needs its section header. Directives are addressed by section — <code>Wants=</code> belongs
+under <code>[Unit]</code>, <code>ExecStart=</code> under <code>[Service]</code> — and a fragment that omits the header is not a
+subtle mistake, it is a parse error. And after touching any unit file, anywhere:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload
+</code></pre>
+
+<p>Until you do, systemd is still running the previous definition, and you are debugging a file the
+system has not read.</p>
+<h3 id="four-states-and-only-one-of-them-means-running">Four states, and only one of them means &quot;running&quot;</h3>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w">  </span>inventory-api<span class="hl-w">     </span><span class="hl-c1"># running right now?      active / inactive / failed</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-enabled<span class="hl-w"> </span>inventory-api<span class="hl-w">     </span><span class="hl-c1"># will it start at boot?  enabled / disabled / masked / static</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-failed<span class="hl-w">  </span>inventory-api
+</code></pre>
+
+<p>These are independent axes, and conflating them is the most common systemd mistake there is.</p>
+<p><strong><code>active</code></strong> is now. <code>systemctl start</code> and <code>stop</code> move a unit along this axis and change nothing
+about the next boot.</p>
+<p><strong><code>enabled</code></strong> is the next boot, and it is nothing more than a symlink. <code>enable</code> reads the unit's
+<code>[Install]</code> section — here <code>WantedBy=multi-user.target</code> — and creates:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span><span class="hl-nb">enable</span><span class="hl-w"> </span>inventory-api
+<span class="hl-go">Created symlink /etc/systemd/system/multi-user.target.wants/inventory-api.service →</span>
+<span class="hl-go">  /usr/lib/systemd/system/inventory-api.service.</span>
+</code></pre>
+
+<p>That is the entire mechanism: when <code>multi-user.target</code> is reached, everything symlinked into its
+<code>.wants</code> directory is pulled in. A unit with no <code>[Install]</code> section cannot be enabled, and
+<code>is-enabled</code> reports it <strong><code>static</code></strong> — it exists only to be pulled in by something else, which is
+normal for helpers. <code>enable --now</code> does both axes in one command, and <code>disable --now</code> undoes both.</p>
+<p><strong><code>masked</code></strong> is a veto. <code>systemctl mask</code> links the unit name to <code>/dev/null</code> in
+<code>/etc/systemd/system/</code>, so the highest-priority entry in the search path is &quot;nothing&quot;. The unit
+cannot be started by hand, by a dependency, or at boot:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>cups
+<span class="hl-go">Failed to start cups.service: Unit cups.service is masked.</span>
+</code></pre>
+
+<p>Masking exists because disabling is not always enough — a disabled unit can still be started as
+someone else's dependency, or by a socket, or by a timer. It is the right tool for &quot;this must not
+run on this machine&quot;, and the wrong tool for &quot;not right now&quot;, because nobody remembers. Which is
+exactly the story in the briefing.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>list-unit-files<span class="hl-w"> </span>--state<span class="hl-o">=</span>masked<span class="hl-w">      </span><span class="hl-c1"># the question to ask of an inherited machine</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>unmask<span class="hl-w"> </span>config-sync.service<span class="hl-w">     </span><span class="hl-c1"># removes the symlink; does NOT enable anything</span>
+</code></pre>
+
+<p><code>unmask</code> and <code>enable</code> are different operations. Unmasking a unit lifts the veto and leaves it
+disabled. And note the asymmetry in the other direction: <code>disable</code> does not clear a mask, so
+reaching for <code>disable</code> when the state is <code>masked</code> changes nothing and looks like the command
+failed.</p>
+<h3 id="ordering-is-not-causation">Ordering is not causation</h3>
+<p>This is the heart of the lab. The API's vendor unit says:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-na">After</span><span class="hl-o">=</span><span class="hl-s">network.target config-sync.service</span>
+</code></pre>
+
+<p>and that is <em>all</em> it says about config-sync. <code>After=</code> is purely an <strong>ordering</strong> statement: it
+means &quot;if both of these units are in the same transaction, start me after it finishes&quot;. It does not
+request config-sync. It does not start config-sync. If nothing else pulls config-sync into the
+boot, <code>After=</code> is satisfied trivially — there is nothing to wait for — and the API starts with no
+config at all.</p>
+<p>Requirement dependencies are what actually pull a unit in:</p>
+<table>
+<thead>
+<tr>
+<th>directive</th>
+<th>pulls it in</th>
+<th>if it fails</th>
+<th>if it stops later</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Wants=</code></td>
+<td>yes</td>
+<td>we start anyway</td>
+<td>we keep running</td>
+</tr>
+<tr>
+<td><code>Requires=</code></td>
+<td>yes</td>
+<td>we are not started</td>
+<td>we are stopped too</td>
+</tr>
+<tr>
+<td><code>BindsTo=</code></td>
+<td>yes</td>
+<td>we are not started</td>
+<td>we stop, even on a clean exit</td>
+</tr>
+<tr>
+<td><code>After=</code></td>
+<td><strong>no</strong></td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>And the crucial detail: <strong>none of these imply ordering</strong>. <code>Requires=</code> without <code>After=</code> starts both
+units <em>in parallel</em>, which for a config-preparing helper is a race you will lose on a fast machine
+and win on a slow one — the worst possible failure mode. The pair you almost always want is:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-k">[Unit]</span>
+<span class="hl-na">Wants</span><span class="hl-o">=</span><span class="hl-s">config-sync.service</span>
+<span class="hl-na">After</span><span class="hl-o">=</span><span class="hl-s">config-sync.service</span>
+</code></pre>
+
+<p><code>Wants=</code> + <code>After=</code> says &quot;bring it along, and let it finish first, but do not take me down if it
+breaks&quot;. <code>Requires=</code> + <code>After=</code> is the stricter version: correct when the dependency is genuinely
+essential — and here the API cannot start without its config, so <code>Requires=</code> is defensible. The
+trade-off is honest: with <code>Requires=</code>, a transient failure in a helper takes your service down with
+it, and <code>Restart=on-failure</code> will not save you, because the dependency is what failed. Prefer
+<code>Wants=</code> unless you want that coupling.</p>
+<p>There is a second way to express the same thing, from the other side: the helper can declare
+<code>WantedBy=inventory-api.service</code> in its own <code>[Install]</code> section, and enabling it creates the
+symlink. Same result, opposite file. Use whichever file you are allowed to change — which is why a
+drop-in on the API is usually the answer.</p>
+<h3 id="typeoneshot-and-why-run-is-empty-at-boot"><code>Type=oneshot</code>, and why <code>/run</code> is empty at boot</h3>
+<p>config-sync is a script that copies a file and exits:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-k">[Service]</span>
+<span class="hl-na">Type</span><span class="hl-o">=</span><span class="hl-s">oneshot</span>
+<span class="hl-na">RemainAfterExit</span><span class="hl-o">=</span><span class="hl-s">yes</span>
+<span class="hl-na">ExecStart</span><span class="hl-o">=</span><span class="hl-s">/usr/local/bin/config-sync</span>
+</code></pre>
+
+<p><code>Type=simple</code>, the default, means &quot;the process I start <em>is</em> the service&quot; — systemd considers the
+unit started the moment it forks and finished when the process exits. For a script that does a job
+and exits, that produces a unit that is instantly <code>inactive (dead)</code>, which makes it look as though
+it never ran. <code>Type=oneshot</code> waits for the process to exit before considering the unit started,
+which is what lets <code>After=</code> be meaningful. <code>RemainAfterExit=yes</code> then keeps the unit <code>active (exited)</code> afterwards, so <code>is-active</code> answers truthfully: <em>this ran, in this boot</em>.</p>
+<p>And that last phrase is the trap. The script writes to <code>/run/inventory/config.json</code>, and <code>/run</code> is
+a <strong>tmpfs</strong> — a filesystem in memory, empty on every boot, by design. An admin who runs
+config-sync by hand leaves the file there, and every manual start of the API works for the rest of
+that uptime. The next reboot clears it. <code>/run</code> for runtime state that should not survive, <code>/var</code>
+for state that should: if you are tempted to fix this lab by creating the config by hand, you are
+about to reproduce exactly the bug you were called about.</p>
+<h3 id="targets-what-the-machine-boots-into">Targets: what the machine boots into</h3>
+<p>A target is a unit that groups other units — no process of its own, just dependencies and a
+synchronisation point. The boot one is a symlink:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>get-default
+<span class="hl-go">graphical.target</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/etc/systemd/system/default.target
+<span class="hl-go">lrwxrwxrwx. 1 root root 40 Sep 13 04:43 /etc/systemd/system/default.target -&gt; /usr/lib/systemd/system/graphical.target</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>set-default<span class="hl-w"> </span>multi-user.target
+</code></pre>
+
+<p><code>multi-user.target</code> is the familiar server state: network up, logins, services. <code>graphical.target</code>
+pulls in multi-user and adds a display manager — so on a server with no desktop installed it is
+usually harmless, which is why a wrong default target can sit unnoticed for a month. Do not assume
+harmless, though: it changes which <code>.wants</code> directories are consulted, and a unit that is
+<code>WantedBy=multi-user.target</code> is still reached, while one wanted only by graphical is not reached
+under multi-user.</p>
+<p>Two neighbours worth separating: <code>systemctl isolate &lt;target&gt;</code> switches the <em>running</em> system to a
+target now and does not touch the default; <code>set-default</code> changes the <em>next</em> boot and does not touch
+what is running. <code>systemctl list-units --type=target</code> shows what is active now, and
+<code>systemctl list-dependencies multi-user.target</code> shows what that state actually consists of.</p>
+<h3 id="asking-why-a-start-failed">Asking why a start failed</h3>
+<p>In order, and none of them is <code>start</code> again:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>status<span class="hl-w"> </span>inventory-api<span class="hl-w">        </span><span class="hl-c1"># the summary, with the last lines of the log</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>inventory-api<span class="hl-w"> </span>-b<span class="hl-w">   </span><span class="hl-c1"># everything this unit logged this boot</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-xb<span class="hl-w"> </span>-p<span class="hl-w"> </span>err<span class="hl-w">            </span><span class="hl-c1"># this boot's errors, with explanatory texts</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>inventory-api<span class="hl-w">           </span><span class="hl-c1"># what the definition actually is</span>
+</code></pre>
+
+<p>The <code>status</code> header repays careful reading:</p>
+<pre><code>× inventory-api.service - Inventory API
+     Loaded: loaded (/usr/lib/systemd/system/inventory-api.service; disabled; preset: disabled)
+    Drop-In: /etc/systemd/system/inventory-api.service.d
+             └─override.conf
+     Active: failed (Result: exit-code) since …
+    Process: 1643 ExecStart=/usr/local/bin/inventory-api.py (code=exited, status=203/EXEC)
+</code></pre>
+<p><code>disabled</code> on the <code>Loaded:</code> line answers the boot question. The <code>Drop-In:</code> block is the thing
+people skim past, and it is the whole answer here. And the exit code is a diagnosis in itself:
+<code>203/EXEC</code> means systemd could not execute the program — missing file, missing execute bit, or a
+bad interpreter on the <code>#!</code> line. <code>200/CHDIR</code> is a bad <code>WorkingDirectory=</code>, <code>226/NAMESPACE</code> a
+sandboxing directive the system cannot satisfy, and a plain <code>status=1</code> means your program ran and
+decided to fail, which moves the investigation into the program's own logs.</p>
+<p>One more piece of systemd's behaviour to recognise, because it looks like a new fault:</p>
+<pre><code>inventory-api.service: Start request repeated too quickly.
+Failed to start inventory-api.service - Inventory API.
+</code></pre>
+<p><code>Restart=on-failure</code> plus a program that fails immediately hits the start rate limit — by default
+5 attempts in 10 seconds — and then systemd refuses to try until you clear the counter with
+<code>systemctl reset-failed inventory-api</code>. Nothing is broken beyond the original fault; the rate limit
+is a symptom, not a cause.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p><code>curl localhost:8081/health</code> refuses the connection.</p>
+<p><strong>1. Ask the unit about itself.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>status<span class="hl-w"> </span>inventory-api
+<span class="hl-go">○ inventory-api.service - Inventory API</span>
+<span class="hl-go">     Loaded: loaded (/usr/lib/systemd/system/inventory-api.service; disabled; preset: disabled)</span>
+<span class="hl-go">    Drop-In: /etc/systemd/system/inventory-api.service.d</span>
+<span class="hl-go">             └─override.conf</span>
+<span class="hl-go">     Active: inactive (dead)</span>
+</code></pre>
+
+<p>Two facts before touching anything: it is <strong>disabled</strong>, which is why the boot did not start it, and
+there is a <strong>drop-in</strong>, which means the file in <code>/usr/lib</code> is not the whole definition.</p>
+<p><strong>2. Try the start the admin tried, and read the failure rather than repeating it.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>inventory-api
+<span class="hl-gp">$ </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-nv">$?</span>
+<span class="hl-go">0</span>
+<span class="hl-gp">$ </span>sleep<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>status<span class="hl-w"> </span>inventory-api
+<span class="hl-go">× inventory-api.service - Inventory API</span>
+<span class="hl-go">     Loaded: loaded (/usr/lib/systemd/system/inventory-api.service; disabled; preset: disabled)</span>
+<span class="hl-go">    Drop-In: /etc/systemd/system/inventory-api.service.d</span>
+<span class="hl-go">             └─override.conf</span>
+<span class="hl-go">     Active: failed (Result: exit-code) since Sun 2026-09-13 04:42:29 UTC; 8s ago</span>
+<span class="hl-go">    Process: 1643 ExecStart=/usr/local/bin/inventory-api.py (code=exited, status=203/EXEC)</span>
+</code></pre>
+
+<p>Notice the first two lines. <code>systemctl start</code> printed nothing and returned 0: for a service with the
+default <code>Type=simple</code>, the start job succeeds the moment the process is forked, and the failure
+arrives a few milliseconds later. A silent <code>start</code> is not evidence of anything — always look again.</p>
+<p><code>203/EXEC</code>, and a path ending in <code>.py</code> that the vendor unit never mentioned. The journal shows
+something else as well:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>inventory-api<span class="hl-w"> </span>-b<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-4
+<span class="hl-go">… inventory-api.service: Scheduled restart job, restart counter is at 5.</span>
+<span class="hl-go">… inventory-api.service: Start request repeated too quickly.</span>
+<span class="hl-go">… inventory-api.service: Failed with result 'exit-code'.</span>
+<span class="hl-go">… Failed to start inventory-api.service - Inventory API.</span>
+</code></pre>
+
+<p><code>Restart=on-failure</code> retried five times in under two seconds and hit the rate limiter. That is a
+symptom, not a second fault. (<code>sudo</code>, because an ordinary account cannot read the system journal at
+all — without it <code>journalctl</code> says <em>No journal files were opened due to insufficient permissions</em>.)</p>
+<p><strong>3. Read the effective definition.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>inventory-api
+<span class="hl-gp"># </span>/usr/lib/systemd/system/inventory-api.service
+<span class="hl-go">[Unit]</span>
+<span class="hl-go">Description=Inventory API</span>
+<span class="hl-go">After=network.target config-sync.service</span>
+
+<span class="hl-go">[Service]</span>
+<span class="hl-go">ExecStart=/usr/local/bin/inventory-api</span>
+<span class="hl-go">Restart=on-failure</span>
+
+<span class="hl-go">[Install]</span>
+<span class="hl-go">WantedBy=multi-user.target</span>
+
+<span class="hl-gp"># </span>/etc/systemd/system/inventory-api.service.d/override.conf
+<span class="hl-go">[Service]</span>
+<span class="hl-go">ExecStart=</span>
+<span class="hl-go">ExecStart=/usr/local/bin/inventory-api.py</span>
+
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/usr/local/bin/inventory-api*
+<span class="hl-go">-rwxr-xr-x. 1 root root 746 Sep 13 04:42 /usr/local/bin/inventory-api</span>
+</code></pre>
+
+<p>The override resets <code>ExecStart</code> and points it at a file that does not exist. The vendor unit was
+right all along. Delete the drop-in — it has no other content worth keeping — and reload:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>rm<span class="hl-w"> </span>/etc/systemd/system/inventory-api.service.d/override.conf
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload
+</code></pre>
+
+<p><strong>4. Start again — and it works.</strong> This is the dangerous moment:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>inventory-api
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w"> </span>inventory-api
+<span class="hl-go">active</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>localhost:8081/health
+<span class="hl-go">{"status": "ok", "items": 3}</span>
+</code></pre>
+
+<p>The API needs <code>/run/inventory/config.json</code>, and it is there. But who made it?</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/run/inventory/
+<span class="hl-go">-rw-r--r--. 1 root root 40 Sep 13 04:43 config.json</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w"> </span>config-sync<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>is-enabled<span class="hl-w"> </span>config-sync
+<span class="hl-go">inactive</span>
+<span class="hl-go">masked</span>
+<span class="hl-gp">$ </span>findmnt<span class="hl-w"> </span>-no<span class="hl-w"> </span>FSTYPE<span class="hl-w"> </span>/run
+<span class="hl-go">tmpfs</span>
+</code></pre>
+
+<p>The helper that should create it is masked and has not run. The file was left by somebody running
+<code>/usr/local/bin/config-sync</code> by hand — and <code>/run</code> is a tmpfs. This is exactly the briefing's &quot;it works
+when an admin starts it, until the next reboot&quot;, reproduced. Stopping here fails the lab.</p>
+<p><strong>5. Prove it, by rebooting before you believe it.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>reboot
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>/run/inventory
+<span class="hl-go">ls: cannot access '/run/inventory': No such file or directory</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>inventory-api<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>sleep<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w"> </span>inventory-api
+<span class="hl-go">failed</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>inventory-api<span class="hl-w"> </span>-b<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-5
+<span class="hl-go">… inventory-api[1376]:     with open(CONFIG) as f:  # fails at boot unless config-sync ran first</span>
+<span class="hl-go">… inventory-api[1376]:          ^^^^^^^^^^^^</span>
+<span class="hl-go">… inventory-api[1376]: FileNotFoundError: [Errno 2] No such file or directory: '/run/inventory/config.json'</span>
+<span class="hl-go">… systemd[1]: inventory-api.service: Main process exited, code=exited, status=1/FAILURE</span>
+<span class="hl-go">… systemd[1]: inventory-api.service: Failed with result 'exit-code'.</span>
+</code></pre>
+
+<p>Now the program runs and fails on its own terms, which is progress: <code>status=1</code> with a traceback rather
+than <code>203/EXEC</code>. Something was supposed to have created that file at boot.</p>
+<p><strong>6. Ask about the helper, and about everything else that is masked.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>list-unit-files<span class="hl-w"> </span>--state<span class="hl-o">=</span>masked
+<span class="hl-go">UNIT FILE           STATE  PRESET</span>
+<span class="hl-go">config-sync.service masked disabled</span>
+
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>status<span class="hl-w"> </span>config-sync
+<span class="hl-go">○ config-sync.service</span>
+<span class="hl-go">     Loaded: masked (Reason: Unit config-sync.service is masked.)</span>
+<span class="hl-go">     Active: inactive (dead)</span>
+</code></pre>
+
+<p>There is the &quot;temporarily disabled&quot; from the briefing, a month old and still in force.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>unmask<span class="hl-w"> </span>config-sync.service
+<span class="hl-go">Removed '/etc/systemd/system/config-sync.service'.</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-enabled<span class="hl-w"> </span>config-sync
+<span class="hl-go">static</span>
+</code></pre>
+
+<p><code>static</code>: it has no <code>[Install]</code> section, so it cannot be enabled on its own — something has to pull it
+in. Which leads to the real design fault.</p>
+<p><strong>7. Ask what will pull it in at the next boot.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>-p<span class="hl-w"> </span>Wants<span class="hl-w"> </span>-p<span class="hl-w"> </span>Requires<span class="hl-w"> </span>-p<span class="hl-w"> </span>After<span class="hl-w"> </span>inventory-api
+<span class="hl-go">Requires=sysinit.target system.slice</span>
+<span class="hl-go">Wants=</span>
+<span class="hl-go">After=network.target system.slice config-sync.service systemd-journald.socket sysinit.target basic.target</span>
+</code></pre>
+
+<p><code>After=config-sync.service</code> and <code>Wants=</code> empty. The API will wait for a unit that nobody starts,
+which takes no time at all, and then fail on the missing file. The dependency has to be added, and
+a drop-in is the way to add it without editing a vendor file:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/etc/systemd/system/inventory-api.service.d
+<span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'[Unit]\nWants=config-sync.service\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>/etc/systemd/system/inventory-api.service.d/deps.conf
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>-p<span class="hl-w"> </span>Wants<span class="hl-w"> </span>--value<span class="hl-w"> </span>inventory-api
+<span class="hl-go">config-sync.service</span>
+</code></pre>
+
+<p>The <code>After=</code> from the vendor file is still in force, so the ordering is right; the drop-in supplies
+the missing half.</p>
+<p><strong>8. Make the boot do it.</strong> Enabled, running, and the default target the runbook asks for:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>reset-failed<span class="hl-w"> </span>inventory-api
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span><span class="hl-nb">enable</span><span class="hl-w"> </span>--now<span class="hl-w"> </span>inventory-api
+<span class="hl-go">Created symlink '/etc/systemd/system/multi-user.target.wants/inventory-api.service' → '/usr/lib/systemd/system/inventory-api.service'.</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>get-default
+<span class="hl-go">graphical.target</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>set-default<span class="hl-w"> </span>multi-user.target
+<span class="hl-go">Removed '/etc/systemd/system/default.target'.</span>
+<span class="hl-go">Created symlink '/etc/systemd/system/default.target' → '/usr/lib/systemd/system/multi-user.target'.</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>localhost:8081/health
+<span class="hl-go">{"status": "ok", "items": 3}</span>
+</code></pre>
+
+<p>Starting the API now also starts config-sync, because of the <code>Wants=</code> — which is what recreated the
+file in <code>/run</code> this time, rather than a human.</p>
+<p><strong>9. Prove it with the only test that counts — again.</strong> Every fix is now a file on disk, so a reboot
+should change nothing, and it is the only way to know that <code>/run</code> gets repopulated by the helper:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>reboot
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>get-default<span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w"> </span>config-sync<span class="hl-w"> </span>inventory-api
+<span class="hl-go">multi-user.target</span>
+<span class="hl-go">active</span>
+<span class="hl-go">active</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>localhost:8081/health
+<span class="hl-go">{"status": "ok", "items": 3}</span>
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Creating <code>/run/inventory/config.json</code> by hand.</strong> The API starts, <code>/health</code> answers, everything
+looks fixed — and <code>/run</code> is a tmpfs, so the next boot is back where you started. This is not a
+hypothetical wrong turn; it is the one the previous admin took, and it is why the lab exists.</p>
+<p><strong>Editing <code>/usr/lib/systemd/system/inventory-api.service</code>.</strong> It works until the package is updated,
+and it hides your change from <code>systemd-delta</code> and from the next person. Drop-ins in
+<code>/etc/systemd/system/&lt;unit&gt;.d/</code> are the supported mechanism, and they document themselves in
+<code>systemctl cat</code>.</p>
+<p><strong>Reading the vendor file and concluding the unit is fine.</strong> It <em>is</em> fine. The drop-in is what is
+broken, and the only commands that show you both are <code>systemctl cat</code> and <code>systemctl show</code>. The
+<code>Drop-In:</code> line in <code>status</code> is the hint people skim.</p>
+<p><strong>Removing the <code>ExecStart=</code> reset line but keeping the override.</strong> Two <code>ExecStart=</code> lines on a
+<code>Type=simple</code> service is a load error, so now the unit does not exist at all and the error message
+changes to something that looks unrelated.</p>
+<p><strong><code>systemctl disable config-sync</code> when it was masked.</strong> Disable does not clear a mask; the state
+stays <code>masked</code> and the command appears to have done nothing. <code>unmask</code> is a different operation —
+and conversely, unmasking does not enable, so a unit can be unmasked and still not start at boot.</p>
+<p><strong>Adding <code>Requires=</code> without <code>After=</code>, or thinking <code>After=</code> requests anything.</strong> Requirement and
+ordering are orthogonal. <code>Requires=</code> alone starts both units in parallel and the API wins the race
+on a fast machine; <code>After=</code> alone — the state this lab ships in — waits for something nobody
+starts. You need one of each.</p>
+<p><strong>Trusting a silent <code>systemctl start</code>.</strong> For a <code>Type=simple</code> service <code>start</code> returns 0 as soon as the
+process is forked; the failure appears in <code>status</code> a moment later. Look again, every time.</p>
+<p><strong><code>systemctl start</code> and calling it done.</strong> Start is now; enable is next boot. <code>enable --now</code> is the
+pair. Half of the reboot-persistence failures in this area are exactly this.</p>
+<p><strong>Forgetting <code>daemon-reload</code>.</strong> You fix a unit file, start it, and get the old error verbatim,
+which makes you doubt the fix. systemd is still running the definition it parsed earlier.</p>
+<p><strong>Fighting the rate limiter.</strong> After a few fast failures, <em>Start request repeated too quickly</em> is all
+the journal says, and it looks like a second fault. <code>systemctl reset-failed &lt;unit&gt;</code>, then fix the real
+cause.</p>
+<p><strong><code>systemctl isolate multi-user.target</code> instead of <code>set-default</code>.</strong> Isolate changes the running
+system and leaves the default alone; the check reads <code>get-default</code>, and so does the next boot.</p>
+<p><strong>Writing a drop-in with no section header.</strong> <code>Wants=config-sync.service</code> on its own in a
+<code>.conf</code> file is not a directive, it is a parse error — and <code>daemon-reload</code> will say so, quietly, in
+the journal.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>what<span class="hl-w"> </span>is<span class="hl-w"> </span>this<span class="hl-w"> </span>unit,<span class="hl-w"> </span>really
+<span class="hl-go">systemctl cat UNIT                     # vendor file + every drop-in, with paths</span>
+<span class="hl-go">systemctl show UNIT                    # every resolved property</span>
+<span class="hl-go">systemctl show -p ExecStart --value UNIT</span>
+<span class="hl-go">systemctl show -p Wants -p Requires -p After UNIT</span>
+<span class="hl-go">systemd-delta                          # everything overridden or extended on this machine</span>
+
+<span class="hl-gp"># </span>state,<span class="hl-w"> </span>on<span class="hl-w"> </span>both<span class="hl-w"> </span>axes
+<span class="hl-go">systemctl is-active UNIT               # now</span>
+<span class="hl-go">systemctl is-enabled UNIT              # next boot: enabled/disabled/masked/static</span>
+<span class="hl-go">systemctl status UNIT                  # both, plus the last log lines and the Drop-In: block</span>
+<span class="hl-go">systemctl list-unit-files --state=masked</span>
+<span class="hl-go">systemctl list-units --failed</span>
+
+<span class="hl-gp"># </span>changing<span class="hl-w"> </span>state
+<span class="hl-go">systemctl start|stop|restart UNIT      # now</span>
+<span class="hl-go">systemctl enable|disable UNIT          # next boot (a symlink from [Install])</span>
+<span class="hl-go">systemctl enable --now UNIT            # both</span>
+<span class="hl-go">systemctl mask|unmask UNIT             # veto / lift the veto (unmask does not enable)</span>
+<span class="hl-go">systemctl reset-failed UNIT            # clear the failure and the start-rate counter</span>
+
+<span class="hl-gp"># </span>editing
+<span class="hl-go">systemctl edit UNIT                    # create/edit a drop-in, then reload automatically</span>
+<span class="hl-go">systemctl edit --full UNIT             # copy the vendor unit into /etc and edit that</span>
+<span class="hl-go">mkdir -p /etc/systemd/system/UNIT.d &amp;&amp; vi /etc/systemd/system/UNIT.d/deps.conf</span>
+<span class="hl-go">systemctl daemon-reload                # after ANY unit file change</span>
+
+<span class="hl-gp"># </span>dependencies<span class="hl-w"> </span><span class="hl-o">(</span><span class="hl-k">in</span><span class="hl-w"> </span><span class="hl-o">[</span>Unit<span class="hl-o">])</span>
+<span class="hl-go">Wants=other.service                    # pull it in; do not care if it fails</span>
+<span class="hl-go">Requires=other.service                 # pull it in; fail with it</span>
+<span class="hl-go">After=other.service                    # ordering only — pulls in NOTHING</span>
+<span class="hl-gp"># </span>the<span class="hl-w"> </span>usual<span class="hl-w"> </span>correct<span class="hl-w"> </span>pair:<span class="hl-w"> </span><span class="hl-nv">Wants</span><span class="hl-o">=</span><span class="hl-w"> </span>+<span class="hl-w"> </span><span class="hl-nv">After</span><span class="hl-o">=</span>
+
+<span class="hl-gp"># </span>targets
+<span class="hl-go">systemctl get-default</span>
+<span class="hl-go">systemctl set-default multi-user.target        # next boot</span>
+<span class="hl-go">systemctl isolate multi-user.target           # now</span>
+<span class="hl-go">systemctl list-dependencies multi-user.target</span>
+
+<span class="hl-gp"># </span>logs<span class="hl-w"> </span><span class="hl-o">(</span>as<span class="hl-w"> </span>root,<span class="hl-w"> </span>or<span class="hl-w"> </span>as<span class="hl-w"> </span>a<span class="hl-w"> </span>member<span class="hl-w"> </span>of<span class="hl-w"> </span>adm<span class="hl-w"> </span>/<span class="hl-w"> </span>systemd-journal<span class="hl-w"> </span>—<span class="hl-w"> </span>otherwise<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>shows<span class="hl-w"> </span>nothing<span class="hl-o">)</span>
+<span class="hl-go">journalctl -u UNIT -b                  # this unit, this boot</span>
+<span class="hl-go">journalctl -u UNIT -f                  # follow</span>
+<span class="hl-go">journalctl -xb -p err                  # this boot's errors, explained</span>
+<span class="hl-go">journalctl --since '10 min ago'</span>
+<span class="hl-go">journalctl -b -1                       # the previous boot</span>
+<span class="hl-go">systemd-analyze blame                  # what made the boot slow</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>The log lines that were never written down</em> (topic journal <code>logging-journald</code>) — Asking precise questions</li>
+</ul>
+<p>Manual pages: <code>man 1 systemctl</code>, <code>man 7 systemd.special</code>, <code>man 5 systemd.unit</code>.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>A service is <code>enabled</code> but <code>inactive</code>, and another is <code>active</code> but <code>disabled</code>. Describe the
+machine's behaviour on the next reboot for each.</p>
+<blockquote>
+<p>The enabled/inactive one starts at boot and is not running now. The active/disabled one is
+running now and will not come back — <code>start</code> and <code>enable</code> move independent axes, and
+<code>enable --now</code> is how you set both.</p>
+</blockquote>
+</li>
+<li>
+<p><code>systemctl start config-sync</code> reports <em>Unit config-sync.service is masked</em>. What exists on disk,
+and why is <code>systemctl disable</code> not the fix?</p>
+<blockquote>
+<p>A symlink <code>/etc/systemd/system/config-sync.service → /dev/null</code>. Because <code>/etc</code> outranks
+<code>/usr/lib</code> in the unit search path, the unit resolves to nothing and cannot be started by
+anything. <code>disable</code> only removes <code>.wants</code> symlinks; you need <code>unmask</code> — which lifts the veto
+and still leaves the unit disabled.</p>
+</blockquote>
+</li>
+<li>
+<p>A unit declares <code>After=config-sync.service</code> and nothing else about it. At boot, what does systemd
+do with config-sync?</p>
+<blockquote>
+<p>Nothing. <code>After=</code> is ordering only: it says <em>if</em> both units are in this transaction, run me
+second. Nothing requests config-sync, so the ordering is satisfied trivially and the service
+starts without its config. It needs <code>Wants=</code> (or <code>Requires=</code>) as well.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>Requires=</code> without <code>After=</code> frequently worse than either directive alone?</p>
+<blockquote>
+<p>Requirement and ordering are independent, so <code>Requires=</code> alone starts both units in parallel.
+The dependency is pulled in but may not have finished, which is a race — passing on a slow
+machine and failing on a fast one, or the reverse. Pair the requirement with <code>After=</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>A drop-in contains <code>ExecStart=</code> followed by <code>ExecStart=/usr/local/bin/app.py</code>. What does the
+empty line do, and what happens if you delete it?</p>
+<blockquote>
+<p><code>ExecStart=</code> is list-valued, so a plain assignment appends. The empty assignment clears the
+list first, making the next line its only member. Delete it and the unit has two <code>ExecStart=</code>
+entries, which is an error for anything but <code>Type=oneshot</code> — the unit then fails to load at
+all.</p>
+</blockquote>
+</li>
+<li>
+<p>A helper service prepares a file under <code>/run</code> and someone fixes a broken machine by creating that
+file by hand. Why does this pass every test until the next boot?</p>
+<blockquote>
+<p><code>/run</code> is a tmpfs — memory, emptied at every boot by design. The hand-made file lasts for the
+current uptime, so manual starts succeed, and disappears at reboot. State that must survive a
+reboot belongs under <code>/var</code>; state that must not belongs in <code>/run</code>, prepared by a unit.</p>
+</blockquote>
+</li>
+<li>
+<p><code>systemctl status</code> shows <code>status=203/EXEC</code>. What class of problem is that, and what would
+<code>status=1</code> tell you instead?</p>
+<blockquote>
+<p>203/EXEC means systemd could not execute the program at all: the path does not exist, the
+execute bit is missing, or the <code>#!</code> interpreter is wrong. <code>status=1</code> means the program was
+executed and chose to exit non-zero, which moves the investigation from the unit file to the
+program's own output in <code>journalctl -u</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between <code>systemctl isolate multi-user.target</code> and <code>systemctl set-default multi-user.target</code>, and which one a reboot test will notice?</p>
+<blockquote>
+<p><code>isolate</code> changes the currently running system and leaves the boot default alone; <code>set-default</code>
+repoints the <code>default.target</code> symlink and changes nothing about the running system. Only
+<code>set-default</code> survives a reboot, and only it changes what <code>systemctl get-default</code> reports.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

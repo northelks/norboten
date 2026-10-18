@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Counting things, and the specification is the test · Norboten</title>
+<meta name="description" content="This lab does not break a machine. It hands you a specification — eleven lines of it — and grades your script against logs you have not seen. That is a differen">
+<link rel="canonical" href="https://norboten.org/journals/linux-04-write-the-report/"><meta property="og:title" content="Counting things, and the specification is the test · Norboten">
+<meta property="og:description" content="This lab does not break a machine. It hands you a specification — eleven lines of it — and grades your script against logs you have not seen. That is a differen">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/linux-04-write-the-report/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Counting things, and the specification is the test · Norboten">
+<meta name="twitter:description" content="This lab does not break a machine. It hands you a specification — eleven lines of it — and grades your script against logs you have not seen. That is a differen">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Counting things, and the specification is the test",
+  "description": "This lab does not break a machine. It hands you a specification \u2014 eleven lines of it \u2014 and grades your script against logs you have not seen. That is a differen",
+  "url": "https://norboten.org/journals/linux-04-write-the-report/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 3471,
+  "timeRequired": "PT45M",
+  "about": ["Bash", "Linux basics"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · Write the Report</div>
+    <h1>Counting things, and the specification is the test</h1>
+    <p class="muted">
+      45 minutes' reading · 3471 words ·<span class="tag">Bash</span><span class="tag">Linux basics</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 131 words</title><rect x="0.0" y="0" width="21.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 1904 words</title><rect x="24.6" y="0" width="313.9" height="30" rx="4" fill="#1d2a23"/><text x="32.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 801 words</title><rect x="341.5" y="0" width="132.1" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 556 words</title><rect x="476.6" y="0" width="91.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 448 words</title><rect x="571.3" y="0" width="73.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 54 words</title><rect x="648.2" y="0" width="8.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 606 words</title><rect x="660.1" y="0" width="99.9" height="30" rx="4" fill="#1d2a23"/><text x="668.1" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/linux-04-write-the-report/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>This lab does not break a machine. It hands you a specification — eleven lines of it — and grades
+your script against logs you have not seen. That is a different skill from repair, and it is the one
+most of the small tools on a server are made of: read text, count something, sort it, print it, and
+behave correctly when the input or the arguments are wrong.</p>
+<p>The counting part is a four-command pipeline that has been the same since the 1970s. The interesting
+parts are the details the specification is quietly testing: what &quot;order by address as plain text&quot;
+means when a locale is involved, which single space, what exit status, which stream the error goes
+to. Almost every way to get this wrong produces a script that looks right on the sample log in
+<code>/srv/logs/access.log</code> and fails on the fourth edge case.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Build a frequency count from a stream of text with <code>sort | uniq -c</code>, and explain why the first
+<code>sort</code> is mandatory.</li>
+<li>Order by one field numerically and break ties on another as bytes, with <code>sort</code>'s key syntax.</li>
+<li>Say what <code>LC_ALL=C</code> changes and why a byte-order requirement needs it.</li>
+<li>Parse options with <code>getopts</code>, validate them, and know what <code>shift $((OPTIND - 1))</code> is for.</li>
+<li>Pick exit statuses by convention — 0, 1 for a runtime failure, 2 for misuse — and put messages on
+stderr.</li>
+<li>Recognise the two ways <code>set -e</code>/<code>pipefail</code> sabotage a correct pipeline that ends in <code>head</code>, or
+greps a file with no matches.</li>
+<li>Read a specification as a list of test cases, and run all of them before believing the script.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="counting-sort--uniq--c">Counting: <code>sort | uniq -c</code></h3>
+<p><code>uniq</code> collapses <strong>adjacent</strong> identical lines. It does not know anything about the rest of the file,
+which is why the input must be sorted first — and why <code>sort | uniq -c</code> is one idiom rather than two
+commands:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>awk<span class="hl-w"> </span><span class="hl-s1">'{print $1}'</span><span class="hl-w"> </span>access.log<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sort<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>uniq<span class="hl-w"> </span>-c
+<span class="hl-go">     16 198.51.100.2</span>
+<span class="hl-go">     79 203.0.113.10</span>
+<span class="hl-go">    136 203.0.113.4</span>
+</code></pre>
+
+<p><code>uniq -c</code> prefixes each group with its count, <strong>right-aligned in a field of width 7</strong>. That padding
+is a formatting decision from 1973 and it will fail this lab's &quot;a single space between them&quot;
+requirement, so it has to be normalised. Any of these does it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-go">… | uniq -c | awk '{print $1, $2}'      # rebuild the line from its fields  ← clearest</span>
+<span class="hl-go">… | uniq -c | sed 's/^ *//'             # strip the leading padding only</span>
+<span class="hl-go">… | uniq -c | tr -s ' ' | sed 's/^ //'  # squeeze runs of spaces, then the leading one</span>
+</code></pre>
+
+<p><code>awk '{print $1, $2}'</code> is the one to reach for, because awk splits on runs of whitespace and rebuilds
+the line with a single <code>OFS</code>, which is exactly the transformation asked for.</p>
+<p>For the extraction step, <code>awk '{print $1}'</code> beats <code>cut -d' ' -f1</code> in general: <code>cut</code> treats each
+delimiter as significant, so two consecutive spaces give you an empty field, while awk's default
+splitting handles any run of spaces or tabs. Both work on a well-formed access log; only one keeps
+working on a scruffy one.</p>
+<p>There is also a one-command version, which is what you would write for a large file since it makes a
+single pass and needs no intermediate sort:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>awk<span class="hl-w"> </span><span class="hl-s1">'!/^#/ &amp;&amp; NF { c[$1]++ } END { for (ip in c) print c[ip], ip }'</span><span class="hl-w"> </span>access.log
+</code></pre>
+
+<p>An awk associative array <em>is</em> a frequency table. The filter <code>!/^#/ &amp;&amp; NF</code> is the whole
+&quot;ignore comments and blank lines&quot; requirement: skip lines starting with <code>#</code>, and skip lines with no
+fields. Either route is legitimate here; the pipeline is easier to build incrementally at a prompt,
+and that matters more than the performance on a file this size.</p>
+<h3 id="ordering-sort-keys-and-why-one--r-is-wrong">Ordering: <code>sort</code> keys, and why one <code>-r</code> is wrong</h3>
+<p>The specification wants two different orderings at once: count descending, and — for equal counts —
+address ascending as bytes. <code>sort -rn</code> cannot express that, because a single <code>-r</code> reverses
+<em>everything</em>, putting <code>10.0.0.9</code> before <code>10.0.0.10</code> when the counts tie. Keys are how you say it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>…<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>C<span class="hl-w"> </span>sort<span class="hl-w"> </span>-k1,1nr<span class="hl-w"> </span>-k2,2
+<span class="hl-go">7 172.16.0.1</span>
+<span class="hl-go">4 10.0.0.10</span>
+<span class="hl-go">4 10.0.0.2</span>
+<span class="hl-go">4 10.0.0.9</span>
+<span class="hl-go">1 192.168.1.1</span>
+</code></pre>
+
+<p>Read <code>-k1,1nr</code> as: <strong>start at field 1, end at field 1</strong> (that is what <code>1,1</code> means — without the
+second number the key runs to the end of the line), <strong>n</strong>umeric, <strong>r</strong>eversed. Then <code>-k2,2</code> is a
+second key: field 2, default ordering, ascending. Per-key modifiers are the point — <code>-n</code> after <code>-k</code>
+applies to that key only, whereas a global <code>-rn</code> applies to all of them.</p>
+<p>That is also the answer to a question people ask about ties: <code>sort</code> is not stable by default (<code>-s</code>
+makes it so, and the final comparison of whole lines is what breaks ties otherwise), so <em>specify</em> the
+tie-break rather than hoping input order survives.</p>
+<h3 id="lc_allc-and-what-plain-text-means"><code>LC_ALL=C</code>, and what &quot;plain text&quot; means</h3>
+<p>The specification says byte order, and gives the example <code>10.0.0.10</code> before <code>10.0.0.9</code>. That is what
+you get comparing bytes: <code>1</code> (0x31) is less than <code>9</code> (0x39) at the fourth position of
+<code>10.0.0.1…</code>. But <code>sort</code> obeys the locale, and locale collation has other ideas: glibc's <code>en_US.UTF-8</code>
+ignores punctuation on its first pass and folds case, so it compares <code>10.2.0.1</code> as though it were
+<code>10201</code> and <code>101.0.0.1</code> as <code>101001</code> — and puts them in the opposite order from bytes. Measured on
+Ubuntu 26.04, whose <code>sort</code> is uutils 0.8.0, with the locale generated (GNU <code>sort</code> agrees):</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'10.2.0.1\n101.0.0.1\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>C<span class="hl-w"> </span>sort<span class="hl-w">             </span><span class="hl-c1"># 10.2.0.1 then 101.0.0.1  ('.' &lt; '1')</span>
+<span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'10.2.0.1\n101.0.0.1\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>en_US.UTF-8<span class="hl-w"> </span>sort<span class="hl-w">   </span><span class="hl-c1"># 101.0.0.1 then 10.2.0.1  (dots ignored)</span>
+<span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'a\nB\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>C<span class="hl-w"> </span>sort<span class="hl-w">                            </span><span class="hl-c1"># B then a  (uppercase bytes are smaller)</span>
+<span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'a\nB\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>en_US.UTF-8<span class="hl-w"> </span>sort<span class="hl-w">                  </span><span class="hl-c1"># a then B</span>
+</code></pre>
+
+<p>Note that the specification's own example, <code>10.0.0.10</code> before <code>10.0.0.9</code>, comes out the same in both —
+which is exactly why a locale bug survives testing against the example. The lab machine itself runs
+with <code>LANG=C.UTF-8</code>, which also compares code points, so you will not see the difference there at all;
+the script that forgot <code>LC_ALL=C</code> fails on the next machine, with the next log.</p>
+<p>So <code>LC_ALL=C</code> in front of <code>sort</code> is not superstition; it is the difference between a script that
+produces the specified output and one that produces whatever the machine's locale feels like. The
+same applies to <code>grep</code>'s character ranges and to <code>awk</code>'s comparisons. Whenever a program's output is
+being <em>compared</em> rather than read by a human, pin the locale.</p>
+<p>(<code>LC_ALL=C sort</code> sets it for that one command only, which is what you want — it does not affect the
+rest of the script, and it does not depend on the caller's environment.)</p>
+<h3 id="filtering-out-comments-and-blanks">Filtering out comments and blanks</h3>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>grep<span class="hl-w"> </span>-v<span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-s1">'^#'</span><span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-s1">'^[[:space:]]*$'</span><span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$file</span><span class="hl-s2">"</span>
+</code></pre>
+
+<p>Three details in one short command. <code>-e</code> twice supplies two patterns to one <code>grep</code> (so does <code>grep -E '^#|^[[:space:]]*$'</code>). <code>^#</code> anchors at the start, which matters — plain <code>grep -v '#'</code> would drop
+any line <em>containing</em> a hash, and an access log is full of URLs with fragments. <code>^[[:space:]]*$</code>
+catches a line that is empty <em>or</em> only whitespace, which is what &quot;empty line&quot; means in practice.</p>
+<p>And <code>--</code> ends the option list, so a file named <code>-n</code> is treated as a filename rather than a flag. It
+costs two characters and it is the difference between a robust script and a surprise.</p>
+<h3 id="options-getopts">Options: <code>getopts</code></h3>
+<pre class="hl"><code class="language-bash"><span class="hl-nv">n</span><span class="hl-o">=</span><span class="hl-m">5</span>
+<span class="hl-k">while</span><span class="hl-w"> </span><span class="hl-nb">getopts</span><span class="hl-w"> </span><span class="hl-s2">":n:"</span><span class="hl-w"> </span>opt<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span>
+<span class="hl-w">    </span><span class="hl-k">case</span><span class="hl-w"> </span><span class="hl-nv">$opt</span><span class="hl-w"> </span><span class="hl-k">in</span>
+<span class="hl-w">        </span>n<span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-nv">n</span><span class="hl-o">=</span><span class="hl-nv">$OPTARG</span><span class="hl-w"> </span><span class="hl-p">;;</span>
+<span class="hl-w">        </span>:<span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"top-talkers: invalid count"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span><span class="hl-p">;;</span><span class="hl-w">   </span><span class="hl-c1"># -n with no argument</span>
+<span class="hl-w">        </span>*<span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"top-talkers: unknown option -</span><span class="hl-nv">$OPTARG</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span><span class="hl-p">;;</span>
+<span class="hl-w">    </span><span class="hl-k">esac</span>
+<span class="hl-k">done</span>
+<span class="hl-nb">shift</span><span class="hl-w"> </span><span class="hl-k">$((</span><span class="hl-nv">OPTIND</span><span class="hl-w"> </span><span class="hl-o">-</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-k">))</span>
+</code></pre>
+
+<p>The optstring is a small language: a letter means a flag, <code>letter:</code> means it takes an argument, and a
+<strong>leading <code>:</code></strong> switches off getopts' own error messages so you can print your own — which you want,
+because the specification dictates the wording. With the leading colon, a missing argument arrives as
+<code>opt=&quot;:&quot;</code> and an unknown option as <code>opt=&quot;?&quot;</code>, with the offending letter in <code>$OPTARG</code> either way.</p>
+<p><code>$OPTIND</code> is the index of the next unparsed argument, so <code>shift $((OPTIND - 1))</code> discards everything
+getopts consumed and leaves <code>&quot;$1&quot;</code> as the first real operand. Forgetting that line is the classic
+<code>getopts</code> bug: the script then treats <code>-n</code> as its filename.</p>
+<p>One behaviour to know rather than fight: <code>getopts</code> stops at the first non-option argument, so
+<code>top-talkers file -n 3</code> leaves <code>-n 3</code> as operands. That is POSIX behaviour (GNU tools permute
+arguments; the shell does not), and the specification's <code>top-talkers [-n N] FILE</code> puts options first
+precisely because that is the portable order.</p>
+<h3 id="validating-and-the-three-exit-statuses">Validating, and the three exit statuses</h3>
+<p>Accepting <code>-n</code> is not the same as accepting a count. The specification says a positive whole number,
+and lists the rejections: <code>0</code>, <code>-3</code>, <code>abc</code>, <code>2.5</code>, and the empty string.</p>
+<pre class="hl"><code class="language-bash"><span class="hl-o">[[</span><span class="hl-w"> </span><span class="hl-nv">$n</span><span class="hl-w"> </span><span class="hl-o">=</span>~<span class="hl-w"> </span>^<span class="hl-o">[</span><span class="hl-m">1</span>-9<span class="hl-o">][</span><span class="hl-m">0</span>-9<span class="hl-o">]</span>*$<span class="hl-w"> </span><span class="hl-o">]]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"top-talkers: invalid count"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+</code></pre>
+
+<p><code>[[ … =~ … ]]</code> is bash's regex match; the pattern is unquoted (quoting it would make it a literal
+string), <code>^[1-9]</code> excludes <code>0</code> and anything starting with a sign, <code>[0-9]*$</code> allows more digits and
+nothing else — so no decimal point, no letters, and the empty string fails because <code>[1-9]</code> must match
+once.</p>
+<p>Then the file, checked before use rather than by letting a later command fail:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-nv">file</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">1</span><span class="hl-k">:-</span><span class="hl-si">}</span>
+<span class="hl-o">[[</span><span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-nv">$file</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>-f<span class="hl-w"> </span><span class="hl-nv">$file</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-nv">$file</span><span class="hl-w"> </span><span class="hl-o">]]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"top-talkers: cannot read </span><span class="hl-nv">$file</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+</code></pre>
+
+<p><code>-f</code> is &quot;exists and is a regular file&quot;, <code>-r</code> is &quot;readable by me&quot;. Both, because a directory is
+readable and is not a log, and because a file you cannot read exists.</p>
+<p>The statuses follow a convention that is worth using deliberately:</p>
+<table>
+<thead>
+<tr>
+<th>status</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>success — including a correct run that printed nothing</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>the job could not be done: a missing file, a failed write</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td><strong>misuse</strong>: bad options or arguments. What bash's own builtins use</td>
+</tr>
+<tr>
+<td><code>126</code> / <code>127</code></td>
+<td>found but not executable / not found — the shell's, not yours</td>
+</tr>
+<tr>
+<td><code>128+N</code></td>
+<td>killed by signal N (<code>130</code> = SIGINT, <code>141</code> = SIGPIPE)</td>
+</tr>
+</tbody>
+</table>
+<p>And the stream matters as much as the number. Errors go to stderr (<code>&gt;&amp;2</code>) so that
+<code>top-talkers big.log &gt; report.txt</code> puts the report in the file and the complaint on the terminal. A
+script that prints its errors to stdout corrupts its own output, which is why this lab checks that
+stdout is <em>empty</em> on the failure paths.</p>
+<h3 id="the-two-traps-with-set--e-and-pipefail">The two traps with <code>set -e</code> and <code>pipefail</code></h3>
+<p>The careful defaults from the previous journal — <code>set -euo pipefail</code> — can break <em>this</em> script in two
+ways. Both are worth understanding, because they are the most common reason a correct pipeline exits
+non-zero, and the first one is intermittent.</p>
+<p><strong><code>head</code> closes the pipe.</strong> <code>head -n 5</code> exits as soon as it has five lines, and if the writer upstream
+is still writing, its next write gets <code>SIGPIPE</code>. That is normal, cooperative behaviour — it is how
+<code>head</code> stops a long job early — but the upstream command's status becomes <code>141</code>, and <code>pipefail</code>
+propagates it. With <code>-e</code> as well, the script exits 141 having printed exactly the right output.</p>
+<p>Whether it happens depends on how much the writer has left to write. On the sample log <code>sort</code> emits
+seven short lines, they fit in the pipe's buffer (64 KiB on Linux), <code>sort</code> has finished before <code>head</code>
+exits, and nothing goes wrong. On a log with 200,000 distinct addresses it does — measured on the lab
+machine, the <code>set -e</code> version of the script printed <code>1 10.0.0.0</code> and exited 141. A bug that passes
+every test on small input and fails on the production log is the worst kind, which is why it is worth
+designing out rather than waiting for.</p>
+<p><strong><code>grep</code> reports &quot;no matches&quot; as failure.</strong> <code>grep -v</code> on a file containing only comments prints
+nothing and exits <code>1</code>, by design: grep's status answers &quot;did you match anything?&quot;. The specification
+says an empty log must print nothing and <strong>exit 0</strong>, so a pipeline starting with <code>grep</code> plus
+<code>pipefail</code> gives you exit 1 on a case the spec calls success.</p>
+<p>Three ways out, and the choice is a real one:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-nb">set</span><span class="hl-w"> </span>-uo<span class="hl-w"> </span>pipefail<span class="hl-w">        </span><span class="hl-c1"># keep -u, drop -e, and end the script with an explicit `exit 0`</span>
+pipeline<span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-nb">true</span><span class="hl-w">        </span><span class="hl-c1"># explicitly ignore the pipeline's status</span>
+<span class="hl-nb">set</span><span class="hl-w"> </span>+o<span class="hl-w"> </span>pipefail<span class="hl-w">         </span><span class="hl-c1"># inside the section with head, then back on</span>
+</code></pre>
+
+<p>The first is what this script wants: <code>-u</code> still catches typos, the checks above are explicit <code>|| exit</code> lines rather than relying on <code>-e</code>, and a final <code>exit 0</code> states that a report with no rows is a
+success. The general lesson: <code>set -e</code> is a good default for a script whose commands should all
+succeed, and a bad one for a pipeline whose components signal information through their exit status.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>There is no failure to diagnose here — there is a specification to satisfy. So the walkthrough is the
+method: <strong>build the pipeline at the prompt, one stage at a time, looking at the output after each
+addition.</strong> Never write ten lines and then debug them.</p>
+<p><strong>1. Look at the data before writing anything.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>head<span class="hl-w"> </span>-3<span class="hl-w"> </span>/srv/logs/access.log
+<span class="hl-gp"># </span>access<span class="hl-w"> </span>log,<span class="hl-w"> </span>rotated<span class="hl-w"> </span>daily
+<span class="hl-go">203.0.113.4 - - [11/Sep/2026:10:00:00 +0000] "GET /api/items/0 HTTP/1.1" 200 2671</span>
+
+<span class="hl-gp">$ </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">''</span><span class="hl-w"> </span>/srv/logs/access.log<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'^#'</span><span class="hl-w"> </span>/srv/logs/access.log
+<span class="hl-go">406</span>
+<span class="hl-go">1</span>
+<span class="hl-gp">$ </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'^[[:space:]]*$'</span><span class="hl-w"> </span>/srv/logs/access.log
+<span class="hl-go">5</span>
+</code></pre>
+
+<p>A comment line and five blanks — the third line of the file is already one of them — both mentioned
+in the specification, and now confirmed present in the sample.</p>
+<p><strong>2. Extract the field.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>awk<span class="hl-w"> </span><span class="hl-s1">'{print $1}'</span><span class="hl-w"> </span>/srv/logs/access.log<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-3
+<span class="hl-gp">#</span>
+<span class="hl-go">203.0.113.4</span>
+
+</code></pre>
+
+<p>The comment came through as <code>#</code>, and the blank line as an empty line — both would be counted as
+&quot;clients&quot;. Filter first:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>grep<span class="hl-w"> </span>-v<span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-s1">'^#'</span><span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-s1">'^[[:space:]]*$'</span><span class="hl-w"> </span>--<span class="hl-w"> </span>/srv/logs/access.log<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>awk<span class="hl-w"> </span><span class="hl-s1">'{print $1}'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-3
+<span class="hl-go">203.0.113.4</span>
+<span class="hl-go">203.0.113.9</span>
+<span class="hl-go">203.0.113.4</span>
+</code></pre>
+
+<p><strong>3. Count.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>grep<span class="hl-w"> </span>-v<span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-s1">'^#'</span><span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-s1">'^[[:space:]]*$'</span><span class="hl-w"> </span>--<span class="hl-w"> </span>/srv/logs/access.log<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>awk<span class="hl-w"> </span><span class="hl-s1">'{print $1}'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>C<span class="hl-w"> </span>sort<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>uniq<span class="hl-w"> </span>-c
+<span class="hl-go">      8 192.0.2.77</span>
+<span class="hl-go">     16 198.51.100.2</span>
+<span class="hl-go">     79 203.0.113.10</span>
+<span class="hl-go">     30 203.0.113.23</span>
+<span class="hl-go">    136 203.0.113.4</span>
+<span class="hl-go">     28 203.0.113.57</span>
+<span class="hl-go">    103 203.0.113.9</span>
+</code></pre>
+
+<p>The counts are right and the format is not: the padding is <code>uniq</code>'s, and the order is by address
+rather than by count. <strong>4. Normalise, then order.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>…<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>uniq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>awk<span class="hl-w"> </span><span class="hl-s1">'{print $1, $2}'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>C<span class="hl-w"> </span>sort<span class="hl-w"> </span>-k1,1nr<span class="hl-w"> </span>-k2,2<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">5</span>
+<span class="hl-go">136 203.0.113.4</span>
+<span class="hl-go">103 203.0.113.9</span>
+<span class="hl-go">79 203.0.113.10</span>
+<span class="hl-go">30 203.0.113.23</span>
+<span class="hl-go">28 203.0.113.57</span>
+</code></pre>
+
+<p><strong>5. Check the tie-break deliberately</strong>, with input designed to tie, because the sample log has no
+ties and this is the requirement most likely to be silently wrong:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'%s\n'</span><span class="hl-w"> </span><span class="hl-s1">'4 10.0.0.9'</span><span class="hl-w"> </span><span class="hl-s1">'4 10.0.0.10'</span><span class="hl-w"> </span><span class="hl-s1">'7 172.16.0.1'</span><span class="hl-w"> </span><span class="hl-s1">'4 10.0.0.2'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>C<span class="hl-w"> </span>sort<span class="hl-w"> </span>-k1,1nr<span class="hl-w"> </span>-k2,2
+<span class="hl-go">7 172.16.0.1</span>
+<span class="hl-go">4 10.0.0.10</span>
+<span class="hl-go">4 10.0.0.2</span>
+<span class="hl-go">4 10.0.0.9</span>
+</code></pre>
+
+<p><code>10.0.0.10</code> before <code>10.0.0.2</code> before <code>10.0.0.9</code> — byte order, as specified. Compare with the wrong
+version, which is the whole reason to test this:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'%s\n'</span><span class="hl-w"> </span><span class="hl-s1">'4 10.0.0.9'</span><span class="hl-w"> </span><span class="hl-s1">'4 10.0.0.10'</span><span class="hl-w"> </span><span class="hl-s1">'7 172.16.0.1'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sort<span class="hl-w"> </span>-rn
+<span class="hl-go">7 172.16.0.1</span>
+<span class="hl-go">4 10.0.0.9</span>
+<span class="hl-go">4 10.0.0.10</span>
+</code></pre>
+
+<p><strong>6. Wrap it in the script</strong>, adding the option parsing, the validation and the statuses:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-ch">#!/bin/bash</span>
+<span class="hl-c1"># top-talkers [-n N] FILE — the N busiest client addresses in an access log.</span>
+<span class="hl-nb">set</span><span class="hl-w"> </span>-uo<span class="hl-w"> </span>pipefail
+
+<span class="hl-nv">n</span><span class="hl-o">=</span><span class="hl-m">5</span>
+<span class="hl-k">while</span><span class="hl-w"> </span><span class="hl-nb">getopts</span><span class="hl-w"> </span><span class="hl-s2">":n:"</span><span class="hl-w"> </span>opt<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span>
+<span class="hl-w">    </span><span class="hl-k">case</span><span class="hl-w"> </span><span class="hl-nv">$opt</span><span class="hl-w"> </span><span class="hl-k">in</span>
+<span class="hl-w">        </span>n<span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-nv">n</span><span class="hl-o">=</span><span class="hl-nv">$OPTARG</span><span class="hl-w"> </span><span class="hl-p">;;</span>
+<span class="hl-w">        </span>:<span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"top-talkers: invalid count"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span><span class="hl-p">;;</span>
+<span class="hl-w">        </span>*<span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"top-talkers: unknown option -</span><span class="hl-nv">$OPTARG</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span><span class="hl-p">;;</span>
+<span class="hl-w">    </span><span class="hl-k">esac</span>
+<span class="hl-k">done</span>
+<span class="hl-nb">shift</span><span class="hl-w"> </span><span class="hl-k">$((</span><span class="hl-nv">OPTIND</span><span class="hl-w"> </span><span class="hl-o">-</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-k">))</span>
+
+<span class="hl-o">[[</span><span class="hl-w"> </span><span class="hl-nv">$n</span><span class="hl-w"> </span><span class="hl-o">=</span>~<span class="hl-w"> </span>^<span class="hl-o">[</span><span class="hl-m">1</span>-9<span class="hl-o">][</span><span class="hl-m">0</span>-9<span class="hl-o">]</span>*$<span class="hl-w"> </span><span class="hl-o">]]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"top-talkers: invalid count"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+<span class="hl-nv">file</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">1</span><span class="hl-k">:-</span><span class="hl-si">}</span>
+<span class="hl-o">[[</span><span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-nv">$file</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>-f<span class="hl-w"> </span><span class="hl-nv">$file</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-nv">$file</span><span class="hl-w"> </span><span class="hl-o">]]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"top-talkers: cannot read </span><span class="hl-nv">$file</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+
+grep<span class="hl-w"> </span>-v<span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-s1">'^#'</span><span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-s1">'^[[:space:]]*$'</span><span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$file</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>awk<span class="hl-w"> </span><span class="hl-s1">'{print $1}'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>C<span class="hl-w"> </span>sort<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>uniq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>awk<span class="hl-w"> </span><span class="hl-s1">'{print $1, $2}'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>C<span class="hl-w"> </span>sort<span class="hl-w"> </span>-k1,1nr<span class="hl-w"> </span>-k2,2<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$n</span><span class="hl-s2">"</span>
+<span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">0</span>
+</code></pre>
+
+<p>The <code>exit 0</code> at the end is not decoration: it is what makes &quot;an empty log prints nothing and exits 0&quot;
+true, given that <code>grep</code> exits 1 when it filters everything away.</p>
+<p><strong>7. Run every case in the specification.</strong> There are seven, and the script is not finished until all
+seven have been seen:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>install<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">755</span><span class="hl-w"> </span>top-talkers<span class="hl-w"> </span>/usr/local/bin/top-talkers
+
+<span class="hl-gp">$ </span>top-talkers<span class="hl-w"> </span>/srv/logs/access.log<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-w">          </span><span class="hl-c1"># default 5 rows</span>
+<span class="hl-gp">$ </span>top-talkers<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span>/srv/logs/access.log<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>wc<span class="hl-w"> </span>-l<span class="hl-w">              </span><span class="hl-c1"># 3</span>
+<span class="hl-gp">$ </span>top-talkers<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">99</span><span class="hl-w"> </span>/srv/logs/access.log<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>wc<span class="hl-w"> </span>-l<span class="hl-w">             </span><span class="hl-c1"># 7 — fewer rows than asked for is fine</span>
+
+<span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'# only a comment\n\n'</span><span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/empty.log
+<span class="hl-gp">$ </span>top-talkers<span class="hl-w"> </span>/tmp/empty.log<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-w">                </span><span class="hl-c1"># no output, exit 0</span>
+<span class="hl-go">exit=0</span>
+
+<span class="hl-gp">$ </span>top-talkers<span class="hl-w"> </span>/nope.log<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">top-talkers: cannot read /nope.log</span>
+<span class="hl-go">exit=1</span>
+
+<span class="hl-gp">$ </span><span class="hl-k">for</span><span class="hl-w"> </span>bad<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span><span class="hl-m">0</span><span class="hl-w"> </span>-3<span class="hl-w"> </span>abc<span class="hl-w"> </span><span class="hl-m">2</span>.5<span class="hl-w"> </span><span class="hl-s1">''</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span>
+<span class="hl-go">&gt;   top-talkers -n "$bad" /srv/logs/access.log &gt;/dev/null ; echo "$bad -&gt; $?"</span>
+<span class="hl-go">&gt; done</span>
+<span class="hl-go">top-talkers: invalid count</span>
+<span class="hl-go">0 -&gt; 2</span>
+<span class="hl-go">…</span>
+<span class="hl-go">'' -&gt; 2</span>
+
+<span class="hl-gp">$ </span>top-talkers<span class="hl-w"> </span>/srv/logs/access.log<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>-A<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-2<span class="hl-w">        </span><span class="hl-c1"># exactly one space, no trailing junk</span>
+<span class="hl-go">136 203.0.113.4$</span>
+<span class="hl-go">103 203.0.113.9$</span>
+</code></pre>
+
+<p><code>cat -A</code> is the check nobody runs and everybody needs: it makes <code>$</code> the end of each line and shows
+tabs as <code>^I</code>, so a trailing space or a tab instead of a space becomes visible. A specification that
+says &quot;a single space&quot; is testing for exactly this.</p>
+<p><strong>8. Check the stream discipline</strong>, because the graders check that stdout is clean on failure:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>top-talkers<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">0</span><span class="hl-w"> </span>/srv/logs/access.log<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"stdout was empty: </span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-gp">$ </span>top-talkers<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">0</span><span class="hl-w"> </span>/srv/logs/access.log<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span>&gt;/dev/null<span class="hl-w">     </span><span class="hl-c1"># only stderr</span>
+<span class="hl-go">top-talkers: invalid count</span>
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong><code>uniq -c</code> without sorting first.</strong> <code>uniq</code> only collapses <em>adjacent</em> duplicates, so unsorted input
+gives one group per run and counts that look plausible and are wrong. The bug hides in a log where
+requests from one address happen to arrive together.</p>
+<p><strong>Leaving <code>uniq -c</code>'s padding in the output.</strong> <code>      4 10.0.0.9</code> has seven leading spaces. The
+specification says &quot;a single space between them&quot;, and a grader comparing strings sees a different
+line. <code>awk '{print $1, $2}'</code> rebuilds it correctly.</p>
+<p><strong><code>sort -rn</code> instead of two keys.</strong> It reverses the tie-break as well as the count, so tied addresses
+come out in descending byte order — the opposite of what was asked. <code>-k1,1nr -k2,2</code> states the two
+orderings separately, which is the only way to have them differ.</p>
+<p><strong>Omitting <code>LC_ALL=C</code>.</strong> The script then produces different output on machines with different
+locales: under <code>en_US.UTF-8</code>, <code>101.0.0.1</code> sorts before <code>10.2.0.1</code>, while the specification's own
+<code>10.0.0.10</code>/<code>10.0.0.9</code> example happens to agree in both, and the lab image's <code>C.UTF-8</code> hides it
+entirely. Any time output is compared rather
+than read, pin the locale on the command that compares.</p>
+<p><strong><code>set -euo pipefail</code> with a pipeline ending in <code>head</code>.</strong> When the upstream output is larger than the
+pipe buffer, <code>head</code> exits early, upstream takes <code>SIGPIPE</code>, <code>pipefail</code> propagates 141 and <code>-e</code> exits —
+after printing exactly the right answer. It passes on small logs, which is what makes it dangerous. Drop
+<code>-e</code> for this script (keep <code>-u</code>), or append <code>|| true</code>, and end with an explicit <code>exit 0</code>.</p>
+<p><strong>Forgetting that <code>grep</code> exits 1 when it matches nothing.</strong> On a log of only comments the filter
+removes everything, <code>grep</code> reports failure, and with <code>pipefail</code> the script exits 1 on a case the
+specification calls success. The explicit <code>exit 0</code> is the fix.</p>
+<p><strong><code>grep -v '#'</code> without the anchor.</strong> That drops every line containing a hash anywhere, including
+ordinary requests for URLs with fragments. Anchor it: <code>^#</code>.</p>
+<p><strong>Treating &quot;empty line&quot; as strictly empty.</strong> A line with a single space is blank to a human and not to
+<code>^$</code>. <code>^[[:space:]]*$</code> is the pattern.</p>
+<p><strong>Forgetting <code>shift $((OPTIND - 1))</code>.</strong> <code>getopts</code> consumes <code>-n 3</code> and leaves <code>$1</code> pointing at it, so
+the script tries to read a file called <code>-n</code>. This produces the baffling &quot;cannot read -n&quot; and it is
+the single most common <code>getopts</code> mistake.</p>
+<p><strong>Accepting anything <code>getopts</code> hands you as a count.</strong> <code>-n abc</code> parses fine as an option argument;
+only your own validation rejects it. And the specification lists five rejections — including the empty
+string, which <code>[1-9]</code> handles only because it requires at least one digit.</p>
+<p><strong>Exiting 1 for a bad option, or 2 for a missing file.</strong> The specification assigns them the other way
+round (2 is misuse, 1 is a runtime failure), and this is a genuine convention rather than an
+arbitrary choice: bash's own builtins use 2 for usage errors.</p>
+<p><strong>Printing the error to stdout.</strong> It corrupts the report, defeats <code>&gt;report.txt</code>, and fails a check
+that requires stdout to be empty on the failure paths. <code>&gt;&amp;2</code>.</p>
+<p><strong>Printing a header, a total, or a trailing blank line.</strong> The specification says the rows and nothing
+else. <code>cat -A</code> shows what you actually emitted.</p>
+<p><strong>Testing only against <code>/srv/logs/access.log</code>.</strong> The sample log has no ties, no unreadable-file case
+and no invalid option. The specification <em>is</em> the test list: seven cases, all of them run, before you
+call it done.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># counting</span>
+awk<span class="hl-w"> </span><span class="hl-s1">'{print $1}'</span><span class="hl-w"> </span>file<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sort<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>uniq<span class="hl-w"> </span>-c<span class="hl-w">            </span><span class="hl-c1"># frequency table (sort FIRST — uniq is adjacent)</span>
+uniq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>awk<span class="hl-w"> </span><span class="hl-s1">'{print $1, $2}'</span><span class="hl-w">                    </span><span class="hl-c1"># strip uniq's 7-wide padding</span>
+uniq<span class="hl-w"> </span>-d<span class="hl-w"> </span>/<span class="hl-w"> </span>-u<span class="hl-w">                                      </span><span class="hl-c1"># only duplicated / only unique lines</span>
+awk<span class="hl-w"> </span><span class="hl-s1">'!/^#/ &amp;&amp; NF { c[$1]++ } END { for (k in c) print c[k], k }'</span><span class="hl-w"> </span>file<span class="hl-w">    </span><span class="hl-c1"># one pass, no pre-sort</span>
+grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">''</span><span class="hl-w">  </span>file<span class="hl-w">                                  </span><span class="hl-c1"># count lines</span>
+grep<span class="hl-w"> </span>-v<span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-s1">'^#'</span><span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-s1">'^[[:space:]]*$'</span><span class="hl-w"> </span>--<span class="hl-w"> </span>file<span class="hl-w">       </span><span class="hl-c1"># drop comments and blank/whitespace lines</span>
+
+<span class="hl-c1"># ordering</span>
+<span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>C<span class="hl-w"> </span>sort<span class="hl-w"> </span>-k1,1nr<span class="hl-w"> </span>-k2,2<span class="hl-w">      </span><span class="hl-c1"># field 1 numeric descending, then field 2 as bytes ascending</span>
+<span class="hl-c1">#          │ │ ││    └─ second key: field 2 only, default (byte) order</span>
+<span class="hl-c1">#          │ │ │└─ r: reverse this key      -n numeric, -h human sizes, -V versions</span>
+<span class="hl-c1">#          │ └─┴─ from field 1 to field 1 (omit the end and the key runs to end of line)</span>
+sort<span class="hl-w"> </span>-s<span class="hl-w">                          </span><span class="hl-c1"># stable: preserve input order for equal keys</span>
+sort<span class="hl-w"> </span>-t:<span class="hl-w"> </span>-k3,3n<span class="hl-w"> </span>/etc/passwd<span class="hl-w">      </span><span class="hl-c1"># a different field separator</span>
+<span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>C<span class="hl-w">                         </span><span class="hl-c1"># byte order, reproducible anywhere  ← whenever output is compared</span>
+
+<span class="hl-c1"># options</span>
+<span class="hl-k">while</span><span class="hl-w"> </span><span class="hl-nb">getopts</span><span class="hl-w"> </span><span class="hl-s2">":n:v"</span><span class="hl-w"> </span>opt<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span><span class="hl-k">case</span><span class="hl-w"> </span><span class="hl-nv">$opt</span><span class="hl-w"> </span><span class="hl-k">in</span>
+<span class="hl-w">    </span>n<span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-nv">n</span><span class="hl-o">=</span><span class="hl-nv">$OPTARG</span><span class="hl-w"> </span><span class="hl-p">;;</span><span class="hl-w">                 </span><span class="hl-c1"># ":n:" — leading colon: handle errors yourself</span>
+<span class="hl-w">    </span>v<span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-nv">verbose</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">;;</span>
+<span class="hl-w">    </span>:<span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$0</span><span class="hl-s2">: -</span><span class="hl-nv">$OPTARG</span><span class="hl-s2"> needs an argument"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span><span class="hl-p">;;</span>
+<span class="hl-w">    </span>*<span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$0</span><span class="hl-s2">: unknown option -</span><span class="hl-nv">$OPTARG</span><span class="hl-s2">"</span><span class="hl-w">     </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span><span class="hl-p">;;</span>
+<span class="hl-k">esac</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span>
+<span class="hl-nb">shift</span><span class="hl-w"> </span><span class="hl-k">$((</span><span class="hl-nv">OPTIND</span><span class="hl-w"> </span><span class="hl-o">-</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-k">))</span><span class="hl-w">            </span><span class="hl-c1"># ← forget this and $1 is still an option</span>
+<span class="hl-o">[[</span><span class="hl-w"> </span><span class="hl-nv">$n</span><span class="hl-w"> </span><span class="hl-o">=</span>~<span class="hl-w"> </span>^<span class="hl-o">[</span><span class="hl-m">1</span>-9<span class="hl-o">][</span><span class="hl-m">0</span>-9<span class="hl-o">]</span>*$<span class="hl-w"> </span><span class="hl-o">]]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span><span class="hl-w">      </span><span class="hl-c1"># validate, unquoted pattern</span>
+
+<span class="hl-c1"># tests and statuses</span>
+<span class="hl-o">[[</span><span class="hl-w"> </span>-f<span class="hl-w"> </span><span class="hl-nv">$f</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-nv">$f</span><span class="hl-w"> </span><span class="hl-o">]]</span><span class="hl-w">             </span><span class="hl-c1"># -f regular file, -d dir, -r/-w/-x access, -s non-empty</span>
+<span class="hl-o">[[</span><span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-nv">$s</span><span class="hl-w"> </span><span class="hl-o">]]</span><span class="hl-w"> </span>/<span class="hl-w"> </span><span class="hl-o">[[</span><span class="hl-w"> </span>-z<span class="hl-w"> </span><span class="hl-nv">$s</span><span class="hl-w"> </span><span class="hl-o">]]</span><span class="hl-w">        </span><span class="hl-c1"># non-empty / empty string</span>
+<span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">0</span><span class="hl-w">                           </span><span class="hl-c1"># success (including a correct empty report)</span>
+<span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w">                           </span><span class="hl-c1"># could not do the job</span>
+<span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w">                           </span><span class="hl-c1"># misuse: bad options or arguments</span>
+<span class="hl-c1"># 126 not executable, 127 not found, 128+N killed by signal N (141 = SIGPIPE)</span>
+<span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"msg"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-w">                   </span><span class="hl-c1"># errors on stderr, always</span>
+
+<span class="hl-c1"># set -e and pipelines</span>
+<span class="hl-nb">set</span><span class="hl-w"> </span>-uo<span class="hl-w"> </span>pipefail<span class="hl-w">                 </span><span class="hl-c1"># -u without -e: for scripts whose pipelines end in head/grep</span>
+cmd<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">5</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-nb">true</span><span class="hl-w">          </span><span class="hl-c1"># head closes the pipe → upstream gets SIGPIPE → 141</span>
+<span class="hl-c1"># grep exits 1 when it matches nothing — that is information, not an error</span>
+
+<span class="hl-c1"># checking your own output</span>
+cmd<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>-A<span class="hl-w">                     </span><span class="hl-c1"># line ends as $, tabs as ^I — finds stray spaces</span>
+diff<span class="hl-w"> </span>&lt;<span class="hl-o">(</span>cmd<span class="hl-o">)</span><span class="hl-w"> </span>expected<span class="hl-w">             </span><span class="hl-c1"># compare against a known-good file</span>
+cmd<span class="hl-w"> </span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-nv">$?</span><span class="hl-w">         </span><span class="hl-c1"># the status alone</span>
+cmd<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span>&gt;/dev/null<span class="hl-w">              </span><span class="hl-c1"># only stderr</span>
+bash<span class="hl-w"> </span>-n<span class="hl-w"> </span>script<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>shellcheck<span class="hl-w"> </span>script
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<p>Manual pages: <code>man 1 sort</code>, <code>man 1 uniq</code>, <code>man 7 locale</code>, <code>man 1 grep</code>, <code>man 1 bash</code>, <code>man 1 test</code>.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Why must <code>sort</code> come before <code>uniq -c</code>, and what does the output look like when it does not?</p>
+<blockquote>
+<p><code>uniq</code> only collapses <em>adjacent</em> identical lines, so unsorted input yields one group per run of
+repeats: the same address appears several times with partial counts. It looks like a plausible
+report, which is what makes it dangerous.</p>
+</blockquote>
+</li>
+<li>
+<p><code>sort -rn</code> and <code>sort -k1,1nr -k2,2</code> both put the biggest count first. What does the specification
+require that only the second one delivers?</p>
+<blockquote>
+<p>A tie-break in the <em>opposite</em> direction: counts descending but equal counts ordered by address
+ascending. A single global <code>-r</code> reverses every comparison, so tied addresses come out in
+descending byte order. Per-key modifiers are the only way to have two orderings in one sort.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>LC_ALL=C</code> change, and why does a requirement phrased as &quot;plain text, byte order&quot; need
+it?</p>
+<blockquote>
+<p>It selects the C locale, where comparison is byte-by-byte, instead of the locale's collation
+rules — glibc's <code>en_US.UTF-8</code> ignores punctuation on the first pass and folds case. Without it,
+<code>101.0.0.1</code> sorts before <code>10.2.0.1</code>, and the output differs between machines.</p>
+</blockquote>
+</li>
+<li>
+<p>A pipeline ending in <code>head -n 5</code> produces exactly the right output and the script exits 141 under
+<code>set -euo pipefail</code> — but only on large logs. Explain the mechanism and give two fixes.</p>
+<blockquote>
+<p><code>head</code> exits after five lines and closes the pipe; if the upstream process is still writing, its
+next write kills it with <code>SIGPIPE</code>, giving status 141 (128+13). Small output fits in the pipe
+buffer and is written before <code>head</code> exits, so the failure appears only with large input. <code>pipefail</code> propagates that and <code>-e</code> exits on it.
+Either drop <code>-e</code> (keeping <code>-u</code>) and end with an explicit <code>exit 0</code>, or append <code>|| true</code> to the
+pipeline.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does a log containing only comments make a <code>grep</code>-based pipeline exit 1, and what does the
+specification say should happen?</p>
+<blockquote>
+<p><code>grep</code> uses its exit status to report whether anything matched: filtering everything away is
+&quot;no matches&quot;, status 1. The specification calls an empty report a success, so the script must
+end with an explicit <code>exit 0</code> (or otherwise ignore that status).</p>
+</blockquote>
+</li>
+<li>
+<p>What is <code>shift $((OPTIND - 1))</code> for, and what is the symptom of omitting it?</p>
+<blockquote>
+<p><code>$OPTIND</code> is the index of the next unparsed argument, so the shift discards the options
+<code>getopts</code> consumed and leaves <code>&quot;$1&quot;</code> as the first operand. Omit it and <code>$1</code> is still <code>-n</code>, so
+the script reports that it cannot read a file called <code>-n</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>The specification assigns status 2 to a bad <code>-n</code> and status 1 to an unreadable file. What is the
+convention behind that, and why does the stream the message goes to matter just as much?</p>
+<blockquote>
+<p>2 is the conventional status for <em>misuse</em> — bad options or arguments, as bash's own builtins
+use — while 1 means the job itself could not be done. The message belongs on stderr so that
+redirecting stdout to a file keeps the report clean and still shows the complaint; a script that
+writes errors to stdout corrupts its own output.</p>
+</blockquote>
+</li>
+<li>
+<p>Your script prints the right rows and a grader rejects the output. Which command shows you what a
+string comparison sees?</p>
+<blockquote>
+<p><code>cmd | cat -A</code>: it marks the end of each line with <code>$</code> and renders tabs as <code>^I</code>, exposing a
+trailing space, a tab used where a space was specified, or <code>uniq -c</code>'s leading padding — the
+invisible differences that a &quot;single space between them&quot; requirement is testing.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

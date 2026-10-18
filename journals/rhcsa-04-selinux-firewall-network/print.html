@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Three layers of &quot;permission denied&quot;</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Three layers of &quot;permission denied&quot;</h1>
+  <div class="meta">firewall-selinux, networking · 55 minutes · 4252 words</div>
+</header>
+<p>A web server that will not start. A page that answers 403. A proxy that answers 502. An address and
+a hostname that were correct until the machine rebooted. Every symptom in this lab has a plausible
+wrong explanation — the config file, the file permissions, the backend, the network — and in every
+case the real cause is a layer most people do not look at because nothing in the daemon’s own log
+mentions it.</p>
+<p>That layer is SELinux, and the thing to understand about it is that it is not an extra set of
+permissions on files. It is a separate, parallel permission system that labels <em>everything</em> — files,
+directories, network ports, processes — and then consults a policy about which label may do what to
+which. A daemon can own a file, have <code>rwx</code> on it, and still be refused. <code>ls -l</code> will show you
+nothing wrong, because <code>ls -l</code> is looking at the other system.</p>
+<p>The lab then puts two more layers underneath: firewalld, where a rule can be present now and absent
+after a reboot, and NetworkManager, where the same is true of an address. The theme is the one this
+whole track keeps returning to — <strong>the difference between a machine that is right and a machine that
+will still be right tomorrow.</strong></p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Read an SELinux context and say which part of it matters for the problem in front of you.</li>
+<li>Find the denial that explains a failure, in the audit log, and translate it into the one thing
+that needs to change.</li>
+<li>Choose correctly between the four SELinux fixes — relabel a file, label a port, flip a boolean,
+write a module — instead of reaching for the first one you remember.</li>
+<li>Explain why <code>chcon</code> is a temporary fix and <code>semanage fcontext</code> + <code>restorecon</code> is not, and prove
+the difference with a dry run.</li>
+<li>Use permissive mode as a diagnostic without leaving the machine unprotected.</li>
+<li>Open a port in firewalld so that it is open now <em>and</em> after a reboot, in the zone that actually
+applies to the interface.</li>
+<li>Set a hostname and an extra address through the tools that own that configuration, rather than the
+commands that only change the running kernel.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Everything has a label</h3>
+<p>An SELinux context has four fields, and in day-to-day work you care about exactly one of them:</p>
+<pre><code class="language-console">$ ls -Z /srv/status/index.html
+unconfined_u:object_r:var_t:s0 /srv/status/index.html
+└─ user      └─ role   └─ TYPE └─ level (MLS; ignore on RHCSA)
+</code></pre>
+<p>The <strong>type</strong> is the whole game. Type enforcement is the rule that a process running in domain
+<code>httpd_t</code> may read files of type <code>httpd_sys_content_t</code>, may bind ports of type <code>http_port_t</code>, and
+may not touch things of type <code>var_t</code> — because the policy says so, file by file, port by port,
+verb by verb. Processes have types too, and they are visible in the same way:</p>
+<pre><code class="language-console">$ ps -eZ | grep nginx
+system_u:system_r:httpd_t:s0       2248 ?        00:00:00 nginx
+system_u:system_r:httpd_t:s0       2253 ?        00:00:00 nginx
+</code></pre>
+<p>Note that nginx runs in <code>httpd_t</code>: the policy is written around the <em>role</em> the daemon plays, not its
+package name, so everything named <code>httpd_*</code> applies to nginx as well. That surprises people once and
+then never again.</p>
+<p>Three kinds of thing carry labels, and each has its own tool:</p>
+<pre><code class="language-console">$ ls -Zd /srv/status                       # files and directories
+$ sudo semanage port -l | grep http_port_t # ports
+http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
+$ ps -eZ                                   # processes
+</code></pre>
+<p>Read that port list carefully, because it is the answer to the first fault in this lab. nginx may
+bind 80, 443, 8008, 8009, 9000 — and <strong>not</strong> 8090. Not because the port is in use, not because nginx
+lacks privilege in the ordinary sense, but because the label on the port does not permit that
+domain to bind it. The failure looks like this:</p>
+<pre><code class="language-console">$ sudo journalctl -u nginx -b | grep emerg
+nginx[1491]: nginx: [emerg] bind() to 0.0.0.0:8090 failed (13: Permission denied)
+</code></pre>
+<p><strong>Errno 13 on a bind is the signature of an SELinux port label</strong> — the same operation as root would
+normally simply succeed, and <code>EADDRINUSE</code> (98) would be the ordinary conflict. When you see
+“Permission denied” in a place where permissions have no business applying, that is the moment to
+go and read the audit log.</p>
+<h3>Finding the denial</h3>
+<p>Every refusal is logged, as an AVC (access vector cache) message, in <code>/var/log/audit/audit.log</code>.
+Do not grep that file by hand; <code>ausearch</code> formats it and understands time:</p>
+<pre><code class="language-console">$ sudo ausearch -m avc -ts recent
+type=AVC msg=audit(…): avc:  denied  { name_bind } for  pid=1204 comm=&quot;nginx&quot;
+    src=8090 scontext=system_u:system_r:httpd_t:s0
+    tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket permissive=0
+</code></pre>
+<p>Read it in this order, and it tells you the whole story in one line:</p>
+<ul>
+<li><code>denied { name_bind }</code> — the operation. <code>name_bind</code> is binding a port, <code>name_connect</code> an outbound
+connection, <code>read</code>/<code>open</code>/<code>write</code>/<code>getattr</code> the file ones.</li>
+<li><code>comm=&quot;nginx&quot;</code>, <code>scontext=…:httpd_t</code> — the <strong>source</strong>: who was refused, and in which domain.</li>
+<li><code>tcontext=…:unreserved_port_t</code>, <code>src=8090</code> — the <strong>target</strong>: what they were refused, and its
+label. <code>unreserved_port_t</code> is the generic “nothing claimed this port” label.</li>
+<li><code>tclass=tcp_socket</code> — the kind of object. <code>file</code>, <code>dir</code>, <code>tcp_socket</code>, <code>unix_stream_socket</code>.</li>
+<li><code>permissive=0</code> — this was actually blocked. <code>permissive=1</code> means it was allowed and logged.</li>
+</ul>
+<p>Two more tools turn that into English:</p>
+<pre><code class="language-console">$ sudo ausearch -m avc -ts recent | audit2why      # why it was denied, and what would allow it
+$ sudo sealert -a /var/log/audit/audit.log         # setroubleshoot's report, with suggestions
+</code></pre>
+<p><code>audit2why</code> is worth internalising, because it distinguishes the cases: <em>“one of the following
+booleans was set incorrectly”</em> is a completely different fix from <em>“you may want to report this as a
+bug”</em>. But read what it offers rather than pasting it. For this lab’s first denial — nginx refused a
+bind on 8090 — <code>audit2why</code> on Rocky 10 says:</p>
+<pre><code>	Was caused by:
+	The boolean nis_enabled was set incorrectly.
+	…
+	Allow access by executing:
+	# setsebool -P nis_enabled 1
+</code></pre>
+<p><code>nis_enabled</code> would indeed make the error go away, because it lets many confined domains bind <em>any</em>
+unreserved port. It is a switch for NIS clients, and turning it on to host a web page on 8090 widens
+every one of those domains to fix one. The correct answer — label the one port — is not a boolean,
+so <code>audit2why</code> cannot suggest it. For its second denial (the proxy’s outbound connection) it lists
+four booleans at once — <code>httpd_can_network_connect</code>, <code>httpd_can_network_relay</code>,
+<code>httpd_can_connect_ftp</code>, <code>httpd_use_openstack</code> — and picking the one that describes what the service
+does is your job. Treat <code>audit2why</code> as a list of <em>things that would work</em>, not a recommendation.</p>
+<p>One more practical detail: <code>ausearch</code> reads standard input when it is not attached to a terminal. At
+a prompt that never matters; in a script, a pipeline started from cron, or a remote command without a
+tty, it silently reads an empty stdin and reports <code>&lt;no matches&gt;</code>. <code>ausearch --input-logs …</code> makes it
+read the audit log regardless.</p>
+<p>And there is a trap in the audit log itself: <strong>dontaudit</strong> rules mean some
+denials are silenced by default, so an empty <code>ausearch</code> is not proof that SELinux is innocent. When
+you suspect it anyway:</p>
+<pre><code class="language-console">$ sudo semodule -DB          # disable dontaudit rules and rebuild the policy
+… reproduce …
+$ sudo semodule -B           # put them back
+</code></pre>
+<h3>The four fixes, in order of preference</h3>
+<p>When SELinux blocks something, exactly one of these is usually right:</p>
+<p><strong>1. The file’s label is wrong</strong> — the file is in the wrong place, or arrived by a route that did
+not label it (a <code>mv</code> from a home directory preserves the old label; a <code>cp</code> takes the destination’s).
+Fix the label, and fix it in the policy so it stays fixed:</p>
+<pre><code class="language-console">$ sudo semanage fcontext -a -t httpd_sys_content_t '/srv/status(/.*)?'
+$ sudo restorecon -Rv /srv/status
+</code></pre>
+<p><strong>2. A port’s label is wrong</strong> — the daemon is on a non-standard port. Add the port to the type the
+daemon is allowed to bind:</p>
+<pre><code class="language-console">$ sudo semanage port -a -t http_port_t -p tcp 8090     # -a to add
+$ sudo semanage port -m -t http_port_t -p tcp 8090     # -m if the port is already labelled
+</code></pre>
+<p><strong>3. A boolean is off</strong> — the policy has a switch for this case, because the case is legitimate but
+not universal:</p>
+<pre><code class="language-console">$ getsebool -a | grep httpd_can
+httpd_can_network_connect --&gt; off
+$ sudo setsebool -P httpd_can_network_connect on
+</code></pre>
+<p><strong>4. None of the above</strong> — then, and only then, a custom module built from the denials with
+<code>audit2allow -M</code>. On the exam and in real life this is almost always the wrong answer, because
+reaching for it means you have stopped asking what the policy was protecting.</p>
+<p>What is <em>not</em> on the list: turning SELinux off. Which brings us to the fifth fix that is not a fix.</p>
+<h3>Permissive is a diagnostic; disabled is a decision</h3>
+<pre><code class="language-console">$ getenforce
+Enforcing
+$ sudo setenforce 0            # permissive: log denials, allow them. Reversible instantly.
+$ sudo setenforce 1            # back to enforcing
+</code></pre>
+<p>Permissive mode is genuinely useful: it answers “is SELinux the reason?” in one command, and — more
+usefully — it lets you reproduce the failure and collect <strong>every</strong> denial in one run, instead of
+fixing one label, hitting the next denial, and fixing that. Then you set it back.</p>
+<p><code>SELINUX=disabled</code> in <code>/etc/selinux/config</code> is a different thing entirely. It takes effect at the
+next boot, stops labelling new files, and coming back from it requires a <strong>full filesystem relabel</strong>
+— because everything created while it was off has no valid label. That is minutes to hours on a
+real machine, plus a second reboot.</p>
+<pre><code class="language-console">$ sudo grep ^SELINUX= /etc/selinux/config
+SELINUX=enforcing              # enforcing | permissive | disabled  (at boot)
+$ sudo touch /.autorelabel &amp;&amp; sudo reboot     # relabel everything on the way up
+$ sudo fixfiles -R nginx restore              # or relabel just one package's files
+</code></pre>
+<p>This lab grades SELinux being enforcing — as a check that already passes on the broken machine,
+which exists purely to fail anyone who “fixes” the other five by switching the policy off. That is
+not a trick; it is the actual professional standard. Disabling SELinux to make an application work
+is the single most common way a RHEL machine ends up out of compliance.</p>
+<h3><code>chcon</code> versus <code>semanage fcontext</code></h3>
+<p>Two commands change a file’s label, and they are not alternatives:</p>
+<pre><code class="language-console">$ sudo chcon -t httpd_sys_content_t /srv/status/index.html      # write the label NOW
+$ sudo semanage fcontext -a -t httpd_sys_content_t '/srv/status(/.*)?'   # change the RULE
+$ sudo restorecon -Rv /srv/status                              # apply the rules
+</code></pre>
+<p><code>chcon</code> writes a label onto the inode and changes nothing about what the policy believes that path
+<em>should</em> be. The policy’s own view lives in the file-context rules:</p>
+<pre><code class="language-console">$ sudo semanage fcontext -l | grep '^/srv'
+/srv/.*      all files      system_u:object_r:var_t:s0
+</code></pre>
+<p>So the policy thinks everything under <code>/srv</code> is <code>var_t</code> — which is why the site files came out
+labelled that way, and why <code>restorecon</code> would happily undo a <code>chcon</code>. And <code>restorecon</code> does not run
+only when you run it: a relabel after a policy update, <code>/.autorelabel</code>, <code>fixfiles</code>, or a helpful
+colleague will all revert it. A <code>chcon</code> fix is a fix with a hidden expiry date.</p>
+<p>You can ask what the policy thinks without changing anything, and this is the command that proves
+your fix is real:</p>
+<pre><code class="language-console">$ sudo restorecon -R -n -v /srv/status     # -n = dry run: list what WOULD change
+</code></pre>
+<p>Silence means every label under that path already matches the rules — the fix is in the policy.
+Output means the labels are right by accident and a relabel will take them away. This lab’s third
+check runs exactly that, which is why <code>chcon</code> passes the eye test and fails the grade.</p>
+<p>The regular expression in an <code>fcontext</code> rule is worth getting right: <code>'/srv/status(/.*)?'</code> matches
+the directory itself <em>and</em> everything beneath it. Quote it so the shell does not expand it, do not
+put a trailing slash on the directory, and use <code>-a</code> to add a rule, <code>-m</code> to modify one that exists,
+<code>-d</code> to delete yours. <code>semanage fcontext -C -l</code> lists only the local customisations — handy for
+seeing what you have actually changed on a machine.</p>
+<h3>firewalld: two configurations, several zones</h3>
+<p>firewalld keeps a <strong>runtime</strong> configuration and a <strong>permanent</strong> one, deliberately, so a mistake
+made over SSH can be undone by not saving it. Nearly every firewalld bug is a confusion between
+them:</p>
+<pre><code class="language-console">$ sudo firewall-cmd --add-port=8090/tcp                 # runtime only — gone at reboot/reload
+$ sudo firewall-cmd --permanent --add-port=8090/tcp     # permanent only — not open right now
+$ sudo firewall-cmd --reload                            # load permanent into runtime
+$ sudo firewall-cmd --runtime-to-permanent              # the other direction: save what works
+</code></pre>
+<p>The habit worth building: <code>--permanent</code>, then <code>--reload</code>. Or <code>--add-port</code> twice, once with and once
+without. And note what <code>--reload</code> does to anything you added at runtime and never saved: it
+discards it. That is the mechanism behind “the port was open this morning”.</p>
+<p>Rules live in <strong>zones</strong>, and a zone applies to the interfaces assigned to it. Asking the wrong
+zone’s configuration is the other half of the confusion:</p>
+<pre><code class="language-console">$ sudo firewall-cmd --get-active-zones
+public (default)
+  interfaces: eth0
+$ sudo firewall-cmd --get-zone-of-interface=eth0
+public
+$ sudo firewall-cmd --zone=public --list-all
+public (default, active)
+  target: default
+  interfaces: eth0
+  services: cockpit dhcpv6-client ssh
+  ports: 8080/tcp
+  …
+</code></pre>
+<p>There is the fourth fault, plainly: <code>8080/tcp</code>, not <code>8090/tcp</code>. Somebody typed the port the way
+they always type it.</p>
+<p>Ports can also be named, and named is better where a name exists — <code>--add-service=http</code> is
+self-documenting and covers what the service definition says it covers (80/tcp, and 443 for
+<code>https</code>). It does <strong>not</strong> cover 8090; a non-standard port is a <code>--add-port</code>, or your own service
+definition in <code>/etc/firewalld/services/</code>.</p>
+<p>One subtlety that matters for reading this lab’s checks: traffic to <code>127.0.0.1</code> does not pass
+through the zone at all — the loopback interface is handled by the trusted zone. So the site would
+answer on localhost with the firewall entirely wrong, and a check that fetched <code>127.0.0.1:8090</code> would
+prove nothing about the firewall. That is why this lab’s firewall check queries the configuration in
+both places instead of making a connection. When you test a firewall, test it from another machine,
+or read the rules.</p>
+<h3>NetworkManager owns the addresses</h3>
+<p>On RHEL 9 and 10 there are no <code>ifcfg-*</code> scripts to edit: NetworkManager stores connection profiles
+as keyfiles under <code>/etc/NetworkManager/system-connections/</code>, and the supported way to change one is
+<code>nmcli</code>. The distinction to hold on to is <strong>device</strong> versus <strong>connection profile</strong> — the device is
+the hardware, the profile is the configuration that gets applied to it:</p>
+<pre><code class="language-console">$ nmcli device status
+DEVICE  TYPE      STATE                   CONNECTION
+eth0    ethernet  connected               cloud-init eth0
+lo      loopback  connected (externally)  lo
+
+$ con=$(nmcli -g GENERAL.CONNECTION device show eth0)
+$ nmcli -g ipv4.method,ipv4.addresses connection show &quot;$con&quot;
+auto
+
+$ sudo nmcli connection modify &quot;$con&quot; +ipv4.addresses 192.168.5.50/24
+$ sudo nmcli device reapply eth0
+Connection successfully reapplied to device 'eth0'.
+$ nmcli -g ipv4.method,ipv4.addresses connection show &quot;$con&quot;
+auto
+192.168.5.50/24
+</code></pre>
+<p>The profile is named <code>cloud-init eth0</code> — cloud images name it after whatever created it, which is why
+you ask the device for its connection instead of guessing the name, and quote it because it contains a
+space. It uses <code>ipv4.method auto</code>, so its main address comes from DHCP and the <code>addresses</code> list starts
+empty; a static address added to an <code>auto</code> profile is carried <em>alongside</em> the DHCP lease, which is
+exactly what “an additional address” means.</p>
+<p>The <code>+</code> prefix <strong>adds</strong> to a list-valued property; without it you replace the whole list. On this
+machine the list was empty, so it makes no difference — but on a server configured with
+<code>ipv4.method manual</code>, the list holds the address you are connected over, and replacing it is how people
+lock themselves out. <code>-ipv4.addresses &lt;value&gt;</code>
+removes one. And modifying a profile does not apply it: <code>nmcli device reapply</code> pushes the change to
+the running device without dropping the link, while <code>nmcli connection up &quot;$con&quot;</code> re-activates the
+profile from scratch. Either works; <code>reapply</code> is gentler.</p>
+<p>Compare with the command that does not persist:</p>
+<pre><code class="language-console">$ sudo ip addr add 192.168.5.50/24 dev eth0     # the running kernel only. Gone at reboot.
+</code></pre>
+<p><code>ip</code> talks to the kernel; it does not tell NetworkManager anything, and NetworkManager may well
+remove the address again when it next reapplies the profile. <code>ip</code> is for looking (<code>ip -4 addr</code>,
+<code>ip route</code>, <code>ip -br link</code>) and for temporary experiments. Everything you want to keep goes through
+<code>nmcli</code>.</p>
+<p>The hostname has the same split, and <code>hostnamectl</code> handles both halves:</p>
+<pre><code class="language-console">$ sudo hostname web01.lab.example         # running kernel only
+$ sudo hostnamectl set-hostname web01.lab.example    # /etc/hostname AND the running kernel
+$ hostnamectl hostname --static
+web01.lab.example
+</code></pre>
+<p>There are three hostnames in systemd’s model: <strong>static</strong> (<code>/etc/hostname</code>, what you set),
+<strong>transient</strong> (from DHCP or <code>hostname</code>, lost at reboot) and <strong>pretty</strong> (a free-form label). The
+static one is what survives, and <code>hostnamectl</code> with no arguments shows all of them. On a cloud
+image, watch for cloud-init overwriting the name at boot; <code>preserve_hostname: true</code> in
+<code>/etc/cloud/cloud.cfg.d/</code> is how you stop it, and this lab’s machine already has that so your
+correct fix is not undone.</p>
+<h2>A failure, walked through</h2>
+<p>nginx is enabled but not running, and nothing answers on 8090.</p>
+<p><strong>1. Why will the daemon not start?</strong> Ask systemd, not nginx:</p>
+<pre><code class="language-console">$ systemctl status nginx --no-pager | head -6
+× nginx.service - The nginx HTTP and reverse proxy server
+     Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; preset: disabled)
+     Active: failed (Result: exit-code) since Sun 2026-09-13 04:59:19 UTC; 1s ago
+    Process: 1490 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)
+    Process: 1491 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=1/FAILURE)
+$ sudo journalctl -u nginx -b --no-pager | tail -4
+nginx[1491]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx[1491]: nginx: [emerg] bind() to 0.0.0.0:8090 failed (13: Permission denied)
+nginx[1491]: nginx: configuration file /etc/nginx/nginx.conf test failed
+systemd[1]: Failed to start nginx.service - The nginx HTTP and reverse proxy server.
+</code></pre>
+<p>Note where it failed: <code>ExecStartPre=/usr/sbin/nginx -t</code>, the configuration test the unit runs before
+starting. The test binds the listen sockets to prove it can, so a refused bind fails the <em>test</em> —
+<em>syntax is ok</em>, then <em>test failed</em>, which reads like a contradiction until you see the line between
+them.</p>
+<p>Errno 13 on a bind, as root. Nothing in the ordinary permission model can produce that. Is the port
+in use?</p>
+<pre><code class="language-console">$ sudo ss -lntp | grep 8090
+(nothing)
+</code></pre>
+<p>No. So it is a label. <strong>2. Read the denial:</strong></p>
+<pre><code class="language-console">$ sudo ausearch -m avc -ts recent | tail -1
+type=AVC msg=audit(1789275559.419:226): avc:  denied  { name_bind } for  pid=1491 comm=&quot;nginx&quot;
+  src=8090 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:unreserved_port_t:s0
+  tclass=tcp_socket permissive=0
+$ sudo ausearch -m avc -ts recent | audit2why | grep setsebool
+	# setsebool -P nis_enabled 1
+</code></pre>
+<p>The suggestion is the trap described above: it would work, and it would let every NIS-aware domain
+bind any port. Do not take it.</p>
+<p><code>name_bind</code>, <code>httpd_t</code>, port 8090 labelled <code>unreserved_port_t</code>. <strong>3. Ask which ports the domain may
+bind, and add this one:</strong></p>
+<pre><code class="language-console">$ sudo semanage port -l | grep -w http_port_t
+http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
+http_port_t                    udp      80, 443
+$ sudo semanage port -a -t http_port_t -p tcp 8090
+$ sudo semanage port -l | grep -w http_port_t
+http_port_t                    tcp      8090, 80, 81, 443, 488, 8008, 8009, 8443, 9000
+http_port_t                    udp      80, 443
+$ sudo semanage port -C -l          # only your local changes
+SELinux Port Type              Proto    Port Number
+
+http_port_t                    tcp      8090
+$ sudo systemctl restart nginx
+$ systemctl is-active nginx
+active
+</code></pre>
+<p><strong>4. The next symptom is the next layer.</strong> The daemon is up; the page is not:</p>
+<pre><code class="language-console">$ curl -si localhost:8090/ | head -1
+HTTP/1.1 403 Forbidden
+$ sudo tail -1 /var/log/nginx/error.log
+2026/09/13 05:00:23 [error] 2253#2253: *1 &quot;/srv/status/index.html&quot; is forbidden
+  (13: Permission denied), client: 127.0.0.1, server: web01.lab.example, request: &quot;GET / HTTP/1.1&quot;
+</code></pre>
+<p>Errno 13 again — and again the ordinary permissions are fine:</p>
+<pre><code class="language-console">$ ls -l /srv/status/index.html
+-rw-r--r--. 1 root root 67 Sep 13 04:59 /srv/status/index.html
+</code></pre>
+<p>World-readable, so <code>r--</code> is not the problem. The dot at the end of the mode string is the hint: this
+file has an SELinux context. Look at it, and at what the policy expects it to be:</p>
+<pre><code class="language-console">$ ls -Zd /srv/status /srv/status/index.html
+unconfined_u:object_r:var_t:s0 /srv/status
+unconfined_u:object_r:var_t:s0 /srv/status/index.html
+$ sudo semanage fcontext -l | grep '^/srv'
+/srv                                               all files          system_u:object_r:var_t:s0
+/srv/([^/]*/)?ftp(/.*)?                            all files          system_u:object_r:public_content_t:s0
+/srv/([^/]*/)?rsync(/.*)?                          all files          system_u:object_r:public_content_t:s0
+/srv/([^/]*/)?www(/.*)?                            all files          system_u:object_r:httpd_sys_content_t:s0
+/srv/([^/]*/)?www/logs(/.*)?                       all files          system_u:object_r:httpd_log_t:s0
+/srv/.*                                            all files          system_u:object_r:var_t:s0
+…
+</code></pre>
+<p><code>var_t</code>, and the policy agrees it should be <code>var_t</code> — so this is not a file whose label drifted, it
+is a file in a location the policy has no web-content rule for. The listing is instructive, though:
+the policy <em>does</em> know about web content under <code>/srv</code> — in a directory called <code>www</code>, as
+<code>/srv/www/</code> or <code>/srv/&lt;site&gt;/www/</code>. Had the team put the site in <code>/srv/status/www</code>, <code>restorecon</code> alone
+would have labelled it correctly. Since the requirement is <code>/srv/status</code>, add a rule for it, then apply
+it:</p>
+<pre><code class="language-console">$ sudo semanage fcontext -a -t httpd_sys_content_t '/srv/status(/.*)?'
+$ sudo restorecon -Rv /srv/status
+Relabeled /srv/status from unconfined_u:object_r:var_t:s0 to unconfined_u:object_r:httpd_sys_content_t:s0
+Relabeled /srv/status/index.html from unconfined_u:object_r:var_t:s0 to unconfined_u:object_r:httpd_sys_content_t:s0
+$ sudo restorecon -R -n -v /srv/status      # the proof: silence means the policy agrees
+$ curl -s localhost:8090/ | head -1
+&lt;!doctype html&gt;&lt;title&gt;status&lt;/title&gt;&lt;h1&gt;Norboten web01 status&lt;/h1&gt;
+</code></pre>
+<p><strong>5. The proxy is the third layer.</strong></p>
+<pre><code class="language-console">$ curl -si localhost:8090/api/status | head -1
+HTTP/1.1 502 Bad Gateway
+$ sudo tail -1 /var/log/nginx/error.log
+2026/09/13 05:00:24 [crit] 2253#2253: *3 connect() to 127.0.0.1:9100 failed (13: Permission denied)
+  while connecting to upstream, … upstream: &quot;http://127.0.0.1:9100/status&quot;
+</code></pre>
+<p>The third errno 13. Is the backend actually up?</p>
+<pre><code class="language-console">$ systemctl is-active status-api
+active
+$ curl -s 127.0.0.1:9100/status
+{&quot;ok&quot;: true, &quot;service&quot;: &quot;status-api&quot;}
+</code></pre>
+<p>The backend answers when <em>you</em> ask it. So this is not the network and not the backend — it is nginx
+being refused an outbound connection:</p>
+<pre><code class="language-console">$ sudo ausearch -m avc -ts recent | grep name_connect | tail -1
+type=AVC msg=audit(1789275624.605:581): avc:  denied  { name_connect } for  pid=2253 comm=&quot;nginx&quot;
+  dest=9100 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:hplip_port_t:s0
+  tclass=tcp_socket permissive=0
+$ sudo ausearch -m avc -ts recent | grep -A2 name_connect | audit2why | grep -E 'boolean|setsebool'
+	One of the following booleans was set incorrectly.
+	# setsebool -P httpd_can_network_connect 1
+	# setsebool -P httpd_can_network_relay 1
+	# setsebool -P httpd_can_connect_ftp 1
+	# setsebool -P httpd_use_openstack 1
+</code></pre>
+<p>Two things to read. The target is <code>hplip_port_t</code>: port 9100 is labelled for HP printer traffic,
+because that is its registered use — which is why labelling an arbitrary backend port is not the fix
+here. And <code>audit2why</code> offers four booleans. Only one describes what nginx is doing: connecting to a
+backend over the network. That is exactly the case booleans exist for: a web server making outbound connections is normal for
+a proxy and suspicious for a plain content server, so the policy asks.</p>
+<pre><code class="language-console">$ getsebool httpd_can_network_connect
+httpd_can_network_connect --&gt; off
+$ sudo setsebool -P httpd_can_network_connect on
+$ curl -s localhost:8090/api/status
+{&quot;ok&quot;: true, &quot;service&quot;: &quot;status-api&quot;}
+</code></pre>
+<p><code>-P</code> writes the value to the policy store as well as setting it now. Without it, the boolean reverts
+at the next boot — which is the same class of mistake as everything else in this lab.</p>
+<p><strong>6. The firewall, in the zone that applies.</strong></p>
+<pre><code class="language-console">$ sudo firewall-cmd --get-zone-of-interface=eth0
+public
+$ sudo firewall-cmd --zone=public --list-all | grep ports
+  ports: 8080/tcp
+  forward-ports:
+  source-ports:
+$ sudo firewall-cmd --permanent --zone=public --add-port=8090/tcp
+success
+$ sudo firewall-cmd --permanent --zone=public --remove-port=8080/tcp
+success
+$ sudo firewall-cmd --reload
+success
+$ sudo firewall-cmd --zone=public --query-port=8090/tcp &amp;&amp; echo open-now
+yes
+open-now
+$ sudo firewall-cmd --permanent --zone=public --query-port=8090/tcp &amp;&amp; echo open-after-reboot
+yes
+open-after-reboot
+</code></pre>
+<p>Both questions asked separately, because they are separate configurations.</p>
+<p><strong>7. The name and the address, through the tools that own them.</strong></p>
+<pre><code class="language-console">$ hostnamectl | head -2
+     Static hostname: lima-nb-rhcsa-04
+  Transient hostname: web01.lab.example
+$ sudo hostnamectl set-hostname web01.lab.example
+$ hostnamectl hostname --static
+web01.lab.example
+
+$ con=$(nmcli -g GENERAL.CONNECTION device show eth0)
+$ echo &quot;$con&quot;
+cloud-init eth0
+$ nmcli -g ipv4.method,ipv4.addresses connection show &quot;$con&quot;
+auto
+
+$ ip -4 -br addr show eth0                  # the address is there — added with `ip`, in memory only
+eth0             UP             192.168.5.15/24 192.168.5.50/24
+$ sudo nmcli connection modify &quot;$con&quot; +ipv4.addresses 192.168.5.50/24
+$ sudo nmcli device reapply eth0
+Connection successfully reapplied to device 'eth0'.
+$ nmcli -g ipv4.addresses connection show &quot;$con&quot;
+192.168.5.50/24
+$ ip -4 -br addr show eth0
+eth0             UP             192.168.5.50/24 192.168.5.15/24
+</code></pre>
+<p><code>hostnamectl</code> shows the split in one screen: the transient name is the one the <code>hostname</code> command
+set by hand, the static one is still the image’s. And the address looked correct before any fix —
+which is precisely why reading <code>ip</code> proves nothing about the next boot. The profile is the evidence.</p>
+<p><strong>8. Reboot, and check all six again.</strong> The reboot is where <code>setenforce</code> without config,
+<code>setsebool</code> without <code>-P</code>, <code>firewall-cmd</code> without <code>--permanent</code>, <code>ip addr add</code> and <code>hostname</code> all
+reveal themselves:</p>
+<pre><code class="language-console">$ sudo reboot
+$ getenforce; hostnamectl hostname --static; ip -4 -br addr show eth0
+$ getsebool httpd_can_network_connect
+$ sudo firewall-cmd --zone=public --query-port=8090/tcp
+$ curl -s localhost:8090/ | head -1; curl -s localhost:8090/api/status
+</code></pre>
+<h2>Common wrong turns</h2>
+<p><strong><code>setenforce 0</code>, or <code>SELINUX=disabled</code>.</strong> It makes all three SELinux symptoms disappear at once,
+which is exactly why it is tempting and exactly why this lab grades enforcing mode. Permissive is a
+<em>diagnostic</em> — set it, reproduce, collect every denial, set it back. Disabled is a state you cannot
+leave without a full relabel and a second reboot, and on a real machine it is an audit finding.</p>
+<p><strong><code>chcon -R -t httpd_sys_content_t /srv/status</code>.</strong> The page starts working, the labels look right,
+and the next <code>restorecon</code>, policy update or <code>/.autorelabel</code> silently undoes it. <code>restorecon -Rnv</code>
+on the path is the test: if it lists files, your fix is temporary. The durable fix is
+<code>semanage fcontext -a</code> and then <code>restorecon</code>.</p>
+<p><strong>Reading only nginx’s error log.</strong> The bind failure is in systemd’s journal, the 403 and 502 are in
+nginx’s log, and the <em>reason</em> for all three is in the audit log. A daemon does not know why SELinux
+refused it — it only sees <code>EACCES</code>.</p>
+<p><strong>Assuming <code>EACCES</code> means file permissions.</strong> <code>ls -l</code> shows <code>-rw-r--r-- root root</code> and world-readable
+content, and the natural conclusion is that the error message is lying. The trailing dot in
+<code>-rw-r--r--.</code> is the system telling you there is another label to look at.</p>
+<p><strong>Changing the port in nginx’s config to 80.</strong> The site works, the SELinux port label is not needed,
+and the requirement — serve on 8090 — has been redefined rather than met. The same instinct in
+production is how a machine ends up with services on whichever ports happened to be easy.</p>
+<p><strong><code>audit2allow -M mysite</code> on the first denial.</strong> It produces a module that grants precisely the
+access a boolean or a label already offers, but as a permanent local policy exception nobody will ever
+review. Run <code>audit2why</code> first — and then read its suggestion rather than pasting it.</p>
+<p><strong>Taking <code>audit2why</code>’s first boolean.</strong> For the refused bind on 8090 it offers <code>nis_enabled</code>, which
+lets many domains bind any unreserved port; the right fix is <code>semanage port</code>, which <code>audit2why</code> never
+suggests because it is not a boolean. For the refused connection it lists four booleans, and only
+<code>httpd_can_network_connect</code> describes a reverse proxy.</p>
+<p><strong><code>setsebool</code> without <code>-P</code>.</strong> The boolean is on, everything works, and the next boot reverts it.
+<code>getsebool</code> after a reboot is the only honest test.</p>
+<p><strong><code>firewall-cmd --add-port</code> without <code>--permanent</code>, or <code>--permanent</code> without <code>--reload</code>.</strong> The first
+is open now and gone at reboot; the second is the reverse and looks like the command failed. And
+<code>--reload</code> discards anything added at runtime and never saved — <code>--runtime-to-permanent</code> is the
+escape hatch when you have got the runtime right interactively.</p>
+<p><strong>Fixing the firewall in the wrong zone.</strong> <code>--add-port</code> with no <code>--zone</code> applies to the <em>default</em>
+zone, which is not necessarily the zone eth0 is in. Ask
+<code>firewall-cmd --get-zone-of-interface=eth0</code> first.</p>
+<p><strong>Concluding the firewall is the reason localhost fails.</strong> Loopback traffic is handled by the
+trusted zone and never consults the port list, so <code>curl 127.0.0.1:8090</code> cannot be blocked by a
+missing rule. If localhost fails, the cause is on the machine — the daemon, the labels, the
+backend.</p>
+<p><strong><code>ip addr add</code> and <code>hostname</code>.</strong> Both change the running kernel and nothing on disk. The address
+may not even last that long: NetworkManager can remove it the next time it reapplies the profile.</p>
+<p><strong><code>nmcli connection modify &quot;$con&quot; ipv4.addresses 192.168.5.50/24</code> without the <code>+</code>.</strong> That replaces
+the address list, dropping the address you are connected over. If you are lucky you are on the
+console; if you are not, the machine is unreachable and the change persisted.</p>
+<p><strong>Editing <code>/etc/sysconfig/network-scripts/ifcfg-eth0</code>.</strong> That file is not in charge on RHEL 9 or 10
+— NetworkManager keyfiles are — and on many installs it does not exist at all. <code>nmcli</code> is the
+interface; the keyfile under <code>/etc/NetworkManager/system-connections/</code> is what it writes.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># SELinux: look
+getenforce ; sestatus                  # current mode, policy, and the boot setting
+ls -Z FILE ; ls -Zd DIR                # a file's context
+ps -eZ | grep nginx                    # a process's domain
+semanage port -l | grep -w http_port_t # which ports a type covers
+getsebool -a | grep httpd              # the booleans for a domain
+semanage fcontext -l | grep '^/srv'    # what the policy thinks a path should be
+semanage fcontext -C -l                # only the local customisations
+
+# SELinux: the denial
+ausearch -m avc -ts recent             # denials, recent first (--input-logs in scripts: no tty = reads stdin)
+ausearch -m avc -ts recent | audit2why # what WOULD allow it — a list to judge, not advice
+sealert -a /var/log/audit/audit.log    # setroubleshoot's report
+semodule -DB … semodule -B             # unmask dontaudit rules while you reproduce
+
+# SELinux: fix
+semanage fcontext -a -t httpd_sys_content_t '/srv/status(/.*)?'
+restorecon -Rv /srv/status             # apply the rules
+restorecon -R -n -v /srv/status        # DRY RUN: silence = the policy agrees with the labels
+semanage port -a -t http_port_t -p tcp 8090     # -m if the port already has a type
+setsebool -P httpd_can_network_connect on       # -P or it reverts at boot
+chcon -t TYPE FILE                     # now only — temporary by design
+touch /.autorelabel &amp;&amp; reboot          # full relabel
+fixfiles -R nginx restore              # relabel one package's files
+setenforce 0 / 1                       # permissive / enforcing — a diagnostic, not a fix
+
+# firewalld
+firewall-cmd --state
+firewall-cmd --get-active-zones ; firewall-cmd --get-zone-of-interface=eth0
+firewall-cmd --zone=public --list-all
+firewall-cmd --permanent --zone=public --add-port=8090/tcp ; firewall-cmd --reload
+firewall-cmd --permanent --zone=public --add-service=http
+firewall-cmd --zone=public --query-port=8090/tcp          # runtime
+firewall-cmd --permanent --zone=public --query-port=8090/tcp   # after reboot
+firewall-cmd --runtime-to-permanent    # save what you got right interactively
+firewall-cmd --get-services            # the named services available
+
+# network, persistently
+nmcli device status ; nmcli connection show
+nmcli -g GENERAL.CONNECTION device show eth0        # which profile is on the device
+nmcli connection modify &quot;$con&quot; +ipv4.addresses 192.168.5.50/24   # + adds, no + replaces
+nmcli connection modify &quot;$con&quot; ipv4.gateway … ipv4.dns … ipv4.method manual
+nmcli device reapply eth0              # apply without dropping the link
+nmcli connection up &quot;$con&quot;             # re-activate the profile
+hostnamectl set-hostname web01.lab.example
+hostnamectl hostname --static          # what survives a reboot
+
+# network, for looking only
+ip -4 -br addr ; ip route ; ss -lntp
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<p>Manual pages: <code>man 8 ausearch</code>, <code>man 8 semanage-port</code>, <code>man 8 getsebool</code>, <code>man 8 setsebool</code>, <code>man 8 semanage-fcontext</code>, <code>man 8 restorecon</code>, <code>man 1 firewall-cmd</code>, <code>man 1 nmcli</code>, <code>man 1 hostnamectl</code>, <code>man 8 selinux</code>.</p>
+<p>The whole subject, end to end: the topic journal <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p><code>nginx: [emerg] bind() to 0.0.0.0:8090 failed (13: Permission denied)</code>, running as root, with
+nothing else listening on the port. What is refusing it, and which command fixes it?</p>
+<blockquote>
+<p>SELinux: port 8090 is not labelled with a type the <code>httpd_t</code> domain may bind. The audit log
+shows <code>denied { name_bind } … tclass=tcp_socket</code>. Fix with
+<code>semanage port -a -t http_port_t -p tcp 8090</code>. Errno 13 on a bind as root — rather than errno
+98, already in use — is the signature.</p>
+</blockquote>
+</li>
+<li>
+<p>A file is <code>-rw-r--r--. root root</code> and the web server gets <em>Permission denied</em> reading it. Where
+is the information <code>ls -l</code> is not showing you?</p>
+<blockquote>
+<p>In the SELinux context — the trailing dot in the mode string says there is one. <code>ls -Z</code> shows
+the type; here <code>var_t</code> rather than <code>httpd_sys_content_t</code>, which the policy does not let
+<code>httpd_t</code> read.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between <code>chcon -t httpd_sys_content_t</code> and
+<code>semanage fcontext -a -t httpd_sys_content_t</code> + <code>restorecon</code>, and how do you prove which one was
+used?</p>
+<blockquote>
+<p><code>chcon</code> writes a label onto the inode; the policy still believes the path should have its old
+type, so any relabel reverts it. <code>semanage fcontext</code> changes the rule and <code>restorecon</code> applies
+it. <code>restorecon -R -n -v PATH</code> is the proof: it lists every file whose label differs from the
+rules, so silence means the fix is in the policy.</p>
+</blockquote>
+</li>
+<li>
+<p>When is <code>audit2allow -M</code> the right answer, and what should you run before you consider it?</p>
+<blockquote>
+<p>Almost never on RHCSA: only when the access is legitimate and no boolean, file-context rule or
+port label covers it. Run <code>audit2why</code> first — it lists the booleans that would allow the access,
+and a boolean is a supported switch while a local module is an unreviewed policy exception. Read
+the list, though: for a refused port bind it suggests <code>nis_enabled</code>, far broader than the
+<code>semanage port</code> label that is the real fix.</p>
+</blockquote>
+</li>
+<li>
+<p>Your change works and <code>getenforce</code> says Permissive. What is the professional problem with leaving
+it there, and what is the difference from <code>SELINUX=disabled</code>?</p>
+<blockquote>
+<p>Permissive logs denials and allows them: the machine is unprotected, and the finding is that
+every application bug becomes a silent policy violation. But it is reversible with
+<code>setenforce 1</code>. <code>disabled</code> also stops labelling new files, so returning to enforcing needs a
+full relabel (<code>touch /.autorelabel</code>) and a second reboot.</p>
+</blockquote>
+</li>
+<li>
+<p>You run <code>firewall-cmd --add-port=8090/tcp</code> and it works. Two hours later, after a colleague runs
+<code>firewall-cmd --reload</code>, it does not. Why?</p>
+<blockquote>
+<p>The rule was added to the runtime configuration only. <code>--reload</code> replaces runtime with the
+permanent configuration, discarding unsaved runtime rules. Use <code>--permanent</code> and then
+<code>--reload</code>, or <code>--runtime-to-permanent</code> to save what you have.</p>
+</blockquote>
+</li>
+<li>
+<p>Why can a completely wrong firewall configuration still let <code>curl http://127.0.0.1:8090/</code>
+succeed?</p>
+<blockquote>
+<p>Loopback traffic is handled by the trusted zone and does not consult the zone’s port list. A
+localhost test says nothing about the firewall — test from another host, or read the rules with
+<code>--list-all</code> in the zone the interface is actually in.</p>
+</blockquote>
+</li>
+<li>
+<p><code>ip addr add 192.168.5.50/24 dev eth0</code> and <code>hostname web01.lab.example</code> both appear to work and
+both are gone after a reboot. What owns each setting, and what are the persistent commands?</p>
+<blockquote>
+<p>NetworkManager owns the address — <code>nmcli connection modify &quot;$con&quot; +ipv4.addresses …</code> then
+<code>nmcli device reapply eth0</code>; the <code>+</code> matters, since without it you replace the whole address
+list. systemd owns the hostname — <code>hostnamectl set-hostname …</code>, which writes <code>/etc/hostname</code>
+(the static name) as well as setting the running one. <code>ip</code> and <code>hostname</code> talk only to the
+running kernel.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

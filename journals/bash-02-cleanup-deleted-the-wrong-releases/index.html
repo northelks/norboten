@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deleting files is the one thing a script must get exactly right · Norboten</title>
+<meta name="description" content="Most scripts that go wrong produce the wrong output. A cleanup script that goes wrong produces the wrong absence, and absence is hard to notice and impossible t">
+<link rel="canonical" href="https://norboten.org/journals/bash-02-cleanup-deleted-the-wrong-releases/"><meta property="og:title" content="Deleting files is the one thing a script must get exactly right · Norboten">
+<meta property="og:description" content="Most scripts that go wrong produce the wrong output. A cleanup script that goes wrong produces the wrong absence, and absence is hard to notice and impossible t">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/bash-02-cleanup-deleted-the-wrong-releases/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Deleting files is the one thing a script must get exactly right · Norboten">
+<meta name="twitter:description" content="Most scripts that go wrong produce the wrong output. A cleanup script that goes wrong produces the wrong absence, and absence is hard to notice and impossible t">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Deleting files is the one thing a script must get exactly right",
+  "description": "Most scripts that go wrong produce the wrong output. A cleanup script that goes wrong produces the wrong absence, and absence is hard to notice and impossible t",
+  "url": "https://norboten.org/journals/bash-02-cleanup-deleted-the-wrong-releases/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2264,
+  "timeRequired": "PT35M",
+  "about": ["Bash", "Boot and systemd"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Cleanup That Kept the Wrong Releases</div>
+    <h1>Deleting files is the one thing a script must get exactly right</h1>
+    <p class="muted">
+      35 minutes' reading · 2264 words ·<span class="tag">Bash</span><span class="tag">Boot and systemd</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 104 words</title><rect x="0.0" y="0" width="25.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 990 words</title><rect x="28.0" y="0" width="237.6" height="30" rx="4" fill="#1d2a23"/><text x="36.0" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 1057 words</title><rect x="268.5" y="0" width="253.7" height="30" rx="4" fill="#4ade80"/><text x="276.5" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 278 words</title><rect x="525.2" y="0" width="66.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 231 words</title><rect x="594.9" y="0" width="55.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 93 words</title><rect x="653.3" y="0" width="22.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 339 words</title><rect x="678.6" y="0" width="81.4" height="30" rx="4" fill="#1d2a23"/><text x="686.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/bash-02-cleanup-deleted-the-wrong-releases/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Most scripts that go wrong produce the wrong output. A cleanup script that goes wrong produces the
+wrong <em>absence</em>, and absence is hard to notice and impossible to undo. <code>prune-releases</code> is one line of
+real work — <code>ls -t | tail -n +6 | xargs rm -rf</code> — and that one line contains three separate ways to
+delete the wrong thing: it chooses by modification time instead of by the date in the name, it hands
+names to <code>rm</code> through a channel that splits them at spaces, and it runs after a <code>cd</code> that nobody
+checked, so when the directory is missing it deletes wherever it happens to be.</p>
+<p>None of the three is exotic. They are the standard failures of shell pipelines that deal with file
+names, and every one of them has a standard fix. The lab adds a fourth, unrelated problem — a timer
+that points at a program that does not exist — because a cleanup that never runs is the other way a
+disk fills up.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Choose files by the data you trust (a timestamp in the name) rather than by metadata that other
+tools change (mtime).</li>
+<li>Explain why <code>ls | xargs</code> is unsafe for file names, and iterate over names without word splitting.</li>
+<li>Stop a script before it acts when a precondition such as <code>cd</code> fails.</li>
+<li>Select only the entries a cleanup is allowed to touch: directories, not symlinks, not stray files.</li>
+<li>Test a destructive script against copies, including the case where its target is missing.</li>
+<li>Read a systemd timer and its service, find why nothing runs, and fix it with a drop-in.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="what-ls--t-actually-sorts-by">What <code>ls -t</code> actually sorts by</h3>
+<p><code>ls -t</code> sorts by modification time, newest first. A directory's mtime changes whenever an entry is
+created, renamed or removed inside it — and also whenever a tool sets it deliberately. Restoring from
+a backup, <code>cp -a</code>, <code>rsync -a</code>, <code>tar -x</code> and <code>touch</code> all set timestamps, and a restore that ran
+yesterday makes old releases look new.</p>
+<p>The release names already contain the only timestamp that matters: <code>20260913-101500</code>, year first,
+zero-padded. Names in that form sort chronologically as plain text, so &quot;the five newest releases&quot; is
+&quot;the last five names, sorted&quot;. That is data the release itself carries and nothing else rewrites.</p>
+<p>A rule worth keeping: <strong>select by content you control, not by metadata someone else can touch.</strong>
+mtimes are fine for &quot;has this changed since I last looked&quot;; they are a poor identity.</p>
+<h3 id="why-ls--xargs-rm-splits-names">Why <code>ls | xargs rm</code> splits names</h3>
+<p><code>ls</code> writes names separated by newlines. <code>xargs</code> reads its input as <em>words</em>: by default it splits at
+spaces, tabs and newlines, and it also interprets quotes and backslashes. So the line</p>
+<pre><code>20260911-180000 hotfix
+</code></pre>
+<p>becomes two arguments to <code>rm</code>: <code>20260911-180000</code> and <code>hotfix</code>. Neither exists; <code>rm -f</code> says nothing
+about files it cannot find; the release survives. Change the name to <code>a b</code> and create a directory
+called <code>b</code> next to it, and the pipeline deletes <code>b</code> instead.</p>
+<p>There are only two reliable ways to pass file names from one program to another:</p>
+<pre class="hl"><code class="language-bash">find<span class="hl-w"> </span>.<span class="hl-w"> </span>-mindepth<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w"> </span>-maxdepth<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w"> </span>-type<span class="hl-w"> </span>d<span class="hl-w"> </span>-print0<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span>-0<span class="hl-w"> </span>rm<span class="hl-w"> </span>-rf<span class="hl-w"> </span>--<span class="hl-w">   </span><span class="hl-c1"># NUL-separated</span>
+<span class="hl-k">for</span><span class="hl-w"> </span>entry<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>./*<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span>…<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span><span class="hl-w">                                          </span><span class="hl-c1"># a glob: no text in between</span>
+</code></pre>
+
+<p>NUL is the one byte a file name cannot contain, so <code>-print0</code>/<code>-0</code> is unambiguous. A glob never turns
+names into text at all: the shell expands it into separate words, one per file, and quoting
+<code>&quot;$entry&quot;</code> keeps each one whole. A bonus: glob results come back <strong>sorted by name</strong> (in the current
+locale), which is exactly the order a timestamped name needs.</p>
+<h3 id="the-unchecked-cd">The unchecked <code>cd</code></h3>
+<pre class="hl"><code class="language-sh"><span class="hl-nb">cd</span><span class="hl-w"> </span><span class="hl-nv">$RELEASES_DIR</span>
+ls<span class="hl-w"> </span>-t<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span>+<span class="hl-k">$((</span><span class="hl-nv">KEEP</span><span class="hl-w"> </span><span class="hl-o">+</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-k">))</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span>rm<span class="hl-w"> </span>-rf
+</code></pre>
+
+<p>When <code>cd</code> fails, it prints a message and returns non-zero — and the next line runs anyway, in the
+directory the script started in. Under systemd that is <code>/</code>. From a person's shell it is their current
+directory. Nothing is special about deletion here; it is ordinary shell behaviour meeting the most
+dangerous possible next command.</p>
+<p>Three habits, any one of which would have saved it:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-nb">set</span><span class="hl-w"> </span>-euo<span class="hl-w"> </span>pipefail<span class="hl-w">          </span><span class="hl-c1"># -e: stop when cd fails</span>
+<span class="hl-nb">cd</span><span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$RELEASES_DIR</span><span class="hl-s2">"</span><span class="hl-w">      </span><span class="hl-c1"># quoted, and -- in case the path starts with -</span>
+<span class="hl-nb">cd</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$dir</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w">        </span><span class="hl-c1"># the explicit form, for scripts that cannot use -e</span>
+</code></pre>
+
+<p>And one habit for every destructive command: act on paths <strong>relative to a directory you have just
+verified</strong>, like <code>./$old</code>, or on absolute paths you built from it. Never on &quot;whatever is here&quot;.</p>
+<h3 id="choosing-only-what-may-be-deleted">Choosing only what may be deleted</h3>
+<p>A releases directory holds more than releases: the <code>current</code> symlink, a README, a lock file. The
+original pipeline counted all of them. A cleanup should define what it owns and ignore the rest:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-k">for</span><span class="hl-w"> </span>entry<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-m">0</span>-9<span class="hl-o">]</span>*<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w">                     </span><span class="hl-c1"># names that start with a digit: the timestamps</span>
+<span class="hl-w">    </span><span class="hl-k">if</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$entry</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span>!<span class="hl-w"> </span>-L<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$entry</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span>
+<span class="hl-w">        </span><span class="hl-nv">releases</span><span class="hl-o">+=(</span><span class="hl-s2">"</span><span class="hl-nv">$entry</span><span class="hl-s2">"</span><span class="hl-o">)</span>
+<span class="hl-w">    </span><span class="hl-k">fi</span>
+<span class="hl-k">done</span>
+</code></pre>
+
+<p>The glob <code>[0-9]*</code> already skips <code>current</code>, but <code>-d</code> is true for any symlink that points to a
+directory, so a link named like a release — <code>20260913-101500-live</code> in another layout — would match
+and be counted. The <code>! -L</code> test excludes links whatever their names. When the glob matches nothing, bash leaves the pattern
+as literal text, <code>[0-9]*</code>, and the <code>-d</code> test quietly rejects it; <code>shopt -s nullglob</code> is the other way
+to handle that.</p>
+<h3 id="slicing-the-list">Slicing the list</h3>
+<p>With the releases in an array sorted oldest first, the ones to delete are all but the last <code>KEEP</code>:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-nv">count</span><span class="hl-o">=</span><span class="hl-si">${#</span><span class="hl-nv">releases</span><span class="hl-p">[@]</span><span class="hl-si">}</span>
+<span class="hl-k">if</span><span class="hl-w"> </span><span class="hl-o">((</span><span class="hl-w"> </span>count<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>KEEP<span class="hl-w"> </span><span class="hl-o">))</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span>
+<span class="hl-w">    </span><span class="hl-k">for</span><span class="hl-w"> </span>old<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">releases</span><span class="hl-p">[@]:</span><span class="hl-nv">0</span><span class="hl-p">:</span><span class="hl-nv">count</span><span class="hl-p">-KEEP</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span>
+<span class="hl-w">        </span>rm<span class="hl-w"> </span>-rf<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"./</span><span class="hl-nv">$old</span><span class="hl-s2">"</span>
+<span class="hl-w">    </span><span class="hl-k">done</span>
+<span class="hl-k">fi</span>
+</code></pre>
+
+<p><code>${array[@]:offset:length}</code> is an array slice, and quoting it preserves each element. The guard
+matters: a negative length in a slice is an error in bash, and without the <code>if</code> a directory with
+three releases would abort the script.</p>
+<h3 id="scheduling-a-timer-is-two-units">Scheduling: a timer is two units</h3>
+<p>A systemd timer does nothing by itself. <code>prune-releases.timer</code> says <em>when</em>; it activates
+<code>prune-releases.service</code> (the unit with the same name unless <code>Unit=</code> says otherwise), which says
+<em>what</em>. Three things must be true for the job to run every night:</p>
+<ol>
+<li>the timer is <strong>started</strong> — a timer that was never started has no next elapse;</li>
+<li>the timer is <strong>enabled</strong>, which links it into <code>timers.target</code> so it starts at every boot;</li>
+<li>the service can actually start — here, its <code>ExecStart=</code> must name an executable that exists.</li>
+</ol>
+<p><code>OnCalendar=*-*-* 03:30:00</code> is systemd's calendar syntax, and <code>systemd-analyze calendar</code> shows when an
+expression next fires. <code>Persistent=true</code> runs a missed job at boot if the machine was off at 03:30.</p>
+<p>To change one line of a unit that a package or a colleague installed, a <strong>drop-in</strong> is cleaner than
+editing the unit: a file in <code>/etc/systemd/system/&lt;unit&gt;.d/*.conf</code> overrides only what it names.
+<code>ExecStart=</code> is a list, so a drop-in must first clear it with an empty <code>ExecStart=</code> and then set the new
+value — otherwise a oneshot service ends up with two commands.</p>
+<h3 id="testing-a-destructive-script">Testing a destructive script</h3>
+<p>Two principles. First, test against a <strong>copy</strong>: <code>cp -a</code> keeps the names, the modes, the symlink and —
+crucially for this bug — the mtimes, so the copy reproduces the problem. Second, test the <strong>missing
+target</strong> from a directory full of things you would hate to lose, because that is the failure you
+cannot observe safely any other way. The variables the script already reads (<code>RELEASES_DIR</code>, <code>KEEP</code>)
+exist precisely so it can be pointed at a sandbox.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the track's lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. Compare the names with the times.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>--time-style<span class="hl-o">=</span>+%F_%T<span class="hl-w"> </span>/srv/app/releases
+<span class="hl-go">total 32</span>
+<span class="hl-go">drwxr-xr-x 2 root root 4096 2026-09-14_03:31:06 20260801-120000</span>
+<span class="hl-go">drwxr-xr-x 2 root root 4096 2026-09-14_02:31:06 20260830-090000 rollback</span>
+<span class="hl-go">drwxr-xr-x 2 root root 4096 2026-09-14_01:31:06 20260905-140000</span>
+<span class="hl-go">drwxr-xr-x 2 root root 4096 2026-09-14_00:31:06 20260908-101500</span>
+<span class="hl-go">drwxr-xr-x 2 root root 4096 2026-09-13_23:31:06 20260910-163000</span>
+<span class="hl-go">drwxr-xr-x 2 root root 4096 2026-09-13_22:31:06 20260911-180000 hotfix</span>
+<span class="hl-go">drwxr-xr-x 2 root root 4096 2026-09-13_21:31:06 20260912-083000</span>
+<span class="hl-go">drwxr-xr-x 2 root root 4096 2026-09-13_20:31:06 20260913-101500</span>
+<span class="hl-go">lrwxrwxrwx 1 root root   33 2026-09-14_03:31:06 current -&gt; /srv/app/releases/20260913-101500</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-t<span class="hl-w"> </span>/srv/app/releases
+<span class="hl-go">20260801-120000</span>
+<span class="hl-go">current</span>
+<span class="hl-go">20260830-090000 rollback</span>
+<span class="hl-go">20260905-140000</span>
+<span class="hl-go">20260908-101500</span>
+<span class="hl-go">20260910-163000</span>
+<span class="hl-go">20260911-180000 hotfix</span>
+<span class="hl-go">20260912-083000</span>
+<span class="hl-go">20260913-101500</span>
+</code></pre>
+
+<p>The August release carries the newest modification time and the September 13 release the oldest —
+the restore reversed them. <code>ls -t</code> also lists <code>current</code> among the &quot;releases&quot;.</p>
+<p><strong>2. Read the script, then look at what the pipeline would hand to <code>rm</code></strong> — without running <code>rm</code>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/usr/local/bin/prune-releases
+<span class="hl-gp">#</span>!/bin/sh
+<span class="hl-gp"># </span>prune-releases<span class="hl-w"> </span>—<span class="hl-w"> </span>keep<span class="hl-w"> </span>the<span class="hl-w"> </span>five<span class="hl-w"> </span>newest<span class="hl-w"> </span>releases,<span class="hl-w"> </span>delete<span class="hl-w"> </span>the<span class="hl-w"> </span>rest
+
+<span class="hl-go">RELEASES_DIR=${RELEASES_DIR:-/srv/app/releases}</span>
+<span class="hl-go">KEEP=${KEEP:-5}</span>
+
+<span class="hl-go">cd $RELEASES_DIR</span>
+<span class="hl-go">ls -t | tail -n +$((KEEP + 1)) | xargs rm -rf</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/app/releases<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-t<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span>+6
+<span class="hl-go">20260910-163000</span>
+<span class="hl-go">20260911-180000 hotfix</span>
+<span class="hl-go">20260912-083000</span>
+<span class="hl-go">20260913-101500</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/app/releases<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-t<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span>+6<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'[%s]\n'</span>
+<span class="hl-go">[20260910-163000]</span>
+<span class="hl-go">[20260911-180000]</span>
+<span class="hl-go">[hotfix]</span>
+<span class="hl-go">[20260912-083000]</span>
+<span class="hl-go">[20260913-101500]</span>
+</code></pre>
+
+<p>Replacing the destructive command with <code>printf '[%s]\n'</code> shows exactly the arguments <code>rm</code> would get,
+one per bracket. The four newest releases are on the list, and the hotfix is two words.</p>
+<p><strong>3. Run it on a copy.</strong> <code>cp -a</code> preserves the mtimes, so the copy misbehaves the same way:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/tmp/p<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>cp<span class="hl-w"> </span>-a<span class="hl-w"> </span>/srv/app/releases<span class="hl-w"> </span>/tmp/p/<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>chown<span class="hl-w"> </span>-R<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-k">$(</span>id<span class="hl-w"> </span>-un<span class="hl-k">)</span><span class="hl-s2">"</span><span class="hl-w"> </span>/tmp/p
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/tmp/p<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nv">RELEASES_DIR</span><span class="hl-o">=</span>/tmp/p/releases<span class="hl-w"> </span>prune-releases<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>/tmp/p/releases
+<span class="hl-go">exit=0</span>
+<span class="hl-go">20260801-120000</span>
+<span class="hl-go">20260830-090000 rollback</span>
+<span class="hl-go">20260905-140000</span>
+<span class="hl-go">20260908-101500</span>
+<span class="hl-go">20260911-180000 hotfix</span>
+<span class="hl-go">current</span>
+</code></pre>
+
+<p>The three newest releases are gone, the one from August 1 is kept, the hotfix survived only because
+its name was split into two words that do not exist, and the script reports success.</p>
+<p><strong>4. The missing directory</strong>, started from a directory of things to keep:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-k">for</span><span class="hl-w"> </span>n<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span><span class="hl-m">4</span><span class="hl-w"> </span><span class="hl-m">5</span><span class="hl-w"> </span><span class="hl-m">6</span><span class="hl-w"> </span><span class="hl-m">7</span><span class="hl-w"> </span><span class="hl-m">8</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/tmp/q/important-<span class="hl-nv">$n</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span>keep<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/q/important-<span class="hl-nv">$n</span>/data<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span><span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>/tmp/q
+<span class="hl-go">important-1</span>
+<span class="hl-go">important-2</span>
+<span class="hl-go">important-3</span>
+<span class="hl-go">important-4</span>
+<span class="hl-go">important-5</span>
+<span class="hl-go">important-6</span>
+<span class="hl-go">important-7</span>
+<span class="hl-go">important-8</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/tmp/q<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nv">RELEASES_DIR</span><span class="hl-o">=</span>/tmp/q/moved-away<span class="hl-w"> </span>prune-releases<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>/tmp/q
+<span class="hl-go">/usr/local/bin/prune-releases: 7: cd: can't cd to /tmp/q/moved-away</span>
+<span class="hl-go">exit=0</span>
+<span class="hl-go">important-1</span>
+<span class="hl-go">important-2</span>
+<span class="hl-go">important-3</span>
+<span class="hl-go">important-4</span>
+<span class="hl-go">important-8</span>
+</code></pre>
+
+<p><code>cd</code> failed, said so, and the pipeline ran in <code>/tmp/q</code>: three of the eight directories are gone, and
+the exit status is still 0. Under the timer, the starting directory would have been <code>/</code>. (The message
+format — <code>7: cd: can't cd to</code> — is dash's: the script's <code>#!/bin/sh</code> is dash on Ubuntu.)</p>
+<p><strong>5. Find out why it never runs.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>status<span class="hl-w"> </span>prune-releases.timer<span class="hl-w"> </span>--no-pager
+<span class="hl-go">○ prune-releases.timer - Delete old application releases every night</span>
+<span class="hl-go">     Loaded: loaded (/etc/systemd/system/prune-releases.timer; disabled; preset: enabled)</span>
+<span class="hl-go">     Active: inactive (dead)</span>
+<span class="hl-go">    Trigger: n/a</span>
+<span class="hl-go">   Triggers: ● prune-releases.service</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>prune-releases.service
+<span class="hl-gp"># </span>/etc/systemd/system/prune-releases.service
+<span class="hl-go">[Unit]</span>
+<span class="hl-go">Description=Delete old application releases</span>
+
+<span class="hl-go">[Service]</span>
+<span class="hl-go">Type=oneshot</span>
+<span class="hl-go">ExecStart=/usr/local/sbin/prune-releases</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/usr/local/sbin/prune-releases<span class="hl-w"> </span>/usr/local/bin/prune-releases
+<span class="hl-go">ls: cannot access '/usr/local/sbin/prune-releases': No such file or directory</span>
+<span class="hl-go">-rwxr-xr-x 1 root root 207 Sep 14 03:31 /usr/local/bin/prune-releases</span>
+<span class="hl-gp">$ </span>systemd-analyze<span class="hl-w"> </span>calendar<span class="hl-w"> </span><span class="hl-s1">'*-*-* 03:30:00'</span>
+<span class="hl-go">Normalized form: *-*-* 03:30:00</span>
+<span class="hl-go">    Next elapse: Tue 2026-09-15 03:30:00 UTC</span>
+<span class="hl-go">       From now: 23h left</span>
+</code></pre>
+
+<p>The timer is disabled and inactive (<code>Trigger: n/a</code> — no next run), and even if it fired, the service
+would try to execute a path that does not exist. The calendar expression itself is fine.</p>
+<p><strong>6. Rewrite the script.</strong></p>
+<pre class="hl"><code class="language-bash"><span class="hl-ch">#!/bin/bash</span>
+<span class="hl-c1"># prune-releases — keep the newest $KEEP releases (by the timestamp in their names), delete the rest</span>
+<span class="hl-nb">set</span><span class="hl-w"> </span>-euo<span class="hl-w"> </span>pipefail
+
+<span class="hl-nv">RELEASES_DIR</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">RELEASES_DIR</span><span class="hl-k">:-</span><span class="hl-p">/srv/app/releases</span><span class="hl-si">}</span>
+<span class="hl-nv">KEEP</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">KEEP</span><span class="hl-k">:-</span><span class="hl-nv">5</span><span class="hl-si">}</span>
+
+<span class="hl-nb">cd</span><span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$RELEASES_DIR</span><span class="hl-s2">"</span>
+
+<span class="hl-nv">releases</span><span class="hl-o">=()</span>
+<span class="hl-k">for</span><span class="hl-w"> </span>entry<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-m">0</span>-9<span class="hl-o">]</span>*<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span>
+<span class="hl-w">    </span><span class="hl-c1"># release directories only: not current, not files, not a glob that matched nothing</span>
+<span class="hl-w">    </span><span class="hl-k">if</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$entry</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span>!<span class="hl-w"> </span>-L<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$entry</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span>
+<span class="hl-w">        </span><span class="hl-nv">releases</span><span class="hl-o">+=(</span><span class="hl-s2">"</span><span class="hl-nv">$entry</span><span class="hl-s2">"</span><span class="hl-o">)</span>
+<span class="hl-w">    </span><span class="hl-k">fi</span>
+<span class="hl-k">done</span>
+
+<span class="hl-c1"># glob results are sorted by name, and the names start with a timestamp: newest last</span>
+<span class="hl-nv">count</span><span class="hl-o">=</span><span class="hl-si">${#</span><span class="hl-nv">releases</span><span class="hl-p">[@]</span><span class="hl-si">}</span>
+<span class="hl-k">if</span><span class="hl-w"> </span><span class="hl-o">((</span><span class="hl-w"> </span>count<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>KEEP<span class="hl-w"> </span><span class="hl-o">))</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span>
+<span class="hl-w">    </span><span class="hl-k">for</span><span class="hl-w"> </span>old<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">releases</span><span class="hl-p">[@]:</span><span class="hl-nv">0</span><span class="hl-p">:</span><span class="hl-nv">count</span><span class="hl-p">-KEEP</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span>
+<span class="hl-w">        </span>rm<span class="hl-w"> </span>-rf<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"./</span><span class="hl-nv">$old</span><span class="hl-s2">"</span>
+<span class="hl-w">    </span><span class="hl-k">done</span>
+<span class="hl-k">fi</span>
+</code></pre>
+
+<p>Bash, not <code>sh</code>: arrays and <code>(( ))</code> are bash features. It was written with
+<code>sudo tee /usr/local/bin/prune-releases &gt; /dev/null &lt;&lt;'SCRIPT'</code>, then:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>shellcheck<span class="hl-w"> </span>/usr/local/bin/prune-releases<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"shellcheck: clean"</span>
+<span class="hl-go">shellcheck: clean</span>
+</code></pre>
+
+<p><strong>7. Test it on a fresh copy, and on the missing directory again.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>rm<span class="hl-w"> </span>-rf<span class="hl-w"> </span>/tmp/p<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/tmp/p<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>cp<span class="hl-w"> </span>-a<span class="hl-w"> </span>/srv/app/releases<span class="hl-w"> </span>/tmp/p/<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>chown<span class="hl-w"> </span>-R<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-k">$(</span>id<span class="hl-w"> </span>-un<span class="hl-k">)</span><span class="hl-s2">"</span><span class="hl-w"> </span>/tmp/p
+<span class="hl-gp">$ </span><span class="hl-nv">RELEASES_DIR</span><span class="hl-o">=</span>/tmp/p/releases<span class="hl-w"> </span>prune-releases<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/tmp/p/releases
+<span class="hl-go">exit=0</span>
+<span class="hl-go">total 0</span>
+<span class="hl-go">drwxr-xr-x 2 northelks root 60 Sep 14 00:31 20260908-101500</span>
+<span class="hl-go">drwxr-xr-x 2 northelks root 60 Sep 13 23:31 20260910-163000</span>
+<span class="hl-go">drwxr-xr-x 2 northelks root 60 Sep 13 22:31 20260911-180000 hotfix</span>
+<span class="hl-go">drwxr-xr-x 2 northelks root 60 Sep 13 21:31 20260912-083000</span>
+<span class="hl-go">drwxr-xr-x 2 northelks root 60 Sep 13 20:31 20260913-101500</span>
+<span class="hl-go">lrwxrwxrwx 1 northelks root 33 Sep 14 03:31 current -&gt; /srv/app/releases/20260913-101500</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/tmp/q<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nv">RELEASES_DIR</span><span class="hl-o">=</span>/tmp/q/moved-away<span class="hl-w"> </span>prune-releases<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>/tmp/q
+<span class="hl-go">/usr/local/bin/prune-releases: line 8: cd: /tmp/q/moved-away: No such file or directory</span>
+<span class="hl-go">exit=1</span>
+<span class="hl-go">important-1</span>
+<span class="hl-go">important-2</span>
+<span class="hl-go">important-3</span>
+<span class="hl-go">important-4</span>
+<span class="hl-go">important-8</span>
+</code></pre>
+
+<p>The five newest names remain whatever their mtimes, the hotfix is kept as one release, <code>current</code> is
+untouched, and a missing directory now stops the script with exit 1 before anything is deleted (the
+remaining canaries are the ones the old script left).</p>
+<p><strong>8. Fix the service with a drop-in, then enable and start the timer.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/etc/systemd/system/prune-releases.service.d<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'[Service]\nExecStart=\nExecStart=/usr/local/bin/prune-releases\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>/etc/systemd/system/prune-releases.service.d/path.conf
+<span class="hl-go">[Service]</span>
+<span class="hl-go">ExecStart=</span>
+<span class="hl-go">ExecStart=/usr/local/bin/prune-releases</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span><span class="hl-nb">enable</span><span class="hl-w"> </span>--now<span class="hl-w"> </span>prune-releases.timer
+<span class="hl-go">Created symlink '/etc/systemd/system/timers.target.wants/prune-releases.timer' → '/etc/systemd/system/prune-releases.timer'.</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>list-timers<span class="hl-w"> </span>prune-releases.timer<span class="hl-w"> </span>--no-pager
+<span class="hl-go">NEXT                        LEFT LAST PASSED UNIT                 ACTIVATES</span>
+<span class="hl-go">Tue 2026-09-15 03:30:00 UTC  23h -         - prune-releases.timer prune-releases.service</span>
+
+<span class="hl-go">1 timers listed.</span>
+<span class="hl-go">Pass --all to see loaded but inactive timers, too.</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>prune-releases.service<span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>prune-releases.service<span class="hl-w"> </span>-p<span class="hl-w"> </span>Result<span class="hl-w"> </span>-p<span class="hl-w"> </span>ExecMainStatus<span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>/srv/app/releases
+<span class="hl-go">Result=success</span>
+<span class="hl-go">ExecMainStatus=0</span>
+<span class="hl-go">20260908-101500</span>
+<span class="hl-go">20260910-163000</span>
+<span class="hl-go">20260911-180000 hotfix</span>
+<span class="hl-go">20260912-083000</span>
+<span class="hl-go">20260913-101500</span>
+<span class="hl-go">current</span>
+</code></pre>
+
+<p>The timer has a next elapse, and one manual run of the service through systemd — the same way the
+timer will run it — succeeded on the real directory.</p>
+<p><strong>9. Grade.</strong> The checks ran, the machine rebooted, and they ran again: all four passed both times.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong><code>ls -v</code> or <code>sort -V</code> on the <code>ls -t</code> output.</strong> Sorting the text differently does not help while the
+text is still produced by <code>ls</code> and split by <code>xargs</code>. Fix the channel first, then the order.</p>
+<p><strong><code>xargs -d '\n'</code>.</strong> It stops splitting at spaces, and it is a real improvement, but names can contain
+newlines, and it keeps the design of &quot;turn names into text, then parse the text&quot;. A glob or <code>-print0</code>
+avoids the problem entirely.</p>
+<p><strong>Quoting <code>$RELEASES_DIR</code> and calling it fixed.</strong> <code>cd &quot;$RELEASES_DIR&quot;</code> still fails on a missing
+directory, and without <code>set -e</code> or <code>|| exit</code> the deletion still runs in the wrong place.</p>
+<p><strong><code>rm -rf &quot;$RELEASES_DIR&quot;/*</code> to &quot;stay in the right place&quot;.</strong> With an empty or unset variable that is
+<code>rm -rf /*</code>. <code>set -u</code> catches unset, not empty; <code>${RELEASES_DIR:?}</code> catches both, and <code>cd</code> plus
+relative paths avoids building such a path at all.</p>
+<p><strong>Counting <code>current</code> or other files as releases.</strong> Any entry the script did not create for itself
+must be excluded explicitly, or one day it is the one deleted.</p>
+<p><strong>Starting the timer but not enabling it</strong> (or the other way round). <code>enable</code> alone creates the
+boot-time link but leaves the timer inactive until the next boot; <code>start</code> alone works until the next
+reboot. <code>enable --now</code> does both.</p>
+<p><strong>Editing <code>ExecStart=</code> in a drop-in without clearing it first.</strong> For a <code>Type=oneshot</code> service systemd
+accepts several <code>ExecStart=</code> lines and runs them in order, so the old, missing path still runs first
+and fails the unit.</p>
+<p><strong>Testing on <code>/srv/app/releases</code>.</strong> A deletion cannot be rolled back. Every experiment above ran on a
+copy, and the real directory was touched once, at the end, by the finished script.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-nb">set</span><span class="hl-w"> </span>-euo<span class="hl-w"> </span>pipefail
+<span class="hl-nb">cd</span><span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$dir</span><span class="hl-s2">"</span><span class="hl-w">                              </span><span class="hl-c1"># stops the script if it fails (with -e)</span>
+<span class="hl-nb">cd</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$dir</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w">                       </span><span class="hl-c1"># the same, without -e</span>
+:<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">DIR</span><span class="hl-p">:?DIR must be set</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-w">               </span><span class="hl-c1"># abort if unset or empty</span>
+<span class="hl-k">for</span><span class="hl-w"> </span>f<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>./*<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$f</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span>!<span class="hl-w"> </span>-L<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$f</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>…<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span><span class="hl-w">   </span><span class="hl-c1"># directories, not links</span>
+<span class="hl-nb">shopt</span><span class="hl-w"> </span>-s<span class="hl-w"> </span>nullglob<span class="hl-w">                         </span><span class="hl-c1"># an unmatched glob expands to nothing</span>
+<span class="hl-nv">arr</span><span class="hl-o">=()</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nv">arr</span><span class="hl-o">+=(</span><span class="hl-s2">"</span><span class="hl-nv">$x</span><span class="hl-s2">"</span><span class="hl-o">)</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${#</span><span class="hl-nv">arr</span><span class="hl-p">[@]</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-w">    </span><span class="hl-c1"># array append, length</span>
+<span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">arr</span><span class="hl-p">[@]:</span><span class="hl-nv">0</span><span class="hl-p">:</span><span class="hl-nv">n</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-w">                           </span><span class="hl-c1"># slice: the first n elements</span>
+find<span class="hl-w"> </span>.<span class="hl-w"> </span>-mindepth<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w"> </span>-maxdepth<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w"> </span>-type<span class="hl-w"> </span>d<span class="hl-w"> </span>-print0<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sort<span class="hl-w"> </span>-z<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span>-0<span class="hl-w"> </span>…<span class="hl-w">   </span><span class="hl-c1"># NUL-safe pipeline</span>
+cmd<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'[%s]\n'</span><span class="hl-w">               </span><span class="hl-c1"># see the arguments xargs would pass</span>
+ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>--time-style<span class="hl-o">=</span>+%F_%T<span class="hl-w">                 </span><span class="hl-c1"># full modification times</span>
+cp<span class="hl-w"> </span>-a<span class="hl-w"> </span>src<span class="hl-w"> </span>dst<span class="hl-w">                             </span><span class="hl-c1"># copy keeping modes, links and mtimes</span>
+</code></pre>
+
+<pre class="hl"><code class="language-bash">systemctl<span class="hl-w"> </span>status<span class="hl-w"> </span>NAME.timer<span class="hl-w">               </span><span class="hl-c1"># enabled? active? next trigger?</span>
+systemctl<span class="hl-w"> </span>list-timers<span class="hl-w"> </span>--all<span class="hl-w">               </span><span class="hl-c1"># every timer, with next and last run</span>
+systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>NAME.service<span class="hl-w">                </span><span class="hl-c1"># the unit plus its drop-ins</span>
+systemd-analyze<span class="hl-w"> </span>calendar<span class="hl-w"> </span><span class="hl-s1">'*-*-* 03:30:00'</span><span class="hl-w"> </span><span class="hl-c1"># when a calendar expression fires</span>
+sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>edit<span class="hl-w"> </span>NAME.service<span class="hl-w">          </span><span class="hl-c1"># create a drop-in (clears nothing by itself)</span>
+sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload<span class="hl-w">              </span><span class="hl-c1"># after editing unit files by hand</span>
+sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span><span class="hl-nb">enable</span><span class="hl-w"> </span>--now<span class="hl-w"> </span>NAME.timer<span class="hl-w">    </span><span class="hl-c1"># boot link + start now</span>
+sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>NAME.service<span class="hl-w">         </span><span class="hl-c1"># run the job once, exactly as the timer would</span>
+journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>NAME.service<span class="hl-w"> </span>-b<span class="hl-w">             </span><span class="hl-c1"># what the last runs printed</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>A script that cannot fail is not a backup</em> (lab journal <code>linux-03-backup-script-lies</code>) — Handing a list of files to a program</li>
+<li><em>A script that cannot fail is not a backup</em> (lab journal <code>linux-03-backup-script-lies</code>) — set -euo pipefail, and what it does not do</li>
+</ul>
+<p>Manual pages: <code>man 1 ls</code>, <code>man 1 sort</code>, <code>man 1 xargs</code>, <code>man 5 systemd.timer</code>.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Why is <code>ls -t</code> the wrong way to find the newest releases after a restore from backup?</p>
+<blockquote>
+<p>It sorts by modification time, and restores, <code>cp -a</code>, <code>rsync -a</code> and <code>tar -x</code> set mtimes; the timestamp in the release name is the data that stays correct.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>echo &quot;20260911-180000 hotfix&quot; | xargs rm -rf</code> pass to <code>rm</code>?</p>
+<blockquote>
+<p>Two arguments, <code>20260911-180000</code> and <code>hotfix</code>, because xargs splits its input at blanks (and interprets quotes).</p>
+</blockquote>
+</li>
+<li>
+<p>When <code>cd $RELEASES_DIR</code> fails in a script without <code>set -e</code>, where does the next command run?</p>
+<blockquote>
+<p>In the script's current working directory — wherever it was started from; <code>/</code> under systemd. The failure is printed but does not stop the script.</p>
+</blockquote>
+</li>
+<li>
+<p>Name two ways to hand file names to a command that survive spaces and newlines.</p>
+<blockquote>
+<p>A glob expanded by the shell with quoted expansions (<code>for f in ./*; do … &quot;$f&quot;</code>), or a NUL-separated pipeline (<code>find … -print0 | xargs -0 …</code>).</p>
+</blockquote>
+</li>
+<li>
+<p>Why does the rewritten script test both <code>-d</code> and <code>! -L</code>?</p>
+<blockquote>
+<p><code>-d</code> is true for a symlink that points to a directory, so without <code>! -L</code> the <code>current</code> link (or any link to a release) would be counted and could be deleted.</p>
+</blockquote>
+</li>
+<li>
+<p>A timer is enabled but <code>systemctl list-timers</code> does not show it. What is missing?</p>
+<blockquote>
+<p>It has not been started since it was enabled; enabling only links it into timers.target for the next boot. <code>systemctl start</code> (or <code>enable --now</code>) activates it.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must a drop-in that replaces <code>ExecStart=</code> contain an empty <code>ExecStart=</code> line first?</p>
+<blockquote>
+<p>ExecStart is a list; a new line is appended to the original. The empty assignment clears the list so only the new command remains (and a oneshot does not run the old one first).</p>
+</blockquote>
+</li>
+<li>
+<p>How do you check a destructive pipeline's selection without deleting anything?</p>
+<blockquote>
+<p>Replace the destructive command with one that prints its arguments, e.g. <code>… | xargs printf '[%s]\n'</code>, or run the script against a <code>cp -a</code> copy of the directory.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

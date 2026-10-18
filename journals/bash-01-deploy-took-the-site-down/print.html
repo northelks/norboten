@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A deploy script is a transaction, or it is a hazard</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A deploy script is a transaction, or it is a hazard</h1>
+  <div class="meta">bash, linux-basics · 35 minutes · 2714 words</div>
+</header>
+<p><code>deploy-site</code> is eight lines long and does what every deploy script does: make a directory, unpack a
+release into it, point the live link at it, say so. On a good day it works, and it worked on every
+good day for months. The incident did not happen on a good day. A release archive arrived cut short;
+tar complained, the script paid no attention, replaced the live link with a directory holding one
+empty file, and printed <code>deployed</code>. The site served nothing until someone looked.</p>
+<p>It is tempting to call that a quoting bug, or an error-handling bug, and fix the one line. The better
+reading is that the script was written as a <strong>list of steps</strong>, and a deploy is not a list of steps. It
+is a <strong>transaction</strong>: either the new release is fully in place and live, or nothing visible has
+changed. Everything in this lab — stopping at the first failure, checking the argument, quoting paths,
+unique release directories, the atomic switch — is one of the things a shell script has to do by hand
+to behave like a transaction, because the shell will not do any of it for you.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Read a shell script and say, for each command, what happens to the rest of the script when that
+command fails.</li>
+<li>Use <code>set -euo pipefail</code> and explicit checks together, and know which failures each one catches.</li>
+<li>Validate arguments before touching anything, and report misuse with a usage message on stderr and a
+distinct exit status.</li>
+<li>Quote every expansion of a path, and explain what an unquoted one does in a directory whose name
+contains a space.</li>
+<li>Give every release its own directory, and replace a live symlink atomically with <code>ln -sfn</code> and
+<code>mv -T</code>.</li>
+<li>Clean up what a failed run created, so a failure leaves the system as it found it.</li>
+<li>Test the failure paths of a script against throwaway directories instead of the live site.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>The script, line by line</h3>
+<pre><code class="language-bash">SITE_ROOT=${SITE_ROOT:-/srv/www}
+tarball=$1
+stamp=$(date +%Y%m%d%H%M%S)
+release=$SITE_ROOT/releases/$stamp
+
+mkdir -p $release
+tar -xzf $tarball -C $release
+rm -f $SITE_ROOT/current
+ln -s $release $SITE_ROOT/current
+echo &quot;deployed $stamp&quot;
+</code></pre>
+<p>Take each line and ask “and if this fails?”:</p>
+<ol>
+<li><code>tarball=$1</code> — if no argument was given, <code>tarball</code> is empty and nothing complains.</li>
+<li><code>mkdir -p $release</code> — <code>-p</code> also means “and do not complain if it already exists”, so a second
+deploy in the same second silently reuses the first one’s directory.</li>
+<li><code>tar -xzf $tarball -C $release</code> — tar prints an error and exits non-zero. The script does not look.</li>
+<li><code>rm -f $SITE_ROOT/current</code> — the live link is gone. From here until the next line, the site has no
+content at all.</li>
+<li><code>ln -s $release $SITE_ROOT/current</code> — the link now points at whatever step 3 left behind.</li>
+<li><code>echo &quot;deployed $stamp&quot;</code> — always succeeds, so the script’s exit status is always 0.</li>
+</ol>
+<p>Every one of those is ordinary shell behaviour. A shell script does not stop when a command fails;
+the exit status of a script is the exit status of its <strong>last</strong> command; and nothing is undone. That is
+the whole story of the incident.</p>
+<h3>Exit status is the only channel a caller has</h3>
+<p>Whoever runs a deploy — a person, a CI job, a configuration tool — learns whether it worked from the
+exit status. <code>0</code> means success, anything else means failure, and by convention <code>2</code> means “you called
+me wrong”. Standard output is for data; diagnostics go to <strong>standard error</strong>, so that
+<code>deploy-site x.tar.gz &gt; /dev/null</code> can stay quiet on success and still show a failure.</p>
+<p>The last-command rule is what makes a script lie. A script that ends with <code>echo</code> returns <code>echo</code>’s
+status, and <code>echo</code> does not fail. The fix is not “exit 1 at the end”; it is making sure that no
+failing command is followed by more steps.</p>
+<h3><code>set -euo pipefail</code>: a net with holes</h3>
+<pre><code class="language-bash">set -euo pipefail
+</code></pre>
+<ul>
+<li><code>-e</code> exits when a command returns non-zero.</li>
+<li><code>-u</code> treats an unset variable as an error, so <code>$1</code> without an argument stops the script instead of
+expanding to nothing.</li>
+<li><code>-o pipefail</code> makes a pipeline fail if any stage fails, not only the last.</li>
+</ul>
+<p><code>-e</code> has well-known exemptions, and they matter in deploy scripts because deploy scripts are full of
+conditions:</p>
+<pre><code class="language-bash">if tar -xzf &quot;$tarball&quot; -C &quot;$release&quot;; then …   # a condition: -e does not fire, by design
+tar … || echo &quot;warning&quot;                         # the || handled it: no exit
+f() { tar …; ln …; }; f || rollback            # -e is off inside f for the whole call
+count=$(grep -c x file)                         # -e does fire: the assignment has cmd's status
+local out=$(cmd)                                # but not here: the status is local's, which is 0
+</code></pre>
+<p>So <code>set -e</code> catches the commands you forgot to check, and explicit checks handle the commands whose
+failure needs a specific response. In this script, tar’s failure needs one — delete the half-unpacked
+directory and leave the live link alone — so tar gets an explicit <code>if !</code>, and <code>-e</code> guards the rest.</p>
+<h3>Arguments first</h3>
+<p>Validating input before doing anything is the cheapest transaction logic there is: nothing has
+changed yet, so there is nothing to undo.</p>
+<pre><code class="language-bash">if [ &quot;$#&quot; -ne 1 ]; then
+    echo &quot;usage: deploy-site &lt;release.tar.gz&gt;&quot; &gt;&amp;2
+    exit 2
+fi
+tarball=$1
+if [ ! -f &quot;$tarball&quot; ]; then
+    echo &quot;deploy-site: $tarball: no such file&quot; &gt;&amp;2
+    exit 1
+fi
+</code></pre>
+<p><code>$#</code> is the number of positional parameters. Note what the broken script did without this: with no
+argument, <code>tar -xzf $tarball -C $release</code> became <code>tar -xzf -C /srv/www/releases/…</code>, and <code>-f</code> took
+<code>-C</code> as the name of the archive. The error message — <code>-C: Cannot open</code> — is baffling unless you
+know that the argument vanished.</p>
+<h3>Word splitting, again, because paths have spaces</h3>
+<p>An unquoted <code>$release</code> is split at spaces, tabs and newlines, and each piece is then glob-expanded.
+With <code>SITE_ROOT=&quot;/srv/web root&quot;</code>:</p>
+<pre><code>mkdir -p $release   →   mkdir -p /srv/web root/releases/20260913…
+                         two arguments: &quot;/srv/web&quot; and &quot;root/releases/20260913…&quot;
+</code></pre>
+<p>The second argument is a <strong>relative</strong> path, so it is created in the current directory — wherever the
+script was started from. The same happens to <code>rm</code> and <code>ln</code>. A deploy script that splits paths does
+not merely fail; it scatters directories and links across the filesystem. The rule is simple: quote
+every expansion (<code>&quot;$release&quot;</code>, <code>&quot;$SITE_ROOT/current&quot;</code>), always.</p>
+<p><code>shellcheck</code> catches this class of bug mechanically, and every shell script worth keeping should pass
+it. It does <strong>not</strong> catch missing error handling: the original script produces only quoting warnings,
+and a script with perfect quoting can still end in <code>echo</code> and lie.</p>
+<h3>Unique release directories</h3>
+<p>A timestamp with one-second resolution is not an identifier. Two deploys in the same second — a
+retry, a pipeline that runs twice — get the same name, and <code>mkdir -p</code> happily reuses the directory, so
+the second release is unpacked over the first. Files that exist only in the first release remain.</p>
+<p><code>mktemp -d</code> creates a directory that did not exist before, atomically, with a unique suffix:</p>
+<pre><code class="language-bash">release=$(mktemp -d &quot;$SITE_ROOT/releases/$(date +%Y%m%d%H%M%S).XXXXXX&quot;)
+chmod 755 &quot;$release&quot;     # mktemp creates it 0700
+</code></pre>
+<p>The timestamp prefix keeps the names roughly chronological; the random suffix makes them unique. The
+suffix is random, so two releases from the same second do not sort in creation order — something to
+remember if another tool picks “the newest” release by name. When that matters, use nanoseconds
+(<code>date +%Y%m%d%H%M%S%N</code>) or a counter.</p>
+<h3>Replacing a symlink atomically</h3>
+<p>The live link has to go from the old release to the new one with <strong>no moment in between</strong> when it is
+missing or wrong. <code>rm</code> then <code>ln</code> has such a moment. <code>ln -sf new current</code> looks like it replaces the
+link, but when <code>current</code> is a symlink to a directory, <code>ln</code> dereferences it and creates the new link
+<strong>inside</strong> the old release directory instead. <code>-n</code> (<code>--no-dereference</code>) stops that:</p>
+<pre><code class="language-bash">ln -sfn &quot;$release&quot; &quot;$SITE_ROOT/current&quot;
+</code></pre>
+<p><code>ln -sfn</code> still works by unlinking and re-creating, which is a very short gap but a gap. The
+fully atomic way is to create the new link under a temporary name and rename it over the old one,
+because <code>rename(2)</code> on the same filesystem replaces the destination in a single step:</p>
+<pre><code class="language-bash">ln -sfn &quot;$release&quot; &quot;$SITE_ROOT/.current.new&quot;
+mv -Tf &quot;$SITE_ROOT/.current.new&quot; &quot;$SITE_ROOT/current&quot;
+</code></pre>
+<p><code>mv -T</code> (<code>--no-target-directory</code>) matters for the same reason as <code>ln -n</code>: without it, <code>mv</code> would move
+the new link <em>into</em> the directory <code>current</code> points to. Both flags are GNU extensions; on BSD and macOS
+the equivalents are <code>ln -sfh</code> and <code>mv -h</code>.</p>
+<h3>Cleaning up after a failure</h3>
+<p>A failed extraction leaves a directory that looks like a release. Leave it there and the next
+“keep the five newest releases” job will count it, or someone will point <code>current</code> at it by hand. The
+failure branch removes what the run created:</p>
+<pre><code class="language-bash">if ! tar -xzf &quot;$tarball&quot; -C &quot;$release&quot;; then
+    rm -rf -- &quot;$release&quot;
+    echo &quot;deploy-site: cannot unpack $tarball; the live release is unchanged&quot; &gt;&amp;2
+    exit 1
+fi
+</code></pre>
+<p><code>--</code> ends option parsing, so a path that starts with <code>-</code> cannot be taken as an option. For scripts
+with several resources to clean, a <code>trap</code> on <code>EXIT</code> (or <code>ERR</code>) does the same job in one place:</p>
+<pre><code class="language-bash">cleanup() { [ -n &quot;${release:-}&quot; ] &amp;&amp; [ &quot;${done:-}&quot; != 1 ] &amp;&amp; rm -rf -- &quot;$release&quot;; }
+trap cleanup EXIT
+</code></pre>
+<h3>Testing failure paths without touching the site</h3>
+<p><code>deploy-site</code> already reads <code>SITE_ROOT</code>, which makes it testable: point it at <code>/tmp</code>, build a fake
+current release there, and try every outcome — a good archive, a truncated one, a missing one, no
+argument, a root with spaces, two deploys in a row. <code>bash -x</code> prints every command after expansion,
+which is where splitting and empty variables become visible. That is exactly how the grader tests
+the script, and exactly how you should test it before you trust it.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the track’s lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. See what is live, then read the script.</strong> Before anything runs, know what a good state looks like.</p>
+<pre><code class="language-console">$ ls -l /srv/www /srv/www/releases
+/srv/www:
+total 4
+lrwxrwxrwx 1 root root   32 Sep 14 03:24 current -&gt; /srv/www/releases/20260912083000
+drwxr-xr-x 3 root root 4096 Sep 14 03:24 releases
+
+/srv/www/releases:
+total 4
+drwxr-xr-x 2 root root 4096 Sep 14 03:24 20260912083000
+$ cat /usr/local/bin/deploy-site
+#!/bin/bash
+# deploy-site &lt;release.tar.gz&gt; — unpack a release and make it the live site
+
+SITE_ROOT=${SITE_ROOT:-/srv/www}
+tarball=$1
+stamp=$(date +%Y%m%d%H%M%S)
+release=$SITE_ROOT/releases/$stamp
+
+mkdir -p $release
+tar -xzf $tarball -C $release
+rm -f $SITE_ROOT/current
+ln -s $release $SITE_ROOT/current
+echo &quot;deployed $stamp&quot;
+</code></pre>
+<p>No <code>set -e</code>, no check after tar, no argument check, and <code>echo</code> last. The incident is already
+explained; the rest is confirmation.</p>
+<p><strong>2. Reproduce the truncated archive in a sandbox</strong>, never on the live site. A fake web root in <code>/tmp</code>,
+and the first 200 bytes of a real release:</p>
+<pre><code class="language-console">$ mkdir -p /tmp/t/www/releases/old &amp;&amp; echo old &gt; /tmp/t/www/releases/old/index.html &amp;&amp; ln -sfn /tmp/t/www/releases/old /tmp/t/www/current
+$ sudo head -c 200 /root/release-2026-09-13.tar.gz &gt; /tmp/t/truncated.tar.gz; ls -l /tmp/t/truncated.tar.gz
+-rw-rw-r-- 1 northelks northelks 200 Sep 14 03:25 /tmp/t/truncated.tar.gz
+$ SITE_ROOT=/tmp/t/www bash -x /usr/local/bin/deploy-site /tmp/t/truncated.tar.gz; echo &quot;exit=$?&quot;
++ SITE_ROOT=/tmp/t/www
++ tarball=/tmp/t/truncated.tar.gz
+++ date +%Y%m%d%H%M%S
++ stamp=20260914032509
++ release=/tmp/t/www/releases/20260914032509
++ mkdir -p /tmp/t/www/releases/20260914032509
++ tar -xzf /tmp/t/truncated.tar.gz -C /tmp/t/www/releases/20260914032509
+
+gzip: stdin: unexpected end of file
+tar: Unexpected EOF in archive
+tar: Unexpected EOF in archive
+tar: Error is not recoverable: exiting now
++ rm -f /tmp/t/www/current
++ ln -s /tmp/t/www/releases/20260914032509 /tmp/t/www/current
++ echo 'deployed 20260914032509'
+deployed 20260914032509
+exit=0
+$ readlink /tmp/t/www/current; ls -la /tmp/t/www/current/
+/tmp/t/www/releases/20260914032509
+total 0
+drwxrwxr-x 2 northelks northelks 60 Sep 14 03:25 .
+drwxrwxr-x 4 northelks northelks 80 Sep 14 03:25 ..
+-rw-r--r-- 1 northelks northelks  0 Sep 14 03:25 index.html
+</code></pre>
+<p>That is the incident, exactly: tar failed loudly, the script carried on, and <code>current</code> now points at
+a release whose <code>index.html</code> is zero bytes — the part of the file tar managed to create before the
+archive ran out.</p>
+<p><strong>3. Call it with no argument.</strong></p>
+<pre><code class="language-console">$ SITE_ROOT=/tmp/t/www deploy-site; echo &quot;exit=$?&quot;; readlink /tmp/t/www/current
+tar (child): -C: Cannot open: No such file or directory
+tar (child): Error is not recoverable: exiting now
+tar: Child returned status 2
+tar: Error is not recoverable: exiting now
+deployed 20260914032509
+exit=0
+/tmp/t/www/releases/20260914032509
+</code></pre>
+<p><code>-C: Cannot open</code> is tar trying to open an archive called <code>-C</code>: the empty <code>$tarball</code> disappeared and
+<code>-f</code> took the next word. The script reported success anyway.</p>
+<p><strong>4. A web root with a space.</strong> Started from <code>/tmp/t</code>, so any stray relative path lands somewhere
+visible:</p>
+<pre><code class="language-console">$ mkdir -p &quot;/tmp/t/web root/releases/old&quot; &amp;&amp; echo old &gt; &quot;/tmp/t/web root/releases/old/index.html&quot; &amp;&amp; ln -sfn &quot;/tmp/t/web root/releases/old&quot; &quot;/tmp/t/web root/current&quot;
+$ sudo cp /root/release-2026-09-13.tar.gz /tmp/t/good.tar.gz &amp;&amp; sudo chown &quot;$(id -un)&quot; /tmp/t/good.tar.gz
+$ cd /tmp/t &amp;&amp; SITE_ROOT=&quot;/tmp/t/web root&quot; deploy-site /tmp/t/good.tar.gz; echo &quot;exit=$?&quot;; ls /tmp/t
+tar: root/releases/20260914032509: Not found in archive
+tar: Exiting with failure status due to previous errors
+rm: cannot remove '/tmp/t/web': Is a directory
+ln: target 'root/current': No such file or directory
+deployed 20260914032509
+exit=0
+good.tar.gz
+root
+truncated.tar.gz
+web
+web root
+www
+</code></pre>
+<p>Read the listing: <code>mkdir -p</code> made two directories, <code>/tmp/t/web</code> and a relative <code>root/…</code> in the
+current directory. tar took <code>root/releases/…</code> as a member name to extract; <code>rm</code> tried to delete
+<code>/tmp/t/web</code>; <code>ln</code> looked for a directory called <code>root/current</code>. Four commands, four different
+misreadings of one path — and <code>deployed</code>, exit 0.</p>
+<p><strong>5. Two deploys in the same second.</strong></p>
+<pre><code class="language-console">$ SITE_ROOT=/tmp/t/www deploy-site /tmp/t/good.tar.gz &amp;&amp; SITE_ROOT=/tmp/t/www deploy-site /tmp/t/good.tar.gz; ls /tmp/t/www/releases
+deployed 20260914032509
+deployed 20260914032509
+20260914032509
+old
+</code></pre>
+<p>Two “deployed” lines, one directory. With two different archives, the second would have been unpacked
+on top of the first.</p>
+<p><strong>6. Learn how <code>ln</code> treats a link to a directory</strong>, before writing the switch:</p>
+<pre><code class="language-console">$ mkdir -p /tmp/t/ln/a /tmp/t/ln/b &amp;&amp; ln -s /tmp/t/ln/a /tmp/t/ln/current &amp;&amp; ln -sf /tmp/t/ln/b /tmp/t/ln/current; ls -l /tmp/t/ln/current /tmp/t/ln/a
+lrwxrwxrwx 1 northelks northelks 11 Sep 14 03:25 /tmp/t/ln/current -&gt; /tmp/t/ln/a
+
+/tmp/t/ln/a:
+total 0
+lrwxrwxrwx 1 northelks northelks 11 Sep 14 03:25 b -&gt; /tmp/t/ln/b
+$ ln -sfn /tmp/t/ln/b /tmp/t/ln/current; ls -l /tmp/t/ln/current
+lrwxrwxrwx 1 northelks northelks 11 Sep 14 03:25 /tmp/t/ln/current -&gt; /tmp/t/ln/b
+</code></pre>
+<p><code>ln -sf</code> left <code>current</code> pointing at <code>a</code> and quietly created <code>a/b</code>. <code>ln -sfn</code> replaced the link itself.</p>
+<p><strong>7. Rewrite the script.</strong> Each change answers one of the failures above:</p>
+<pre><code class="language-bash">#!/bin/bash
+# deploy-site &lt;release.tar.gz&gt; — unpack a release and make it the live site
+set -euo pipefail
+
+if [ &quot;$#&quot; -ne 1 ]; then
+    echo &quot;usage: deploy-site &lt;release.tar.gz&gt;&quot; &gt;&amp;2
+    exit 2
+fi
+tarball=$1
+SITE_ROOT=${SITE_ROOT:-/srv/www}
+if [ ! -f &quot;$tarball&quot; ]; then
+    echo &quot;deploy-site: $tarball: no such file&quot; &gt;&amp;2
+    exit 1
+fi
+
+mkdir -p &quot;$SITE_ROOT/releases&quot;
+release=$(mktemp -d &quot;$SITE_ROOT/releases/$(date +%Y%m%d%H%M%S).XXXXXX&quot;)
+if ! tar -xzf &quot;$tarball&quot; -C &quot;$release&quot;; then
+    rm -rf -- &quot;$release&quot;
+    echo &quot;deploy-site: cannot unpack $tarball; the live release is unchanged&quot; &gt;&amp;2
+    exit 1
+fi
+chmod 755 &quot;$release&quot;
+
+ln -sfn &quot;$release&quot; &quot;$SITE_ROOT/.current.new&quot;
+mv -Tf &quot;$SITE_ROOT/.current.new&quot; &quot;$SITE_ROOT/current&quot;
+echo &quot;deployed ${release##*/}&quot;
+</code></pre>
+<p>It was written with <code>sudo tee /usr/local/bin/deploy-site &gt; /dev/null &lt;&lt;'SCRIPT' … SCRIPT</code>; the quoted
+delimiter keeps <code>$1</code> and <code>$#</code> from being expanded while the file is written.</p>
+<pre><code class="language-console">$ shellcheck /usr/local/bin/deploy-site &amp;&amp; echo &quot;shellcheck: clean&quot;
+shellcheck: clean
+</code></pre>
+<p><strong>8. Test every outcome again</strong>, on a fresh sandbox:</p>
+<pre><code class="language-console">$ SITE_ROOT=/tmp/t/www deploy-site /tmp/t/truncated.tar.gz; echo &quot;exit=$?&quot;; readlink /tmp/t/www/current; ls /tmp/t/www/releases
+
+gzip: stdin: unexpected end of file
+tar: Unexpected EOF in archive
+tar: Unexpected EOF in archive
+tar: Error is not recoverable: exiting now
+deploy-site: cannot unpack /tmp/t/truncated.tar.gz; the live release is unchanged
+exit=1
+/tmp/t/www/releases/old
+old
+$ SITE_ROOT=/tmp/t/www deploy-site; echo &quot;exit=$?&quot;
+usage: deploy-site &lt;release.tar.gz&gt;
+exit=2
+$ SITE_ROOT=/tmp/t/www deploy-site /tmp/t/good.tar.gz &amp;&amp; SITE_ROOT=/tmp/t/www deploy-site /tmp/t/good.tar.gz; ls /tmp/t/www/releases; readlink /tmp/t/www/current
+deployed 20260914032510.KBlxi3
+deployed 20260914032510.Ir3FNO
+20260914032510.Ir3FNO
+20260914032510.KBlxi3
+old
+/tmp/t/www/releases/20260914032510.Ir3FNO
+$ SITE_ROOT=&quot;/tmp/t/web root&quot; deploy-site /tmp/t/good.tar.gz; cat &quot;/tmp/t/web root/current/index.html&quot;
+deployed 20260914032510.RNFOkK
+&lt;h1&gt;Shop&lt;/h1&gt;
+&lt;p&gt;Release 2026-09-13&lt;/p&gt;
+</code></pre>
+<p>The truncated archive changes nothing and exits 1; no argument exits 2 with a usage line; two quick
+deploys make two directories, and <code>current</code> is the second. Notice the ordering in <code>ls</code>: <code>Ir3FNO</code> was created
+second but sorts first, because the random suffix decides the order within a second.</p>
+<p><strong>9. Grade.</strong> <code>c</code> on the lab’s screen ran the checks, rebooted, and ran them again: all four passed in
+both passes, 100%.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Adding <code>exit 1</code> at the end, or <code>|| exit 1</code> after <code>echo</code>.</strong> The script then fails every time, or never
+— the problem is not the last line, it is the lines that run after a failure.</p>
+<p><strong><code>set -e</code> alone.</strong> It does stop at a failing tar, but it leaves the half-unpacked release behind,
+and it gives the user tar’s message with no statement of what state the site is in. Worse, the moment
+someone wraps the extraction in an <code>if</code> or a function called with <code>||</code>, <code>-e</code> stops applying. Use it as
+a net under explicit checks, not instead of them.</p>
+<p><strong>Checking tar with <code>$?</code> on the next line, after something else ran.</strong> <code>tar …; echo &quot;extracted&quot;; if [ $? -ne 0 ]</code> tests <code>echo</code>. Test the command directly: <code>if ! tar …; then</code>.</p>
+<p><strong>Quoting only the variables that “might” contain spaces.</strong> Paths come from environment variables,
+configuration files and other people’s machines. Quote all of them; it costs nothing, and
+<code>shellcheck</code> will stop reminding you.</p>
+<p><strong><code>ln -sf</code> to replace the link.</strong> On a link to a directory it creates a link inside the old release
+and leaves <code>current</code> unchanged, which looks like a deploy that “did not take”.</p>
+<p><strong><code>rm -rf &quot;$SITE_ROOT/releases/$stamp&quot;</code> in the failure branch with the timestamp recomputed.</strong> A
+second call to <code>date</code> can return a different second. Remember the exact path the run created and delete
+that — which is what keeping <code>$release</code> from <code>mktemp</code> gives you.</p>
+<p><strong>Testing on <code>/srv/www</code>.</strong> Every experiment in the walkthrough ran against <code>/tmp</code>. A deploy script
+that has not been seen failing has not been tested, and the live site is the wrong place to watch it
+fail.</p>
+<p><strong>Making names unique and then sorting them by name.</strong> A random suffix fixes collisions but breaks
+strict chronological order within a second. If a cleanup job keeps “the newest N by name”, either use
+a sortable unique name (nanoseconds, a counter) or have that job sort by the timestamp prefix only.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash">set -euo pipefail                        # stop on errors, unset variables, failed pipeline stages
+[ &quot;$#&quot; -eq 1 ] || { echo &quot;usage: …&quot; &gt;&amp;2; exit 2; }      # argument count, usage on stderr
+[ -f &quot;$file&quot; ] || { echo &quot;…: no such file&quot; &gt;&amp;2; exit 1; }
+if ! cmd; then cleanup; exit 1; fi       # a failure that needs its own response
+echo &quot;message&quot; &gt;&amp;2                       # diagnostics to stderr
+&quot;$var&quot;  &quot;$dir/$name&quot;  &quot;$(cmd)&quot;  &quot;$@&quot;    # quote every expansion
+dir=$(mktemp -d &quot;/path/prefix.XXXXXX&quot;)  # a new, unique directory (mode 0700)
+rm -rf -- &quot;$dir&quot;                         # -- : no option parsing after this
+ln -sfn target link                      # replace a link, do not follow a link to a directory
+ln -sfn target .link.new &amp;&amp; mv -Tf .link.new link   # atomic switch (same filesystem)
+readlink -f link                         # where a link finally points
+trap 'cleanup' EXIT                      # run cleanup whenever the script exits
+bash -x script args                      # trace each command after expansion
+shellcheck script                        # static analysis: quoting, common traps
+VAR=/tmp/sandbox script args; echo &quot;exit=$?&quot;   # test against a throwaway root
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Exit status</th>
+<th>Conventional meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>success</td>
+</tr>
+<tr>
+<td>1</td>
+<td>general failure</td>
+</tr>
+<tr>
+<td>2</td>
+<td>misuse: wrong arguments, usage error</td>
+</tr>
+<tr>
+<td>126 / 127</td>
+<td>found but not executable / command not found</td>
+</tr>
+<tr>
+<td>128 + n</td>
+<td>killed by signal n (130 = Ctrl-C, 137 = SIGKILL)</td>
+</tr>
+</tbody>
+</table>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Active, green, and not working</em> (topic journal <code>monitoring</code>) — A check is an exit status</li>
+<li><em>Counting things, and the specification is the test</em> (lab journal <code>linux-04-write-the-report</code>) — Validating, and the three exit statuses</li>
+</ul>
+<p>Manual pages: <code>man 1 bash</code>, <code>man 1 ln</code>, <code>man 1 mktemp</code>.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A script’s last command is <code>echo &quot;done&quot;</code>. What is its exit status when the command before it failed?</p>
+<blockquote>
+<p>0 — a script’s exit status is that of its last command, and <code>echo</code> succeeds. The earlier failure is lost unless something stopped the script or checked it.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did calling the old <code>deploy-site</code> with no argument produce the error <code>-C: Cannot open</code>?</p>
+<blockquote>
+<p>The unquoted, empty <code>$tarball</code> vanished from the command line, so <code>tar -xzf $tarball -C dir</code> became <code>tar -xzf -C dir</code> and <code>-f</code> took <code>-C</code> as the archive’s name.</p>
+</blockquote>
+</li>
+<li>
+<p>Name two situations in which <code>set -e</code> does not stop a script after a failing command.</p>
+<blockquote>
+<p>When the command is part of a condition (<code>if cmd</code>, <code>while cmd</code>, <code>cmd || …</code>, <code>cmd &amp;&amp; …</code> except the last), and inside a function called in such a context; also the status of <code>local x=$(cmd)</code> is <code>local</code>’s, not the substitution’s.</p>
+</blockquote>
+</li>
+<li>
+<p>With <code>SITE_ROOT=&quot;/srv/web root&quot;</code>, what does <code>mkdir -p $SITE_ROOT/releases/x</code> create?</p>
+<blockquote>
+<p>Two paths: <code>/srv/web</code> and the relative <code>root/releases/x</code> inside the current directory, because the unquoted expansion is split at the space.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>ln -sf new current</code> do when <code>current</code> is already a symlink to a directory, and which flag fixes it?</p>
+<blockquote>
+<p>It follows the link and creates <code>new</code>’s link inside the directory <code>current</code> points to, leaving <code>current</code> unchanged. <code>-n</code> (<code>--no-dereference</code>) makes <code>ln</code> replace the link itself.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>ln -sfn new .current.new &amp;&amp; mv -Tf .current.new current</code> better than <code>rm current &amp;&amp; ln -s new current</code>?</p>
+<blockquote>
+<p><code>rename(2)</code> replaces <code>current</code> in a single step, so there is never a moment without a live link; <code>rm</code> then <code>ln</code> leaves a gap, and if <code>ln</code> fails the site has no link at all. <code>-T</code> keeps <code>mv</code> from moving the new link into the old directory.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>mktemp -d</code> solve the two-deploys-in-one-second problem, and what new property must you keep in mind?</p>
+<blockquote>
+<p>It creates a directory that did not exist before, with a unique random suffix, atomically — so concurrent or rapid runs never share a directory. The random suffix means names created in the same second no longer sort in creation order.</p>
+</blockquote>
+</li>
+<li>
+<p>What should a failed extraction leave behind, and why does it matter to other tools?</p>
+<blockquote>
+<p>Nothing: the half-unpacked directory should be removed. Otherwise it looks like a release — a cleanup job may count it as one of the newest, or someone may point <code>current</code> at it.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

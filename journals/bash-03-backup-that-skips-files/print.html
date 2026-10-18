@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A file name is any byte but slash and NUL — a backup has to believe it</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A file name is any byte but slash and NUL — a backup has to believe it</h1>
+  <div class="meta">bash, linux-basics · 30 minutes · 1593 words</div>
+</header>
+<p><code>backup-docs</code> looks like the most boring script on the machine: find every file, make its directory
+in the backup, copy it, count it, say how many. It ran every night for months and systemd marked
+every run as a success. It had also been copying almost nothing, because the loop that reads the file
+names takes them apart three different ways before <code>cp</code> ever sees them, and the one number it reports
+is lost on the way out of a subshell.</p>
+<p>The lesson is not “quote your variables”, although you should. It is that a shell script which
+handles file names has to treat a name as opaque data from the moment it is produced to the moment it
+is used, and that every convenience in between — word splitting, <code>read</code>’s trimming, a pipeline — is
+a transformation you did not ask for.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Say which bytes a Linux file name may contain, and why newline-separated lists of names are unsafe.</li>
+<li>Walk a tree with <code>find -print0</code> and <code>read -r -d ''</code>, and explain each part of that incantation.</li>
+<li>Recognise the three things that mangle a name in a naive loop: <code>read</code> without <code>-r</code>, <code>read</code> without
+<code>IFS=</code>, and an unquoted expansion.</li>
+<li>Explain why a variable changed inside <code>cmd | while …</code> is unchanged after the loop, and fix it with
+process substitution.</li>
+<li>Use <code>--</code> so that a name beginning with a dash is never taken for an option.</li>
+<li>Make a partial failure visible: a message on standard error and a non-zero exit status.</li>
+<li>Tell a oneshot service that succeeded from one that did its job.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>What a file name can be</h3>
+<p>To the kernel a file name is a string of bytes. The only bytes it refuses are <code>/</code>, which separates
+path components, and NUL, which ends a C string. Spaces, tabs, a leading dash, a backslash, quotes,
+and a newline are all legal, and all of them turn up in real directories: documents saved by people,
+files unpacked from archives made on other systems, uploads.</p>
+<p>Any format that separates names with a byte a name can contain is therefore ambiguous. <code>find</code>’s
+default output separates names with newlines. NUL is the one separator that cannot be ambiguous, which
+is why <code>find -print0</code>, <code>xargs -0</code>, <code>sort -z</code> and <code>read -d ''</code> exist.</p>
+<h3>What <code>read</code> does to a line</h3>
+<p><code>while read f</code> is the loop everyone writes first. Without options, <code>read</code>:</p>
+<ol>
+<li>treats a backslash as an escape character and removes it (<code>Q3\forecast.csv</code> becomes
+<code>Q3forecast.csv</code>) — <code>-r</code> turns that off;</li>
+<li>strips leading and trailing characters that are in <code>IFS</code>, spaces and tabs by default —
+<code>IFS=</code> for that one command turns that off;</li>
+<li>stops at a newline, so a name that contains one arrives as two “names” — only <code>-d ''</code> (read up to
+a NUL) fixes that, together with <code>find -print0</code>.</li>
+</ol>
+<p><code>while IFS= read -r -d '' f</code> is not ritual: each of the three parts undoes one of those.</p>
+<h3>What an unquoted expansion does</h3>
+<p>After <code>read</code> hands over the name, <code>cp $f $dest/$rel</code> expands the variables <strong>unquoted</strong>. The shell
+then splits each expansion into words at spaces, tabs and newlines, and expands any <code>*</code>, <code>?</code> or <code>[</code>
+in the pieces as glob patterns. <code>Contract - ACME.pdf</code> becomes three arguments. With more than two
+arguments, <code>cp</code> expects the last one to be a directory, so it fails with a message about a target it
+cannot find. Double quotes — <code>&quot;$f&quot;</code> — keep an expansion as exactly one argument, whatever it holds.</p>
+<h3>A name that looks like an option</h3>
+<p>A relative name such as <code>-rf.txt</code> is read by most commands as options. <code>cp -rf.txt copy.txt</code> does
+not copy anything: <code>cp</code> parses <code>-r</code>, <code>-f</code>, then chokes on <code>.</code>. The end-of-options marker <code>--</code> tells
+the command that everything after it is an operand. In this backup the names from <code>find</code> are
+absolute (<code>/srv/docs/hr/-onboarding.md</code>), so the dash is harmless there — but the script builds
+relative names too, and the habit costs two characters.</p>
+<h3>Why the count is always zero</h3>
+<p>In <code>find … | while read f; do count=$((count + 1)); done</code>, each side of the pipe runs in its own
+subshell: a separate process with a copy of the variables. The loop counts faithfully in its copy,
+and that copy disappears when the loop ends. The parent shell’s <code>count</code> was never touched, so
+<code>echo &quot;backed up $count files&quot;</code> prints the value from before the loop.</p>
+<p>Feeding the loop from a <strong>process substitution</strong> — <code>done &lt; &lt;(find … -print0)</code> — keeps the loop in
+the current shell, so its variables survive. (Bash’s <code>shopt -s lastpipe</code> does the same for the last
+command of a pipeline in a non-interactive shell; the redirection form works everywhere and says what
+it means.)</p>
+<h3>Failures that nobody hears about</h3>
+<p>The loop ignores <code>cp</code>’s exit status, and the script’s last command is an <code>echo</code>, which succeeds. A
+script’s exit status is the status of its last command unless it chooses otherwise, so a backup that
+copied two files out of six exits 0, and a oneshot unit whose process exits 0 is <code>Result=success</code>.
+To make a partial backup visible, count the failures, name each one on standard error, and end with
+a status that says whether there were any.</p>
+<h2>A failure, walked through</h2>
+<p>Run on the lab’s own machine: <code>ubuntu-26.04-devops</code>, GNU bash 5.3.9, before any change.</p>
+<p>Running the backup by hand shows everything that goes wrong, in order:</p>
+<pre><code class="language-console">$ sudo /usr/local/bin/backup-docs 2&gt;&amp;1; echo &quot;exit status: $?&quot;
+cp: cannot stat '/srv/docs/finance/Q3forecast.csv': No such file or directory
+cp: target 'board.txt': No such file or directory
+cp: target 'agenda.txt': No such file or directory
+cp: target 'ACME.pdf': No such file or directory
+backed up 0 files
+exit status: 0
+</code></pre>
+<p>Four errors, a count of zero, and a successful exit. The first error has already lost the backslash.
+Looking at exactly what the loop receives — each name between brackets — shows where:</p>
+<pre><code class="language-console">$ find /srv/docs -type f | while read f; do printf '[%s]\n' &quot;$f&quot;; done
+[/srv/docs/finance/Q3forecast.csv]
+[/srv/docs/minutes/2026-09-01 board.txt]
+[/srv/docs/minutes/  draft agenda.txt]
+[/srv/docs/hr/-onboarding.md]
+[/srv/docs/Contract - ACME.pdf]
+[/srv/docs/notes/readme.txt]
+</code></pre>
+<p><code>read</code> removed the backslash; the rest survived the read. The spaces are lost in the next step, the
+unquoted expansion:</p>
+<pre><code class="language-console">$ f='/srv/docs/Contract - ACME.pdf'; printf '&lt;%s&gt; ' $f; echo
+&lt;/srv/docs/Contract&gt; &lt;-&gt; &lt;ACME.pdf&gt;
+</code></pre>
+<p>Three arguments for <code>cp</code>, which is why it complained about a target called <code>ACME.pdf</code>. Two files did
+copy — <code>-onboarding.md</code> and <code>readme.txt</code> — and the script still reported zero. The subshell explains
+that, and a two-line experiment proves it:</p>
+<pre><code class="language-console">$ count=0; printf 'a\nb\n' | while read x; do count=$((count+1)); done; echo &quot;count=$count&quot;
+count=0
+$ count=0; while read x; do count=$((count+1)); done &lt; &lt;(printf 'a\nb\n'); echo &quot;count=$count&quot;
+count=2
+</code></pre>
+<p>A relative name with a leading dash fails differently, as an option:</p>
+<pre><code class="language-console">$ cd /tmp &amp;&amp; printf x &gt; '-rf.txt' &amp;&amp; cp -rf.txt copy.txt 2&gt;&amp;1; echo &quot;exit status: $?&quot;; cp -- -rf.txt copy.txt &amp;&amp; ls -- copy.txt
+cp: invalid option -- '.'
+Try 'cp --help' for more information.
+exit status: 1
+copy.txt
+</code></pre>
+<p>After rewriting the loop — NUL-separated names read by <code>IFS= read -r -d ''</code> in the current shell,
+every expansion quoted, <code>--</code> before operands, failures counted and reported — the same run copies
+all six documents and the timer’s service reports a real success:</p>
+<pre><code class="language-console">$ sudo /usr/local/bin/backup-docs 2&gt;&amp;1; echo &quot;exit status: $?&quot;
+backed up 6 files
+exit status: 0
+$ sudo find /var/backups/docs -type f
+/var/backups/docs/2026-09-16/finance/Q3\forecast.csv
+/var/backups/docs/2026-09-16/minutes/2026-09-01 board.txt
+/var/backups/docs/2026-09-16/minutes/  draft agenda.txt
+/var/backups/docs/2026-09-16/hr/-onboarding.md
+/var/backups/docs/2026-09-16/Contract - ACME.pdf
+/var/backups/docs/2026-09-16/notes/readme.txt
+$ systemctl show backup-docs.service -p Result -p ExecMainStatus
+Result=success
+ExecMainStatus=0
+</code></pre>
+<p>The backslash, the two leading blanks and the spaces are all intact.</p>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong>Quoting the variables and stopping.</strong> Quotes fix the spaces. The backslash is already gone by
+then, a newline still splits a name in two, and the count is still zero.</li>
+<li><strong><code>for f in $(find …)</code>.</strong> The command substitution is split into words exactly like an unquoted
+variable, so every name with a space breaks, and the whole list is built in memory first.</li>
+<li><strong>Setting <code>IFS=$'\n'</code>.</strong> Handles spaces, not newlines in names, and changes word splitting for
+every other command in the script.</li>
+<li><strong>Making the count a file</strong> (<code>echo &gt;&gt; /tmp/count</code>). It works around the subshell by adding shared
+state, a temporary file, and a new way to fail. Keep the loop in the current shell instead.</li>
+<li><strong><code>set -e</code> as the error handling.</strong> A failing <code>cp</code> inside <code>if</code> or <code>&amp;&amp;</code> does not stop the script,
+and one that does stop it leaves the rest of the documents uncopied. A backup wants every file it
+can get, and a list of the ones it could not.</li>
+<li><strong>Checking that the unit succeeded.</strong> systemd knows the exit status and nothing else. Compare the
+backup with the source.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># every file, whatever its name, read in the current shell
+while IFS= read -r -d '' f; do
+    rel=${f#&quot;$DOCS_DIR&quot;/}                         # quoted pattern: taken literally
+    mkdir -p -- &quot;$dest/$(dirname -- &quot;$rel&quot;)&quot;
+    cp -p -- &quot;$f&quot; &quot;$dest/$rel&quot; || echo &quot;could not copy $rel&quot; &gt;&amp;2
+done &lt; &lt;(find &quot;$DOCS_DIR&quot; -type f -print0)
+
+printf '[%s]\n' &quot;$name&quot;            # see exactly what a variable holds
+cmd | while …; done                # the loop's variables vanish afterwards
+while …; done &lt; &lt;(cmd)             # they survive
+cp -- &quot;$f&quot; &quot;$dest&quot;                  # names starting with - are operands
+find &quot;$dir&quot; -type f -print0 | xargs -0 cmd      # NUL-separated all the way
+[ &quot;$failed&quot; -eq 0 ]                # last command = the script's exit status
+systemctl show unit -p Result -p ExecMainStatus
+</code></pre>
+<h2>Going deeper</h2>
+<ul>
+<li><code>man 1 bash</code>, <em>Word Splitting</em>, <em>Pathname Expansion</em> and the <code>read</code> builtin, for the three
+transformations this lab turns off.</li>
+<li><code>man 1 find</code>, <code>-print0</code>, and <code>man 1 xargs</code>, <code>-0</code>, for passing names between programs.</li>
+<li>The monitoring journal, <a href="../../journals/monitoring/#a-check-is-an-exit-status">a check is an exit status</a>,
+for why a script that exits 0 is a script that reports success.</li>
+<li>David A. Wheeler, <em>Filenames and Pathnames in Shell: How to do it Correctly</em>, for the long list of
+cases this lab only samples.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Which two bytes can never appear in a Linux file name component, and which one of them makes a
+safe separator for a list of names?</p>
+<blockquote>
+<p><code>/</code> and NUL. NUL is the safe separator, because <code>/</code> separates path components inside a name.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>read</code> without <code>-r</code> do to <code>Q3\forecast.csv</code>?</p>
+<blockquote>
+<p>It treats the backslash as an escape and removes it, so the name becomes <code>Q3forecast.csv</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>count</code> stay 0 after <code>find … | while read f; do count=$((count+1)); done</code>?</p>
+<blockquote>
+<p>The loop is part of a pipeline and runs in a subshell, which increments its own copy of the
+variable; the parent shell’s copy is untouched.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>cp $f dest/</code> do when <code>f</code> is <code>Contract - ACME.pdf</code>?</p>
+<blockquote>
+<p>The unquoted expansion is split into three words, so <code>cp</code> receives three source operands and a
+target, and tries to copy files called <code>Contract</code>, <code>-</code> and <code>ACME.pdf</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>A backup copied four files of six and printed an error for the other two. What exit status should
+it have, and why does it matter to systemd?</p>
+<blockquote>
+<p>Non-zero. systemd’s <code>Result=success</code> means only that the main process exited 0; a non-zero
+status is how the failed unit, and any alert on it, finds out.</p>
+</blockquote>
+</li>
+<li>
+<p>When is <code>--</code> needed before a file name?</p>
+<blockquote>
+<p>When the name could begin with a dash, which is always possible for a relative name taken from
+data; <code>--</code> ends option parsing so the name is an operand.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

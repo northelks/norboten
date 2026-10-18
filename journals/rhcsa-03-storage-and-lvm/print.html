@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The volume that filled overnight</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>The volume that filled overnight</h1>
+  <div class="meta">storage-lvm, boot-systemd · 40 minutes · 2984 words</div>
+</header>
+<p>A full filesystem is the most ordinary emergency there is, and the machine in this lab is what
+happens when somebody fixes one at three in the morning. The volume filled. They freed some space,
+edited <code>/etc/fstab</code>, rebooted to “make sure it was clean” — and now the machine will not finish
+booting, <code>df</code> disagrees with <code>du</code>, and the swap that used to be there is gone.</p>
+<p>None of those are hard problems. They are hard <em>together</em>, at three in the morning, when you
+cannot log in over the network because the boot never got that far. This journal is the mechanism
+behind all four, so that next time they are boring.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Read a storage stack from the bottom up: disk → physical volume → volume group → logical
+volume → filesystem → mount point, and say which layer is short of space.</li>
+<li>Grow an XFS filesystem onto a disk that was added to the machine and never used.</li>
+<li>Explain why a filesystem can be full while <code>du</code> says it is nearly empty, and find the process
+responsible without rebooting.</li>
+<li>Write an <code>/etc/fstab</code> entry that survives a device being renamed, and check it before you
+reboot rather than after.</li>
+<li>Get out of the maintenance prompt: read why the boot stopped, fix it from there, and continue
+the boot without a second reboot.</li>
+<li>Add swap that comes back on its own.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>The stack, layer by layer</h3>
+<pre><code>  /var/lib/app                     mount point       ← what df reports on
+  ──────────────────────────
+  XFS filesystem                   mkfs.xfs, xfs_growfs
+  ──────────────────────────
+  /dev/vg0/applv                   logical volume    ← lvextend grows this
+  ──────────────────────────
+  vg0   (extents: 4 MiB each)      volume group      ← vgextend grows this
+  ──────────────────────────
+  /dev/vdb        /dev/vdc         physical volumes  ← pvcreate makes these
+  ──────────────────────────
+  virtio disks                     the hardware
+</code></pre>
+<p>Four commands read the three LVM layers, and they are all worth knowing by heart:</p>
+<pre><code class="language-console">$ sudo pvs
+  PV         VG  Fmt  Attr PSize  PFree
+  /dev/vdb   vg0 lvm2 a--  &lt;2.00g    0
+  /dev/vdc       lvm2 ---   2.00g 2.00g
+
+$ sudo vgs
+  VG  #PV #LV #SN Attr   VSize  VFree
+  vg0   1   1   0 wz--n- &lt;2.00g    0
+
+$ sudo lvs
+  LV    VG  Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  applv vg0 -wi-ao---- &lt;2.00g
+</code></pre>
+<p>Read those three outputs in that order and the machine has already told you the answer: <code>vg0</code> has
+<strong>no free extents</strong>, the logical volume is using all of them — and there is a second physical
+volume, <code>/dev/vdc</code>, that belongs to no volume group at all. Someone prepared a disk for growth and
+never wired it in. <code>PFree 2.00g</code> on a PV with an empty <code>VG</code> column is what “prepared and forgotten”
+looks like. (The <code>&lt;2.00g</code> on the one in use is LVM being honest: its metadata takes a few extents off
+the top of the disk, so the usable size is slightly under 2 GiB.)</p>
+<p>The fourth command is <code>df -h /var/lib/app</code>, and it is the only one that speaks about the
+filesystem rather than the volume. Keep the distinction: <strong>a logical volume can have free space
+while the filesystem on it is full, and a filesystem can be full while the volume group is empty.</strong>
+They are different layers and they are grown by different commands.</p>
+<h3>Growing it</h3>
+<p>Two steps, bottom up. First give the volume group the disk nobody used:</p>
+<pre><code class="language-console">$ sudo vgextend vg0 /dev/vdc
+  Volume group &quot;vg0&quot; successfully extended
+</code></pre>
+<p>Then grow the logical volume <em>and the filesystem on it</em> in one move:</p>
+<pre><code class="language-console">$ sudo lvextend -r -l +100%FREE vg0/applv
+  File system xfs found on vg0/applv mounted at /var/lib/app.
+  Size of logical volume vg0/applv changed from &lt;2.00 GiB (511 extents) to 3.99 GiB (1022 extents).
+  Extending file system xfs to 3.99 GiB (4286578688 bytes) on vg0/applv...
+xfs_growfs /dev/vg0/applv
+…
+data blocks changed from 523264 to 1046528
+xfs_growfs done
+  Extended file system xfs on vg0/applv.
+  Logical volume vg0/applv successfully resized.
+</code></pre>
+<p>The flags are the whole lesson:</p>
+<ul>
+<li><code>-l +100%FREE</code> — take every remaining extent in the group. <code>-L +2G</code> takes a size instead; <code>-l</code>
+speaks in extents and percentages, <code>-L</code> in bytes.</li>
+<li><code>-r</code> (<code>--resizefs</code>) — after growing the volume, grow the filesystem to match, by calling
+<code>xfs_growfs</code> (or <code>resize2fs</code> on ext4). Without it you get a bigger volume with the same
+filesystem inside it, <code>df</code> does not move, and it looks as though nothing happened.</li>
+</ul>
+<p>Both can be done online: XFS grows while mounted, and there is no need to stop the application.
+<strong>XFS cannot shrink.</strong> Not with <code>-r</code>, not with any flag, not ever — if you need a smaller XFS
+filesystem you make a new one and copy the data. That asymmetry is worth remembering before you
+hand out extents you might want back.</p>
+<h3>Why <code>df</code> and <code>du</code> disagree</h3>
+<p><code>du</code> walks the directory tree and adds up the files it can see. <code>df</code> asks the filesystem how many
+blocks are free. A file that has been deleted while a process still holds it open is invisible to
+the first and very much visible to the second: its directory entry is gone, so <code>du</code> cannot find
+it, but the inode and its blocks survive until the last file descriptor closes.</p>
+<pre><code class="language-console">$ df -h /var/lib/app
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/mapper/vg0-applv  2.0G  1.9G  130M  94% /var/lib/app
+
+$ sudo du -sh /var/lib/app
+1.4G    /var/lib/app
+</code></pre>
+<p>Half a gigabyte is missing, and <code>lsof</code> knows where:</p>
+<pre><code class="language-console">$ sudo lsof -a +L1 /var/lib/app
+COMMAND    PID USER   FD   TYPE DEVICE  SIZE/OFF NLINK NODE NAME
+app-spool 1066 root    3r   REG  253,0 398458880     0  134 /var/lib/app/spool.tmp (deleted)
+</code></pre>
+<p><code>+L1</code> means “files with fewer than one link” — that is exactly the definition of a deleted file
+that is still open. <code>NLINK 0</code> and <code>(deleted)</code> are the two things to look for, and <code>-a</code> makes lsof AND
+its conditions together (by default it ORs them, and would list every open file on the volume).
+<code>COMMAND</code> is cut to nine characters, so <code>app-spool</code> is <code>app-spooler</code>. The same answer is in <code>/proc</code>,
+which is useful when <code>lsof</code> is not installed:</p>
+<pre><code class="language-console">$ sudo ls -l /proc/1066/fd | grep deleted
+lr-x------. 1 root root 64 Sep 13 04:54 3 -&gt; /var/lib/app/spool.tmp (deleted)
+</code></pre>
+<p>To get the space back you have to make that process let go. Restarting the service is the honest
+fix and takes a second:</p>
+<pre><code class="language-console">$ sudo systemctl restart app-spooler
+$ sleep 1 ; df -h /var/lib/app
+</code></pre>
+<p>The <code>sleep</code> is not superstition. XFS on recent kernels frees the blocks of an unlinked inode in a
+background worker, so a <code>df</code> run in the same instant as the restart can still show the old figure —
+measured on this machine, it did. Give it a second before concluding the restart did nothing.</p>
+<p>Killing the process works too, but a service that is supposed to be running should be restarted,
+not killed. And <strong>do not</strong> reach for <code>truncate -s 0 /proc/1066/fd/3</code> unless you understand what the
+program does with a file that suddenly became empty underneath it — some log writers are fine
+with that, some write at their old offset and leave you with a sparse file the same size as
+before.</p>
+<h3>fstab, and what systemd does with it</h3>
+<p>An <code>/etc/fstab</code> line has six fields:</p>
+<pre><code>UUID=a01e…  /var/lib/app  xfs  defaults,x-systemd.device-timeout=10s  0  0
+└─ source   └─ target     └─ fs └─ options                            │  └─ fsck order
+                                                                      └─ dump
+</code></pre>
+<p>The <strong>source</strong> is the part that goes wrong. A device name like <code>/dev/vdb1</code> is not a stable
+identifier: it depends on how many disks the machine has, which order the kernel enumerated them
+in, and whether a partition exists at all. The 3 a.m. edit in this lab changed a UUID to
+<code>/dev/vdb1</code> — a partition that has never existed on this machine, because <code>/dev/vdb</code> is a physical
+volume with no partition table. Name the filesystem instead:</p>
+<pre><code class="language-console">$ sudo blkid -s UUID -o value /dev/vg0/applv
+a01e14d3-b0c7-45d6-8e8d-881804180eb3
+</code></pre>
+<p>(The UUID is created by <code>mkfs</code>, so yours is different — which is precisely why you ask <code>blkid</code> rather
+than copying one from anywhere.)</p>
+<p><code>UUID=</code> is the default choice; <code>LABEL=</code> is fine too and easier to read. LVM device paths
+(<code>/dev/vg0/applv</code>) are stable as well, because LVM resolves them by metadata rather than by
+enumeration order — but the exam, and most house styles, want a UUID, and a UUID is never wrong.</p>
+<p>Then check it <strong>before</strong> you trust it:</p>
+<pre><code class="language-console">$ sudo findmnt --verify --tab-file /etc/fstab
+Success, no errors or warnings detected
+</code></pre>
+<p>That parses every line, resolves every source and reports what would fail. It is the difference
+between finding out now and finding out during a boot you cannot log into. Run it as root: as an
+ordinary user it cannot open the block devices and reports a <em>cannot detect on-disk filesystem type
+(Permission denied)</em> warning for every line, which buries the one that matters. And read the
+warnings, not just the error count — the broken entry in this lab produces <code>0 errors, 2 warnings</code>:</p>
+<pre><code>/var/lib/app
+   [W] unreachable source: /dev/vdb1: No such file or directory
+   [W] cannot detect on-disk filesystem type (No such file or directory)
+</code></pre>
+<p>Systemd does not read <code>/etc/fstab</code> at mount time. At boot — and whenever you run <code>systemctl daemon-reload</code> — <code>systemd-fstab-generator</code> turns each line into a <code>.mount</code> unit:</p>
+<pre><code class="language-console">$ systemctl cat var-lib-app.mount | head -5
+# /run/systemd/generator/var-lib-app.mount
+# Automatically generated by systemd-fstab-generator
+[Unit]
+Documentation=man:fstab(5) man:systemd-fstab-generator(8)
+</code></pre>
+<p>Two consequences worth internalising. First: after editing <code>fstab</code>, run <code>systemctl daemon-reload</code>,
+or the <em>running</em> systemd is still acting on the previous version — <code>findmnt --verify</code> even says so,
+<em>your fstab has been modified, but systemd still uses the old version</em>. (The next boot runs the
+generator again and sees the new file; the stale view is a problem for the system you are standing
+in.) Second: the mount is a dependency of <code>local-fs.target</code>, so a mount that cannot happen stops the
+boot rather than degrading it. That is why a typo in <code>fstab</code> is not a cosmetic mistake: it is a
+machine that does not come back.</p>
+<p><code>x-systemd.device-timeout=10s</code> in the options is a small kindness: without it systemd waits 90
+seconds for a device that is never going to appear before giving up. The <code>x-</code> prefix marks an
+option for the generator rather than for the filesystem driver, which is why <code>mount</code> itself
+ignores it.</p>
+<h3>The maintenance prompt</h3>
+<p>When the source in <code>fstab</code> names a device that never appears, systemd waits for it (here ten
+seconds, thanks to <code>x-systemd.device-timeout</code>), gives up, and the failure cascades. The journal of
+this lab’s broken boot records exactly that chain:</p>
+<pre><code>systemd[1]: Timed out waiting for device dev-vdb1.device - /dev/vdb1.
+systemd[1]: Dependency failed for var-lib-app.mount - /var/lib/app.
+systemd[1]: Dependency failed for local-fs.target - Local File Systems.
+systemd[1]: Started emergency.service - Emergency Shell.
+systemd[1]: Reached target emergency.target - Emergency Mode.
+</code></pre>
+<p>and the console ends at:</p>
+<pre><code>Give root password for maintenance
+(or press Control-D to continue):
+</code></pre>
+<p>Notice what failed: not the mount, but the <em>device</em> the mount was waiting for. The mount unit never
+ran, so it is <code>inactive (dead)</code>, not <code>failed</code> — which matters in a moment.</p>
+<p>There is no network in emergency mode, so this is a console conversation:
+<code>k</code> on the lab’s screen. Three things to do, in order:</p>
+<pre><code class="language-console"># journalctl -xb -p err          # why the boot stopped, with explanations  ← start here
+# findmnt --verify              # whether fstab is the reason
+# systemctl --failed            # what is broken — which may be nothing (see below)
+</code></pre>
+<p>Then fix <code>fstab</code>, reload, and mount by hand to prove it:</p>
+<pre><code class="language-console"># vi /etc/fstab
+# systemctl daemon-reload
+# mount -a
+# findmnt /var/lib/app
+</code></pre>
+<p>And instead of rebooting, <strong>continue the boot you interrupted</strong>:</p>
+<pre><code class="language-console"># systemctl default
+Failed to connect to system scope bus via local transport: No such file or directory
+</code></pre>
+<p>That switches to the default target and carries on. On Rocky 10 it prints that complaint about the
+bus — D-Bus is not running in emergency mode — and then does it anyway: the console fills with the
+rest of the boot and ends at a login prompt, and the journal records <em>Stopped target emergency.target</em>
+followed by <em>Reached target multi-user.target</em>. Do not let the message send you back to a reboot. Rebooting also works, but <code>systemctl default</code>
+is faster and tells you immediately whether the rest of the boot is healthy — and on the exam, the
+difference between one reboot and three is minutes you do not have.</p>
+<h3>Swap</h3>
+<p>Swap is not a filesystem, so it is not mounted; it is <em>enabled</em>, and it needs its own <code>fstab</code>
+line. A swap <strong>file</strong> is made in three steps and enabled in one:</p>
+<pre><code class="language-console">$ sudo dd if=/dev/zero of=/swapfile bs=1M count=256 status=none   # or: fallocate -l 256M
+$ sudo chmod 600 /swapfile
+$ sudo mkswap /swapfile
+$ sudo swapon /swapfile
+$ swapon --show
+NAME      TYPE SIZE USED PRIO
+/swapfile file 256M   0B   -2
+</code></pre>
+<p><code>chmod 600</code> is not decoration: <code>swapon</code> refuses a world-readable swap file, and rightly — anything
+in memory can end up in there. To bring it back after a reboot, <code>fstab</code> needs:</p>
+<pre><code>/swapfile none swap defaults 0 0
+</code></pre>
+<p>The target field is <code>none</code> because there is nothing to mount it on, and the type is <code>swap</code>.
+<code>swapon -a</code> enables everything in <code>fstab</code>, which is exactly what the boot does. A swap file that
+is enabled but missing from <code>fstab</code> works perfectly until the next reboot and then silently does not
+— and that next reboot is where this lab’s machine already is: <code>/swapfile</code> exists, is off, and has no
+<code>fstab</code> line.</p>
+<h2>A failure, walked through</h2>
+<p>The machine is at the maintenance prompt, reached with <code>k</code> on the lab’s screen. Nothing else
+is known.</p>
+<p><strong>1. Ask why the boot stopped.</strong> Start with the errors of this boot, not with the failed units:</p>
+<pre><code class="language-console"># journalctl -xb -p err --no-pager | tail -8
+Sep 13 04:46:53 lima-nb-rhcsa-03 systemd[1]: Timed out waiting for device dev-vdb1.device - /dev/vdb1.
+░░ Subject: A start job for unit dev-vdb1.device has failed
+░░ …
+░░ A start job for unit dev-vdb1.device has finished with a failure.
+░░
+░░ The job identifier is 226 and the job result is timeout.
+# systemctl --failed
+  UNIT LOAD ACTIVE SUB DESCRIPTION
+
+0 loaded units listed.
+</code></pre>
+<p>The first command has the answer — systemd waited for a device called <code>/dev/vdb1</code> and it never came.
+The second shows why it is not the place to start: <strong>nothing is in the failed state</strong>. The device job
+timed out, and the mount that depended on it was never attempted, so it is merely inactive. A lot of
+people look at an empty <code>systemctl --failed</code>, conclude the boot is fine, and press Control-D.</p>
+<p><strong>2. Ask what it tried to mount.</strong></p>
+<pre><code class="language-console"># systemctl status var-lib-app.mount --no-pager
+○ var-lib-app.mount - /var/lib/app
+     Loaded: loaded (/etc/fstab; generated)
+     Active: inactive (dead)
+      Where: /var/lib/app
+       What: /dev/vdb1
+</code></pre>
+<p><code>What: /dev/vdb1</code>. Does it exist?</p>
+<pre><code class="language-console"># ls -l /dev/vdb1
+ls: cannot access '/dev/vdb1': No such file or directory
+# lsblk
+NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sr0          11:0    1  168K  0 rom
+vda         252:0    0   16G  0 disk
+├─vda1      252:1    0  200M  0 part /boot/efi
+├─vda2      252:2    0 1000M  0 part /boot
+└─vda3      252:3    0 14.8G  0 part /
+vdb         252:16   0    2G  0 disk
+└─vg0-applv 253:0    0    2G  0 lvm
+vdc         252:32   0    2G  0 disk
+# findmnt --verify
+/var/lib/app
+   [W] unreachable source: /dev/vdb1: No such file or directory
+   [W] cannot detect on-disk filesystem type (No such file or directory)
+
+0 parse errors, 0 errors, 2 warnings
+</code></pre>
+<p>There is the shape of the whole machine in one screen: <code>vdb</code> carries the LVM volume (no
+partition — <code>vdb1</code> was never real), <code>vdc</code> is untouched, and the logical volume is 2 GiB. And
+<code>findmnt --verify</code> agrees, with <em>warnings</em> — <code>0 errors</code> is not a clean bill of health.</p>
+<p><strong>3. Fix the source, not the symptom.</strong> The filesystem is <code>/dev/vg0/applv</code>; ask it for its UUID
+and write that:</p>
+<pre><code class="language-console"># blkid -s UUID -o value /dev/vg0/applv
+a01e14d3-b0c7-45d6-8e8d-881804180eb3
+# vi /etc/fstab          # replace /dev/vdb1 with UUID=a01e14d3-…
+# findmnt --verify --tab-file /etc/fstab
+   [W] your fstab has been modified, but systemd still uses the old version;
+       use 'systemctl daemon-reload' to reload
+
+0 parse errors, 0 errors, 1 warning
+# systemctl daemon-reload
+# findmnt --verify --tab-file /etc/fstab
+Success, no errors or warnings detected
+# mount -a
+[   51.796177] XFS (dm-0): Mounting V5 Filesystem a01e14d3-b0c7-45d6-8e8d-881804180eb3
+[   51.804620] XFS (dm-0): Ending clean mount
+# systemctl default
+Failed to connect to system scope bus via local transport: No such file or directory
+…
+lima-nb-rhcsa-03 login:
+</code></pre>
+<p><code>findmnt</code> noticed the missing <code>daemon-reload</code> before we did. And <code>systemctl default</code> continued the
+boot despite its complaint about the bus: the console ran through the rest of the boot to a login
+prompt, and SSH answers. Now the original problem is still waiting.</p>
+<p><strong>4. Find out which layer is short of space.</strong></p>
+<pre><code class="language-console">$ df -h /var/lib/app          # 94% used, 130M free   → the filesystem is nearly full
+/dev/mapper/vg0-applv  2.0G  1.9G  130M  94% /var/lib/app
+$ sudo du -sh /var/lib/app    # 1.4G                  → but the files do not explain it all
+1.4G    /var/lib/app
+$ sudo vgs                    # VFree 0               → and the group has nothing left to give
+  vg0   1   1   0 wz--n- &lt;2.00g    0
+$ sudo pvs                    # /dev/vdc, no VG       → while a whole disk sits unused
+  /dev/vdb   vg0 lvm2 a--  &lt;2.00g    0
+  /dev/vdc       lvm2 ---   2.00g 2.00g
+</code></pre>
+<p>Two independent problems, and now both are visible: space held by a deleted file, and a volume
+group that needs the spare disk.</p>
+<p><strong>5. Release the held space.</strong></p>
+<pre><code class="language-console">$ sudo lsof -a +L1 /var/lib/app
+COMMAND    PID USER   FD   TYPE DEVICE  SIZE/OFF NLINK NODE NAME
+app-spool 1066 root    3r   REG  253,0 398458880     0  134 /var/lib/app/spool.tmp (deleted)
+$ sudo systemctl restart app-spooler
+$ sudo lsof -a +L1 /var/lib/app          # silence
+</code></pre>
+<p>Check <code>df</code> again a second later rather than instantly — XFS releases unlinked inodes in the
+background.</p>
+<p><strong>6. Grow the volume, because a few hundred megabytes of headroom on a volume that filled once will
+fill again.</strong></p>
+<pre><code class="language-console">$ sudo vgextend vg0 /dev/vdc
+  Volume group &quot;vg0&quot; successfully extended
+$ sudo lvextend -r -l +100%FREE vg0/applv
+  Size of logical volume vg0/applv changed from &lt;2.00 GiB (511 extents) to 3.99 GiB (1022 extents).
+  …
+  Logical volume vg0/applv successfully resized.
+$ df -h /var/lib/app
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/mapper/vg0-applv  4.0G  1.5G  2.5G  38% /var/lib/app
+$ lsblk /dev/vdb /dev/vdc
+NAME        MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS
+vdb         252:16   0   2G  0 disk
+└─vg0-applv 253:0    0   4G  0 lvm  /var/lib/app
+vdc         252:32   0   2G  0 disk
+└─vg0-applv 253:0    0   4G  0 lvm  /var/lib/app
+</code></pre>
+<p><code>lsblk</code> now draws the same logical volume under both disks — which is what a volume spanning two
+physical volumes is.</p>
+<p><strong>7. Put swap back, and make it stick.</strong></p>
+<pre><code class="language-console">$ swapon --show                            # nothing
+$ ls -l /swapfile                          # it is still there, just off
+-rw-------. 1 root root 268435456 Sep 13 04:53 /swapfile
+$ sudo swapon /swapfile
+$ swapon --show
+NAME      TYPE SIZE USED PRIO
+/swapfile file 256M   0B   -2
+$ echo '/swapfile none swap defaults 0 0' | sudo tee -a /etc/fstab
+</code></pre>
+<p><strong>8. Prove it survives a reboot</strong>, because that is the only proof that counts:</p>
+<pre><code class="language-console">$ sudo reboot
+$ findmnt /var/lib/app &amp;&amp; swapon --show &amp;&amp; df -h /var/lib/app
+</code></pre>
+<h2>Common wrong turns</h2>
+<p><strong>Deleting the data to make room.</strong> The briefing says the files under <code>data/</code> must not be deleted,
+moved or truncated, and the checks hash the first megabyte of <code>orders.db</code> to make sure they were
+not. In real life the equivalent is deleting a database file to free space — which is how a full
+disk becomes a restore from backup.</p>
+<p><strong>Running <code>lvextend</code> without <code>-r</code>.</strong> The volume grows, <code>lvs</code> shows the new size, <code>df</code> shows the
+old one, and the natural conclusion is that LVM is broken. It is not: the filesystem inside the
+volume has not been told. <code>lvextend -r</code>, or <code>xfs_growfs /var/lib/app</code> afterwards.</p>
+<p><strong>Trying to shrink XFS</strong> to give space back. There is no such operation. If you have over-grown a
+volume, the way back is a new filesystem and a copy.</p>
+<p><strong>Rebooting to reclaim held space.</strong> On most machines it works — every process lets go when it
+dies — but it hides the cause, and the one thing you know about a machine that filled up overnight
+is that it will fill up again. On this machine it does not even work: the spooler takes its spool
+again as it starts at the next boot, the way a leaking application does. Find the file and restart
+the service that holds it.</p>
+<p><strong>Trusting an empty <code>systemctl --failed</code>.</strong> A mount waiting on a device that never appears is not
+<em>failed</em>, it is <em>inactive</em> — the timed-out device job is what failed, and it has gone. Read
+<code>journalctl -xb -p err</code> first.</p>
+<p><strong>Fixing <code>fstab</code> and rebooting without checking.</strong> If the entry is still wrong you are back at the
+maintenance prompt, having spent a minute of boot to learn something <code>findmnt --verify</code> would have
+told you instantly.</p>
+<p><strong>Forgetting <code>systemctl daemon-reload</code>.</strong> The running systemd keeps the mount unit generated from the
+old <code>fstab</code>: <code>systemctl status</code> still shows <code>What: /dev/vdb1</code>, and anything that asks systemd to mount
+the path — continuing the boot, starting a service with <code>RequiresMountsFor=</code> — can act on the stale
+definition. The next boot regenerates the units, so it hides the mistake rather than exposing it.
+<code>findmnt --verify</code> warns about exactly this; read its warnings.</p>
+<p><strong>Adding swap without an <code>fstab</code> line.</strong> <code>swapon</code> is not persistent. <code>swapon --show</code> says it is
+fine; the next boot says otherwise.</p>
+<p><strong>Mounting by device name because it is quicker.</strong> It is quicker, and it is the reason this lab
+exists. Names move; UUIDs do not.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># reading the stack
+lsblk                          # disks, partitions, LVM, mount points, in one tree
+pvs / vgs / lvs                # the three LVM layers, one line each
+df -h /path                    # filesystem free space (the top layer)
+du -sh /path                   # what the files actually add up to
+blkid -s UUID -o value DEV     # the UUID to put in fstab
+findmnt /path                  # what is mounted there, and how
+
+# growing
+vgextend vg0 /dev/vdc          # give the group another physical volume
+lvextend -r -l +100%FREE vg0/applv    # grow the volume and the filesystem
+lvextend -r -L +2G vg0/applv          # …by a size instead
+xfs_growfs /var/lib/app        # grow XFS alone (what -r calls)
+resize2fs /dev/vg0/applv       # the ext4 equivalent
+
+# space that du cannot see
+lsof -a +L1 /path              # deleted files still held open (-a: AND, not OR)
+ls -l /proc/PID/fd | grep deleted
+systemctl restart UNIT         # the honest way to make it let go
+
+# fstab
+findmnt --verify --tab-file /etc/fstab   # check before you reboot
+systemctl daemon-reload                  # after every fstab edit
+mount -a                                 # mount everything in fstab
+systemctl cat var-lib-app.mount          # the unit systemd generated
+
+# swap
+mkswap /swapfile ; chmod 600 /swapfile ; swapon /swapfile
+swapon --show
+echo '/swapfile none swap defaults 0 0' &gt;&gt; /etc/fstab
+
+# emergency mode
+journalctl -xb -p err          # why the boot stopped  ← first
+findmnt --verify               # fstab's problems, as warnings as well as errors
+systemctl --failed             # what is broken now (a device timeout leaves this EMPTY)
+systemctl default              # continue the boot instead of rebooting
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>The space that belongs to a file with no name</em> (lab journal <code>linux-01-disk-full</code>) — Deleting a file does not delete a file</li>
+</ul>
+<p>Manual pages: <code>man 5 fstab</code>, <code>man 5 systemd.mount</code>, <code>man 8 lvm</code>, <code>man 8 swapon</code>, <code>man 8 blkid</code>, <code>man 1 lsof</code>.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p><code>df</code> says a 2 GiB filesystem is 94% full; <code>du</code> on its mount point says 1.4 GiB. Where
+is the difference, and which command finds it?</p>
+<blockquote>
+<p>In blocks belonging to files that have been deleted while a process still holds them open —
+unlinked inodes, invisible to a tree walk. <code>lsof -a +L1 &lt;mountpoint&gt;</code>, or
+<code>ls -l /proc/&lt;pid&gt;/fd | grep deleted</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>You run <code>lvextend -l +100%FREE vg0/applv</code> and <code>df</code> does not change. What was forgotten?</p>
+<blockquote>
+<p>The filesystem was never grown. Add <code>-r</code> (<code>--resizefs</code>) so lvextend calls <code>xfs_growfs</code>, or
+run <code>xfs_growfs /var/lib/app</code> afterwards.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>/dev/vdb1</code> a worse thing to put in <code>fstab</code> than <code>UUID=…</code>, beyond style?</p>
+<blockquote>
+<p>Kernel device names depend on enumeration order and on the partition actually existing; a
+UUID identifies the filesystem itself and cannot be changed by adding a disk. A wrong source
+in fstab fails <code>local-fs.target</code> and stops the boot.</p>
+</blockquote>
+</li>
+<li>
+<p>You have corrected <code>/etc/fstab</code> at the maintenance prompt. What do you run before rebooting,
+and what lets you avoid the reboot altogether?</p>
+<blockquote>
+<p><code>findmnt --verify --tab-file /etc/fstab</code>, then <code>systemctl daemon-reload</code> and <code>mount -a</code> to
+prove it. <code>systemctl default</code> continues the interrupted boot instead of rebooting.</p>
+</blockquote>
+</li>
+<li>
+<p>A swap file is active in <code>swapon --show</code> but gone after the next reboot. Why?</p>
+<blockquote>
+<p>It was enabled by hand and never added to <code>/etc/fstab</code>; the boot only runs <code>swapon -a</code>, which
+enables what fstab lists.</p>
+</blockquote>
+</li>
+<li>
+<p>Which of these can be done online, on a mounted XFS filesystem: growing it, shrinking it,
+adding a physical volume to its volume group?</p>
+<blockquote>
+<p>Growing: yes. Adding a PV to the group: yes. Shrinking XFS: never — not online, not offline.
+Make a new filesystem and copy.</p>
+</blockquote>
+</li>
+<li>
+<p><code>systemctl status var-lib-app.mount</code> says <code>Loaded: loaded (/etc/fstab; generated)</code>. What
+generated it, and when does it run again?</p>
+<blockquote>
+<p><code>systemd-fstab-generator</code>, at boot and on every <code>systemctl daemon-reload</code>. Until you reload,
+systemd is still acting on the previous fstab.</p>
+</blockquote>
+</li>
+<li>
+<p>The machine is in emergency mode because of a bad <code>fstab</code> source, and <code>systemctl --failed</code> lists
+nothing. Why, and where is the evidence?</p>
+<blockquote>
+<p>The mount was waiting for a device that never appeared; the device job timed out, and the mount
+that depended on it was never attempted, so it is inactive rather than failed. The evidence is in
+<code>journalctl -xb -p err</code> (<em>Timed out waiting for device dev-vdb1.device</em>) and in the warnings from
+<code>findmnt --verify</code>.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

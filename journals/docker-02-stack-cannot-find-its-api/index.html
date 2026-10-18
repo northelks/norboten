@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inside a container, localhost is the container · Norboten</title>
+<meta name="description" content="The shop is two nginx containers in one Compose project: web, the public front, and api, which serves a status document. The front&#39;s configuration passes /api/ ">
+<link rel="canonical" href="https://norboten.org/journals/docker-02-stack-cannot-find-its-api/"><meta property="og:title" content="Inside a container, localhost is the container · Norboten">
+<meta property="og:description" content="The shop is two nginx containers in one Compose project: web, the public front, and api, which serves a status document. The front&#39;s configuration passes /api/ ">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/docker-02-stack-cannot-find-its-api/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Inside a container, localhost is the container · Norboten">
+<meta name="twitter:description" content="The shop is two nginx containers in one Compose project: web, the public front, and api, which serves a status document. The front&#39;s configuration passes /api/ ">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Inside a container, localhost is the container",
+  "description": "The shop is two nginx containers in one Compose project: web, the public front, and api, which serves a status document. The front\u0027s configuration passes /api/ ",
+  "url": "https://norboten.org/journals/docker-02-stack-cannot-find-its-api/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2199,
+  "timeRequired": "PT40M",
+  "about": ["Containers", "Networking"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Stack That Cannot Find Its API</div>
+    <h1>Inside a container, localhost is the container</h1>
+    <p class="muted">
+      40 minutes' reading · 2199 words ·<span class="tag">Containers</span><span class="tag">Networking</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 88 words</title><rect x="0.0" y="0" width="23.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 905 words</title><rect x="26.7" y="0" width="244.0" height="30" rx="4" fill="#1d2a23"/><text x="34.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 932 words</title><rect x="273.7" y="0" width="251.3" height="30" rx="4" fill="#4ade80"/><text x="281.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 234 words</title><rect x="528.0" y="0" width="63.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 158 words</title><rect x="594.1" y="0" width="42.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 95 words</title><rect x="639.7" y="0" width="25.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 340 words</title><rect x="668.3" y="0" width="91.7" height="30" rx="4" fill="#1d2a23"/><text x="676.3" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/docker-02-stack-cannot-find-its-api/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>The shop is two nginx containers in one Compose project: <code>web</code>, the public front, and <code>api</code>, which
+serves a status document. The front's configuration passes <code>/api/</code> to <code>http://localhost:8089/</code>, and
+port 8089 is where the API is published. From the host, <code>curl http://127.0.0.1:8089/</code> works, so the
+configuration looks right. From inside <code>web</code> it cannot work, because inside a container <code>localhost</code> is
+that container, and nothing in the <code>web</code> container listens on 8089.</p>
+<p>The obvious correction — proxy to the service by its name, <code>api</code> — made <code>web</code> refuse to start, and
+that was put down to &quot;Docker DNS being flaky&quot;. It was not flaky. The two services had been placed on
+two different networks, and a container can only resolve and reach the containers it shares a network
+with. On top of that the API had been published on the host &quot;for debugging&quot;, and neither service had
+a restart policy, so after a reboot nothing came back until someone typed <code>docker compose up</code>.</p>
+<p>This journal is about how Compose services find each other, what publishing a port does and does not
+do, and how a stack survives a reboot.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Explain what <code>localhost</code> means in a container, and what an address in a published port refers to.</li>
+<li>Describe Compose's default network, service-name DNS, and what user-defined networks change.</li>
+<li>Diagnose name resolution and connectivity from inside a container with <code>exec</code>.</li>
+<li>Explain why nginx fails at start-up when an upstream name does not resolve.</li>
+<li>Expose a service to other containers without publishing it on the host.</li>
+<li>Make a Compose stack come back after a reboot with restart policies, and know what else must hold.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="every-container-has-its-own-network-namespace">Every container has its own network namespace</h3>
+<p>A container gets its own network stack: its own interfaces, routing table, and its own loopback. In a
+container, <code>127.0.0.1</code> and <code>::1</code> are the container's loopback — not the host's, and not any other
+container's. A process in <code>web</code> connecting to <code>localhost:8089</code> is connecting to port 8089 <strong>in <code>web</code></strong>.</p>
+<p><strong>Publishing</strong> (<code>ports: [&quot;8089:80&quot;]</code>) is a host-side feature: Docker listens on the host's port 8089
+and forwards to port 80 in the container. It exists for clients outside Docker. It does nothing for
+traffic between containers, which should not go through the host at all.</p>
+<h3 id="how-compose-services-find-each-other">How Compose services find each other</h3>
+<p><code>docker compose up</code> creates a network for the project — <code>shop_default</code> — and attaches every service to
+it, unless the file says otherwise. On a user-defined network, Docker runs an embedded DNS server
+(127.0.0.11 inside each container) that resolves:</p>
+<ul>
+<li>the <strong>service name</strong> (<code>api</code>) to the addresses of that service's containers;</li>
+<li>the container name (<code>shop-api-1</code>) and any <code>aliases</code>.</li>
+</ul>
+<p>So in a default Compose project, <code>web</code> reaches the API at <code>http://api:80/</code> — the service name and the
+<strong>container's</strong> port, not the published one. No <code>ports:</code> entry is involved.</p>
+<h3 id="what-user-defined-networks-change">What user-defined networks change</h3>
+<p><code>networks:</code> lets a file place services on separate networks, which is a real tool: a database on a
+<code>back</code> network that only the application can reach, a proxy on <code>front</code> and <code>back</code> both. The rule that
+follows is simple and absolute: <strong>two containers can talk only if they share at least one network</strong>,
+and names resolve only across networks the asking container is attached to.</p>
+<p>The shop's file declared <code>front</code> for <code>web</code> and <code>back</code> for <code>api</code>, and attached each service to only one
+of them. The intent was probably &quot;web is public, api is internal&quot;; the result was two isolated
+containers. The intent is expressed by <em>publishing</em> only <code>web</code> — not by separating them. If you do want
+separate networks, the service that must reach both goes on both:</p>
+<pre class="hl"><code class="language-yaml"><span class="hl-nt">services</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">web</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">networks</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-nv">front</span><span class="hl-p hl-p-Indicator">,</span><span class="hl-w"> </span><span class="hl-nv">back</span><span class="hl-p hl-p-Indicator">]</span>
+<span class="hl-w">  </span><span class="hl-nt">api</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">networks</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-nv">back</span><span class="hl-p hl-p-Indicator">]</span>
+</code></pre>
+
+<h3 id="why-proxy_pass-httpapi-made-nginx-exit">Why <code>proxy_pass http://api/</code> made nginx exit</h3>
+<p>nginx resolves the host names in <code>proxy_pass</code> <strong>once, when it loads its configuration</strong>, using the
+system resolver. If a name does not resolve, the configuration is invalid and nginx refuses to start:
+<code>[emerg] host not found in upstream &quot;api&quot;</code>. In a container whose main process is nginx, that means the
+container exits immediately. This is not DNS flakiness; it is nginx reporting, at the earliest possible
+moment, that the name does not exist on any network the container can see.</p>
+<p>Two consequences worth knowing for real stacks:</p>
+<ul>
+<li>Start order matters for this nginx behaviour only in that the <em>name</em> must resolve, which requires the
+<code>api</code> container to exist on a shared network. <code>depends_on</code> makes Compose create and start <code>api</code> before
+<code>web</code>.</li>
+<li>Because nginx caches the address, recreating <code>api</code> with a new IP can leave a running <code>web</code> proxying to
+the old one. Configuring <code>resolver 127.0.0.11 valid=10s;</code> with a variable in <code>proxy_pass</code> makes nginx
+re-resolve; restarting <code>web</code> works too.</li>
+</ul>
+<p><code>nginx -t</code> tests a configuration without starting the server, and running it in a throwaway container
+on the relevant network reproduces exactly what the real container would do.</p>
+<h3 id="exposing-versus-publishing">Exposing versus publishing</h3>
+<table>
+<thead>
+<tr>
+<th>Compose key</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(nothing)</td>
+<td>reachable from containers on a shared network, on any port the process listens on</td>
+</tr>
+<tr>
+<td><code>expose: [&quot;80&quot;]</code></td>
+<td>documentation and metadata only; changes no connectivity</td>
+</tr>
+<tr>
+<td><code>ports: [&quot;8089:80&quot;]</code></td>
+<td>also reachable from outside, on the host's 8089, on every host address</td>
+</tr>
+<tr>
+<td><code>ports: [&quot;127.0.0.1:8089:80&quot;]</code></td>
+<td>reachable from the host itself only</td>
+</tr>
+</tbody>
+</table>
+<p>An internal API needs no <code>ports</code> entry at all. Publishing it &quot;for debugging&quot; makes it reachable by
+anything that can reach the host — bypassing whatever authentication, rate limiting or TLS the front
+provides. For debugging, use <code>docker compose exec web wget -qO- http://api/…</code>, or a temporary
+<code>docker run --rm --network shop_default …</code> container.</p>
+<h3 id="surviving-a-reboot">Surviving a reboot</h3>
+<p>At boot, <code>docker.service</code> starts, and the Docker daemon starts the containers whose <strong>restart policy</strong>
+says so:</p>
+<table>
+<thead>
+<tr>
+<th><code>restart:</code></th>
+<th>After a daemon restart or reboot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>no</code> (default)</td>
+<td>stays stopped</td>
+</tr>
+<tr>
+<td><code>on-failure</code></td>
+<td>restarts after a non-zero exit; not a dependable way to start a service at boot</td>
+</tr>
+<tr>
+<td><code>unless-stopped</code></td>
+<td>started again, unless someone stopped it with <code>docker stop</code> / <code>compose stop</code></td>
+</tr>
+<tr>
+<td><code>always</code></td>
+<td>started again, even if it had been stopped manually</td>
+</tr>
+</tbody>
+</table>
+<p>Compose files are not re-read at boot — the policy is stored with each container when it is created.
+So adding <code>restart:</code> to the file changes nothing until <code>docker compose up -d</code> recreates the containers.
+And <code>docker.service</code> itself must be enabled.</p>
+<p>The alternative is a systemd unit that runs <code>docker compose up</code> (and <code>down</code> on stop) in the project
+directory — useful when the stack must start in a particular order relative to other units, or when it
+should be managed like any other service. Either way, something has to own the start-up.</p>
+<h3 id="networks-left-behind">Networks left behind</h3>
+<p><code>docker compose up</code> creates networks declared in the file, but it does not delete networks that were
+declared in an <em>earlier</em> version of the file. After removing <code>front</code> and <code>back</code> from the file, they
+remain until <code>docker network rm shop_front shop_back</code> or <code>docker compose down</code> (run before the file
+change) removes them. They are harmless when unused, and confusing when reading <code>docker network ls</code>.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the track's lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. See the symptom from outside.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span>http://127.0.0.1:8088/<span class="hl-p">;</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'\n%{http_code}\n'</span><span class="hl-w"> </span>http://127.0.0.1:8088/api/status.json
+<span class="hl-go">200</span>
+<span class="hl-go">&lt;html&gt;</span>
+<span class="hl-go">&lt;head&gt;&lt;title&gt;502 Bad Gateway&lt;/title&gt;&lt;/head&gt;</span>
+<span class="hl-go">&lt;body&gt;</span>
+<span class="hl-go">&lt;center&gt;&lt;h1&gt;502 Bad Gateway&lt;/h1&gt;&lt;/center&gt;</span>
+<span class="hl-go">&lt;hr&gt;&lt;center&gt;nginx/1.29.8&lt;/center&gt;</span>
+<span class="hl-go">&lt;/body&gt;</span>
+<span class="hl-go">&lt;/html&gt;</span>
+
+<span class="hl-go">502</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/shop<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span>ps<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'table {{.Service}}\t{{.State}}\t{{.Ports}}'</span>
+<span class="hl-go">SERVICE   STATE     PORTS</span>
+<span class="hl-go">api       running   0.0.0.0:8089-&gt;80/tcp, :::8089-&gt;80/tcp</span>
+<span class="hl-go">web       running   0.0.0.0:8088-&gt;80/tcp, :::8088-&gt;80/tcp</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/shop<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span>logs<span class="hl-w"> </span>web<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-i<span class="hl-w"> </span>error<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">2</span>
+<span class="hl-go">web-1  | 2026/09/14 03:58:50 [error] 22#22: *2 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: "GET /api/status.json HTTP/1.1", upstream: "http://[::1]:8089/status.json", host: "127.0.0.1:8088"</span>
+<span class="hl-go">web-1  | 2026/09/14 03:58:50 [error] 22#22: *2 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: "GET /api/status.json HTTP/1.1", upstream: "http://127.0.0.1:8089/status.json", host: "127.0.0.1:8088"</span>
+</code></pre>
+
+<p>The front works; <code>/api/</code> is a 502. nginx's log names the upstream it tried: <code>[::1]:8089</code>, then
+<code>127.0.0.1:8089</code> — <code>localhost</code> resolved to both loopback addresses, and both refused.</p>
+<p><strong>2. Test the same request from inside <code>web</code>, and from the host.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/srv/shop/web/default.conf
+<span class="hl-go">server {</span>
+<span class="hl-go">    listen 80;</span>
+
+<span class="hl-go">    location / {</span>
+<span class="hl-go">        return 200 "shop front\n";</span>
+<span class="hl-go">    }</span>
+
+<span class="hl-go">    location /api/ {</span>
+<span class="hl-go">        proxy_pass http://localhost:8089/;</span>
+<span class="hl-go">    }</span>
+<span class="hl-go">}</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/shop<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>web<span class="hl-w"> </span>wget<span class="hl-w"> </span>-qO-<span class="hl-w"> </span>http://localhost:8089/status.json<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">wget: can't connect to remote host: Connection refused</span>
+<span class="hl-go">exit=1</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>http://127.0.0.1:8089/status.json
+<span class="hl-go">{"service": "api", "status": "ok", "orders_queued": 12}</span>
+</code></pre>
+
+<p>The same URL fails in the container and works on the host. That is the whole difference between the
+container's loopback and the host's.</p>
+<p><strong>3. Look at the networks.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/srv/shop/compose.yaml
+<span class="hl-go">name: shop</span>
+
+<span class="hl-go">services:</span>
+<span class="hl-go">  web:</span>
+<span class="hl-go">    image: nginx:1.29-alpine</span>
+<span class="hl-go">    ports:</span>
+<span class="hl-go">      - "8088:80"</span>
+<span class="hl-go">    volumes:</span>
+<span class="hl-go">      - ./web/default.conf:/etc/nginx/conf.d/default.conf:ro</span>
+<span class="hl-go">    networks:</span>
+<span class="hl-go">      - front</span>
+
+<span class="hl-go">  api:</span>
+<span class="hl-go">    image: nginx:1.29-alpine</span>
+<span class="hl-go">    ports:</span>
+<span class="hl-go">      - "8089:80"  # debugging</span>
+<span class="hl-go">    volumes:</span>
+<span class="hl-go">      - ./api/default.conf:/etc/nginx/conf.d/default.conf:ro</span>
+<span class="hl-go">      - ./api/status.json:/srv/api/status.json:ro</span>
+<span class="hl-go">    networks:</span>
+<span class="hl-go">      - back</span>
+
+<span class="hl-go">networks:</span>
+<span class="hl-go">  front: {}</span>
+<span class="hl-go">  back: {}</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>network<span class="hl-w"> </span>ls<span class="hl-w"> </span>--filter<span class="hl-w"> </span><span class="hl-nv">name</span><span class="hl-o">=</span>shop
+<span class="hl-go">NETWORK ID     NAME         DRIVER    SCOPE</span>
+<span class="hl-go">3187275a3111   shop_back    bridge    local</span>
+<span class="hl-go">14952a86641f   shop_front   bridge    local</span>
+<span class="hl-gp">$ </span><span class="hl-k">for</span><span class="hl-w"> </span>c<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>shop-web-1<span class="hl-w"> </span>shop-api-1<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'%s: '</span><span class="hl-w"> </span><span class="hl-nv">$c</span><span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>inspect<span class="hl-w"> </span><span class="hl-nv">$c</span><span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}'</span><span class="hl-p">;</span><span class="hl-w"> </span>echo<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span>
+<span class="hl-go">shop-web-1: shop_front </span>
+
+<span class="hl-go">shop-api-1: shop_back </span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/shop<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>web<span class="hl-w"> </span>getent<span class="hl-w"> </span>hosts<span class="hl-w"> </span>api<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">exit=2</span>
+</code></pre>
+
+<p><code>web</code> is on <code>shop_front</code> only, <code>api</code> on <code>shop_back</code> only. From <code>web</code>, the name <code>api</code> does not resolve
+(<code>getent</code> exit 2: not found).</p>
+<p><strong>4. Reproduce the crash the colleague saw</strong>, with a throwaway container on <code>web</code>'s network:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'server { listen 80; location /api/ { proxy_pass http://api:80/; } }\n'</span><span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/by-name.conf<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>run<span class="hl-w"> </span>--rm<span class="hl-w"> </span>--network<span class="hl-w"> </span>shop_front<span class="hl-w"> </span>-v<span class="hl-w"> </span>/tmp/by-name.conf:/etc/nginx/conf.d/default.conf:ro<span class="hl-w"> </span>nginx:1.29-alpine<span class="hl-w"> </span>nginx<span class="hl-w"> </span>-t
+<span class="hl-go">/docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration</span>
+<span class="hl-go">/docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/</span>
+<span class="hl-go">/docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh</span>
+<span class="hl-go">10-listen-on-ipv6-by-default.sh: info: can not modify /etc/nginx/conf.d/default.conf (read-only file system?)</span>
+<span class="hl-go">/docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh</span>
+<span class="hl-go">/docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh</span>
+<span class="hl-go">/docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh</span>
+<span class="hl-go">/docker-entrypoint.sh: Configuration complete; ready for start up</span>
+<span class="hl-go">2026/09/14 03:59:01 [emerg] 1#1: host not found in upstream "api" in /etc/nginx/conf.d/default.conf:1</span>
+<span class="hl-go">nginx: [emerg] host not found in upstream "api" in /etc/nginx/conf.d/default.conf:1</span>
+<span class="hl-go">nginx: configuration file /etc/nginx/nginx.conf test failed</span>
+</code></pre>
+
+<p>The right configuration, on the wrong network, is an <code>[emerg]</code> at load time. The fix is the network,
+not the name.</p>
+<p><strong>5. Check what happens at boot.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>inspect<span class="hl-w"> </span>shop-web-1<span class="hl-w"> </span>shop-api-1<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{.Name}} restart={{.HostConfig.RestartPolicy.Name}}'</span>
+<span class="hl-go">/shop-web-1 restart=no</span>
+<span class="hl-go">/shop-api-1 restart=no</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-enabled<span class="hl-w"> </span>docker
+<span class="hl-go">enabled</span>
+</code></pre>
+
+<p>Docker starts at boot; the containers are told not to.</p>
+<p><strong>6. Fix the file and the proxy target, and recreate.</strong> One network (Compose's default), no published
+port for <code>api</code>, a restart policy for both, and <code>web</code> started after <code>api</code>:</p>
+<pre class="hl"><code class="language-yaml"><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">shop</span>
+
+<span class="hl-nt">services</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">web</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">image</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">nginx:1.29-alpine</span>
+<span class="hl-w">    </span><span class="hl-nt">restart</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">unless-stopped</span>
+<span class="hl-w">    </span><span class="hl-nt">ports</span><span class="hl-p">:</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-s">"8088:80"</span>
+<span class="hl-w">    </span><span class="hl-nt">volumes</span><span class="hl-p">:</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">./web/default.conf:/etc/nginx/conf.d/default.conf:ro</span>
+<span class="hl-w">    </span><span class="hl-nt">depends_on</span><span class="hl-p">:</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">api</span>
+
+<span class="hl-w">  </span><span class="hl-nt">api</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">image</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">nginx:1.29-alpine</span>
+<span class="hl-w">    </span><span class="hl-nt">restart</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">unless-stopped</span>
+<span class="hl-w">    </span><span class="hl-nt">volumes</span><span class="hl-p">:</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">./api/default.conf:/etc/nginx/conf.d/default.conf:ro</span>
+<span class="hl-w">      </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">./api/status.json:/srv/api/status.json:ro</span>
+</code></pre>
+
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'s#proxy_pass http://localhost:8089/;#proxy_pass http://api:80/;#'</span><span class="hl-w"> </span>/srv/shop/web/default.conf<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>proxy_pass<span class="hl-w"> </span>/srv/shop/web/default.conf
+<span class="hl-go">        proxy_pass http://api:80/;</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/shop<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span>config<span class="hl-w"> </span>--quiet<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"compose file: valid"</span>
+<span class="hl-go">compose file: valid</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/shop<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span>up<span class="hl-w"> </span>-d<span class="hl-w"> </span>--remove-orphans<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span>
+<span class="hl-go"> Network shop_default  Creating</span>
+<span class="hl-go"> Network shop_default  Created</span>
+<span class="hl-go"> Container shop-api-1  Recreate</span>
+<span class="hl-go"> Container shop-api-1  Recreated</span>
+<span class="hl-go"> Container shop-web-1  Recreate</span>
+<span class="hl-go"> Container shop-web-1  Recreated</span>
+<span class="hl-go"> Container shop-api-1  Starting</span>
+<span class="hl-go"> Container shop-api-1  Started</span>
+<span class="hl-go"> Container shop-web-1  Starting</span>
+<span class="hl-go"> Container shop-web-1  Started</span>
+</code></pre>
+
+<p>Compose created the default network and <strong>recreated</strong> both containers — which is what puts the new
+restart policy and network into effect. <code>api</code> started first.</p>
+<p><strong>7. Verify from outside and from inside.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sleep<span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'\n%{http_code}\n'</span><span class="hl-w"> </span>http://127.0.0.1:8088/api/status.json
+<span class="hl-go">{"service": "api", "status": "ok", "orders_queued": 12}</span>
+
+<span class="hl-go">200</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/shop<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span>ps<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'table {{.Service}}\t{{.State}}\t{{.Ports}}'</span>
+<span class="hl-go">SERVICE   STATE     PORTS</span>
+<span class="hl-go">api       running   80/tcp</span>
+<span class="hl-go">web       running   0.0.0.0:8088-&gt;80/tcp, :::8088-&gt;80/tcp</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-sS<span class="hl-w"> </span>http://127.0.0.1:8089/status.json<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">curl: (7) Failed to connect to 127.0.0.1 port 8089 after 0 ms: Could not connect to server</span>
+<span class="hl-go">exit=7</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>inspect<span class="hl-w"> </span>shop-web-1<span class="hl-w"> </span>shop-api-1<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{.Name}} restart={{.HostConfig.RestartPolicy.Name}} networks={{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}'</span>
+<span class="hl-go">/shop-web-1 restart=unless-stopped networks=shop_default</span>
+<span class="hl-go">/shop-api-1 restart=unless-stopped networks=shop_default</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/shop<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>web<span class="hl-w"> </span>getent<span class="hl-w"> </span>hosts<span class="hl-w"> </span>api
+<span class="hl-go">172.20.0.2        api  api</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>docker<span class="hl-w"> </span>network<span class="hl-w"> </span>ls<span class="hl-w"> </span>--filter<span class="hl-w"> </span><span class="hl-nv">name</span><span class="hl-o">=</span>shop
+<span class="hl-go">NETWORK ID     NAME           DRIVER    SCOPE</span>
+<span class="hl-go">3187275a3111   shop_back      bridge    local</span>
+<span class="hl-go">5de515be3552   shop_default   bridge    local</span>
+<span class="hl-go">14952a86641f   shop_front     bridge    local</span>
+</code></pre>
+
+<p>The API answers through the front; it is listed as <code>80/tcp</code> with no host binding and refuses on 8089;
+both containers are on <code>shop_default</code> with <code>unless-stopped</code>; <code>api</code> resolves inside <code>web</code>. The old
+<code>shop_front</code> and <code>shop_back</code> networks are still listed, unused — <code>docker network rm</code> would tidy them.</p>
+<p><strong>8. Grade.</strong> The API through the front, no published API port, and both services running and set to
+restart — before and after the reboot.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Changing <code>localhost</code> to the host's IP address, <code>172.17.0.1</code> or <code>host.docker.internal</code>.</strong> It makes
+the front reach the API through the host's published port: it works, depends on the publish that
+should not exist, and breaks when the port is removed or the host's address changes.</p>
+<p><strong>Changing the proxy to <code>api:8089</code>.</strong> 8089 is the <em>published</em> port on the host. Between containers the
+API listens on its own port, 80.</p>
+<p><strong><code>network_mode: host</code> for <code>web</code>.</strong> <code>localhost:8089</code> then works, because the container shares the host's
+network stack — and every port nginx opens is opened on the host. It removes the isolation instead of
+using it.</p>
+<p><strong>Adding <code>links: [api]</code>.</strong> A legacy option. It adds an alias, but it cannot connect services that share
+no network. Shared networks are the mechanism.</p>
+<p><strong>Leaving <code>ports: [&quot;8089:80&quot;]</code> because &quot;only the front is advertised&quot;.</strong> A published port is reachable
+by anything that can reach the host, whether or not anyone advertises it.</p>
+<p><strong>Adding <code>restart: unless-stopped</code> and rebooting without <code>docker compose up -d</code>.</strong> The policy is stored
+in the container when it is created; the old containers still say <code>no</code>.</p>
+<p><strong><code>restart: always</code> on a container you sometimes stop for maintenance.</strong> It comes back at the next
+daemon restart even though you stopped it on purpose; <code>unless-stopped</code> respects the stop.</p>
+<p><strong>Blaming DNS and adding <code>extra_hosts</code> or hard-coded IP addresses.</strong> Container addresses change when
+containers are recreated. Service names on a shared network are the stable interface.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span>ps<span class="hl-w">                                   </span><span class="hl-c1"># services, state, published ports</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span>logs<span class="hl-w"> </span>SERVICE<span class="hl-w">                         </span><span class="hl-c1"># nginx's upstream errors name the address it tried</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>SERVICE<span class="hl-w"> </span>wget<span class="hl-w"> </span>-qO-<span class="hl-w"> </span>http://api/<span class="hl-w">   </span><span class="hl-c1"># test from inside a container</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span><span class="hl-nb">exec</span><span class="hl-w"> </span>SERVICE<span class="hl-w"> </span>getent<span class="hl-w"> </span>hosts<span class="hl-w"> </span>NAME<span class="hl-w">       </span><span class="hl-c1"># does a name resolve in that container?</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>network<span class="hl-w"> </span>ls<span class="hl-p">;</span><span class="hl-w"> </span>docker<span class="hl-w"> </span>network<span class="hl-w"> </span>inspect<span class="hl-w"> </span>NET<span class="hl-w">       </span><span class="hl-c1"># which containers are on which network</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>inspect<span class="hl-w"> </span>C<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}'</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>inspect<span class="hl-w"> </span>C<span class="hl-w"> </span>--format<span class="hl-w"> </span><span class="hl-s1">'{{.HostConfig.RestartPolicy.Name}}'</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span>config<span class="hl-w"> </span>--quiet<span class="hl-w">                       </span><span class="hl-c1"># validate the file</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span>up<span class="hl-w"> </span>-d<span class="hl-w"> </span>--remove-orphans<span class="hl-w">               </span><span class="hl-c1"># apply: recreate what changed</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>compose<span class="hl-w"> </span>down<span class="hl-w">                                 </span><span class="hl-c1"># stop and remove containers and project networks</span>
+<span class="hl-gp">$ </span>docker<span class="hl-w"> </span>run<span class="hl-w"> </span>--rm<span class="hl-w"> </span>--network<span class="hl-w"> </span>NET<span class="hl-w"> </span>-v<span class="hl-w"> </span>./x.conf:/etc/nginx/conf.d/default.conf:ro<span class="hl-w"> </span>nginx:1.29-alpine<span class="hl-w"> </span>nginx<span class="hl-w"> </span>-t
+</code></pre>
+
+<pre class="hl"><code class="language-yaml"><span class="hl-nt">services</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">web</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">ports</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-s">"8088:80"</span><span class="hl-p hl-p-Indicator">]</span><span class="hl-w">          </span><span class="hl-c1"># only the public service is published</span>
+<span class="hl-w">    </span><span class="hl-nt">restart</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">unless-stopped</span>
+<span class="hl-w">    </span><span class="hl-nt">depends_on</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-nv">api</span><span class="hl-p hl-p-Indicator">]</span>
+<span class="hl-w">  </span><span class="hl-nt">api</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">restart</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">unless-stopped</span><span class="hl-w">     </span><span class="hl-c1"># no ports: reachable as http://api:80 from web</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>Resolves here, listens there, routes until Tuesday</em> (topic journal <code>networking</code>) — Listening on loopback, or on everything</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.docker.com/compose/how-tos/networking/</li>
+<li>https://docs.docker.com/engine/containers/start-containers-automatically/</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>The container that ran fine until the machine rebooted</em> (<code>containers</code>), <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>A container connects to <code>localhost:8089</code>. Whose port 8089 is that?</p>
+<blockquote>
+<p>The container's own: each container has its own network namespace and loopback, so <code>localhost</code> is the container itself, not the host or another container.</p>
+</blockquote>
+</li>
+<li>
+<p>How does <code>web</code> reach <code>api</code> in a Compose project with no <code>networks:</code> section, and on which port?</p>
+<blockquote>
+<p>By the service name through Docker's embedded DNS on the project's default network — <code>http://api:80/</code>, the port the API container listens on, not a published port.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did nginx with <code>proxy_pass http://api:80/</code> refuse to start while the services were on separate networks?</p>
+<blockquote>
+<p>nginx resolves upstream names when it loads its configuration; <code>api</code> did not resolve from a container attached only to <code>shop_front</code>, so nginx failed with <code>host not found in upstream</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between <code>expose</code> and <code>ports</code> in a Compose file?</p>
+<blockquote>
+<p><code>expose</code> is metadata and changes no connectivity; <code>ports</code> publishes a container port on the host, on every host address unless an IP is given.</p>
+</blockquote>
+</li>
+<li>
+<p>After adding <code>restart: unless-stopped</code> to the file, why do the containers still not start at boot until you run <code>docker compose up -d</code>?</p>
+<blockquote>
+<p>The restart policy is stored in each container when it is created; the existing containers keep <code>no</code> until Compose recreates them.</p>
+</blockquote>
+</li>
+<li>
+<p>What else must be true for <code>unless-stopped</code> containers to come back after a reboot?</p>
+<blockquote>
+<p>The Docker daemon must start at boot (<code>docker.service</code> enabled), and the containers must not have been stopped manually before the reboot.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is proxying to the host's published port a poor fix, even though it works?</p>
+<blockquote>
+<p>It routes internal traffic out through the host, requires the API to stay published (reachable by anyone who can reach the host), and depends on the host's address.</p>
+</blockquote>
+</li>
+<li>
+<p>After the fix, <code>docker network ls</code> still lists <code>shop_front</code> and <code>shop_back</code>. Why, and what removes them?</p>
+<blockquote>
+<p>Compose does not delete networks that are no longer declared in the file; <code>docker network rm shop_front shop_back</code>, or <code>docker compose down</code> before changing the file, removes them.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

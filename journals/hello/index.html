@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nine letters and a refusal · Norboten</title>
+<meta name="description" content="The first lab is five minutes long and has two tasks: make a file readable, and write a word into another file. It is small on purpose. It is also, in miniature">
+<link rel="canonical" href="https://norboten.org/journals/hello/"><meta property="og:title" content="Nine letters and a refusal · Norboten">
+<meta property="og:description" content="The first lab is five minutes long and has two tasks: make a file readable, and write a word into another file. It is small on purpose. It is also, in miniature">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/hello/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Nine letters and a refusal · Norboten">
+<meta name="twitter:description" content="The first lab is five minutes long and has two tasks: make a file readable, and write a word into another file. It is small on purpose. It is also, in miniature">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Nine letters and a refusal",
+  "description": "The first lab is five minutes long and has two tasks: make a file readable, and write a word into another file. It is small on purpose. It is also, in miniature",
+  "url": "https://norboten.org/journals/hello/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1920,
+  "timeRequired": "PT20M",
+  "about": ["Linux basics", "Users and permissions"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · A Message You Are Not Allowed to Read</div>
+    <h1>Nine letters and a refusal</h1>
+    <p class="muted">
+      20 minutes' reading · 1920 words ·<span class="tag">Linux basics</span><span class="tag">Users and permissions</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 99 words</title><rect x="0.0" y="0" width="30.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 1143 words</title><rect x="33.0" y="0" width="346.6" height="30" rx="4" fill="#1d2a23"/><text x="41.0" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 307 words</title><rect x="382.6" y="0" width="93.1" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 226 words</title><rect x="478.7" y="0" width="68.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 285 words</title><rect x="550.2" y="0" width="86.4" height="30" rx="4" fill="#1d2a23"/><text x="558.2" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Cheat sheet</text></a><a href="#going-deeper"><title>Going deeper — 45 words</title><rect x="639.7" y="0" width="13.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 342 words</title><rect x="656.3" y="0" width="103.7" height="30" rx="4" fill="#1d2a23"/><text x="664.3" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/hello/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>The first lab is five minutes long and has two tasks: make a file readable, and write a word into
+another file. It is small on purpose. It is also, in miniature, every lab that follows: something is
+refused, the system will tell you exactly why if you ask it the right way, and the fix is one command
+that has to still be true after a reboot.</p>
+<p>It is worth doing slowly, because the ten characters at the start of <code>ls -l</code> are read in every
+journal after this one, and because the second task hides the most common beginner trap on a Unix
+system — a <code>sudo</code> that does not apply to the part of the command you think it does.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Read the permission string in <code>ls -l</code> and say who may do what with a file.</li>
+<li>Explain how the kernel decides which of the three permission groups applies to you, and why it stops
+at the first match.</li>
+<li>Change permissions with <code>chmod</code>, in both symbolic and octal form, choosing the smallest change that
+meets the requirement.</li>
+<li>Say what <code>sudo</code> elevates and what it does not — in particular, redirections.</li>
+<li>Write a file containing exactly one word, and check that it contains nothing else.</li>
+<li>Explain why a fix made with <code>chmod</code> survives a reboot.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="ten-characters">Ten characters</h3>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/srv/hello/message.txt
+<span class="hl-go">-rw------- 1 root root 168 Sep 12 09:02 /srv/hello/message.txt</span>
+</code></pre>
+
+<p>The first column is a type and three triads:</p>
+<pre><code> -    rw-    ---    ---
+ │    │      │      └─ others: everyone who is neither the owner nor in the group
+ │    │      └─ group: members of the file's group (here &quot;root&quot;)
+ │    └─ owner: the user named in the third column (here &quot;root&quot;)
+ └─ type: - regular file, d directory, l symlink
+</code></pre>
+<p>Within a triad, <code>r</code> is read, <code>w</code> is write, <code>x</code> is execute, and <code>-</code> means that permission is absent. So
+<code>rw-------</code> says: root may read and write this file, and nobody else may do anything with it. That is
+the whole explanation for the refusal:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/srv/hello/message.txt
+<span class="hl-go">cat: /srv/hello/message.txt: Permission denied</span>
+</code></pre>
+
+<h3 id="how-the-kernel-picks-a-triad">How the kernel picks a triad</h3>
+<p>When you open a file, the kernel does not add up permissions. It picks <strong>exactly one</strong> triad and
+checks only that one:</p>
+<ol>
+<li>If you are the file's <strong>owner</strong>, the owner triad applies — and the check ends there.</li>
+<li>Otherwise, if you are in the file's <strong>group</strong>, the group triad applies — and the check ends there.</li>
+<li>Otherwise, the <strong>others</strong> triad applies.</li>
+</ol>
+<p>(Root skips the check for reading and writing entirely, which is why <code>sudo</code> works.)</p>
+<p>The &quot;first match wins&quot; rule has a surprising consequence worth knowing early: a file with mode
+<code>---r--r--</code> cannot be read by its own owner, even though everybody else can read it. The owner matched
+step 1, the owner triad says <code>---</code>, and the kernel never looks further. It is rare in practice and it is
+a good test of whether the rule has sunk in.</p>
+<p>To open a file, you also need to reach it: every directory on the path needs <code>x</code> (traverse) for
+whichever triad applies to you. <code>/srv/hello</code> is <code>drwxr-xr-x</code>, so others can pass through it — the
+directory is not the problem here, the file is.</p>
+<h3 id="changing-it-with-chmod">Changing it with <code>chmod</code></h3>
+<p>The requirement is &quot;readable by every user on the system&quot;. That is the others triad, and it needs <code>r</code>.
+The smallest change that does it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span>o+r<span class="hl-w"> </span>/srv/hello/message.txt
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/srv/hello/message.txt
+<span class="hl-go">-rw----r-- 1 root root 168 Sep 12 09:02 /srv/hello/message.txt</span>
+</code></pre>
+
+<p>Symbolic mode reads as <em>who</em>, <em>operation</em>, <em>what</em>: <code>u</code>/<code>g</code>/<code>o</code>/<code>a</code> (user, group, others, all), then <code>+</code>
+to add, <code>-</code> to remove or <code>=</code> to set exactly, then the letters. <code>o+r</code> adds read for others and leaves
+every other bit alone, which is why it is the right shape for &quot;add one permission&quot;.</p>
+<p>Octal mode sets all nine bits at once, one digit per triad, with <code>r=4</code>, <code>w=2</code>, <code>x=1</code> added together:</p>
+<pre><code>rw-  r--  r--
+4+2  4    4     →  chmod 644
+</code></pre>
+<p><code>chmod 644</code> is also a correct answer here, and it is what most people would type. The difference is
+that octal <em>replaces</em> the whole mode — useful when you know exactly what you want, careless when you do
+not know what was there before. On a file you have never looked at, symbolic mode is the safer habit.</p>
+<p>The answer that is not correct, and is still the most typed permission command on the internet, is
+<code>chmod 777</code>. It makes the file readable by everyone, and also writable and executable by everyone. The
+requirement said <em>read</em>.</p>
+<p>You need <code>sudo</code> for this, because only a file's owner (or root) may change its mode — the permission to
+change permissions is not one of the nine bits, it belongs to ownership.</p>
+<h3 id="what-sudo-covers-and-what-it-does-not">What <code>sudo</code> covers, and what it does not</h3>
+<p>Now read the message and write the reply (the word is chosen per session, so yours will differ). The
+obvious command works:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>tail<span class="hl-w"> </span>-1<span class="hl-w"> </span>/srv/hello/message.txt
+<span class="hl-go">The secret word is: inode</span>
+<span class="hl-gp">$ </span><span class="hl-nb">echo</span><span class="hl-w"> </span>inode<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>~/reply.txt
+</code></pre>
+
+<p>The instinctive command <em>before</em> the <code>chmod</code> — while the file was still unreadable — is where the trap
+lives:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>cat<span class="hl-w"> </span>/srv/hello/message.txt<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>~/reply.txt<span class="hl-w">       </span><span class="hl-c1"># works, but look at what ran as root</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span>inode<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/root/reply.txt
+<span class="hl-go">-bash: /root/reply.txt: Permission denied</span>
+</code></pre>
+
+<p><code>sudo</code> runs <em>the command</em> as root. The <code>&gt;</code> redirection is not part of the command — it is performed by
+<strong>your shell, as you, before <code>sudo</code> even starts</strong>. So <code>sudo cat … &gt; ~/reply.txt</code> reads the file as root
+and writes the output as you (which is why that one happens to work), and <code>sudo echo … &gt; /root/…</code> fails
+because you, not root, are trying to open <code>/root/reply.txt</code>.</p>
+<p>The two idioms for &quot;write this file as root&quot;:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">echo</span><span class="hl-w"> </span>inode<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>/some/root/file<span class="hl-w"> </span>&gt;/dev/null<span class="hl-w">   </span><span class="hl-c1"># tee opens the file, and tee runs as root</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'echo inode &gt; /some/root/file'</span><span class="hl-w">          </span><span class="hl-c1"># the redirection happens inside root's shell</span>
+</code></pre>
+
+<p>For this lab you want the reverse: <code>reply.txt</code> lives in <em>your</em> home, so it should belong to <em>you</em>.
+Writing it with <code>sudo tee</code> would create a root-owned file in your home directory, which works today and
+confuses you next week when you cannot edit it.</p>
+<h3 id="alone">&quot;Alone&quot;</h3>
+<p>The briefing says the word, alone. Check what you actually wrote, rather than what you think you
+wrote:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>-A<span class="hl-w"> </span>~/reply.txt
+<span class="hl-go">inode$</span>
+</code></pre>
+
+<p><code>cat -A</code> shows the end of each line as <code>$</code> and makes tabs and other invisible characters visible. One
+word, one newline: exactly right — <code>echo</code> adds a newline, and a line ending is not &quot;extra&quot; to anyone
+reading a text file. What would be wrong is visible immediately: <code>The secret word is: inode$</code> (the
+whole line), <code> inode$</code> (a stray space), <code>inode^M$</code> (a Windows line ending from a pasted editor).</p>
+<p>Cutting the word out of the line mechanically avoids all three:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sed<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s1">'s/^The secret word is: //p'</span><span class="hl-w"> </span>/srv/hello/message.txt
+<span class="hl-go">inode</span>
+<span class="hl-gp">$ </span>awk<span class="hl-w"> </span>-F<span class="hl-s1">': '</span><span class="hl-w"> </span><span class="hl-s1">'/secret word/ {print $2}'</span><span class="hl-w"> </span>/srv/hello/message.txt
+<span class="hl-go">inode</span>
+</code></pre>
+
+<p><code>sed -n</code> prints nothing by default, <code>s/…//p</code> substitutes the prefix away and prints only lines where it
+matched. <code>awk -F': '</code> splits each line at <code>&quot;: &quot;</code> and prints the second field of the matching line.
+Either becomes <code>… &gt; ~/reply.txt</code>.</p>
+<h3 id="why-the-reboot-does-not-undo-any-of-this">Why the reboot does not undo any of this</h3>
+<p>Checking a lab (<code>c</code>) grades the machine, reboots it, and grades it again, and a check counts only if it
+passed both times. Here both fixes survive trivially: a file's mode is stored in its <strong>inode</strong> on disk,
+and <code>reply.txt</code> is a file on disk. Nothing about either lives in memory.</p>
+<p>That will not stay true. In later labs the tempting fix is often one that changes the <em>running</em> system
+and not its configuration — a service started but not enabled, an address added with <code>ip</code> rather than
+NetworkManager, a firewall rule without <code>--permanent</code>. The reboot is how Norboten tells those apart, and
+it is the same test a real server applies to you the next time it restarts at three in the morning.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p><strong>1. Be refused, and read the refusal.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/srv/hello/message.txt
+<span class="hl-go">cat: /srv/hello/message.txt: Permission denied</span>
+</code></pre>
+
+<p>&quot;Permission denied&quot; on an open is the kernel's answer, not the program's. So look at the permissions.</p>
+<p><strong>2. Ask who owns it and what each group may do.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/srv/hello/message.txt
+<span class="hl-go">-rw------- 1 root root 168 Sep 12 09:02 /srv/hello/message.txt</span>
+<span class="hl-gp">$ </span>id
+<span class="hl-go">uid=501(learner) gid=1000(learner) groups=1000(learner)</span>
+</code></pre>
+
+<p>You are not <code>root</code> (step 1 of the rule does not match) and not in the group <code>root</code> (step 2 does not
+match), so the others triad applies: <code>---</code>. Nothing permitted.</p>
+<p><strong>3. Check the path, so you do not fix the wrong thing.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-ld<span class="hl-w"> </span>/srv<span class="hl-w"> </span>/srv/hello
+<span class="hl-go">drwxr-xr-x 3 root root 4096 Sep 12 09:02 /srv</span>
+<span class="hl-go">drwxr-xr-x 2 root root 4096 Sep 12 09:02 /srv/hello</span>
+</code></pre>
+
+<p>Both directories grant <code>x</code> to others. The file is the only obstacle.</p>
+<p><strong>4. Make the smallest change that meets the requirement.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span>o+r<span class="hl-w"> </span>/srv/hello/message.txt
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/srv/hello/message.txt
+<span class="hl-go">-rw----r-- 1 root root 168 Sep 12 09:02 /srv/hello/message.txt</span>
+<span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/srv/hello/message.txt
+<span class="hl-go">If you can read this, you found your way past a permission check.</span>
+<span class="hl-go">Every lab here works like that: something is refused, and you find out why.</span>
+<span class="hl-go">The secret word is: inode</span>
+</code></pre>
+
+<p>&quot;Every user&quot;, not &quot;you&quot;: test it as someone other than yourself, too.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>-u<span class="hl-w"> </span>nobody<span class="hl-w"> </span>cat<span class="hl-w"> </span>/srv/hello/message.txt<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">The secret word is: inode</span>
+</code></pre>
+
+<p><strong>5. Write the reply as yourself, and inspect it.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sed<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s1">'s/^The secret word is: //p'</span><span class="hl-w"> </span>/srv/hello/message.txt<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>~/reply.txt
+<span class="hl-gp">$ </span>cat<span class="hl-w"> </span>-A<span class="hl-w"> </span>~/reply.txt
+<span class="hl-go">inode$</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>~/reply.txt
+<span class="hl-go">-rw-rw-r-- 1 learner learner 6 Sep 12 09:05 /home/learner.guest/reply.txt</span>
+</code></pre>
+
+<p>Owned by you, one word, one newline.</p>
+<p><strong>6. Grade it.</strong> Back in norboten, press <strong><code>c</code></strong> on the lab's screen: the checks table fills in
+before the reboot and again after it.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong><code>chmod 777</code>.</strong> It makes the file readable by everyone and also writable and executable by everyone.
+Change the one permission you were asked to change: <code>o+r</code>.</p>
+<p><strong><code>chmod u+r</code>.</strong> Root already has read; the owner triad was never the problem. Read <code>ls -l</code> and
+identify which triad applies to the people who are refused.</p>
+<p><strong>Changing the file's owner to yourself.</strong> <code>sudo chown learner /srv/hello/message.txt</code> lets <em>you</em> read
+it and nobody else — the requirement was every user. Ownership decides which triad applies; it does not
+widen access.</p>
+<p><strong>Reading it with <code>sudo cat</code> and moving on.</strong> You now know the word, and the message is still unreadable
+for everyone else. Half the task is the machine's state, not your knowledge.</p>
+<p><strong><code>sudo echo word &gt; somewhere</code>.</strong> The redirection runs as you, not as root. Use <code>sudo tee</code> when the
+destination needs root, and nothing when it does not.</p>
+<p><strong>Writing <code>reply.txt</code> with <code>sudo tee</code>.</strong> It works and leaves a root-owned file in your home directory,
+which you then cannot edit without <code>sudo</code>. Files in your home should belong to you.</p>
+<p><strong>Putting the whole line in the reply.</strong> &quot;The secret word is: inode&quot; is not &quot;inode&quot;. <code>cat -A</code> shows
+exactly what is in the file.</p>
+<p><strong>Writing <code>reply.txt</code> somewhere other than your home.</strong> <code>~</code> is your home directory; <code>./reply.txt</code> is the
+directory you happen to be in. <code>echo $HOME</code> if in doubt.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>reading<span class="hl-w"> </span>permissions
+<span class="hl-go">ls -l FILE                   # type + owner/group/others triads, owner, group</span>
+<span class="hl-go">ls -ld DIR                   # the directory itself, not its contents</span>
+<span class="hl-go">stat -c '%A %a %U:%G' FILE   # symbolic mode, octal mode, owner:group</span>
+<span class="hl-go">id                           # who you are, and your groups</span>
+
+<span class="hl-gp"># </span>the<span class="hl-w"> </span>rule:<span class="hl-w"> </span>owner<span class="hl-w"> </span>triad<span class="hl-w"> </span><span class="hl-k">if</span><span class="hl-w"> </span>you<span class="hl-w"> </span>own<span class="hl-w"> </span>it<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">else</span><span class="hl-w"> </span>group<span class="hl-w"> </span>triad<span class="hl-w"> </span><span class="hl-k">if</span><span class="hl-w"> </span>you<span class="hl-w"> </span>are<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>the<span class="hl-w"> </span>group<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">else</span><span class="hl-w"> </span>others.
+<span class="hl-gp"># </span>first<span class="hl-w"> </span>match<span class="hl-w"> </span>wins<span class="hl-w"> </span>—<span class="hl-w"> </span>the<span class="hl-w"> </span>kernel<span class="hl-w"> </span>never<span class="hl-w"> </span>combines<span class="hl-w"> </span>triads.<span class="hl-w"> </span>Root<span class="hl-w"> </span>bypasses<span class="hl-w"> </span>read/write<span class="hl-w"> </span>checks.
+
+<span class="hl-gp"># </span>changing<span class="hl-w"> </span>permissions
+<span class="hl-go">chmod o+r FILE               # add read for others (u g o a;  + - =;  r w x)</span>
+<span class="hl-go">chmod go-w FILE              # remove write for group and others</span>
+<span class="hl-go">chmod 644 FILE               # rw-r--r--   (r=4 w=2 x=1, one digit per triad; replaces all nine bits)</span>
+<span class="hl-go">chmod 600 FILE               # rw-------</span>
+<span class="hl-go">chmod 755 DIR                # rwxr-xr-x   (x on a directory = may pass through it)</span>
+<span class="hl-go">sudo -u nobody cat FILE      # test as someone who is not you</span>
+
+<span class="hl-gp"># </span>sudo<span class="hl-w"> </span>and<span class="hl-w"> </span>redirection
+<span class="hl-go">sudo cmd &gt; file              # cmd runs as root; &gt; is opened by YOUR shell, as you</span>
+<span class="hl-go">echo x | sudo tee file       # write a file as root</span>
+<span class="hl-go">sudo sh -c 'echo x &gt; file'   # …or put the redirection inside root's shell</span>
+
+<span class="hl-gp"># </span>getting<span class="hl-w"> </span>exactly<span class="hl-w"> </span>the<span class="hl-w"> </span>right<span class="hl-w"> </span>text
+<span class="hl-go">tail -1 FILE                                  # the last line</span>
+<span class="hl-go">sed -n 's/^The secret word is: //p' FILE      # just the part after the prefix</span>
+<span class="hl-go">awk -F': ' '/secret word/ {print $2}' FILE</span>
+<span class="hl-go">cat -A FILE                                   # $ = end of line, ^I = tab, ^M = CR</span>
+
+<span class="hl-gp"># </span>Norboten,<span class="hl-w"> </span>on<span class="hl-w"> </span>a<span class="hl-w"> </span>lab<span class="hl-err">'</span>s<span class="hl-w"> </span>screen
+<span class="hl-go">c                            # grade, reboot, grade again</span>
+<span class="hl-go">h                            # the next hint for the selected check</span>
+<span class="hl-go">r                            # back to the broken state</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<p>Manual pages: <code>man 1 ls</code>, <code>man 1 chmod</code>, <code>man 1 cat</code>.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Decode <code>-rw-r-----  root  adm</code>. Who may read the file, and who may write it?</p>
+<blockquote>
+<p>The owner, root, may read and write; members of the group <code>adm</code> may read; everyone else may do
+nothing.</p>
+</blockquote>
+</li>
+<li>
+<p>A file is <code>----r--r--</code> and owned by you. Can you read it? Explain using the order in which the kernel
+chooses a triad.</p>
+<blockquote>
+<p>No. You are the owner, so the owner triad applies and the check stops there — and it grants nothing.
+The kernel never falls through to the group or others triads, even though they allow reading.</p>
+</blockquote>
+</li>
+<li>
+<p><code>chmod o+r file</code> and <code>chmod 644 file</code> both made the message readable. When would they produce
+different results?</p>
+<blockquote>
+<p>Whenever the file had other bits set. <code>o+r</code> adds one bit and leaves the rest alone; <code>644</code> replaces all
+nine, so it would, for example, remove an execute bit or a group write permission that was there
+before.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>sudo echo hello &gt; /root/note</code> fail with <em>Permission denied</em>?</p>
+<blockquote>
+<p>The redirection is performed by your own shell, as you, before <code>sudo</code> runs; only <code>echo</code> runs as
+root. You cannot open <code>/root/note</code>. Use <code>echo hello | sudo tee /root/note</code> or
+<code>sudo sh -c 'echo hello &gt; /root/note'</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you check that a file contains a single word and nothing else — no stray spaces, no Windows
+line ending?</p>
+<blockquote>
+<p><code>cat -A file</code>: it marks line ends with <code>$</code> and shows tabs as <code>^I</code> and carriage returns as <code>^M</code>, so
+<code>inode$</code> is right and <code> inode$</code> or <code>inode^M$</code> are visibly wrong.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does a <code>chmod</code> survive the reboot that checking a lab (<code>c</code>) performs, and what kind of fix in
+later labs will not?</p>
+<blockquote>
+<p>A file's mode is stored in its inode on disk. Fixes that change only the running system do not
+survive — a service started but not enabled, an address added with <code>ip</code>, a firewall rule without
+<code>--permanent</code>, a setting typed into a shell rather than written to a file.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

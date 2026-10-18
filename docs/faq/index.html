@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/docs/faq/"><meta property="og:title" content="FAQ · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/docs/faq/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" aria-current="page">Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      <div class="group">Getting started</div>
+      <a href="../../docs/getting-started/"
+>Install and first lab</a>
+      <a href="../../docs/tui-reference/"
+>TUI reference</a>
+      <a href="../../docs/faq/"
+aria-current="page">FAQ</a>
+      <div class="group">Contributing labs</div>
+      <a href="../../docs/writing-a-lab/"
+>Writing a lab</a>
+      <a href="../../docs/lab-spec/"
+>Lab specification</a>
+      <a href="../../docs/quiz-spec/"
+>Theory question spec</a>
+      <a href="../../docs/claude-code-plugin/"
+>The Claude Code plugin</a>
+      <div class="group">How it is built</div>
+      <a href="../../docs/architecture/"
+>Architecture</a>
+      <a href="../../docs/rated-labs/"
+>Rated and unrated labs</a>
+      <a href="../../docs/claude-code-in-norboten/"
+>How Norboten uses Claude</a>
+      <a href="../../docs/mcp/"
+>The MCP server</a>
+      <a href="../../docs/data-model/"
+>Data model</a>
+      <a href="../../docs/api-reference/"
+>API reference</a>
+      <a href="../../docs/pipelines/"
+>Pipelines</a>
+      <a href="../../docs/open-questions/"
+>Open questions</a>
+      <div class="group">Running it yourself</div>
+      <a href="../../docs/self-hosting/"
+>Self-hosting and configuration</a>
+      <a href="../../docs/deploy/"
+>Deploying the server</a>
+      <a href="../../docs/ci-cd/"
+>CI/CD</a>
+      <a href="../../docs/releasing/"
+>Releasing</a>
+    </nav>
+    <article class="prose">
+      <h1 id="faq">FAQ</h1>
+<p>One answer for every question the site's consultant offers, grouped the same way. Each answer points
+at the document that goes deeper.</p>
+<h2 id="the-idea">The idea</h2>
+<h3 id="what-makes-this-different-from-a-browser-based-linux-course">What makes this different from a browser-based Linux course?</h3>
+<p>A course in a browser gives you a shell in a container and asks questions about it. Norboten boots a
+real virtual machine on your own computer, breaks it the way production machines break — a volume
+that fills up, a service that will not stay up, a bootloader you must edit — and grades the machine,
+not your answer: checks inspect its state, then it reboots and they inspect it again. Everything runs
+offline once downloaded, and every lab is a directory of scripts you can read and extend.</p>
+<h3 id="is-this-a-quiz-app">Is this a quiz app?</h3>
+<p>No. A lab is passed when the machine behaves, judged by scripts that run inside it, after a reboot.
+The theory questions are a separate practice mode and never affect a lab's result.</p>
+<h3 id="why-a-virtual-machine-instead-of-a-container">Why a virtual machine instead of a container?</h3>
+<p>Why not just Docker? Because the interesting failures are not container-shaped: a mount that stops
+the boot, a root password you have to recover from the bootloader, an SELinux relabel, a service that
+must come back after a reboot. A container cannot reboot, and that is the one thing a lab about a
+system checks.</p>
+<p>Eight labs are the exception, and run in a container on purpose. Two Linux labs — a shared folder that
+locks its team out and a log that never rotates — are about users, groups, modes and one program's
+configuration, with no boot in them. The six Claude Code labs are about how Claude Code is configured,
+and run the real Claude Code against a scripted model. They start in about a second and need Docker
+or Podman instead of QEMU.</p>
+<h3 id="why-is-everything-so-dark">Why is everything so dark?</h3>
+<p>Norboten is a terminal program first: its interface is a full-screen TUI, green on near-black, and
+the site uses the same palette so that its screenshots, recordings and the live terminal player look
+like the thing you will actually use. Journals exported as PDFs are the exception — paper gets a
+light page.</p>
+<h3 id="what-is-a-journal-and-how-is-it-different-from-the-docs">What is a journal, and how is it different from the docs?</h3>
+<p>The docs describe Norboten: how labs are specified, how the gate works, how to run a server. A
+journal teaches the subject a lab is about — the mechanism, one failure walked through on a real
+machine, the wrong turns people take, a cheat sheet and review questions. Every lab has one, and seven
+topic journals cover subjects end to end. Read them with <code>4</code> in the TUI, on the site, or as a PDF.</p>
+<h2 id="labs-and-grading">Labs and grading</h2>
+<h3 id="how-is-a-lab-graded">How is a lab graded?</h3>
+<p>Each lab has check scripts. On <code>c</code> they are copied into the VM and run as a separate grading account;
+the machine reboots; they run again. A check passes only if it passed both times, the score is the
+weight of passing checks over the total, and the lab is passed at its pass line (100% for most labs,
+70% for the exam simulation). See <a href="../lab-spec/">Lab specification</a>, section 5.</p>
+<h3 id="what-is-the-reboot-check-and-why-does-it-matter">What is the reboot check, and why does it matter?</h3>
+<p>After the first pass the grader reboots the VM and waits for it, then runs every check again. A fix
+that only lives in memory — a service started but not enabled, a mount made by hand but not in
+<code>/etc/fstab</code>, a kernel setting written to <code>/proc</code> — passes before the reboot and fails after it.
+Persistence is what production needs, so it is what the grade measures. <code>x</code> runs the checks without
+the reboot for quick feedback, and can never pass a lab.</p>
+<h3 id="how-do-i-reset-a-lab-i-have-broken-beyond-repair">How do I reset a lab I have broken beyond repair?</h3>
+<p>Press <code>r</code> on the lab's screen to start over from the broken state. The VM's disks are rolled back to
+the snapshot taken before the faults, the machine cold-boots, and the faults are applied again — about
+ten seconds. Your attempt's history is kept.</p>
+<h3 id="how-long-does-the-first-lab-take">How long does the first lab take?</h3>
+<p><code>hello</code> is designed for five minutes. Starting it the first time downloads Norboten's pinned Lima and
+the smallest base image (Alpine, about 105 MB), boots, snapshots and breaks the machine: roughly 25–35
+seconds on a laptop after the download. Later starts and resets are faster.</p>
+<h3 id="what-is-inside-a-lab-directory">What is inside a lab directory?</h3>
+<p><code>lab.yaml</code> (the manifest: title, track, topics, difficulty, base images, objectives and checks),
+<code>briefing.md</code> (symptoms only), <code>break/</code> (scripts that apply the faults), <code>check/</code> (scripts that
+decide what fixed means), <code>hints.yaml</code> (four levels per check), <code>solution/solution.sh</code> (the reference
+fix, used by CI), and usually <code>journal.md</code> and <code>theory.yaml</code>. See
+<a href="../writing-a-lab/">Writing a lab</a>.</p>
+<h3 id="how-does-the-solvability-gate-work">How does the solvability gate work?</h3>
+<p>For every lab and every base image it supports, CI starts a clean VM, applies the faults and requires
+every check to fail — a check that passes on a broken machine tests nothing. Then it runs the
+reference solution and requires every check to pass, before and after a reboot. Labs whose learners
+meet the fault only after a reboot get a second phase: faults, that reboot, and every check must still
+fail. See <a href="../lab-spec/">Lab specification</a>, section 9.</p>
+<h3 id="what-stops-a-lab-from-being-unsolvable">What stops a lab from being unsolvable?</h3>
+<p>The gate: a lab cannot merge unless its own reference solution passes every check on every image it
+lists, including after a reboot. When a base image or the runner changes, CI re-runs the gate for
+every lab.</p>
+<h3 id="can-i-break-the-grading-by-breaking-the-machine">Can I break the grading by breaking the machine?</h3>
+<p>Mostly no: checks run as a separate <code>norboten-grader</code> account with its own key, so a lab can remove
+your <code>sudo</code> (the exam simulation does) and you can misconfigure your own without stopping the grader.
+Delete that account and grading stops — but you will have to mean it.</p>
+<h3 id="why-is-the-first-boot-slower-than-the-reset">Why is the first boot slower than the reset?</h3>
+<p>The first boot runs cloud-init to create your account and take the clean snapshot. A reset is a disk
+rollback and a cold boot of an image that has already been through that: about ten seconds.</p>
+<h2 id="the-tutor-and-hints">The tutor and hints</h2>
+<h3 id="will-the-tutor-tell-me-the-answer-if-i-ask-nicely">Will the tutor tell me the answer if I ask nicely?</h3>
+<p>No. The tutor (<code>t</code> on a lab) is never given the reference solution — the request it receives has no
+field for it — and a separate guard compares every reply against the solution and your hint level
+before it is shown. It answers from the machine's evidence: check results and facts gathered from the
+VM. Prompt tricks cannot extract what it never had.</p>
+<p>It runs on your machine, on your own model: Claude Code if you have it (on your subscription), an
+Anthropic, OpenAI or Gemini key you have exported, or a local Ollama — <code>m</code> on System picks one. With
+none of them, <code>t</code> shows the lab's own hint instead. After you pass or surrender, <code>m</code> on the lab asks
+the same model to review the attempt: that review is the one place the solution is read.</p>
+<h3 id="how-do-hints-work">How do hints work?</h3>
+<p>Every check has four hint levels, and <code>h</code> on the selected check shows the next one. Level 1 restates
+the symptom, level 2 names the kind of evidence to look at, level 3 narrows to the component, level 4
+names the problem. No level gives the command that fixes it. You choose when to go deeper; the tutor
+cannot raise your level.</p>
+<h2 id="your-machine">Your machine</h2>
+<h3 id="what-is-left-on-my-machine-if-i-delete-norboten">What is left on my machine if I delete Norboten?</h3>
+<p>Everything Norboten writes is in <code>~/.norboten</code>: the pinned Lima, base images, lab VMs, sessions,
+recordings and the sign-in token. <code>norboten uninstall</code> deletes the lab VMs and containers, that
+directory and the program; what remains is uv, which the installer may have added, and the line uv
+put on your shell's <code>PATH</code>.</p>
+<h3 id="what-does-it-do-to-my-machine">What does it do to my machine?</h3>
+<p>Downloads a pinned Lima and golden images into <code>~/.norboten</code>, and runs virtual machines. No host
+directory is mounted into a lab VM, no ports are forwarded, and no SSH agent is passed through.</p>
+<h3 id="can-a-lab-vm-see-my-files">Can a lab VM see my files?</h3>
+<p>No. Lab VMs are created with no shared directories, no port forwarding and no SSH agent forwarding.
+The VM receives your public SSH key and nothing else from the host.</p>
+<h3 id="how-much-disk-does-this-need">How much disk does this need?</h3>
+<p>The base images are 105 MB (Alpine) to 1.1 GB (the automation image), and a running lab keeps its own
+disk and a snapshot, so plan on about twice the image's size per lab you have started, plus the image.
+A few GB is comfortable for the Linux and RHCSA tracks; the automation and devops images need more.
+<code>8</code> (System) shows what is downloaded and how much space it uses.</p>
+<h3 id="does-it-work-on-apple-silicon">Does it work on Apple Silicon?</h3>
+<p>Yes — M1, M2, M3 and later Macs. QEMU runs the arm64 images with Hypervisor.framework, so labs run
+at native speed. Intel Macs and x86-64 Linux use the x86-64 images.</p>
+<h3 id="does-it-work-on-windows">Does it work on Windows?</h3>
+<p>Not directly: Lima's Windows support lacks the disk snapshots and serial console the labs rely on.
+Run it inside a WSL2 distribution with nested virtualization enabled, where it behaves like Linux.</p>
+<h3 id="do-i-need-to-be-online">Do I need to be online?</h3>
+<p>To install and to download a base image and a lab, yes. After that, no — labs work without internet,
+on a plane or behind a strict firewall, because every package a lab needs is baked into its image, so
+labs, theory, journals and local recordings work offline, and so does the tutor on a local Ollama.
+Ratings, boards and live sessions need a server, and the TUI says so when there is none.</p>
+<h3 id="which-base-images-are-there-and-how-big-are-they">Which base images are there, and how big are they?</h3>
+<p>The labs run on these Linux distributions, each packaged as a golden image: <code>alpine</code> (Alpine 3.23,
+about 105 MB), <code>rocky-10</code> (Rocky Linux 10, about 835 MB), and three on Ubuntu 26.04 LTS:
+<code>ubuntu-26.04</code> (about 663 MB), <code>ubuntu-26.04-devops</code> (Docker, Terraform, Ansible and Python
+tooling, about 932 MB) and <code>ubuntu-26.04-automation</code> (Ollama with two small models, PostgreSQL,
+nginx, about 1.1 GB). Each is the distribution's own cloud image
+with a baseline applied by Ansible, pinned by digest. The container labs
+build their images locally on first use: <code>ubuntu-26.04-container</code>, and <code>ubuntu-26.04-claude</code> with Claude Code
+2.1.270.</p>
+<h2 id="tracks-and-the-exam">Tracks and the exam</h2>
+<h3 id="what-is-in-the-rhcsa-track">What is in the RHCSA track?</h3>
+<p>Five labs on Rocky Linux 10 following the EX200 objectives: users, groups and permissions; systemd
+and the boot; storage and LVM; SELinux, firewalld and networking; and a timed exam simulation.</p>
+<h3 id="is-the-exam-simulation-timed-like-the-real-exam">Is the exam simulation timed like the real exam?</h3>
+<p>It is timed: 90 minutes for fifteen tasks, a 70% pass line, an unknown root password to recover first
+and no <code>sudo</code> for your account. Running over the limit fails a rated attempt. The real exam's length
+and task list are set by Red Hat and change between versions; the simulation keeps its style and its
+pass line, not its exact content.</p>
+<h3 id="how-close-is-this-to-the-real-ex200">How close is this to the real EX200?</h3>
+<p>The RHCSA labs follow the published EX200 objectives, quoted verbatim in each lab's manifest, on Rocky
+Linux 10, which is binary-compatible with RHEL 10. The tasks are original, not exam content, and the
+project is not affiliated with Red Hat.</p>
+<h3 id="is-the-rhcsa-track-affiliated-with-red-hat">Is the RHCSA track affiliated with Red Hat?</h3>
+<p>No. It is built on Rocky Linux and follows the published EX200 objectives. No Red Hat content is
+redistributed.</p>
+<h3 id="what-is-the-automation-track-about">What is the automation track about?</h3>
+<p>Running automation and AI services in production on Ubuntu 26.04: a Python job under systemd, an AI
+gateway that leaked its key, an agent job that never stopped, and Ollama four ways — behind nginx for
+streamed answers, open to the whole network, a custom model that forgets its rules, and a model too big
+for the memory it was given. Separate <code>bash</code>, <code>python</code>, <code>ansible</code>, <code>docker</code> and <code>terraform</code> tracks have
+two labs each on the devops image.</p>
+<h3 id="what-is-the-claude-code-track-about">What is the Claude Code track about?</h3>
+<p>Claude Code as a machine runs it — in scripts, cron jobs and CI. Six labs, each from a real failure: a
+headless job that deleted files and read a token, hooks that never fire, a subagent nobody can call, an
+MCP server that never connects, a GitHub Actions job that spends without limit, and settings levels that
+disagree. They run in a container with the real Claude Code and a scripted model, so they need no
+account, no token and no network, and every check grades what Claude Code actually did.</p>
+<h3 id="what-is-the-mcp-track-about">What is the MCP track about?</h3>
+<p>MCP servers as Claude Code meets them, one boundary per lab: a file server that shares more than the
+folder it is for, a web page whose hidden text tells the model to run a command, a remote server that
+takes a token issued for another service, a stdio server whose log corrupts the protocol, an nginx that
+holds a server's event stream back and then cuts it, and a stale server definition in another scope that
+answers instead of the team's. Same container and scripted model as the Claude Code track; the servers
+are real processes, and Claude Code starts and calls them for real. The <code>mcp</code> topic journal and theory
+bank go with it.</p>
+<h3 id="what-does-ollama-do-in-norboten">What does Ollama do in Norboten?</h3>
+<p>Two things. On the server it runs a small local model that answers the consultant, so questions about
+the docs cost nothing per answer and never leave the machine. In the automation track it is the
+subject: the labs deploy it, expose it safely, build custom models with Modelfiles and size its memory,
+with <code>qwen2.5:0.5b</code> and the <code>all-minilm</code> embedding model baked into the image.</p>
+<h2 id="theory-questions">Theory questions</h2>
+<h3 id="how-are-theory-questions-verified">How are theory questions verified?</h3>
+<p>Every question carries a reference and an explanation. A question about what a snippet prints carries
+the snippet: CI runs it in a container with no network, and its output must equal the answer key.
+A question a model generated is checked further: at least two other models that never saw the key
+must answer it identically, it must survive a critic, and a maintainer reads it before it goes into
+a bank. See
+<a href="../quiz-spec/">Theory question spec</a>.</p>
+<h3 id="what-does-verified-by-two-models-mean">What does 'verified by two models' mean?</h3>
+<p>For a drafted question, the writer's answer key is hidden, and at least two different models
+solve the question from scratch. If any of them answers differently or calls the question ambiguous,
+the question is rejected. It is a filter for questions with a second defensible answer, not a claim
+that models are always right — which is why executable questions are also run.</p>
+<h3 id="can-i-flag-a-question-that-is-wrong">Can I flag a question that is wrong?</h3>
+<p>The questions in the repository's banks are files: open an issue or a pull request against the bank,
+where the explanation and reference can be checked. Questions you drafted yourself with <code>g</code> live in
+<code>~/.norboten/quizzes/</code>; edit or delete them there.</p>
+<h2 id="ratings-and-profiles">Ratings and profiles</h2>
+<h3 id="how-do-ratings-work">How do ratings work?</h3>
+<p>Each of the nineteen topics has its own Glicko-2 rating. A rated lab attempt is a game in every topic
+the lab declares, against a virtual opponent whose strength comes from the lab's difficulty (1100 for
+difficulty 1 up to 1900 for difficulty 5). Passing within the time limit wins; failing or running over
+loses. A rated theory run is one game at the mean difficulty of the questions answered.</p>
+<h3 id="what-is-glicko-2-and-why-use-it">What is Glicko-2, and why use it?</h3>
+<p>A rating system from chess that tracks, besides the rating, how uncertain it is (the rating deviation)
+and how volatile a player's results are. It suits Norboten because people attempt labs rarely and
+unevenly: a new profile is honestly uncertain and a few results move it a lot, while an established
+one moves slowly.</p>
+<h3 id="why-does-my-rating-have-a--on-it">Why does my rating have a ± on it?</h3>
+<p>The number after ± is the rating deviation: how far the true value may plausibly be from the shown
+one. Every topic starts at 1500 ± 350 and the deviation shrinks as you complete rated attempts in it.
+A rating is shown as provisional while the deviation is above 125.</p>
+<h3 id="what-makes-an-attempt-rated">What makes an attempt rated?</h3>
+<p>Being a rated lab. The catalogue marks them; they come from the server, need a sign-in, and the
+server issues the attempt, starts its clock, and judges the machine's state when you check — the
+difficulty, topics and time limit come from the lab, never from your request. An unrated lab is never
+rated, however it is started: its checks and its answer are public, so a reported pass would prove
+nothing. A rated theory run is a run on a rated bank, which the Theory section marks the same way.</p>
+<h3 id="how-long-do-i-get-for-a-lab">How long do I get for a lab?</h3>
+<p>The lab's own <code>time_limit_minutes</code> if it sets one (the exam simulation: 90), otherwise by difficulty:
+5, 10, 15, 20 or 30 minutes for difficulty 1 to 5. The limit only matters for rated attempts and for
+labs that set their own.</p>
+<p>Going over time does not stop the machine; you can keep working and check again. But a grade that
+comes after the limit is not a pass — the report says it was over time — and for a rated attempt it
+counts as a loss in your rating, however many checks passed.</p>
+<h3 id="does-an-unrated-lab-affect-my-rating">Does an unrated lab affect my rating?</h3>
+<p>No. Attempts on unrated labs are recorded in your history but never rated: they are for practice, so
+retry as often as you like, and read the solution whenever you want.</p>
+<h3 id="what-are-the-nineteen-topics">What are the nineteen topics?</h3>
+<p><code>linux-basics</code>, <code>users-permissions</code>, <code>storage-lvm</code>, <code>boot-systemd</code>, <code>networking</code>, <code>firewall-selinux</code>,
+<code>kernel-performance</code>, <code>logging-journald</code>, <code>monitoring</code>, <code>bash</code>, <code>python</code>, <code>ansible</code>, <code>terraform</code>,
+<code>containers</code>, <code>ai-services</code>, <code>ai-agents</code>, <code>claude-code</code>, <code>ollama</code> and <code>mcp</code> — derived from the EX200 and EX342
+objectives plus the automation and AI subjects.</p>
+<h3 id="how-is-the-radar-chart-calculated">How is the radar chart calculated?</h3>
+<p>One spoke per topic. A topic you have rated attempts in is drawn at its rating, clamped to 1000–2200
+and scaled between the centre and the rim; topics you have never attempted sit at the centre, so an
+empty spoke means &quot;no evidence&quot;, not &quot;bad&quot;.</p>
+<h3 id="what-is-on-the-contributions-heatmap">What is on the contributions heatmap?</h3>
+<p>A year of activity: one square per day, one column per week, shaded by how many graded lab attempts
+and theory runs you completed that day. Hovering a day lists what you did.</p>
+<h2 id="account-and-privacy">Account and privacy</h2>
+<h3 id="do-i-need-an-account">Do I need an account?</h3>
+<p>No. Labs, theory, journals and recordings work without one. An account adds a rating per topic, a
+public profile and a place on the boards. There is nothing to create: sign in with GitHub on the
+site, or with <code>a</code> in the TUI, and the first sign-in makes the account.</p>
+<h3 id="how-does-signing-in-work">How does signing in work?</h3>
+<p>With GitHub, and nothing else — no password and no email. On the site, <strong>Sign in with GitHub</strong> takes
+you to GitHub and back. In the terminal, <code>a</code> shows a short code; open <code>github.com/login/device</code> in any
+browser, on any device, and type it — so a headless machine signs in the same way. GitHub tells
+Norboten your GitHub user id and login, once; the GitHub token that carried them is revoked straight
+away and stored nowhere, and no GitHub token ever reaches your terminal. Tick &quot;remember&quot; and you stay
+signed in for ninety days; leave it off and it is twelve hours, in that browser tab or that run of
+norboten only.</p>
+<h3 id="i-have-no-github-account">I have no GitHub account</h3>
+<p>Then you cannot sign in, for now: GitHub is the only way in. An account is free on GitHub, and
+nothing but the rating needs one — every lab, question bank and journal works signed out.</p>
+<h3 id="what-does-github-see-and-what-does-my-profile-show">What does GitHub see, and what does my profile show?</h3>
+<p>GitHub sees that you signed in to Norboten, and when — nothing Norboten holds. Norboten asks for no
+GitHub permissions, only who you are. Your public profile shows your nick and links to your GitHub
+account (<code>github.com/&lt;login&gt;</code>); if you rename yourself on GitHub, the link follows at your next
+sign-in.</p>
+<h3 id="can-i-change-my-nick-or-my-country">Can I change my nick, or my country?</h3>
+<p>The country, any time; the nick, no — it is chosen once, when you make your profile. The form opens
+with a suggestion for each: your GitHub login for the nick, and for the country a guess from your
+address, looked up in an offline table on Norboten's own server (DB-IP Lite, CC BY 4.0) — your address
+goes to no other company, and the guess is not saved unless you keep it.</p>
+<h3 id="where-are-my-tokens-stored">Where are my tokens stored?</h3>
+<p>A remembered terminal keeps its token in <code>~/.norboten/credentials.json</code>, mode 0600, for 90 days; an
+unremembered one keeps it in memory for 12 hours and writes nothing. The site keeps a remembered
+token in <code>localStorage</code> for 90 days, and otherwise in <code>sessionStorage</code>, gone with the tab. The server stores only a SHA-256 hash of each token, so
+revoking one — from your account page, or by signing out — deletes a row.</p>
+<h3 id="what-does-the-server-know-about-me">What does the server know about me?</h3>
+<p>Your GitHub user id and login, your nick and country, your tokens (hashed), your Discord user id
+if you linked Discord, and — only when you are
+signed in — graded lab attempts and rated theory runs with their scores, durations and rating changes.
+Live sessions you start with <code>P</code> are stored for a week. Your local recordings are never sent. <a href="../data-model/">Data model</a> lists every table.</p>
+<h3 id="where-does-my-data-go">Where does my data go?</h3>
+<p>Nowhere, unless you sign in or stream. Signed in, graded attempts and rated theory runs are sent to the
+server. <code>P</code> on a lab streams your terminal publicly, after asking. Recordings on the server are deleted
+after a week.</p>
+<h3 id="is-telemetry-on-by-default">Is telemetry on by default?</h3>
+<p>No. The TUI sends no telemetry. The API has an opt-in endpoint for anonymous &quot;which check people get
+stuck on&quot; reports, which a server operator can turn off entirely, and nothing in the TUI sends to it
+unless that option is added and chosen.</p>
+<h2 id="recording-and-live-sessions">Recording and live sessions</h2>
+<h3 id="what-is-recorded-when-i-record-a-session-with-p">What is recorded when I record a session with p?</h3>
+<p>Press <code>p</code> on a lab and its shell is recorded and saved in <code>~/.norboten/plays/</code>: everything that
+crossed the terminal (asciicast v2, which <code>asciinema play</code> also reads), the commands you typed with
+their times, and a diff of every file change in the VM's watched directories, attributed to the
+command that made it. Nothing leaves your machine. <code>P</code> saves the same and also streams it live to the
+site, after asking; <code>o</code> opens a shell without recording.</p>
+<h3 id="who-can-watch-my-live-session">Who can watch my live session?</h3>
+<p>Anyone: other people can see your terminal as you type. <code>P</code> streams the session to the site's Live
+page, where it is public while it runs and replayable for a week; the TUI asks before it starts. There
+is no private streaming mode.</p>
+<h3 id="can-i-be-told-when-something-happens">Can I be told when something happens?</h3>
+<p>Two things, both off until you ask. On your account page, link Discord and
+turn on the <strong>weekly digest</strong>: a direct message from the Norboten bot on Sunday evening about your
+own week — what you attempted, what your ratings did, and the topic the numbers know least about —
+and nothing in a week you did nothing. The bot can only message you if you share a server with it,
+so tick &quot;join the Norboten server&quot; when you link (it is off by default) or be in it already, and
+allow direct messages from its members; if Discord refuses the message, your account page says so.
+A server's operator can also announce live sessions and new labs to a Telegram chat — a chat you
+join, not an alert about you. Nobody is subscribed to
+anything by default.</p>
+<h3 id="how-long-are-recordings-kept">How long are recordings kept?</h3>
+<p>Recordings you make with <code>p</code> stay in <code>~/.norboten/plays/</code> until you delete them. Sessions streamed with
+<code>P</code> are deleted from the server seven days after they started.</p>
+<h3 id="are-the-file-diffs-taken-inside-the-vm">Are the file diffs taken inside the VM?</h3>
+<p>Yes. While a session records, the guest keeps its watched directories (such as <code>/etc</code>) under a git
+repository in <code>/var/lib/norboten/watch</code>, with the work tree pointing at the real directory so no <code>.git</code>
+appears there, and takes a diff after each command. Nothing from your host is involved.</p>
+<h2 id="journals">Journals</h2>
+<h3 id="can-i-read-a-journal-on-paper">Can I read a journal on paper?</h3>
+<p>Yes. On the site, <strong>Save as PDF</strong> on a journal opens its print view — a light page laid out for A4 —
+and your browser's print dialog saves it as a PDF. In the TUI, <code>e</code> on a journal (<code>4</code>) exports the same
+document with running headers and page numbers into <code>~/.norboten/journals/</code>; that needs the <code>pdf</code>
+extra, which uses WeasyPrint: <code>curl -fsSL https://norboten.org/install.sh | NORBOTEN_EXTRAS=pdf sh</code>.</p>
+<h3 id="is-there-a-one-page-cheat-sheet">Is there a one-page cheat sheet?</h3>
+<p>One per journal: the commands for that subject, in one place. <strong>Cheat sheet</strong> on a journal's page opens
+it on its own, ready to print — for LVM it is the storage journal's, for <code>journalctl</code> the logging
+one's. Ask the chat for &quot;a cheat sheet for …&quot; and it links the right one.</p>
+<h2 id="running-and-contributing">Running and contributing</h2>
+<h3 id="can-i-write-my-own-lab">Can I write my own lab?</h3>
+<p>Yes — that is the point of the format. A lab is a directory of scripts, a hint ladder and a reference
+solution; <code>norboten dev lint</code> checks it without a VM and <code>norboten dev validate</code> runs the gate. CI
+proves it is solvable before it merges. See <a href="../writing-a-lab/">Writing a lab</a>.</p>
+<h3 id="what-does-the-hosted-side-cost-to-run">What does the hosted side cost to run?</h3>
+<p>One small server rented by the month — a netcup VPS with 2 vCPU and 4 GB — runs the API,
+PostgreSQL, Redis, a small local model for the consultant, and monitoring. No hosted model is billed:
+the server uses its own Ollama, and theory questions are drafted by the maintainer on a Claude
+subscription, then published in the repository. Learners' VMs run on learners' machines, so the
+server does not grow with them.</p>
+<h3 id="can-i-self-host-all-of-it">Can I self-host all of it?</h3>
+<p>Yes, on your own server or a laptop. <code>make stack-up</code> starts the whole backend — the same Docker
+Compose project production runs — on a laptop, and <a href="../deploy/">Deploying the server</a> takes
+it to an Ubuntu machine with TLS, backups and deploy-on-push. The TUI uses it with <code>NORBOTEN_API=…</code>.
+See <a href="../self-hosting/">Self-hosting</a>.</p>
+<h3 id="how-do-i-report-a-lab-that-stopped-working">How do I report a lab that stopped working?</h3>
+<p>Open an issue in the GitHub repository with the lab id, the base image and what <code>c</code> reported (the
+TUI keeps the last report in <code>~/.norboten/sessions/&lt;lab&gt;.last.json</code>). A lab that stops working is
+usually an upstream change, and CI re-runs the gate for every lab whenever an image changes.</p>
+
+    </article>
+    <div class="toc">
+<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>      <a class="h2" href="#the-idea">The idea</a>
+      <a class="h3" href="#what-makes-this-different-from-a-browser-based-linux-course">What makes this different from a browser-based Linux course?</a>
+      <a class="h3" href="#is-this-a-quiz-app">Is this a quiz app?</a>
+      <a class="h3" href="#why-a-virtual-machine-instead-of-a-container">Why a virtual machine instead of a container?</a>
+      <a class="h3" href="#why-is-everything-so-dark">Why is everything so dark?</a>
+      <a class="h3" href="#what-is-a-journal-and-how-is-it-different-from-the-docs">What is a journal, and how is it different from the docs?</a>
+      <a class="h2" href="#labs-and-grading">Labs and grading</a>
+      <a class="h3" href="#how-is-a-lab-graded">How is a lab graded?</a>
+      <a class="h3" href="#what-is-the-reboot-check-and-why-does-it-matter">What is the reboot check, and why does it matter?</a>
+      <a class="h3" href="#how-do-i-reset-a-lab-i-have-broken-beyond-repair">How do I reset a lab I have broken beyond repair?</a>
+      <a class="h3" href="#how-long-does-the-first-lab-take">How long does the first lab take?</a>
+      <a class="h3" href="#what-is-inside-a-lab-directory">What is inside a lab directory?</a>
+      <a class="h3" href="#how-does-the-solvability-gate-work">How does the solvability gate work?</a>
+      <a class="h3" href="#what-stops-a-lab-from-being-unsolvable">What stops a lab from being unsolvable?</a>
+      <a class="h3" href="#can-i-break-the-grading-by-breaking-the-machine">Can I break the grading by breaking the machine?</a>
+      <a class="h3" href="#why-is-the-first-boot-slower-than-the-reset">Why is the first boot slower than the reset?</a>
+      <a class="h2" href="#the-tutor-and-hints">The tutor and hints</a>
+      <a class="h3" href="#will-the-tutor-tell-me-the-answer-if-i-ask-nicely">Will the tutor tell me the answer if I ask nicely?</a>
+      <a class="h3" href="#how-do-hints-work">How do hints work?</a>
+      <a class="h2" href="#your-machine">Your machine</a>
+      <a class="h3" href="#what-is-left-on-my-machine-if-i-delete-norboten">What is left on my machine if I delete Norboten?</a>
+      <a class="h3" href="#what-does-it-do-to-my-machine">What does it do to my machine?</a>
+      <a class="h3" href="#can-a-lab-vm-see-my-files">Can a lab VM see my files?</a>
+      <a class="h3" href="#how-much-disk-does-this-need">How much disk does this need?</a>
+      <a class="h3" href="#does-it-work-on-apple-silicon">Does it work on Apple Silicon?</a>
+      <a class="h3" href="#does-it-work-on-windows">Does it work on Windows?</a>
+      <a class="h3" href="#do-i-need-to-be-online">Do I need to be online?</a>
+      <a class="h3" href="#which-base-images-are-there-and-how-big-are-they">Which base images are there, and how big are they?</a>
+      <a class="h2" href="#tracks-and-the-exam">Tracks and the exam</a>
+      <a class="h3" href="#what-is-in-the-rhcsa-track">What is in the RHCSA track?</a>
+      <a class="h3" href="#is-the-exam-simulation-timed-like-the-real-exam">Is the exam simulation timed like the real exam?</a>
+      <a class="h3" href="#how-close-is-this-to-the-real-ex200">How close is this to the real EX200?</a>
+      <a class="h3" href="#is-the-rhcsa-track-affiliated-with-red-hat">Is the RHCSA track affiliated with Red Hat?</a>
+      <a class="h3" href="#what-is-the-automation-track-about">What is the automation track about?</a>
+      <a class="h3" href="#what-is-the-claude-code-track-about">What is the Claude Code track about?</a>
+      <a class="h3" href="#what-is-the-mcp-track-about">What is the MCP track about?</a>
+      <a class="h3" href="#what-does-ollama-do-in-norboten">What does Ollama do in Norboten?</a>
+      <a class="h2" href="#theory-questions">Theory questions</a>
+      <a class="h3" href="#how-are-theory-questions-verified">How are theory questions verified?</a>
+      <a class="h3" href="#what-does-verified-by-two-models-mean">What does &#39;verified by two models&#39; mean?</a>
+      <a class="h3" href="#can-i-flag-a-question-that-is-wrong">Can I flag a question that is wrong?</a>
+      <a class="h2" href="#ratings-and-profiles">Ratings and profiles</a>
+      <a class="h3" href="#how-do-ratings-work">How do ratings work?</a>
+      <a class="h3" href="#what-is-glicko-2-and-why-use-it">What is Glicko-2, and why use it?</a>
+      <a class="h3" href="#why-does-my-rating-have-a--on-it">Why does my rating have a ± on it?</a>
+      <a class="h3" href="#what-makes-an-attempt-rated">What makes an attempt rated?</a>
+      <a class="h3" href="#how-long-do-i-get-for-a-lab">How long do I get for a lab?</a>
+      <a class="h3" href="#does-an-unrated-lab-affect-my-rating">Does an unrated lab affect my rating?</a>
+      <a class="h3" href="#what-are-the-nineteen-topics">What are the nineteen topics?</a>
+      <a class="h3" href="#how-is-the-radar-chart-calculated">How is the radar chart calculated?</a>
+      <a class="h3" href="#what-is-on-the-contributions-heatmap">What is on the contributions heatmap?</a>
+      <a class="h2" href="#account-and-privacy">Account and privacy</a>
+      <a class="h3" href="#do-i-need-an-account">Do I need an account?</a>
+      <a class="h3" href="#how-does-signing-in-work">How does signing in work?</a>
+      <a class="h3" href="#i-have-no-github-account">I have no GitHub account</a>
+      <a class="h3" href="#what-does-github-see-and-what-does-my-profile-show">What does GitHub see, and what does my profile show?</a>
+      <a class="h3" href="#can-i-change-my-nick-or-my-country">Can I change my nick, or my country?</a>
+      <a class="h3" href="#where-are-my-tokens-stored">Where are my tokens stored?</a>
+      <a class="h3" href="#what-does-the-server-know-about-me">What does the server know about me?</a>
+      <a class="h3" href="#where-does-my-data-go">Where does my data go?</a>
+      <a class="h3" href="#is-telemetry-on-by-default">Is telemetry on by default?</a>
+      <a class="h2" href="#recording-and-live-sessions">Recording and live sessions</a>
+      <a class="h3" href="#what-is-recorded-when-i-record-a-session-with-p">What is recorded when I record a session with p?</a>
+      <a class="h3" href="#who-can-watch-my-live-session">Who can watch my live session?</a>
+      <a class="h3" href="#can-i-be-told-when-something-happens">Can I be told when something happens?</a>
+      <a class="h3" href="#how-long-are-recordings-kept">How long are recordings kept?</a>
+      <a class="h3" href="#are-the-file-diffs-taken-inside-the-vm">Are the file diffs taken inside the VM?</a>
+      <a class="h2" href="#journals">Journals</a>
+      <a class="h3" href="#can-i-read-a-journal-on-paper">Can I read a journal on paper?</a>
+      <a class="h3" href="#is-there-a-one-page-cheat-sheet">Is there a one-page cheat sheet?</a>
+      <a class="h2" href="#running-and-contributing">Running and contributing</a>
+      <a class="h3" href="#can-i-write-my-own-lab">Can I write my own lab?</a>
+      <a class="h3" href="#what-does-the-hosted-side-cost-to-run">What does the hosted side cost to run?</a>
+      <a class="h3" href="#can-i-self-host-all-of-it">Can I self-host all of it?</a>
+      <a class="h3" href="#how-do-i-report-a-lab-that-stopped-working">How do I report a lab that stopped working?</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("../../search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+</body>
+</html>

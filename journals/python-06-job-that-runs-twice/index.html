@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One writer at a time, and a file that is only ever whole · Norboten</title>
+<meta name="description" content="A timer that starts a job every minute is a promise about how often the job starts, not about how long it takes. The day the catalogue grows past a minute&#39;s wor">
+<link rel="canonical" href="https://norboten.org/journals/python-06-job-that-runs-twice/"><meta property="og:title" content="One writer at a time, and a file that is only ever whole · Norboten">
+<meta property="og:description" content="A timer that starts a job every minute is a promise about how often the job starts, not about how long it takes. The day the catalogue grows past a minute&#39;s wor">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/python-06-job-that-runs-twice/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="One writer at a time, and a file that is only ever whole · Norboten">
+<meta name="twitter:description" content="A timer that starts a job every minute is a promise about how often the job starts, not about how long it takes. The day the catalogue grows past a minute&#39;s wor">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "One writer at a time, and a file that is only ever whole",
+  "description": "A timer that starts a job every minute is a promise about how often the job starts, not about how long it takes. The day the catalogue grows past a minute\u0027s wor",
+  "url": "https://norboten.org/journals/python-06-job-that-runs-twice/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1387,
+  "timeRequired": "PT40M",
+  "about": ["Python", "Boot and systemd"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Job That Runs Twice</div>
+    <h1>One writer at a time, and a file that is only ever whole</h1>
+    <p class="muted">
+      40 minutes' reading · 1387 words ·<span class="tag">Python</span><span class="tag">Boot and systemd</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 74 words</title><rect x="0.0" y="0" width="33.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 578 words</title><rect x="36.8" y="0" width="264.1" height="30" rx="4" fill="#1d2a23"/><text x="44.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 371 words</title><rect x="303.9" y="0" width="169.5" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 200 words</title><rect x="476.4" y="0" width="91.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 92 words</title><rect x="570.8" y="0" width="42.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 59 words</title><rect x="615.8" y="0" width="27.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 250 words</title><rect x="645.8" y="0" width="114.2" height="30" rx="4" fill="#1d2a23"/><text x="653.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/python-06-job-that-runs-twice/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>A timer that starts a job every minute is a promise about how often the job <em>starts</em>, not about how
+long it takes. The day the catalogue grows past a minute's work, two rebuilds run at once, and they
+are both writing the same file. Nobody planned that; it arrives on its own.</p>
+<p>Two separate mistakes make it dangerous. Nothing stops the second run — the script names a lock file
+and never takes it. And the file being rebuilt is the file the shop reads, written product by
+product, so during a rebuild there is no moment at which it is a complete price list. Either
+mistake alone is survivable. Together they explain a shop that served half its catalogue.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Take an advisory lock with <code>flock</code>, without waiting, and release it by ending the process.</li>
+<li>Say why a lock file that is merely created and deleted is not a lock.</li>
+<li>Replace a file's contents atomically with a temporary file and <code>os.replace()</code>.</li>
+<li>Explain what a reader sees during each of the two kinds of write.</li>
+<li>Know what systemd does when a timer fires while the last run is still going.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="the-kernel-already-has-a-lock">The kernel already has a lock</h3>
+<p><code>flock(2)</code> puts an advisory lock on an open file. The rules are short: one exclusive holder at a
+time; <code>LOCK_NB</code> makes the call fail instead of waiting; and the lock lives as long as the open file
+description — so when the process ends, for any reason, the kernel releases it. There is nothing to
+clean up after a crash, and no stale lock to inherit.</p>
+<pre class="hl"><code class="language-python"><span class="hl-n">fd</span> <span class="hl-o">=</span> <span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">open</span><span class="hl-p">(</span><span class="hl-n">LOCK</span><span class="hl-p">,</span> <span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">O_CREAT</span> <span class="hl-o">|</span> <span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">O_RDWR</span><span class="hl-p">,</span> <span class="hl-mo">0o644</span><span class="hl-p">)</span>
+<span class="hl-k">try</span><span class="hl-p">:</span>
+    <span class="hl-n">fcntl</span><span class="hl-o">.</span><span class="hl-n">flock</span><span class="hl-p">(</span><span class="hl-n">fd</span><span class="hl-p">,</span> <span class="hl-n">fcntl</span><span class="hl-o">.</span><span class="hl-n">LOCK_EX</span> <span class="hl-o">|</span> <span class="hl-n">fcntl</span><span class="hl-o">.</span><span class="hl-n">LOCK_NB</span><span class="hl-p">)</span>
+<span class="hl-k">except</span> <span class="hl-ne">OSError</span><span class="hl-p">:</span>            <span class="hl-c1"># BlockingIOError, errno EWOULDBLOCK</span>
+    <span class="hl-k">return</span> <span class="hl-s2">"another run holds it"</span>
+</code></pre>
+
+<p>Two details matter. Keep <code>fd</code> open for the whole run: closing it releases the lock, so a <code>with open(...)</code> around just the acquisition is a bug. And <em>advisory</em> means only that processes which ask
+are held back; a program that never takes the lock writes anyway. The lock is a convention among
+the programs that share the resource, enforced by the kernel for those who join in.</p>
+<p>The alternative most people write first — &quot;if the lock file exists, exit; else create it; delete it
+at the end&quot; — has two holes. Between the test and the creation another process can do the same
+(a race), and a run that dies leaves the file behind so every later run refuses. <code>flock</code> has
+neither problem.</p>
+<p><code>flock</code> locks are per file description, so a fork inherits the lock, and two different paths to the
+same file (a bind mount, a symlink) are still the same inode and the same lock. On NFS, use
+<code>fcntl(F_SETLK)</code> instead — or a lock service.</p>
+<h3 id="what-a-reader-sees">What a reader sees</h3>
+<p>Writing <code>open(OUT, &quot;w&quot;)</code> and then filling the file leaves the live file in every intermediate state:
+truncated to nothing, then half a JSON object, then whole. A reader that opens it at the wrong
+moment gets a parse error or — worse for a price list — a syntactically valid subset.</p>
+<p><code>os.replace(tmp, path)</code> is a <code>rename(2)</code> within one file system: the directory entry points at the
+old inode or the new one, and never at something in between. Readers that have the old file open
+keep reading it to the end; readers that open afterwards get the new one. The recipe is always the
+same:</p>
+<pre class="hl"><code class="language-python"><span class="hl-n">fd</span><span class="hl-p">,</span> <span class="hl-n">tmp</span> <span class="hl-o">=</span> <span class="hl-n">tempfile</span><span class="hl-o">.</span><span class="hl-n">mkstemp</span><span class="hl-p">(</span><span class="hl-nb">dir</span><span class="hl-o">=</span><span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">path</span><span class="hl-o">.</span><span class="hl-n">dirname</span><span class="hl-p">(</span><span class="hl-n">path</span><span class="hl-p">))</span>   <span class="hl-c1"># same file system, private</span>
+<span class="hl-k">with</span> <span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">fdopen</span><span class="hl-p">(</span><span class="hl-n">fd</span><span class="hl-p">,</span> <span class="hl-s2">"w"</span><span class="hl-p">,</span> <span class="hl-n">encoding</span><span class="hl-o">=</span><span class="hl-s2">"utf-8"</span><span class="hl-p">)</span> <span class="hl-k">as</span> <span class="hl-n">f</span><span class="hl-p">:</span>
+    <span class="hl-n">json</span><span class="hl-o">.</span><span class="hl-n">dump</span><span class="hl-p">(</span><span class="hl-n">data</span><span class="hl-p">,</span> <span class="hl-n">f</span><span class="hl-p">);</span> <span class="hl-n">f</span><span class="hl-o">.</span><span class="hl-n">flush</span><span class="hl-p">();</span> <span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">fsync</span><span class="hl-p">(</span><span class="hl-n">f</span><span class="hl-o">.</span><span class="hl-n">fileno</span><span class="hl-p">())</span> <span class="hl-c1"># on disk, not just in the page cache</span>
+<span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">chmod</span><span class="hl-p">(</span><span class="hl-n">tmp</span><span class="hl-p">,</span> <span class="hl-mo">0o644</span><span class="hl-p">)</span>                                    <span class="hl-c1"># mkstemp makes it 0600</span>
+<span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">replace</span><span class="hl-p">(</span><span class="hl-n">tmp</span><span class="hl-p">,</span> <span class="hl-n">path</span><span class="hl-p">)</span>
+</code></pre>
+
+<p>With that, a second writer is a waste of work rather than a corruption — which is why both halves
+are worth having even when the lock is in place.</p>
+<h3 id="overlap-is-systemds-business-too">Overlap is systemd's business too</h3>
+<p>A <code>oneshot</code> service that is still running when its timer fires again does not start a second copy:
+systemd sees the unit as active and the job is queued or dropped, depending on the unit's job mode.
+That is exactly why the lock still matters here: a rebuild started <strong>by hand</strong>, by Ansible, or by
+another timer unit is not the same unit, and systemd has no view of it at all. <code>RefuseManualStart=</code>
+and the unit's <code>Conflicts=</code> are policy for the unit, not protection for the file.</p>
+<p><code>OnUnitActiveSec=</code> (this timer) measures from the end of the last activation, so it will not chase a
+slow job; <code>OnCalendar=</code> or <code>OnUnitInactiveSec=</code> behave differently. Knowing which one a timer uses
+is part of knowing whether overlap is possible at all.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Run on the lab's own machine: <code>ubuntu-26.04-devops</code>, Python 3.14.4, before any change.</p>
+<p>Two rebuilds started a second apart both run to the end, and both report success:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'python3 /opt/pricing/rebuild.py &amp; sleep 0.8; python3 /opt/pricing/rebuild.py; echo "second run exit: $?"; wait'</span>
+<span class="hl-go">rebuilt 4 prices</span>
+<span class="hl-go">rebuilt 4 prices</span>
+<span class="hl-go">second run exit: 0</span>
+</code></pre>
+
+<p>While a rebuild is running, a reader finds the price list unreadable — twice in a row here, and
+whole only once the run has finished:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'python3 /opt/pricing/rebuild.py &amp; sleep 0.9; for i in 1 2 3; do python3 -c "import json;print(json.load(open(\"/var/lib/pricing/prices.json\")))" 2&gt;&amp;1 | tail -1; sleep 0.4; done; wait'</span>
+<span class="hl-go">json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 4 column 1 (char 39)</span>
+<span class="hl-go">json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 5 column 1 (char 59)</span>
+<span class="hl-go">rebuilt 4 prices</span>
+<span class="hl-go">{'BOLT-M6': 0.56, 'NUT-M6': 0.35, 'WASHER-6': 0.14, 'SPANNER-13': 9.1}</span>
+</code></pre>
+
+<p>What the lock the script never takes would have done, in eight lines:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>python3<span class="hl-w"> </span>-<span class="hl-w"> </span>&lt;&lt;<span class="hl-s1">'PY'</span>
+<span class="hl-go">import fcntl, os, subprocess, sys</span>
+<span class="hl-go">fd = os.open("/tmp/demo.lock", os.O_CREAT | os.O_RDWR, 0o644)</span>
+<span class="hl-go">fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)</span>
+<span class="hl-go">print("first holder: got the lock")</span>
+<span class="hl-go">code = "…second process tries the same…"</span>
+<span class="hl-go">subprocess.run([sys.executable, "-c", code])</span>
+<span class="hl-go">PY</span>
+<span class="hl-go">second holder refused: BlockingIOError 11</span>
+<span class="hl-go">first holder: got the lock</span>
+</code></pre>
+
+<p>(errno 11 is <code>EWOULDBLOCK</code>: the lock is held, and <code>LOCK_NB</code> means do not wait. The two lines arrive
+out of order because the parent's own output is still buffered — see the worker lab.)</p>
+<p>After the fix — the lock taken before the work and held for the whole run, the prices built in
+memory and the file replaced in one step:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'python3 /opt/pricing/rebuild.py &amp; sleep 0.8; python3 /opt/pricing/rebuild.py; echo "second run exit: $?"; wait'</span>
+<span class="hl-go">second run exit: 1</span>
+<span class="hl-go">rebuilt 4 prices</span>
+<span class="hl-go">rebuild: another rebuild holds /run/pricing-rebuild.lock</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sh<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'python3 /opt/pricing/rebuild.py &amp; sleep 0.9; for i in 1 2 3; do python3 -c "import json;print(sorted(json.load(open(\"/var/lib/pricing/prices.json\"))))" 2&gt;&amp;1 | tail -1; sleep 0.4; done; wait'</span>
+<span class="hl-go">['BOLT-M6', 'NUT-M6', 'SPANNER-13', 'WASHER-6']</span>
+<span class="hl-go">['BOLT-M6', 'NUT-M6', 'SPANNER-13', 'WASHER-6']</span>
+<span class="hl-go">rebuilt 4 prices</span>
+<span class="hl-go">['BOLT-M6', 'NUT-M6', 'SPANNER-13', 'WASHER-6']</span>
+</code></pre>
+
+<p>The second run refuses in milliseconds with a message and a non-zero status, and every read during a
+rebuild sees the full list.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong><code>if os.path.exists(LOCK): sys.exit()</code> … <code>os.remove(LOCK)</code>.</strong> Two runs can pass the test in the
+same instant, and a run that dies leaves the file behind so every later run refuses. This is the
+lock file without the lock.</li>
+<li><strong>Taking the lock in a <code>with</code> block, or closing the file.</strong> The lock is released when the last file
+descriptor for that open file description is closed; the rebuild then has no protection at all.</li>
+<li><strong><code>fcntl.flock(fd, fcntl.LOCK_EX)</code> without <code>LOCK_NB</code>.</strong> The second run waits instead of refusing,
+so every minute adds another waiting rebuild and the queue never drains.</li>
+<li><strong>Writing the temporary file in <code>/tmp</code>.</strong> <code>os.replace()</code> across file systems raises
+<code>OSError: [Errno 18] Invalid cross-device link</code>; the temporary file belongs in the target's
+directory.</li>
+<li><strong>Forgetting <code>os.chmod</code> after <code>mkstemp</code>.</strong> The new file is <code>0600</code>, so the shop's reader loses access
+the first time the rebuild runs.</li>
+<li><strong>Leaving the lock to systemd.</strong> It knows about its own unit; a run started by hand or by another
+tool is invisible to it.</li>
+<li><strong>Locking the output file itself.</strong> The rename replaces the inode, so the lock the next process
+takes is on a different file. Lock a path that nobody replaces.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-python"><span class="hl-kn">import</span><span class="hl-w"> </span><span class="hl-nn">fcntl</span><span class="hl-o">,</span><span class="hl-w"> </span><span class="hl-nn">os</span><span class="hl-o">,</span><span class="hl-w"> </span><span class="hl-nn">tempfile</span><span class="hl-o">,</span><span class="hl-w"> </span><span class="hl-nn">json</span>
+
+<span class="hl-n">fd</span> <span class="hl-o">=</span> <span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">open</span><span class="hl-p">(</span><span class="hl-n">LOCK</span><span class="hl-p">,</span> <span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">O_CREAT</span> <span class="hl-o">|</span> <span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">O_RDWR</span><span class="hl-p">,</span> <span class="hl-mo">0o644</span><span class="hl-p">)</span>   <span class="hl-c1"># keep fd open for the whole run</span>
+<span class="hl-k">try</span><span class="hl-p">:</span>
+    <span class="hl-n">fcntl</span><span class="hl-o">.</span><span class="hl-n">flock</span><span class="hl-p">(</span><span class="hl-n">fd</span><span class="hl-p">,</span> <span class="hl-n">fcntl</span><span class="hl-o">.</span><span class="hl-n">LOCK_EX</span> <span class="hl-o">|</span> <span class="hl-n">fcntl</span><span class="hl-o">.</span><span class="hl-n">LOCK_NB</span><span class="hl-p">)</span>
+<span class="hl-k">except</span> <span class="hl-ne">OSError</span><span class="hl-p">:</span>
+    <span class="hl-n">sys</span><span class="hl-o">.</span><span class="hl-n">exit</span><span class="hl-p">(</span><span class="hl-s2">"another run holds the lock"</span><span class="hl-p">)</span>
+
+<span class="hl-n">tmp_fd</span><span class="hl-p">,</span> <span class="hl-n">tmp</span> <span class="hl-o">=</span> <span class="hl-n">tempfile</span><span class="hl-o">.</span><span class="hl-n">mkstemp</span><span class="hl-p">(</span><span class="hl-nb">dir</span><span class="hl-o">=</span><span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">path</span><span class="hl-o">.</span><span class="hl-n">dirname</span><span class="hl-p">(</span><span class="hl-n">OUT</span><span class="hl-p">),</span> <span class="hl-n">prefix</span><span class="hl-o">=</span><span class="hl-s2">".prices-"</span><span class="hl-p">)</span>
+<span class="hl-k">with</span> <span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">fdopen</span><span class="hl-p">(</span><span class="hl-n">tmp_fd</span><span class="hl-p">,</span> <span class="hl-s2">"w"</span><span class="hl-p">,</span> <span class="hl-n">encoding</span><span class="hl-o">=</span><span class="hl-s2">"utf-8"</span><span class="hl-p">)</span> <span class="hl-k">as</span> <span class="hl-n">f</span><span class="hl-p">:</span>
+    <span class="hl-n">json</span><span class="hl-o">.</span><span class="hl-n">dump</span><span class="hl-p">(</span><span class="hl-n">prices</span><span class="hl-p">,</span> <span class="hl-n">f</span><span class="hl-p">);</span> <span class="hl-n">f</span><span class="hl-o">.</span><span class="hl-n">flush</span><span class="hl-p">();</span> <span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">fsync</span><span class="hl-p">(</span><span class="hl-n">f</span><span class="hl-o">.</span><span class="hl-n">fileno</span><span class="hl-p">())</span>
+<span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">chmod</span><span class="hl-p">(</span><span class="hl-n">tmp</span><span class="hl-p">,</span> <span class="hl-mo">0o644</span><span class="hl-p">)</span>
+<span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">replace</span><span class="hl-p">(</span><span class="hl-n">tmp</span><span class="hl-p">,</span> <span class="hl-n">OUT</span><span class="hl-p">)</span>        <span class="hl-c1"># atomic within one file system</span>
+</code></pre>
+
+<pre class="hl"><code class="language-console"><span class="hl-go">flock -n /run/job.lock -c 'command'      # the same lock, from a shell</span>
+<span class="hl-go">systemctl list-timers --no-pager         # what is due, and when it last ran</span>
+<span class="hl-go">systemctl show unit -p Result -p ExecMainStatus</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<ul>
+<li><code>man 2 flock</code>, <code>man 1 flock</code>, and <code>fcntl.flock</code> in the Python documentation.</li>
+<li><code>man 2 rename</code> and <code>os.replace</code>.</li>
+<li><code>man 5 systemd.timer</code> — <code>OnUnitActiveSec=</code> against <code>OnCalendar=</code> — and <code>man 5 systemd.unit</code> for
+what happens when a unit is already active.</li>
+<li>The <code>filelock</code> package, when a project wants the same thing with a context manager and Windows
+support.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Why is &quot;create the lock file if it does not exist, delete it at the end&quot; not a lock?</p>
+<blockquote>
+<p>The test and the creation are two steps, so two processes can both pass; and a run that dies
+leaves the file, which blocks every later run.</p>
+</blockquote>
+</li>
+<li>
+<p>What releases a <code>flock</code> lock?</p>
+<blockquote>
+<p>Closing the last descriptor of that open file description, or the process ending — the kernel
+does it, so a crash leaves nothing behind.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>LOCK_NB</code> change?</p>
+<blockquote>
+<p>The call fails with <code>BlockingIOError</code> (<code>EWOULDBLOCK</code>) instead of waiting, which is what lets the
+second run refuse immediately rather than queue up.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a reader see while <code>open(path, &quot;w&quot;)</code> is being filled, and what does it see with
+<code>os.replace()</code>?</p>
+<blockquote>
+<p>With the direct write: a truncated file, then partial content. With the replace: the old file or
+the new one, never anything in between.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must the temporary file be in the same directory as the target?</p>
+<blockquote>
+<p><code>os.replace()</code> is a rename, which only works within one file system; across file systems it
+raises <code>EXDEV</code>, and any copy-based fallback brings back the half-written window.</p>
+</blockquote>
+</li>
+<li>
+<p>A timer fires while its own service is still running. Does that start a second copy — and why is
+the lock still needed?</p>
+<blockquote>
+<p>No: systemd sees the unit as active. The lock is for the runs systemd does not know about — by
+hand, from Ansible, from another unit.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

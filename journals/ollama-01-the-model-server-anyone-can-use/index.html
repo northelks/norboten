@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A model server has no passwords, so the network and the proxy are its only locks · Norboten</title>
+<meta name="description" content="Ollama is a program that loads language models and serves them over HTTP on port 11434. Its API is small and powerful: list models, generate text, chat, embed, ">
+<link rel="canonical" href="https://norboten.org/journals/ollama-01-the-model-server-anyone-can-use/"><meta property="og:title" content="A model server has no passwords, so the network and the proxy are its only locks · Norboten">
+<meta property="og:description" content="Ollama is a program that loads language models and serves them over HTTP on port 11434. Its API is small and powerful: list models, generate text, chat, embed, ">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/ollama-01-the-model-server-anyone-can-use/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A model server has no passwords, so the network and the proxy are its only locks · Norboten">
+<meta name="twitter:description" content="Ollama is a program that loads language models and serves them over HTTP on port 11434. Its API is small and powerful: list models, generate text, chat, embed, ">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A model server has no passwords, so the network and the proxy are its only locks",
+  "description": "Ollama is a program that loads language models and serves them over HTTP on port 11434. Its API is small and powerful: list models, generate text, chat, embed, ",
+  "url": "https://norboten.org/journals/ollama-01-the-model-server-anyone-can-use/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1493,
+  "timeRequired": "PT30M",
+  "about": ["Ollama", "Networking", "Users and permissions"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Model Server Anyone Can Use</div>
+    <h1>A model server has no passwords, so the network and the proxy are its only locks</h1>
+    <p class="muted">
+      30 minutes' reading · 1493 words ·<span class="tag">Ollama</span><span class="tag">Networking</span><span class="tag">Users and permissions</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 65 words</title><rect x="0.0" y="0" width="27.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 548 words</title><rect x="30.6" y="0" width="232.5" height="30" rx="4" fill="#1d2a23"/><text x="38.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 391 words</title><rect x="266.1" y="0" width="165.9" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 185 words</title><rect x="434.9" y="0" width="78.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 135 words</title><rect x="516.4" y="0" width="57.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 101 words</title><rect x="576.7" y="0" width="42.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 324 words</title><rect x="622.5" y="0" width="137.5" height="30" rx="4" fill="#1d2a23"/><text x="630.5" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/ollama-01-the-model-server-anyone-can-use/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Ollama is a program that loads language models and serves them over HTTP on port 11434. Its API is
+small and powerful: list models, generate text, chat, embed, and also pull new models from the
+internet and delete existing ones. It has no accounts and no passwords. Whoever can open a TCP
+connection to the port can do all of it.</p>
+<p>That is a reasonable design for a program meant to run on one machine for one person, and it means
+exposing it is entirely your job. This lab's server was exposed in the most common way: a web page
+could not reach it, so someone made it listen on every address and accept requests from every web
+origin. Undoing that correctly needs three separate controls — the bind address, the proxy's
+authentication, and the origin check — and the third one breaks the web page again if the first two
+are all you fix.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Find where a service's environment comes from when a drop-in overrides the unit.</li>
+<li>Bind Ollama to loopback and verify it from another address.</li>
+<li>Put HTTP basic authentication in front of it in nginx, with a hashed password file the workers can
+read.</li>
+<li>Explain what <code>OLLAMA_ORIGINS</code> controls, why <code>*</code> is wrong, and why a proxied browser request is still
+subject to it.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="configuration-through-the-environment">Configuration through the environment</h3>
+<p>Ollama is configured almost entirely by environment variables read by <code>ollama serve</code>:</p>
+<table>
+<thead>
+<tr>
+<th>variable</th>
+<th>default</th>
+<th>controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OLLAMA_HOST</code></td>
+<td><code>127.0.0.1:11434</code></td>
+<td>the address and port the server listens on (and the client connects to)</td>
+</tr>
+<tr>
+<td><code>OLLAMA_ORIGINS</code></td>
+<td>local origins only</td>
+<td>extra web origins allowed to call the API from a browser</td>
+</tr>
+<tr>
+<td><code>OLLAMA_MODELS</code></td>
+<td><code>~/.ollama/models</code> of the serving user</td>
+<td>where model blobs and manifests are stored</td>
+</tr>
+<tr>
+<td><code>OLLAMA_KEEP_ALIVE</code></td>
+<td><code>5m</code></td>
+<td>how long a model stays in memory after a request</td>
+</tr>
+<tr>
+<td><code>OLLAMA_CONTEXT_LENGTH</code></td>
+<td>4096</td>
+<td>the default context window</td>
+</tr>
+<tr>
+<td><code>OLLAMA_NUM_PARALLEL</code></td>
+<td>1</td>
+<td>requests one loaded model serves at the same time</td>
+</tr>
+</tbody>
+</table>
+<p>Under systemd these arrive as <code>Environment=</code> lines. The unit file is one place; <strong>drop-ins</strong> in
+<code>/etc/systemd/system/ollama.service.d/*.conf</code> are another, applied after it — a later assignment to
+the same variable wins. <code>systemctl edit ollama</code> writes exactly such a drop-in, which is why a setting
+can disappear from the unit and still be in effect. <code>systemctl cat ollama</code> shows the unit and every
+drop-in with its path; <code>systemctl show -p Environment ollama</code> shows the result.</p>
+<h3 id="the-bind-address-is-the-first-lock">The bind address is the first lock</h3>
+<p><code>OLLAMA_HOST=0.0.0.0:11434</code> makes the server accept connections on every interface. From that moment
+anything that can route to the machine — the office network, a VPN, a misconfigured port forward — can
+generate text with your CPU, fetch models into your disk, or delete the ones you have. <code>ss -ltnp</code> shows
+the truth: <code>127.0.0.1:11434</code> is local, <code>*:11434</code> or <code>0.0.0.0:11434</code> is not.</p>
+<p>Bound to loopback, the only way in is through something on the machine — the proxy — which is where
+authentication, rate limits, TLS and access logs can live.</p>
+<h3 id="basic-authentication-in-nginx">Basic authentication in nginx</h3>
+<pre class="hl"><code class="language-nginx"><span class="hl-k">server</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">    </span><span class="hl-kn">listen</span><span class="hl-w"> </span><span class="hl-mi">8080</span><span class="hl-p">;</span>
+<span class="hl-w">    </span><span class="hl-kn">auth_basic</span><span class="hl-w"> </span><span class="hl-s">"models"</span><span class="hl-p">;</span>
+<span class="hl-w">    </span><span class="hl-kn">auth_basic_user_file</span><span class="hl-w"> </span><span class="hl-s">/etc/nginx/models.htpasswd</span><span class="hl-p">;</span>
+<span class="hl-w">    </span><span class="hl-kn">location</span><span class="hl-w"> </span><span class="hl-s">/</span><span class="hl-w"> </span><span class="hl-p">{</span><span class="hl-w"> </span><span class="hl-kn">proxy_pass</span><span class="hl-w"> </span><span class="hl-s">http://127.0.0.1:11434</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-kn">…</span><span class="hl-w"> </span><span class="hl-err">}</span>
+<span class="hl-err">}</span>
+</code></pre>
+
+<p>The password file holds <code>user:hash</code> lines. nginx accepts several hash formats; <code>openssl passwd -apr1</code>
+produces the Apache MD5 variant without installing <code>apache2-utils</code>. The file is read by nginx's worker
+processes, which run as <code>www-data</code>, so it must be readable by that group and by nobody else:
+<code>root:www-data 0640</code>. Without credentials nginx answers <strong>401</strong> with a <code>WWW-Authenticate</code> header; with
+wrong ones, 401 again. Basic authentication sends the password on every request, base64-encoded, not
+encrypted — on anything but a trusted network it belongs behind TLS.</p>
+<h3 id="origins-what-a-browser-is-allowed-to-do">Origins: what a browser is allowed to do</h3>
+<p>A web page's JavaScript can send requests to other sites, and browsers add an <code>Origin</code> header saying
+which site the page came from. Servers decide whether to accept them. Ollama accepts requests with no
+<code>Origin</code> (curl, scripts) and from its own local origins, and refuses others with <strong>403</strong> unless they are
+listed in <code>OLLAMA_ORIGINS</code>. <code>OLLAMA_ORIGINS=*</code> accepts every site — so any page a colleague opens could
+use the server from inside their browser, which sits inside the network.</p>
+<p>A proxy does not change this. nginx forwards the browser's <code>Origin</code> header, so a request from
+<code>https://chat.internal.example</code> through an authenticated nginx still reaches Ollama with that origin — and
+is refused unless that exact origin is allowed. That is why the chat page &quot;could not reach it&quot; in the first
+place, and why fixing the bind address alone brings the original complaint back.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the lab VM (Ollama 0.34.0, nginx 1.26). From the machine's own network address, the server
+answers anything:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ss<span class="hl-w"> </span>-ltnp<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'11434|:8080'</span>
+<span class="hl-go">LISTEN 0 511   0.0.0.0:8080  0.0.0.0:* users:(("nginx",pid=1001,fd=5),…)</span>
+<span class="hl-go">LISTEN 0 4096        *:11434       *:* users:(("ollama",pid=987,fd=3))</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>http://192.168.5.15:11434/api/tags<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'[.models[].name]'</span>
+<span class="hl-go">["all-minilm:latest","qwen2.5:0.5b"]</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>http://192.168.5.15:11434/api/generate<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"qwen2.5:0.5b","prompt":"Say hi","stream":false,"options":{"num_predict":5}}'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{response}'</span>
+<span class="hl-go">{"response":"Hello! How can I"}</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-D<span class="hl-w"> </span>-<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-H<span class="hl-w"> </span><span class="hl-s1">'Origin: https://evil.example'</span><span class="hl-w"> </span>http://127.0.0.1:11434/api/tags<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-iE<span class="hl-w"> </span><span class="hl-s1">'^HTTP|access-control'</span>
+<span class="hl-go">HTTP/1.1 200 OK</span>
+<span class="hl-go">Access-Control-Allow-Origin: *</span>
+</code></pre>
+
+<p>The unit itself looks fine; the drop-in does not:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>ollama<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-5
+<span class="hl-gp"># </span>/etc/systemd/system/ollama.service.d/override.conf
+<span class="hl-go">[Service]</span>
+<span class="hl-gp"># </span>the<span class="hl-w"> </span>chat<span class="hl-w"> </span>page<span class="hl-w"> </span>could<span class="hl-w"> </span>not<span class="hl-w"> </span>reach<span class="hl-w"> </span>it,<span class="hl-w"> </span>so:<span class="hl-w"> </span>every<span class="hl-w"> </span>address,<span class="hl-w"> </span>every<span class="hl-w"> </span>origin
+<span class="hl-go">Environment="OLLAMA_HOST=0.0.0.0:11434"</span>
+<span class="hl-go">Environment="OLLAMA_ORIGINS=*"</span>
+</code></pre>
+
+<p>Remove both lines' damage — loopback, no wildcard origin — and add a password to nginx:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'s/0.0.0.0:11434/127.0.0.1:11434/; /OLLAMA_ORIGINS/d'</span><span class="hl-w"> </span>/etc/systemd/system/ollama.service.d/override.conf
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>ollama
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ss<span class="hl-w"> </span>-ltnp<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span><span class="hl-m">11434</span>
+<span class="hl-go">LISTEN 0 4096 127.0.0.1:11434 0.0.0.0:* users:(("ollama",pid=1110,fd=3))</span>
+<span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'team:%s\n'</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-k">$(</span>sudo<span class="hl-w"> </span>openssl<span class="hl-w"> </span>passwd<span class="hl-w"> </span>-apr1<span class="hl-w"> </span>-stdin<span class="hl-w"> </span>&lt;<span class="hl-w"> </span>&lt;<span class="hl-o">(</span>sudo<span class="hl-w"> </span>cat<span class="hl-w"> </span>/root/team-password<span class="hl-k">)</span><span class="hl-s2">)"</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>/etc/nginx/models.htpasswd<span class="hl-w"> </span>&gt;/dev/null
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chown<span class="hl-w"> </span>root:www-data<span class="hl-w"> </span>/etc/nginx/models.htpasswd<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">640</span><span class="hl-w"> </span>/etc/nginx/models.htpasswd
+<span class="hl-gp">$ </span><span class="hl-c1"># auth_basic and auth_basic_user_file added to models.conf</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>nginx<span class="hl-w"> </span>-t<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>reload<span class="hl-w"> </span>nginx
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span>http://127.0.0.1:8080/api/tags
+<span class="hl-go">401</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-u<span class="hl-w"> </span><span class="hl-s2">"team:</span><span class="hl-nv">$P</span><span class="hl-s2">"</span><span class="hl-w"> </span>http://127.0.0.1:8080/api/tags<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'[.models[].name]'</span>
+<span class="hl-go">["all-minilm:latest","qwen2.5:0.5b"]</span>
+</code></pre>
+
+<p>Secure — and the chat page is broken again:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span>-u<span class="hl-w"> </span><span class="hl-s2">"team:</span><span class="hl-nv">$P</span><span class="hl-s2">"</span><span class="hl-w"> </span>-H<span class="hl-w"> </span><span class="hl-s1">'Origin: https://chat.internal.example'</span><span class="hl-w"> </span>http://127.0.0.1:8080/api/tags
+<span class="hl-go">403</span>
+</code></pre>
+
+<p>nginx let the page in; Ollama refused its origin. Allow that one origin, not all of them:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'Environment="OLLAMA_ORIGINS=https://chat.internal.example"\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>-a<span class="hl-w"> </span>/etc/systemd/system/ollama.service.d/override.conf
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>ollama
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-D<span class="hl-w"> </span>-<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-u<span class="hl-w"> </span><span class="hl-s2">"team:</span><span class="hl-nv">$P</span><span class="hl-s2">"</span><span class="hl-w"> </span>-H<span class="hl-w"> </span><span class="hl-s1">'Origin: https://chat.internal.example'</span><span class="hl-w"> </span>http://127.0.0.1:8080/api/tags<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-iE<span class="hl-w"> </span><span class="hl-s1">'^HTTP|access-control'</span>
+<span class="hl-go">HTTP/1.1 200 OK</span>
+<span class="hl-go">Access-Control-Allow-Origin: https://chat.internal.example</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'evil direct %{http_code}\n'</span><span class="hl-w"> </span>-H<span class="hl-w"> </span><span class="hl-s1">'Origin: https://evil.example'</span><span class="hl-w"> </span>http://127.0.0.1:11434/api/tags
+<span class="hl-go">evil direct 403</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'from the network %{http_code}\n'</span><span class="hl-w"> </span>http://192.168.5.15:11434/api/tags
+<span class="hl-go">from the network 000</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'proxy from the network %{http_code}\n'</span><span class="hl-w"> </span>http://192.168.5.15:8080/api/tags
+<span class="hl-go">proxy from the network 401</span>
+</code></pre>
+
+<p><code>000</code> is curl reporting that no connection was made. The grader then passes all three checks, and again
+after the reboot.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Firewalling port 11434 and leaving <code>0.0.0.0</code>.</strong> It works until a rule is reordered, a second interface
+appears or a container network bridges past it. Bind loopback; firewall as well if you like.</p>
+<p><strong>Editing <code>ollama.service</code> and not the drop-in.</strong> The drop-in is applied afterwards and wins. Read
+<code>systemctl cat</code>, not the unit file.</p>
+<p><strong>Forgetting <code>daemon-reload</code>.</strong> systemd keeps the old definition until told to reread it; <code>restart</code> alone
+restarts the old configuration.</p>
+<p><strong><code>OLLAMA_ORIGINS=*</code> to fix the 403.</strong> It fixes the chat page by letting every page in.</p>
+<p><strong>A password file owned <code>root:root 0600</code>.</strong> nginx's master reads the configuration as root, but the
+workers check passwords as <code>www-data</code>; every login fails with 500 and a permission error in the log.</p>
+<p><strong>Plain-text passwords in the file.</strong> nginx does support them with a <code>{PLAIN}</code> prefix, and then anyone who
+can read the file has them. Hash them.</p>
+<p><strong>Testing the reload with an immediate request.</strong> A reload replaces workers gracefully; the first request
+may still see the old configuration.</p>
+<p><strong>Treating basic authentication as encryption.</strong> It is base64. Put TLS in front of it on anything but
+loopback or a trusted segment.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># where the settings come from</span>
+systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>ollama
+systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>-p<span class="hl-w"> </span>Environment<span class="hl-w"> </span>ollama
+sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>edit<span class="hl-w"> </span>ollama<span class="hl-w">             </span><span class="hl-c1"># creates …/ollama.service.d/override.conf</span>
+
+<span class="hl-c1"># is it exposed?</span>
+sudo<span class="hl-w"> </span>ss<span class="hl-w"> </span>-ltnp<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span><span class="hl-m">11434</span><span class="hl-w">             </span><span class="hl-c1"># 127.0.0.1:11434 good; *:11434 / 0.0.0.0 exposed</span>
+curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">3</span><span class="hl-w"> </span>http://<span class="hl-k">$(</span>hostname<span class="hl-w"> </span>-I<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>cut<span class="hl-w"> </span>-d<span class="hl-s1">' '</span><span class="hl-w"> </span>-f1<span class="hl-k">)</span>:11434/api/tags
+
+<span class="hl-c1"># loopback + one allowed browser origin</span>
+<span class="hl-o">[</span>Service<span class="hl-o">]</span>
+<span class="hl-nv">Environment</span><span class="hl-o">=</span><span class="hl-s2">"OLLAMA_HOST=127.0.0.1:11434"</span>
+<span class="hl-nv">Environment</span><span class="hl-o">=</span><span class="hl-s2">"OLLAMA_ORIGINS=https://chat.internal.example"</span>
+sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>ollama
+
+<span class="hl-c1"># basic auth in nginx</span>
+<span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'team:%s\n'</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-k">$(</span>openssl<span class="hl-w"> </span>passwd<span class="hl-w"> </span>-apr1<span class="hl-w"> </span><span class="hl-s1">'secret'</span><span class="hl-k">)</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>/etc/nginx/models.htpasswd
+sudo<span class="hl-w"> </span>chown<span class="hl-w"> </span>root:www-data<span class="hl-w"> </span>/etc/nginx/models.htpasswd<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">640</span><span class="hl-w"> </span>/etc/nginx/models.htpasswd
+<span class="hl-c1">#   auth_basic "models";  auth_basic_user_file /etc/nginx/models.htpasswd;</span>
+sudo<span class="hl-w"> </span>nginx<span class="hl-w"> </span>-t<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>reload<span class="hl-w"> </span>nginx
+
+<span class="hl-c1"># test like a browser</span>
+curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span>-H<span class="hl-w"> </span><span class="hl-s1">'Origin: https://evil.example'</span><span class="hl-w"> </span>http://127.0.0.1:11434/api/tags<span class="hl-w">   </span><span class="hl-c1"># 403</span>
+curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-D<span class="hl-w"> </span>-<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-u<span class="hl-w"> </span>team:secret<span class="hl-w"> </span>-H<span class="hl-w"> </span><span class="hl-s1">'Origin: https://chat.internal.example'</span><span class="hl-w"> </span>http://127.0.0.1:8080/api/tags
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>Resolves here, listens there, routes until Tuesday</em> (topic journal <code>networking</code>) — Listening on loopback, or on everything</li>
+<li><em>Ollama on a server</em> (topic journal <code>ollama</code>) — The service</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.ollama.com/faq</li>
+<li>https://nginx.org/en/docs/http/ngx_http_auth_basic_module.html</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>Ollama on a server</em> (<code>ollama</code>), <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>What can someone who reaches an exposed Ollama port do, and what does Ollama check first?</p>
+<blockquote>
+<p>List, run, pull and delete models, using your CPU, memory and disk. Ollama checks no credentials; it
+only checks the Origin header of browser requests.</p>
+</blockquote>
+</li>
+<li>
+<p><code>ollama.service</code> sets <code>OLLAMA_HOST=127.0.0.1:11434</code> but the server listens on <code>*:11434</code>. How do you find
+out why?</p>
+<blockquote>
+<p><code>systemctl cat ollama</code> shows the unit and every drop-in; a drop-in applied after the unit sets a
+different value. <code>systemctl show -p Environment ollama</code> shows the effective environment.</p>
+</blockquote>
+</li>
+<li>
+<p>After fixing a drop-in, <code>systemctl restart ollama</code> still binds the old address. What was skipped?</p>
+<blockquote>
+<p><code>systemctl daemon-reload</code>. Until then systemd uses the unit definition it loaded earlier.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does nginx return 500 for every login when the password file is <code>root:root 0600</code>?</p>
+<blockquote>
+<p>Passwords are checked by the worker processes, which run as <code>www-data</code> and cannot read the file.
+<code>root:www-data 0640</code> lets them read it and nobody else.</p>
+</blockquote>
+</li>
+<li>
+<p>Through an authenticated proxy, a request from <code>https://chat.internal.example</code> gets 403. Which program
+refuses it, and why does curl without headers get 200?</p>
+<blockquote>
+<p>Ollama. nginx forwards the browser's <code>Origin</code> header, and Ollama refuses origins not in its defaults or
+<code>OLLAMA_ORIGINS</code>. curl sends no <code>Origin</code>, which Ollama accepts.</p>
+</blockquote>
+</li>
+<li>
+<p>What is wrong with <code>OLLAMA_ORIGINS=*</code>, even on a machine behind a firewall?</p>
+<blockquote>
+<p>Any web page a user on the network opens can call the server from their browser, which is inside the
+firewall. The origin check is what stops that; <code>*</code> turns it off.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a <code>000</code> status from <code>curl -w '%{http_code}'</code> mean?</p>
+<blockquote>
+<p>No HTTP response at all: the connection was refused, timed out or could not be made — here, because
+nothing listens on that address.</p>
+</blockquote>
+</li>
+<li>
+<p>Why should basic authentication be combined with TLS off the local machine?</p>
+<blockquote>
+<p>The credentials travel base64-encoded in every request, readable by anyone who can see the traffic.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

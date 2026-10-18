@@ -1,0 +1,1725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ratings · Norboten</title>
+<meta name="description" content="Per-topic Glicko-2 ratings, earned on timed attempts.">
+<link rel="canonical" href="https://norboten.org/players/"><meta property="og:title" content="Ratings · Norboten">
+<meta property="og:description" content="Per-topic Glicko-2 ratings, earned on timed attempts.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/players/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ratings · Norboten">
+<meta name="twitter:description" content="Per-topic Glicko-2 ratings, earned on timed attempts.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../features/" >Features</a>
+      <a href="../labs/" >Labs</a>
+      <a href="../how-it-works/" >How it works</a>
+      <a href="../journals/" >Journals</a>
+      <a href="../docs/" >Docs</a>
+      <a class="group" href="../players/" aria-current="page">Ratings</a>
+      <a class="live" href="../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Ratings</div>
+    <h1>Everyone is rated on the same nineteen topics</h1>
+    <p class="lede prose">
+      A rated attempt is scored like a match against the lab: pass inside the limit and you beat
+      it; fail, or run over, and it beats you. Ratings are Glicko-2, so every number carries its own uncertainty — a
+      profile says <span class="mono">1500&nbsp;±&nbsp;350</span> until it has earned the right to
+      be more precise.
+    </p>
+    <p class="prose muted">
+      <strong>A rating comes from rated labs and rated theory.</strong> Those are graded by the
+      server against your account. An unrated attempt is still recorded — it shows on your profile
+      with its score and its time. No rated lab has been published yet, so today the board is empty
+      of real players; the sample accounts are marked.
+      <a href="../docs/rated-labs/">Why the catalogue is split</a>.
+    </p>
+    <p class="note">
+      <strong>Sample data.</strong> Nobody here is real. These 100 accounts are
+      generated by <span class="mono">seed/generate.py</span> and replayed through the same rating
+      code the live service runs, so the pages can be judged before anyone has signed up.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="board-lead">
+      <div>
+        <h2 style="margin-top:0">The board</h2>
+        <p class="muted">Every learner, their overall rating and what they are best at.</p>
+      </div>
+      <a class="btn analytics-link" href="../analytics/">
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M2 13h12M4 11V6m4 5V3m4 8V8"
+          fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        What the attempts say
+      </a>
+    </div>
+    <form class="boardfilter" id="boardfilter" role="search" aria-label="Filter the board">
+      <label class="field">
+        <span>Nick</span>
+        <input type="search" id="filter-nick" placeholder="search" autocomplete="off" spellcheck="false">
+      </label>
+      <label class="field">
+        <span>Topic</span>
+        <select id="filter-topic">
+          <option value="">any</option>
+<option value="AI Agents">AI Agents</option><option value="AI Services">AI Services</option><option value="Ansible">Ansible</option><option value="Bash">Bash</option><option value="Boot and systemd">Boot and systemd</option><option value="Claude Code">Claude Code</option><option value="Containers">Containers</option><option value="Firewall and SELinux">Firewall and SELinux</option><option value="Kernel and performance">Kernel and performance</option><option value="Linux basics">Linux basics</option><option value="Logging and journald">Logging and journald</option><option value="Model Context Protocol">Model Context Protocol</option><option value="Networking">Networking</option><option value="Ollama">Ollama</option><option value="Python">Python</option><option value="Storage and LVM">Storage and LVM</option><option value="Terraform">Terraform</option><option value="Users and permissions">Users and permissions</option>        </select>
+      </label>
+      <label class="field range">
+        <span>Rating at least <b id="filter-min-out">1200</b></span>
+        <input type="range" id="filter-min" min="1200" max="1810" step="10" value="1200">
+      </label>
+      <label class="field range">
+        <span>and at most <b id="filter-max-out">1810</b></span>
+        <input type="range" id="filter-max" min="1200" max="1810" step="10" value="1810">
+      </label>
+      <p class="muted mono small" id="filter-count" role="status">100 of 100</p>
+    </form>
+    <table class="board" id="boardtable">
+      <tr>
+        <th>#</th><th></th><th>Learner</th><th>Rating</th><th>Best topics</th>
+        <th class="num">Passed</th><th class="num">Attempts</th>
+      </tr>
+      <tr data-nick="clara-curl" data-rating="1804"
+          data-topics="Networking|Terraform|Logging and journald">
+        <td class="muted num rank">1</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(99 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(99 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(99 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(99 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(99 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(99 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(99 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(99 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(99 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(99 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(99 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(99 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/clara-curl/">clara-curl</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1804<span class="muted"> ± 35</span>
+        </td>
+        <td class="muted">Networking, Terraform, Logging and journald</td>
+        <td class="num">86</td>
+        <td class="num muted">94</td>
+      </tr>
+      <tr data-nick="bex-nice" data-rating="1798"
+          data-topics="Networking|Terraform|Python">
+        <td class="muted num rank">2</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(215 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(215 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(215 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(215 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(215 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(215 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(215 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(215 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(215 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(215 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(215 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/bex-nice/">bex-nice</a>
+          <span title="FR">🇫🇷</span>
+        </td>
+        <td class="mono">
+          1798<span class="muted"> ± 34</span>
+        </td>
+        <td class="muted">Networking, Terraform, Python</td>
+        <td class="num">90</td>
+        <td class="num muted">97</td>
+      </tr>
+      <tr data-nick="cassyank" data-rating="1803"
+          data-topics="Python|Users and permissions|Boot and systemd">
+        <td class="muted num rank">3</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(50 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/cassyank/">cassyank</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1803<span class="muted"> ± 42</span>
+        </td>
+        <td class="muted">Python, Users and permissions, Boot and systemd</td>
+        <td class="num">54</td>
+        <td class="num muted">59</td>
+      </tr>
+      <tr data-nick="ivowget" data-rating="1800"
+          data-topics="Linux basics|Python|Networking">
+        <td class="muted num rank">4</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(125 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(125 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(125 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(125 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(125 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(125 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(125 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(125 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(125 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(125 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(125 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(125 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/ivowget/">ivowget</a>
+          <span title="DE">🇩🇪</span>
+        </td>
+        <td class="mono">
+          1800<span class="muted"> ± 42</span>
+        </td>
+        <td class="muted">Linux basics, Python, Networking</td>
+        <td class="num">47</td>
+        <td class="num muted">51</td>
+      </tr>
+      <tr data-nick="nadialvm" data-rating="1775"
+          data-topics="Bash|Python|Users and permissions">
+        <td class="muted num rank">5</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(278 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(278 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(278 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(278 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(278 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(278 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(278 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(278 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(278 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/nadialvm/">nadialvm</a>
+          <span title="NL">🇳🇱</span>
+        </td>
+        <td class="mono">
+          1775<span class="muted"> ± 36</span>
+        </td>
+        <td class="muted">Bash, Python, Users and permissions</td>
+        <td class="num">71</td>
+        <td class="num muted">79</td>
+      </tr>
+      <tr data-nick="hash3" data-rating="1747"
+          data-topics="Python|Users and permissions|Claude Code">
+        <td class="muted num rank">6</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(315 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/hash3/">hash3</a>
+          <span title="AU">🇦🇺</span>
+        </td>
+        <td class="mono">
+          1747<span class="muted"> ± 34</span>
+        </td>
+        <td class="muted">Python, Users and permissions, Claude Code</td>
+        <td class="num">78</td>
+        <td class="num muted">93</td>
+      </tr>
+      <tr data-nick="clara-root" data-rating="1753"
+          data-topics="Python|Storage and LVM|AI Agents">
+        <td class="muted num rank">7</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/clara-root/">clara-root</a>
+          <span title="NO">🇳🇴</span>
+        </td>
+        <td class="mono">
+          1753<span class="muted"> ± 36</span>
+        </td>
+        <td class="muted">Python, Storage and LVM, AI Agents</td>
+        <td class="num">67</td>
+        <td class="num muted">76</td>
+      </tr>
+      <tr data-nick="wren-bit" data-rating="1745"
+          data-topics="Logging and journald|Bash|Users and permissions">
+        <td class="muted num rank">8</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/wren-bit/">wren-bit</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1745<span class="muted"> ± 34</span>
+        </td>
+        <td class="muted">Logging and journald, Bash, Users and permissions</td>
+        <td class="num">96</td>
+        <td class="num muted">120</td>
+      </tr>
+      <tr data-nick="jonasmount" data-rating="1788"
+          data-topics="Users and permissions|Claude Code|Linux basics">
+        <td class="muted num rank">9</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(30 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/jonasmount/">jonasmount</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1788<span class="muted"> ± 58</span>
+        </td>
+        <td class="muted">Users and permissions, Claude Code, Linux basics</td>
+        <td class="num">28</td>
+        <td class="num muted">28</td>
+      </tr>
+      <tr data-nick="nils-tty" data-rating="1784"
+          data-topics="Python|Boot and systemd|Networking">
+        <td class="muted num rank">10</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/nils-tty/">nils-tty</a>
+          <span title="DE">🇩🇪</span>
+        </td>
+        <td class="mono">
+          1784<span class="muted"> ± 59</span>
+        </td>
+        <td class="muted">Python, Boot and systemd, Networking</td>
+        <td class="num">17</td>
+        <td class="num muted">19</td>
+      </tr>
+      <tr data-nick="lena-runs" data-rating="1726"
+          data-topics="Claude Code|Bash|Terraform">
+        <td class="muted num rank">11</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(37 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(37 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(37 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(37 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(37 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(37 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(37 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(37 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(37 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(37 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(37 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(37 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/lena-runs/">lena-runs</a>
+          <span title="FR">🇫🇷</span>
+        </td>
+        <td class="mono">
+          1726<span class="muted"> ± 40</span>
+        </td>
+        <td class="muted">Claude Code, Bash, Terraform</td>
+        <td class="num">45</td>
+        <td class="num muted">52</td>
+      </tr>
+      <tr data-nick="lena-kernel" data-rating="1703"
+          data-topics="Ollama|Boot and systemd|Storage and LVM">
+        <td class="muted num rank">12</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/lena-kernel/">lena-kernel</a>
+          <span title="IE">🇮🇪</span>
+        </td>
+        <td class="mono">
+          1703<span class="muted"> ± 30</span>
+        </td>
+        <td class="muted">Ollama, Boot and systemd, Storage and LVM</td>
+        <td class="num">87</td>
+        <td class="num muted">102</td>
+      </tr>
+      <tr data-nick="elin-ops" data-rating="1714"
+          data-topics="Networking|Linux basics|Boot and systemd">
+        <td class="muted num rank">13</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/elin-ops/">elin-ops</a>
+          <span title="DE">🇩🇪</span>
+        </td>
+        <td class="mono">
+          1714<span class="muted"> ± 45</span>
+        </td>
+        <td class="muted">Networking, Linux basics, Boot and systemd</td>
+        <td class="num">38</td>
+        <td class="num muted">43</td>
+      </tr>
+      <tr data-nick="curl97" data-rating="1681"
+          data-topics="Ollama|Model Context Protocol|Claude Code">
+        <td class="muted num rank">14</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/curl97/">curl97</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1681<span class="muted"> ± 30</span>
+        </td>
+        <td class="muted">Ollama, Model Context Protocol, Claude Code</td>
+        <td class="num">87</td>
+        <td class="num muted">104</td>
+      </tr>
+      <tr data-nick="wren-lab" data-rating="1699"
+          data-topics="Logging and journald|AI Services|Boot and systemd">
+        <td class="muted num rank">15</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(260 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/wren-lab/">wren-lab</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1699<span class="muted"> ± 40</span>
+        </td>
+        <td class="muted">Logging and journald, AI Services, Boot and systemd</td>
+        <td class="num">49</td>
+        <td class="num muted">57</td>
+      </tr>
+      <tr data-nick="sudo86" data-rating="1678"
+          data-topics="AI Services|Firewall and SELinux|Terraform">
+        <td class="muted num rank">16</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/sudo86/">sudo86</a>
+          <span title="GB">🇬🇧</span>
+        </td>
+        <td class="mono">
+          1678<span class="muted"> ± 32</span>
+        </td>
+        <td class="muted">AI Services, Firewall and SELinux, Terraform</td>
+        <td class="num">79</td>
+        <td class="num muted">95</td>
+      </tr>
+      <tr data-nick="wget49" data-rating="1705"
+          data-topics="Python|AI Agents|Terraform">
+        <td class="muted num rank">17</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(194 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/wget49/">wget49</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1705<span class="muted"> ± 46</span>
+        </td>
+        <td class="muted">Python, AI Agents, Terraform</td>
+        <td class="num">37</td>
+        <td class="num muted">42</td>
+      </tr>
+      <tr data-nick="wrenquota" data-rating="1670"
+          data-topics="Ansible|Boot and systemd|Containers">
+        <td class="muted num rank">18</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(52 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/wrenquota/">wrenquota</a>
+          <span title="ES">🇪🇸</span>
+        </td>
+        <td class="mono">
+          1670<span class="muted"> ± 31</span>
+        </td>
+        <td class="muted">Ansible, Boot and systemd, Containers</td>
+        <td class="num">86</td>
+        <td class="num muted">109</td>
+      </tr>
+      <tr data-nick="matzvim" data-rating="1681"
+          data-topics="Logging and journald|Python|Ollama">
+        <td class="muted num rank">19</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(309 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(309 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(309 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(309 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(309 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(309 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(309 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(309 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(309 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(309 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/matzvim/">matzvim</a>
+          <span title="GB">🇬🇧</span>
+        </td>
+        <td class="mono">
+          1681<span class="muted"> ± 38</span>
+        </td>
+        <td class="muted">Logging and journald, Python, Ollama</td>
+        <td class="num">55</td>
+        <td class="num muted">64</td>
+      </tr>
+      <tr data-nick="matz-daemon" data-rating="1695"
+          data-topics="Bash|Boot and systemd|Python">
+        <td class="muted num rank">20</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(343 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/matz-daemon/">matz-daemon</a>
+          <span title="GB">🇬🇧</span>
+        </td>
+        <td class="mono">
+          1695<span class="muted"> ± 45</span>
+        </td>
+        <td class="muted">Bash, Boot and systemd, Python</td>
+        <td class="num">33</td>
+        <td class="num muted">42</td>
+      </tr>
+      <tr data-nick="xenia-runs" data-rating="1683"
+          data-topics="Ollama|Logging and journald|Users and permissions">
+        <td class="muted num rank">21</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/xenia-runs/">xenia-runs</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1683<span class="muted"> ± 40</span>
+        </td>
+        <td class="muted">Ollama, Logging and journald, Users and permissions</td>
+        <td class="num">44</td>
+        <td class="num muted">52</td>
+      </tr>
+      <tr data-nick="bruno-tmux" data-rating="1675"
+          data-topics="Bash|AI Agents|Firewall and SELinux">
+        <td class="muted num rank">22</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(78 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/bruno-tmux/">bruno-tmux</a>
+          <span title="AU">🇦🇺</span>
+        </td>
+        <td class="mono">
+          1675<span class="muted"> ± 37</span>
+        </td>
+        <td class="muted">Bash, AI Agents, Firewall and SELinux</td>
+        <td class="num">65</td>
+        <td class="num muted">80</td>
+      </tr>
+      <tr data-nick="elin-lvm" data-rating="1658"
+          data-topics="Containers|Storage and LVM|AI Services">
+        <td class="muted num rank">23</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(15 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(15 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(15 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(15 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(15 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(15 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(15 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(15 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(15 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(15 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(15 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/elin-lvm/">elin-lvm</a>
+          <span title="DE">🇩🇪</span>
+        </td>
+        <td class="mono">
+          1658<span class="muted"> ± 34</span>
+        </td>
+        <td class="muted">Containers, Storage and LVM, AI Services</td>
+        <td class="num">62</td>
+        <td class="num muted">82</td>
+      </tr>
+      <tr data-nick="shell34" data-rating="1717"
+          data-topics="Claude Code|Bash|Linux basics">
+        <td class="muted num rank">24</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(244 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(244 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(244 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(244 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(244 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(244 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(244 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(244 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(244 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/shell34/">shell34</a>
+          <span title="PT">🇵🇹</span>
+        </td>
+        <td class="mono">
+          1717<span class="muted"> ± 66</span>
+        </td>
+        <td class="muted">Claude Code, Bash, Linux basics</td>
+        <td class="num">18</td>
+        <td class="num muted">18</td>
+      </tr>
+      <tr data-nick="sudo50" data-rating="1641"
+          data-topics="Firewall and SELinux|Terraform|Boot and systemd">
+        <td class="muted num rank">25</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(223 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/sudo50/">sudo50</a>
+          <span title="IT">🇮🇹</span>
+        </td>
+        <td class="mono">
+          1641<span class="muted"> ± 29</span>
+        </td>
+        <td class="muted">Firewall and SELinux, Terraform, Boot and systemd</td>
+        <td class="num">93</td>
+        <td class="num muted">126</td>
+      </tr>
+      <tr data-nick="antonpipe" data-rating="1731"
+          data-topics="Linux basics|Networking|Firewall and SELinux">
+        <td class="muted num rank">26</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(195 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/antonpipe/">antonpipe</a>
+          <span title="FR">🇫🇷</span>
+        </td>
+        <td class="mono">
+          1731<span class="muted"> ± 79</span>
+        </td>
+        <td class="muted">Linux basics, Networking, Firewall and SELinux</td>
+        <td class="num">9</td>
+        <td class="num muted">9</td>
+      </tr>
+      <tr data-nick="fsck44" data-rating="1643"
+          data-topics="Networking|Firewall and SELinux|Bash">
+        <td class="muted num rank">27</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(209 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(209 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(209 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(209 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(209 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(209 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(209 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(209 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(209 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/fsck44/">fsck44</a>
+          <span title="DE">🇩🇪</span>
+        </td>
+        <td class="mono">
+          1643<span class="muted"> ± 35</span>
+        </td>
+        <td class="muted">Networking, Firewall and SELinux, Bash</td>
+        <td class="num">51</td>
+        <td class="num muted">71</td>
+      </tr>
+      <tr data-nick="udev51" data-rating="1661"
+          data-topics="Bash|Claude Code|Networking">
+        <td class="muted num rank">28</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(268 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/udev51/">udev51</a>
+          <span title="AU">🇦🇺</span>
+        </td>
+        <td class="mono">
+          1661<span class="muted"> ± 44</span>
+        </td>
+        <td class="muted">Bash, Claude Code, Networking</td>
+        <td class="num">38</td>
+        <td class="num muted">45</td>
+      </tr>
+      <tr data-nick="anton-sudo" data-rating="1660"
+          data-topics="Users and permissions|Boot and systemd|Bash">
+        <td class="muted num rank">29</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/anton-sudo/">anton-sudo</a>
+          <span title="IE">🇮🇪</span>
+        </td>
+        <td class="mono">
+          1660<span class="muted"> ± 44</span>
+        </td>
+        <td class="muted">Users and permissions, Boot and systemd, Bash</td>
+        <td class="num">32</td>
+        <td class="num muted">42</td>
+      </tr>
+      <tr data-nick="forge87" data-rating="1654"
+          data-topics="Claude Code|Firewall and SELinux|Networking">
+        <td class="muted num rank">30</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/forge87/">forge87</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1654<span class="muted"> ± 42</span>
+        </td>
+        <td class="muted">Claude Code, Firewall and SELinux, Networking</td>
+        <td class="num">45</td>
+        <td class="num muted">52</td>
+      </tr>
+      <tr data-nick="bruno-patch" data-rating="1645"
+          data-topics="AI Services|AI Agents|Logging and journald">
+        <td class="muted num rank">31</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/bruno-patch/">bruno-patch</a>
+          <span title="AU">🇦🇺</span>
+        </td>
+        <td class="mono">
+          1645<span class="muted"> ± 39</span>
+        </td>
+        <td class="muted">AI Services, AI Agents, Logging and journald</td>
+        <td class="num">47</td>
+        <td class="num muted">59</td>
+      </tr>
+      <tr data-nick="ola-cron" data-rating="1634"
+          data-topics="Users and permissions|Bash|Ansible">
+        <td class="muted num rank">32</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(329 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(329 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(329 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(329 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(329 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(329 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(329 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/ola-cron/">ola-cron</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1634<span class="muted"> ± 36</span>
+        </td>
+        <td class="muted">Users and permissions, Bash, Ansible</td>
+        <td class="num">45</td>
+        <td class="num muted">61</td>
+      </tr>
+      <tr data-nick="gus-zsh" data-rating="1659"
+          data-topics="Model Context Protocol|Users and permissions|Ansible">
+        <td class="muted num rank">33</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(281 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/gus-zsh/">gus-zsh</a>
+          <span title="JP">🇯🇵</span>
+        </td>
+        <td class="mono">
+          1659<span class="muted"> ± 49</span>
+        </td>
+        <td class="muted">Model Context Protocol, Users and permissions, Ansible</td>
+        <td class="num">30</td>
+        <td class="num muted">36</td>
+      </tr>
+      <tr data-nick="nadia-ops" data-rating="1618"
+          data-topics="Python|Model Context Protocol|Firewall and SELinux">
+        <td class="muted num rank">34</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/nadia-ops/">nadia-ops</a>
+          <span title="GB">🇬🇧</span>
+        </td>
+        <td class="mono">
+          1618<span class="muted"> ± 29</span>
+        </td>
+        <td class="muted">Python, Model Context Protocol, Firewall and SELinux</td>
+        <td class="num">78</td>
+        <td class="num muted">106</td>
+      </tr>
+      <tr data-nick="pavel-grep" data-rating="1651"
+          data-topics="Linux basics|Python|Bash">
+        <td class="muted num rank">35</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(333 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/pavel-grep/">pavel-grep</a>
+          <span title="NL">🇳🇱</span>
+        </td>
+        <td class="mono">
+          1651<span class="muted"> ± 47</span>
+        </td>
+        <td class="muted">Linux basics, Python, Bash</td>
+        <td class="num">26</td>
+        <td class="num muted">33</td>
+      </tr>
+      <tr data-nick="rafa-vim" data-rating="1650"
+          data-topics="Bash|Model Context Protocol|Linux basics">
+        <td class="muted num rank">36</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/rafa-vim/">rafa-vim</a>
+          <span title="JP">🇯🇵</span>
+        </td>
+        <td class="mono">
+          1650<span class="muted"> ± 47</span>
+        </td>
+        <td class="muted">Bash, Model Context Protocol, Linux basics</td>
+        <td class="num">33</td>
+        <td class="num muted">39</td>
+      </tr>
+      <tr data-nick="jonas-swap" data-rating="1650"
+          data-topics="Networking|Firewall and SELinux|Users and permissions">
+        <td class="muted num rank">37</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/jonas-swap/">jonas-swap</a>
+          <span title="FR">🇫🇷</span>
+        </td>
+        <td class="mono">
+          1650<span class="muted"> ± 48</span>
+        </td>
+        <td class="muted">Networking, Firewall and SELinux, Users and permissions</td>
+        <td class="num">27</td>
+        <td class="num muted">35</td>
+      </tr>
+      <tr data-nick="mount66" data-rating="1635"
+          data-topics="Claude Code|AI Agents|Containers">
+        <td class="muted num rank">38</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(296 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/mount66/">mount66</a>
+          <span title="AU">🇦🇺</span>
+        </td>
+        <td class="mono">
+          1635<span class="muted"> ± 40</span>
+        </td>
+        <td class="muted">Claude Code, AI Agents, Containers</td>
+        <td class="num">45</td>
+        <td class="num muted">55</td>
+      </tr>
+      <tr data-nick="xenialvm" data-rating="1666"
+          data-topics="Python|Boot and systemd|Linux basics">
+        <td class="muted num rank">39</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(60 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/xenialvm/">xenialvm</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1666<span class="muted"> ± 59</span>
+        </td>
+        <td class="muted">Python, Boot and systemd, Linux basics</td>
+        <td class="num">15</td>
+        <td class="num muted">17</td>
+      </tr>
+      <tr data-nick="kai-stack" data-rating="1612"
+          data-topics="Firewall and SELinux|Logging and journald|Model Context Protocol">
+        <td class="muted num rank">40</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(54 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/kai-stack/">kai-stack</a>
+          <span title="CZ">🇨🇿</span>
+        </td>
+        <td class="mono">
+          1612<span class="muted"> ± 36</span>
+        </td>
+        <td class="muted">Firewall and SELinux, Logging and journald, Model Context Protocol</td>
+        <td class="num">52</td>
+        <td class="num muted">79</td>
+      </tr>
+      <tr data-nick="ivo-wget" data-rating="1604"
+          data-topics="Model Context Protocol|Boot and systemd|Python">
+        <td class="muted num rank">41</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/ivo-wget/">ivo-wget</a>
+          <span title="ES">🇪🇸</span>
+        </td>
+        <td class="mono">
+          1604<span class="muted"> ± 32</span>
+        </td>
+        <td class="muted">Model Context Protocol, Boot and systemd, Python</td>
+        <td class="num">81</td>
+        <td class="num muted">108</td>
+      </tr>
+      <tr data-nick="petra-daemon" data-rating="1597"
+          data-topics="Boot and systemd|Kernel and performance|Storage and LVM">
+        <td class="muted num rank">42</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(8 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/petra-daemon/">petra-daemon</a>
+          <span title="NO">🇳🇴</span>
+        </td>
+        <td class="mono">
+          1597<span class="muted"> ± 30</span>
+        </td>
+        <td class="muted">Boot and systemd, Kernel and performance, Storage and LVM</td>
+        <td class="num">78</td>
+        <td class="num muted">110</td>
+      </tr>
+      <tr data-nick="oscar-udev" data-rating="1604"
+          data-topics="Python|Linux basics|Users and permissions">
+        <td class="muted num rank">43</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(136 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(136 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(136 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(136 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(136 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(136 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(136 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(136 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(136 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(136 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(136 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(136 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/oscar-udev/">oscar-udev</a>
+          <span title="DE">🇩🇪</span>
+        </td>
+        <td class="mono">
+          1604<span class="muted"> ± 39</span>
+        </td>
+        <td class="muted">Python, Linux basics, Users and permissions</td>
+        <td class="num">52</td>
+        <td class="num muted">65</td>
+      </tr>
+      <tr data-nick="patch13" data-rating="1613"
+          data-topics="Claude Code|Terraform|Boot and systemd">
+        <td class="muted num rank">44</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(319 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(319 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(319 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(319 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(319 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(319 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(319 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(319 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/patch13/">patch13</a>
+          <span title="IE">🇮🇪</span>
+        </td>
+        <td class="mono">
+          1613<span class="muted"> ± 47</span>
+        </td>
+        <td class="muted">Claude Code, Terraform, Boot and systemd</td>
+        <td class="num">26</td>
+        <td class="num muted">39</td>
+      </tr>
+      <tr data-nick="tomasquota" data-rating="1574"
+          data-topics="AI Services|Networking|Firewall and SELinux">
+        <td class="muted num rank">45</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(275 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(275 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(275 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(275 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(275 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(275 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(275 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(275 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(275 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(275 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(275 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(275 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/tomasquota/">tomasquota</a>
+          <span title="JP">🇯🇵</span>
+        </td>
+        <td class="mono">
+          1574<span class="muted"> ± 31</span>
+        </td>
+        <td class="muted">AI Services, Networking, Firewall and SELinux</td>
+        <td class="num">75</td>
+        <td class="num muted">109</td>
+      </tr>
+      <tr data-nick="hana-zsh" data-rating="1566"
+          data-topics="Kernel and performance|Firewall and SELinux|Model Context Protocol">
+        <td class="muted num rank">46</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(230 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(230 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(230 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(230 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(230 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(230 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(230 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(230 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(230 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(230 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(230 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/hana-zsh/">hana-zsh</a>
+          <span title="CZ">🇨🇿</span>
+        </td>
+        <td class="mono">
+          1566<span class="muted"> ± 27</span>
+        </td>
+        <td class="muted">Kernel and performance, Firewall and SELinux, Model Context Protocol</td>
+        <td class="num">89</td>
+        <td class="num muted">133</td>
+      </tr>
+      <tr data-nick="udev8" data-rating="1575"
+          data-topics="Storage and LVM|Ansible|Logging and journald">
+        <td class="muted num rank">47</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(25 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(25 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(25 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(25 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(25 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(25 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/udev8/">udev8</a>
+          <span title="AU">🇦🇺</span>
+        </td>
+        <td class="mono">
+          1575<span class="muted"> ± 32</span>
+        </td>
+        <td class="muted">Storage and LVM, Ansible, Logging and journald</td>
+        <td class="num">67</td>
+        <td class="num muted">96</td>
+      </tr>
+      <tr data-nick="quinntux" data-rating="1567"
+          data-topics="Terraform|Containers|Claude Code">
+        <td class="muted num rank">48</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/quinntux/">quinntux</a>
+          <span title="JP">🇯🇵</span>
+        </td>
+        <td class="mono">
+          1567<span class="muted"> ± 28</span>
+        </td>
+        <td class="muted">Terraform, Containers, Claude Code</td>
+        <td class="num">84</td>
+        <td class="num muted">128</td>
+      </tr>
+      <tr data-nick="jonastty" data-rating="1575"
+          data-topics="Firewall and SELinux|Networking|AI Services">
+        <td class="muted num rank">49</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(307 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/jonastty/">jonastty</a>
+          <span title="NO">🇳🇴</span>
+        </td>
+        <td class="mono">
+          1575<span class="muted"> ± 35</span>
+        </td>
+        <td class="muted">Firewall and SELinux, Networking, AI Services</td>
+        <td class="num">52</td>
+        <td class="num muted">79</td>
+      </tr>
+      <tr data-nick="elin-umask" data-rating="1565"
+          data-topics="Ollama|Bash|Claude Code">
+        <td class="muted num rank">50</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/elin-umask/">elin-umask</a>
+          <span title="NZ">🇳🇿</span>
+        </td>
+        <td class="mono">
+          1565<span class="muted"> ± 30</span>
+        </td>
+        <td class="muted">Ollama, Bash, Claude Code</td>
+        <td class="num">79</td>
+        <td class="num muted">113</td>
+      </tr>
+      <tr data-nick="oscar-tux" data-rating="1575"
+          data-topics="Python|Linux basics|Boot and systemd">
+        <td class="muted num rank">51</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/oscar-tux/">oscar-tux</a>
+          <span title="PL">🇵🇱</span>
+        </td>
+        <td class="mono">
+          1575<span class="muted"> ± 36</span>
+        </td>
+        <td class="muted">Python, Linux basics, Boot and systemd</td>
+        <td class="num">59</td>
+        <td class="num muted">76</td>
+      </tr>
+      <tr data-nick="socket38" data-rating="1620"
+          data-topics="Users and permissions|Model Context Protocol|Logging and journald">
+        <td class="muted num rank">52</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(327 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/socket38/">socket38</a>
+          <span title="IT">🇮🇹</span>
+        </td>
+        <td class="mono">
+          1620<span class="muted"> ± 61</span>
+        </td>
+        <td class="muted">Users and permissions, Model Context Protocol, Logging and journald</td>
+        <td class="num">16</td>
+        <td class="num muted">19</td>
+      </tr>
+      <tr data-nick="elin-wget" data-rating="1545"
+          data-topics="Ansible|Kernel and performance|Model Context Protocol">
+        <td class="muted num rank">53</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(292 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/elin-wget/">elin-wget</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1545<span class="muted"> ± 29</span>
+        </td>
+        <td class="muted">Ansible, Kernel and performance, Model Context Protocol</td>
+        <td class="num">80</td>
+        <td class="num muted">124</td>
+      </tr>
+      <tr data-nick="nils-hash" data-rating="1540"
+          data-topics="AI Services|Ollama|Terraform">
+        <td class="muted num rank">54</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(90 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(90 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(90 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(90 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(90 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(90 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(90 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/nils-hash/">nils-hash</a>
+          <span title="SE">🇸🇪</span>
+        </td>
+        <td class="mono">
+          1540<span class="muted"> ± 26</span>
+        </td>
+        <td class="muted">AI Services, Ollama, Terraform</td>
+        <td class="num">82</td>
+        <td class="num muted">128</td>
+      </tr>
+      <tr data-nick="kolyacurl" data-rating="1603"
+          data-topics="Linux basics|Bash|Ollama">
+        <td class="muted num rank">55</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(163 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/kolyacurl/">kolyacurl</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1603<span class="muted"> ± 59</span>
+        </td>
+        <td class="muted">Linux basics, Bash, Ollama</td>
+        <td class="num">15</td>
+        <td class="num muted">17</td>
+      </tr>
+      <tr data-nick="udev15" data-rating="1554"
+          data-topics="Model Context Protocol|Networking|Logging and journald">
+        <td class="muted num rank">56</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(293 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/udev15/">udev15</a>
+          <span title="NL">🇳🇱</span>
+        </td>
+        <td class="mono">
+          1554<span class="muted"> ± 37</span>
+        </td>
+        <td class="muted">Model Context Protocol, Networking, Logging and journald</td>
+        <td class="num">40</td>
+        <td class="num muted">58</td>
+      </tr>
+      <tr data-nick="quinnswap" data-rating="1554"
+          data-topics="AI Agents|Linux basics|Networking">
+        <td class="muted num rank">57</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/quinnswap/">quinnswap</a>
+          <span title="AU">🇦🇺</span>
+        </td>
+        <td class="mono">
+          1554<span class="muted"> ± 38</span>
+        </td>
+        <td class="muted">AI Agents, Linux basics, Networking</td>
+        <td class="num">44</td>
+        <td class="num muted">61</td>
+      </tr>
+      <tr data-nick="xenia-fsck" data-rating="1551"
+          data-topics="Python|Logging and journald|Users and permissions">
+        <td class="muted num rank">58</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(322 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/xenia-fsck/">xenia-fsck</a>
+          <span title="AU">🇦🇺</span>
+        </td>
+        <td class="mono">
+          1551<span class="muted"> ± 37</span>
+        </td>
+        <td class="muted">Python, Logging and journald, Users and permissions</td>
+        <td class="num">56</td>
+        <td class="num muted">88</td>
+      </tr>
+      <tr data-nick="mount32" data-rating="1507"
+          data-topics="AI Services|Storage and LVM|Ollama">
+        <td class="muted num rank">59</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(120 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(120 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(120 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(120 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(120 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(120 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(120 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/mount32/">mount32</a>
+          <span title="RO">🇷🇴</span>
+        </td>
+        <td class="mono">
+          1507<span class="muted"> ± 28</span>
+        </td>
+        <td class="muted">AI Services, Storage and LVM, Ollama</td>
+        <td class="num">77</td>
+        <td class="num muted">124</td>
+      </tr>
+      <tr data-nick="shell49" data-rating="1558"
+          data-topics="Bash|Model Context Protocol|Boot and systemd">
+        <td class="muted num rank">60</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/shell49/">shell49</a>
+          <span title="IT">🇮🇹</span>
+        </td>
+        <td class="mono">
+          1558<span class="muted"> ± 55</span>
+        </td>
+        <td class="muted">Bash, Model Context Protocol, Boot and systemd</td>
+        <td class="num">15</td>
+        <td class="num muted">20</td>
+      </tr>
+      <tr data-nick="xeniasudo" data-rating="1513"
+          data-topics="Storage and LVM|Containers|Terraform">
+        <td class="muted num rank">61</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/xeniasudo/">xeniasudo</a>
+          <span title="NL">🇳🇱</span>
+        </td>
+        <td class="mono">
+          1513<span class="muted"> ± 34</span>
+        </td>
+        <td class="muted">Storage and LVM, Containers, Terraform</td>
+        <td class="num">46</td>
+        <td class="num muted">76</td>
+      </tr>
+      <tr data-nick="kolya-cron" data-rating="1501"
+          data-topics="AI Agents|Claude Code|AI Services">
+        <td class="muted num rank">62</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(184 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/kolya-cron/">kolya-cron</a>
+          <span title="PL">🇵🇱</span>
+        </td>
+        <td class="mono">
+          1501<span class="muted"> ± 31</span>
+        </td>
+        <td class="muted">AI Agents, Claude Code, AI Services</td>
+        <td class="num">73</td>
+        <td class="num muted">115</td>
+      </tr>
+      <tr data-nick="quinnroot" data-rating="1511"
+          data-topics="Model Context Protocol|Networking|Firewall and SELinux">
+        <td class="muted num rank">63</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/quinnroot/">quinnroot</a>
+          <span title="JP">🇯🇵</span>
+        </td>
+        <td class="mono">
+          1511<span class="muted"> ± 40</span>
+        </td>
+        <td class="muted">Model Context Protocol, Networking, Firewall and SELinux</td>
+        <td class="num">44</td>
+        <td class="num muted">58</td>
+      </tr>
+      <tr data-nick="quota21" data-rating="1492"
+          data-topics="Ansible|Linux basics|Users and permissions">
+        <td class="muted num rank">64</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(220 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(220 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(220 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(220 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(220 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(220 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(220 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(220 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(220 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(220 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/quota21/">quota21</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1492<span class="muted"> ± 34</span>
+        </td>
+        <td class="muted">Ansible, Linux basics, Users and permissions</td>
+        <td class="num">47</td>
+        <td class="num muted">73</td>
+      </tr>
+      <tr data-nick="patch15" data-rating="1471"
+          data-topics="Ansible|Users and permissions|Bash">
+        <td class="muted num rank">65</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/patch15/">patch15</a>
+          <span title="SE">🇸🇪</span>
+        </td>
+        <td class="mono">
+          1471<span class="muted"> ± 30</span>
+        </td>
+        <td class="muted">Ansible, Users and permissions, Bash</td>
+        <td class="num">66</td>
+        <td class="num muted">113</td>
+      </tr>
+      <tr data-nick="matz-swap" data-rating="1467"
+          data-topics="Ansible|Storage and LVM|AI Agents">
+        <td class="muted num rank">66</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(61 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(61 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(61 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(61 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(61 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(61 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(61 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(61 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(61 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(61 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(61 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(61 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/matz-swap/">matz-swap</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1467<span class="muted"> ± 30</span>
+        </td>
+        <td class="muted">Ansible, Storage and LVM, AI Agents</td>
+        <td class="num">61</td>
+        <td class="num muted">109</td>
+      </tr>
+      <tr data-nick="pipe31" data-rating="1478"
+          data-topics="Bash|Firewall and SELinux|Python">
+        <td class="muted num rank">67</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(350 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/pipe31/">pipe31</a>
+          <span title="SE">🇸🇪</span>
+        </td>
+        <td class="mono">
+          1478<span class="muted"> ± 36</span>
+        </td>
+        <td class="muted">Bash, Firewall and SELinux, Python</td>
+        <td class="num">40</td>
+        <td class="num muted">73</td>
+      </tr>
+      <tr data-nick="rafa-runs" data-rating="1469"
+          data-topics="Ansible|Terraform|Containers">
+        <td class="muted num rank">68</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(118 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(118 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(118 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(118 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(118 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(118 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(118 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(118 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(118 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(118 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(118 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/rafa-runs/">rafa-runs</a>
+          <span title="PL">🇵🇱</span>
+        </td>
+        <td class="mono">
+          1469<span class="muted"> ± 32</span>
+        </td>
+        <td class="muted">Ansible, Terraform, Containers</td>
+        <td class="num">63</td>
+        <td class="num muted">96</td>
+      </tr>
+      <tr data-nick="pavel-hash" data-rating="1470"
+          data-topics="Kernel and performance|Ansible|Terraform">
+        <td class="muted num rank">69</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(158 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(158 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(158 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(158 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(158 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(158 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(158 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(158 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(158 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(158 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(158 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/pavel-hash/">pavel-hash</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1470<span class="muted"> ± 40</span>
+        </td>
+        <td class="muted">Kernel and performance, Ansible, Terraform</td>
+        <td class="num">31</td>
+        <td class="num muted">51</td>
+      </tr>
+      <tr data-nick="mirastack" data-rating="1524"
+          data-topics="Linux basics|Ansible|Model Context Protocol">
+        <td class="muted num rank">70</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(234 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/mirastack/">mirastack</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1524<span class="muted"> ± 67</span>
+        </td>
+        <td class="muted">Linux basics, Ansible, Model Context Protocol</td>
+        <td class="num">8</td>
+        <td class="num muted">12</td>
+      </tr>
+      <tr data-nick="quinnlvm" data-rating="1507"
+          data-topics="Boot and systemd|Firewall and SELinux|Ansible">
+        <td class="muted num rank">71</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(310 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/quinnlvm/">quinnlvm</a>
+          <span title="JP">🇯🇵</span>
+        </td>
+        <td class="mono">
+          1507<span class="muted"> ± 60</span>
+        </td>
+        <td class="muted">Boot and systemd, Firewall and SELinux, Ansible</td>
+        <td class="num">9</td>
+        <td class="num muted">15</td>
+      </tr>
+      <tr data-nick="hanacore" data-rating="1484"
+          data-topics="Boot and systemd|Linux basics|AI Agents">
+        <td class="muted num rank">72</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(172 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/hanacore/">hanacore</a>
+          <span title="PT">🇵🇹</span>
+        </td>
+        <td class="mono">
+          1484<span class="muted"> ± 55</span>
+        </td>
+        <td class="muted">Boot and systemd, Linux basics, AI Agents</td>
+        <td class="num">11</td>
+        <td class="num muted">18</td>
+      </tr>
+      <tr data-nick="tomas-fsck" data-rating="1431"
+          data-topics="Users and permissions|Storage and LVM|Bash">
+        <td class="muted num rank">73</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(46 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/tomas-fsck/">tomas-fsck</a>
+          <span title="ES">🇪🇸</span>
+        </td>
+        <td class="mono">
+          1431<span class="muted"> ± 30</span>
+        </td>
+        <td class="muted">Users and permissions, Storage and LVM, Bash</td>
+        <td class="num">53</td>
+        <td class="num muted">103</td>
+      </tr>
+      <tr data-nick="curl44" data-rating="1493"
+          data-topics="Networking|Model Context Protocol|Bash">
+        <td class="muted num rank">74</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(206 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/curl44/">curl44</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1493<span class="muted"> ± 63</span>
+        </td>
+        <td class="muted">Networking, Model Context Protocol, Bash</td>
+        <td class="num">14</td>
+        <td class="num muted">20</td>
+      </tr>
+      <tr data-nick="cass-pipe" data-rating="1434"
+          data-topics="Kernel and performance|Storage and LVM|Ansible">
+        <td class="muted num rank">75</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(97 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/cass-pipe/">cass-pipe</a>
+          <span title="JP">🇯🇵</span>
+        </td>
+        <td class="mono">
+          1434<span class="muted"> ± 35</span>
+        </td>
+        <td class="muted">Kernel and performance, Storage and LVM, Ansible</td>
+        <td class="num">34</td>
+        <td class="num muted">72</td>
+      </tr>
+      <tr data-nick="esa-root" data-rating="1515"
+          data-topics="Logging and journald|Users and permissions|Networking">
+        <td class="muted num rank">76</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(334 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/esa-root/">esa-root</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1515<span class="muted"> ± 79</span>
+        </td>
+        <td class="muted">Logging and journald, Users and permissions, Networking</td>
+        <td class="num">4</td>
+        <td class="num muted">7</td>
+      </tr>
+      <tr data-nick="kolya-root" data-rating="1402"
+          data-topics="Kernel and performance|Bash|Ansible">
+        <td class="muted num rank">77</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(35 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/kolya-root/">kolya-root</a>
+          <span title="RO">🇷🇴</span>
+        </td>
+        <td class="mono">
+          1402<span class="muted"> ± 36</span>
+        </td>
+        <td class="muted">Kernel and performance, Bash, Ansible</td>
+        <td class="num">29</td>
+        <td class="num muted">70</td>
+      </tr>
+      <tr data-nick="halforge" data-rating="1387"
+          data-topics="Logging and journald|Python|Kernel and performance">
+        <td class="muted num rank">78</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(87 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(87 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(87 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(87 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(87 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(87 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/halforge/">halforge</a>
+          <span title="IT">🇮🇹</span>
+        </td>
+        <td class="mono">
+          1387<span class="muted"> ± 33</span>
+        </td>
+        <td class="muted">Logging and journald, Python, Kernel and performance</td>
+        <td class="num">29</td>
+        <td class="num muted">73</td>
+      </tr>
+      <tr data-nick="cass-curl" data-rating="1410"
+          data-topics="AI Services|Terraform|Containers">
+        <td class="muted num rank">79</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/cass-curl/">cass-curl</a>
+          <span title="PT">🇵🇹</span>
+        </td>
+        <td class="mono">
+          1410<span class="muted"> ± 46</span>
+        </td>
+        <td class="muted">AI Services, Terraform, Containers</td>
+        <td class="num">17</td>
+        <td class="num muted">33</td>
+      </tr>
+      <tr data-nick="miracron" data-rating="1388"
+          data-topics="Logging and journald|Ansible|Containers">
+        <td class="muted num rank">80</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(116 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/miracron/">miracron</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1388<span class="muted"> ± 37</span>
+        </td>
+        <td class="muted">Logging and journald, Ansible, Containers</td>
+        <td class="num">35</td>
+        <td class="num muted">61</td>
+      </tr>
+      <tr data-nick="pavel-wget" data-rating="1377"
+          data-topics="Kernel and performance|Firewall and SELinux|Linux basics">
+        <td class="muted num rank">81</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(109 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/pavel-wget/">pavel-wget</a>
+          <span title="NZ">🇳🇿</span>
+        </td>
+        <td class="mono">
+          1377<span class="muted"> ± 37</span>
+        </td>
+        <td class="muted">Kernel and performance, Firewall and SELinux, Linux basics</td>
+        <td class="num">32</td>
+        <td class="num muted">73</td>
+      </tr>
+      <tr data-nick="curl74" data-rating="1363"
+          data-topics="Claude Code|Firewall and SELinux|Users and permissions">
+        <td class="muted num rank">82</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(330 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/curl74/">curl74</a>
+          <span title="NO">🇳🇴</span>
+        </td>
+        <td class="mono">
+          1363<span class="muted"> ± 31</span>
+        </td>
+        <td class="muted">Claude Code, Firewall and SELinux, Users and permissions</td>
+        <td class="num">46</td>
+        <td class="num muted">94</td>
+      </tr>
+      <tr data-nick="shell27" data-rating="1388"
+          data-topics="Logging and journald|Containers|Networking">
+        <td class="muted num rank">83</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(40 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/shell27/">shell27</a>
+          <span title="SE">🇸🇪</span>
+        </td>
+        <td class="mono">
+          1388<span class="muted"> ± 45</span>
+        </td>
+        <td class="muted">Logging and journald, Containers, Networking</td>
+        <td class="num">18</td>
+        <td class="num muted">39</td>
+      </tr>
+      <tr data-nick="grep20" data-rating="1402"
+          data-topics="Kernel and performance|Boot and systemd|Python">
+        <td class="muted num rank">84</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(253 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/grep20/">grep20</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1402<span class="muted"> ± 53</span>
+        </td>
+        <td class="muted">Kernel and performance, Boot and systemd, Python</td>
+        <td class="num">10</td>
+        <td class="num muted">21</td>
+      </tr>
+      <tr data-nick="petra-forge" data-rating="1374"
+          data-topics="Kernel and performance|Logging and journald|Terraform">
+        <td class="muted num rank">85</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(150 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/petra-forge/">petra-forge</a>
+          <span title="GB">🇬🇧</span>
+        </td>
+        <td class="mono">
+          1374<span class="muted"> ± 45</span>
+        </td>
+        <td class="muted">Kernel and performance, Logging and journald, Terraform</td>
+        <td class="num">27</td>
+        <td class="num muted">51</td>
+      </tr>
+      <tr data-nick="loreroot" data-rating="1418"
+          data-topics="Networking|Firewall and SELinux|Ansible">
+        <td class="muted num rank">86</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(316 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/loreroot/">loreroot</a>
+          <span title="DE">🇩🇪</span>
+        </td>
+        <td class="mono">
+          1418<span class="muted"> ± 67</span>
+        </td>
+        <td class="muted">Networking, Firewall and SELinux, Ansible</td>
+        <td class="num">7</td>
+        <td class="num muted">14</td>
+      </tr>
+      <tr data-nick="bruno-lvm" data-rating="1319"
+          data-topics="Kernel and performance|Storage and LVM|Linux basics">
+        <td class="muted num rank">87</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(192 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/bruno-lvm/">bruno-lvm</a>
+          <span title="SE">🇸🇪</span>
+        </td>
+        <td class="mono">
+          1319<span class="muted"> ± 32</span>
+        </td>
+        <td class="muted">Kernel and performance, Storage and LVM, Linux basics</td>
+        <td class="num">34</td>
+        <td class="num muted">99</td>
+      </tr>
+      <tr data-nick="lvm78" data-rating="1361"
+          data-topics="Logging and journald|Claude Code|AI Agents">
+        <td class="muted num rank">88</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(181 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(181 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(181 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(181 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(181 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(181 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(181 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(181 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(181 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(181 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(181 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/lvm78/">lvm78</a>
+          <span title="DE">🇩🇪</span>
+        </td>
+        <td class="mono">
+          1361<span class="muted"> ± 56</span>
+        </td>
+        <td class="muted">Logging and journald, Claude Code, AI Agents</td>
+        <td class="num">11</td>
+        <td class="num muted">25</td>
+      </tr>
+      <tr data-nick="swap17" data-rating="1317"
+          data-topics="Terraform|AI Agents|Claude Code">
+        <td class="muted num rank">89</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(28 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/swap17/">swap17</a>
+          <span title="NO">🇳🇴</span>
+        </td>
+        <td class="mono">
+          1317<span class="muted"> ± 35</span>
+        </td>
+        <td class="muted">Terraform, AI Agents, Claude Code</td>
+        <td class="num">35</td>
+        <td class="num muted">77</td>
+      </tr>
+      <tr data-nick="ola-shell" data-rating="1325"
+          data-topics="Terraform|Storage and LVM|Model Context Protocol">
+        <td class="muted num rank">90</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(105 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(105 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(105 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(105 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(105 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(105 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(105 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(105 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(105 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/ola-shell/">ola-shell</a>
+          <span title="GB">🇬🇧</span>
+        </td>
+        <td class="mono">
+          1325<span class="muted"> ± 41</span>
+        </td>
+        <td class="muted">Terraform, Storage and LVM, Model Context Protocol</td>
+        <td class="num">17</td>
+        <td class="num muted">46</td>
+      </tr>
+      <tr data-nick="cass-core" data-rating="1298"
+          data-topics="Logging and journald|AI Services|Storage and LVM">
+        <td class="muted num rank">91</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(154 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(154 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(154 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(154 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(154 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(154 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(154 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(154 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(154 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(154 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/cass-core/">cass-core</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1298<span class="muted"> ± 29</span>
+        </td>
+        <td class="muted">Logging and journald, AI Services, Storage and LVM</td>
+        <td class="num">41</td>
+        <td class="num muted">110</td>
+      </tr>
+      <tr data-nick="udev67" data-rating="1349"
+          data-topics="Kernel and performance|Ansible|Containers">
+        <td class="muted num rank">92</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/><rect x="16.00" y="32.00" width="8.00" height="8.00" fill="hsl(133 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/udev67/">udev67</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1349<span class="muted"> ± 55</span>
+        </td>
+        <td class="muted">Kernel and performance, Ansible, Containers</td>
+        <td class="num">10</td>
+        <td class="num muted">19</td>
+      </tr>
+      <tr data-nick="yank69" data-rating="1372"
+          data-topics="AI Services|Ollama|Networking">
+        <td class="muted num rank">93</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(338 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(338 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(338 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(338 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(338 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(338 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(338 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(338 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(338 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(338 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/yank69/">yank69</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1372<span class="muted"> ± 71</span>
+        </td>
+        <td class="muted">AI Services, Ollama, Networking</td>
+        <td class="num">5</td>
+        <td class="num muted">16</td>
+      </tr>
+      <tr data-nick="hana-nice" data-rating="1321"
+          data-topics="Ollama|Storage and LVM|Kernel and performance">
+        <td class="muted num rank">94</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(323 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(323 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(323 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(323 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(323 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(323 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(323 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(323 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(323 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(323 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(323 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/hana-nice/">hana-nice</a>
+          <span title="FR">🇫🇷</span>
+        </td>
+        <td class="mono">
+          1321<span class="muted"> ± 47</span>
+        </td>
+        <td class="muted">Ollama, Storage and LVM, Kernel and performance</td>
+        <td class="num">15</td>
+        <td class="num muted">34</td>
+      </tr>
+      <tr data-nick="sanalvm" data-rating="1322"
+          data-topics="Firewall and SELinux|Containers|Ansible">
+        <td class="muted num rank">95</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="0.00" y="16.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="32.00" y="16.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(254 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/sanalvm/">sanalvm</a>
+          <span title="PL">🇵🇱</span>
+        </td>
+        <td class="mono">
+          1322<span class="muted"> ± 50</span>
+        </td>
+        <td class="muted">Firewall and SELinux, Containers, Ansible</td>
+        <td class="num">11</td>
+        <td class="num muted">34</td>
+      </tr>
+      <tr data-nick="nice82" data-rating="1362"
+          data-topics="Users and permissions|Logging and journald|Linux basics">
+        <td class="muted num rank">96</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(146 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/nice82/">nice82</a>
+          <span title="FR">🇫🇷</span>
+        </td>
+        <td class="mono">
+          1362<span class="muted"> ± 71</span>
+        </td>
+        <td class="muted">Users and permissions, Logging and journald, Linux basics</td>
+        <td class="num">4</td>
+        <td class="num muted">13</td>
+      </tr>
+      <tr data-nick="byte58" data-rating="1258"
+          data-topics="AI Agents|Boot and systemd|Python">
+        <td class="muted num rank">97</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(262 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(262 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(262 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(262 55% 62%)"/><rect x="8.00" y="0.00" width="8.00" height="8.00" fill="hsl(262 55% 62%)"/><rect x="24.00" y="0.00" width="8.00" height="8.00" fill="hsl(262 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(262 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(262 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(262 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(262 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(262 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/byte58/">byte58</a>
+          <span title="ES">🇪🇸</span>
+        </td>
+        <td class="mono">
+          1258<span class="muted"> ± 44</span>
+        </td>
+        <td class="muted">AI Agents, Boot and systemd, Python</td>
+        <td class="num">6</td>
+        <td class="num muted">34</td>
+      </tr>
+      <tr data-nick="hal-ops" data-rating="1233"
+          data-topics="Firewall and SELinux|AI Services|Networking">
+        <td class="muted num rank">98</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="8.00" width="8.00" height="8.00" fill="hsl(140 55% 62%)"/><rect x="32.00" y="8.00" width="8.00" height="8.00" fill="hsl(140 55% 62%)"/><rect x="0.00" y="24.00" width="8.00" height="8.00" fill="hsl(140 55% 62%)"/><rect x="32.00" y="24.00" width="8.00" height="8.00" fill="hsl(140 55% 62%)"/><rect x="8.00" y="8.00" width="8.00" height="8.00" fill="hsl(140 55% 62%)"/><rect x="24.00" y="8.00" width="8.00" height="8.00" fill="hsl(140 55% 62%)"/><rect x="8.00" y="32.00" width="8.00" height="8.00" fill="hsl(140 55% 62%)"/><rect x="24.00" y="32.00" width="8.00" height="8.00" fill="hsl(140 55% 62%)"/><rect x="16.00" y="0.00" width="8.00" height="8.00" fill="hsl(140 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(140 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/hal-ops/">hal-ops</a>
+          <span title="US">🇺🇸</span>
+        </td>
+        <td class="mono">
+          1233<span class="muted"> ± 38</span>
+        </td>
+        <td class="muted">Firewall and SELinux, AI Services, Networking</td>
+        <td class="num">21</td>
+        <td class="num muted">65</td>
+      </tr>
+      <tr data-nick="socket53" data-rating="1207"
+          data-topics="AI Agents|Storage and LVM|Claude Code">
+        <td class="muted num rank">99</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="0.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="32.00" y="0.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(255 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/socket53/">socket53</a>
+          <span title="JP">🇯🇵</span>
+        </td>
+        <td class="mono">
+          1207<span class="muted"> ± 39</span>
+        </td>
+        <td class="muted">AI Agents, Storage and LVM, Claude Code</td>
+        <td class="num">13</td>
+        <td class="num muted">65</td>
+      </tr>
+      <tr data-nick="kai-swap" data-rating="1210"
+          data-topics="Ansible|Bash|Linux basics">
+        <td class="muted num rank">100</td>
+        <td class="avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="avatar"><rect width="40" height="40" rx="5.0" fill="#121a16"/><rect x="0.00" y="32.00" width="8.00" height="8.00" fill="hsl(47 55% 62%)"/><rect x="32.00" y="32.00" width="8.00" height="8.00" fill="hsl(47 55% 62%)"/><rect x="8.00" y="16.00" width="8.00" height="8.00" fill="hsl(47 55% 62%)"/><rect x="24.00" y="16.00" width="8.00" height="8.00" fill="hsl(47 55% 62%)"/><rect x="8.00" y="24.00" width="8.00" height="8.00" fill="hsl(47 55% 62%)"/><rect x="24.00" y="24.00" width="8.00" height="8.00" fill="hsl(47 55% 62%)"/><rect x="16.00" y="8.00" width="8.00" height="8.00" fill="hsl(47 55% 62%)"/><rect x="16.00" y="16.00" width="8.00" height="8.00" fill="hsl(47 55% 62%)"/><rect x="16.00" y="24.00" width="8.00" height="8.00" fill="hsl(47 55% 62%)"/></svg></td>
+        <td>
+          <a href="../players/kai-swap/">kai-swap</a>
+          <span title="PL">🇵🇱</span>
+        </td>
+        <td class="mono">
+          1210<span class="muted"> ± 45</span>
+        </td>
+        <td class="muted">Ansible, Bash, Linux basics</td>
+        <td class="num">10</td>
+        <td class="num muted">36</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>How the number moves</h2>
+    <div class="grid three">
+      <div class="card plain">
+        <h3>The lab is the opponent</h3>
+        <p class="muted">Difficulty 1 to 5 plays at 1100, 1300, 1500, 1700 and 1900. Beating a
+          difficulty-5 lab is worth what beating a 1900 is worth.</p>
+      </div>
+      <div class="card plain">
+        <h3>The clock counts</h3>
+        <p class="muted">5, 10, 15, 20 or 30 minutes by difficulty — unless the lab sets its own,
+          as the exam simulation does. Finishing late is a loss, however good the fix.</p>
+      </div>
+      <div class="card plain">
+        <h3>Practice is free</h3>
+        <p class="muted">Untimed attempts are recorded and never rated. Retry a lab as often as
+          you like; only the timed run says anything about you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../features/">Features</a><br>
+        <a href="../labs/">Labs</a><br>
+        <a href="../journals/">Journals</a><br>
+        <a href="../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../live/">Live</a><br>
+        <a href="../players/">Ratings</a><br>
+        <a href="../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../install/">Install</a><br>
+        <a href="../docs/">Docs</a><br>
+        <a href="../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../about/">About</a><br>
+        <a href="../community/">Community</a><br>
+        <a href="../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../totop.js"></script>
+<script src="../ask-engine.js"></script>
+<script src="../chat.js"></script>
+<script src="../copy.js"></script>
+<script src="../board.js"></script></body>
+</html>

@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Three layers of &#34;permission denied&#34; · Norboten</title>
+<meta name="description" content="A web server that will not start. A page that answers 403. A proxy that answers 502. An address and a hostname that were correct until the machine rebooted. Eve">
+<link rel="canonical" href="https://norboten.org/journals/rhcsa-04-selinux-firewall-network/"><meta property="og:title" content="Three layers of &#34;permission denied&#34; · Norboten">
+<meta property="og:description" content="A web server that will not start. A page that answers 403. A proxy that answers 502. An address and a hostname that were correct until the machine rebooted. Eve">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/rhcsa-04-selinux-firewall-network/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Three layers of &#34;permission denied&#34; · Norboten">
+<meta name="twitter:description" content="A web server that will not start. A page that answers 403. A proxy that answers 502. An address and a hostname that were correct until the machine rebooted. Eve">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Three layers of \"permission denied\"",
+  "description": "A web server that will not start. A page that answers 403. A proxy that answers 502. An address and a hostname that were correct until the machine rebooted. Eve",
+  "url": "https://norboten.org/journals/rhcsa-04-selinux-firewall-network/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 4252,
+  "timeRequired": "PT55M",
+  "about": ["Firewall and SELinux", "Networking"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Site Nobody Can Reach</div>
+    <h1>Three layers of &#34;permission denied&#34;</h1>
+    <p class="muted">
+      55 minutes' reading · 4252 words ·<span class="tag">Firewall and SELinux</span><span class="tag">Networking</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 158 words</title><rect x="0.0" y="0" width="20.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 2494 words</title><rect x="23.7" y="0" width="326.0" height="30" rx="4" fill="#1d2a23"/><text x="31.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 1304 words</title><rect x="352.7" y="0" width="170.5" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 623 words</title><rect x="526.2" y="0" width="81.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 383 words</title><rect x="610.6" y="0" width="50.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 94 words</title><rect x="663.7" y="0" width="12.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 620 words</title><rect x="678.9" y="0" width="81.1" height="30" rx="4" fill="#1d2a23"/><text x="686.9" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/rhcsa-04-selinux-firewall-network/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>A web server that will not start. A page that answers 403. A proxy that answers 502. An address and
+a hostname that were correct until the machine rebooted. Every symptom in this lab has a plausible
+wrong explanation — the config file, the file permissions, the backend, the network — and in every
+case the real cause is a layer most people do not look at because nothing in the daemon's own log
+mentions it.</p>
+<p>That layer is SELinux, and the thing to understand about it is that it is not an extra set of
+permissions on files. It is a separate, parallel permission system that labels <em>everything</em> — files,
+directories, network ports, processes — and then consults a policy about which label may do what to
+which. A daemon can own a file, have <code>rwx</code> on it, and still be refused. <code>ls -l</code> will show you
+nothing wrong, because <code>ls -l</code> is looking at the other system.</p>
+<p>The lab then puts two more layers underneath: firewalld, where a rule can be present now and absent
+after a reboot, and NetworkManager, where the same is true of an address. The theme is the one this
+whole track keeps returning to — <strong>the difference between a machine that is right and a machine that
+will still be right tomorrow.</strong></p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Read an SELinux context and say which part of it matters for the problem in front of you.</li>
+<li>Find the denial that explains a failure, in the audit log, and translate it into the one thing
+that needs to change.</li>
+<li>Choose correctly between the four SELinux fixes — relabel a file, label a port, flip a boolean,
+write a module — instead of reaching for the first one you remember.</li>
+<li>Explain why <code>chcon</code> is a temporary fix and <code>semanage fcontext</code> + <code>restorecon</code> is not, and prove
+the difference with a dry run.</li>
+<li>Use permissive mode as a diagnostic without leaving the machine unprotected.</li>
+<li>Open a port in firewalld so that it is open now <em>and</em> after a reboot, in the zone that actually
+applies to the interface.</li>
+<li>Set a hostname and an extra address through the tools that own that configuration, rather than the
+commands that only change the running kernel.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="everything-has-a-label">Everything has a label</h3>
+<p>An SELinux context has four fields, and in day-to-day work you care about exactly one of them:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-Z<span class="hl-w"> </span>/srv/status/index.html
+<span class="hl-go">unconfined_u:object_r:var_t:s0 /srv/status/index.html</span>
+<span class="hl-go">└─ user      └─ role   └─ TYPE └─ level (MLS; ignore on RHCSA)</span>
+</code></pre>
+
+<p>The <strong>type</strong> is the whole game. Type enforcement is the rule that a process running in domain
+<code>httpd_t</code> may read files of type <code>httpd_sys_content_t</code>, may bind ports of type <code>http_port_t</code>, and
+may not touch things of type <code>var_t</code> — because the policy says so, file by file, port by port,
+verb by verb. Processes have types too, and they are visible in the same way:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ps<span class="hl-w"> </span>-eZ<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>nginx
+<span class="hl-go">system_u:system_r:httpd_t:s0       2248 ?        00:00:00 nginx</span>
+<span class="hl-go">system_u:system_r:httpd_t:s0       2253 ?        00:00:00 nginx</span>
+</code></pre>
+
+<p>Note that nginx runs in <code>httpd_t</code>: the policy is written around the <em>role</em> the daemon plays, not its
+package name, so everything named <code>httpd_*</code> applies to nginx as well. That surprises people once and
+then never again.</p>
+<p>Three kinds of thing carry labels, and each has its own tool:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-Zd<span class="hl-w"> </span>/srv/status<span class="hl-w">                       </span><span class="hl-c1"># files and directories</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semanage<span class="hl-w"> </span>port<span class="hl-w"> </span>-l<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>http_port_t<span class="hl-w"> </span><span class="hl-c1"># ports</span>
+<span class="hl-go">http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000</span>
+<span class="hl-gp">$ </span>ps<span class="hl-w"> </span>-eZ<span class="hl-w">                                   </span><span class="hl-c1"># processes</span>
+</code></pre>
+
+<p>Read that port list carefully, because it is the answer to the first fault in this lab. nginx may
+bind 80, 443, 8008, 8009, 9000 — and <strong>not</strong> 8090. Not because the port is in use, not because nginx
+lacks privilege in the ordinary sense, but because the label on the port does not permit that
+domain to bind it. The failure looks like this:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>nginx<span class="hl-w"> </span>-b<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>emerg
+<span class="hl-go">nginx[1491]: nginx: [emerg] bind() to 0.0.0.0:8090 failed (13: Permission denied)</span>
+</code></pre>
+
+<p><strong>Errno 13 on a bind is the signature of an SELinux port label</strong> — the same operation as root would
+normally simply succeed, and <code>EADDRINUSE</code> (98) would be the ordinary conflict. When you see
+&quot;Permission denied&quot; in a place where permissions have no business applying, that is the moment to
+go and read the audit log.</p>
+<h3 id="finding-the-denial">Finding the denial</h3>
+<p>Every refusal is logged, as an AVC (access vector cache) message, in <code>/var/log/audit/audit.log</code>.
+Do not grep that file by hand; <code>ausearch</code> formats it and understands time:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ausearch<span class="hl-w"> </span>-m<span class="hl-w"> </span>avc<span class="hl-w"> </span>-ts<span class="hl-w"> </span>recent
+<span class="hl-go">type=AVC msg=audit(…): avc:  denied  { name_bind } for  pid=1204 comm="nginx"</span>
+<span class="hl-go">    src=8090 scontext=system_u:system_r:httpd_t:s0</span>
+<span class="hl-go">    tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket permissive=0</span>
+</code></pre>
+
+<p>Read it in this order, and it tells you the whole story in one line:</p>
+<ul>
+<li><code>denied { name_bind }</code> — the operation. <code>name_bind</code> is binding a port, <code>name_connect</code> an outbound
+connection, <code>read</code>/<code>open</code>/<code>write</code>/<code>getattr</code> the file ones.</li>
+<li><code>comm=&quot;nginx&quot;</code>, <code>scontext=…:httpd_t</code> — the <strong>source</strong>: who was refused, and in which domain.</li>
+<li><code>tcontext=…:unreserved_port_t</code>, <code>src=8090</code> — the <strong>target</strong>: what they were refused, and its
+label. <code>unreserved_port_t</code> is the generic &quot;nothing claimed this port&quot; label.</li>
+<li><code>tclass=tcp_socket</code> — the kind of object. <code>file</code>, <code>dir</code>, <code>tcp_socket</code>, <code>unix_stream_socket</code>.</li>
+<li><code>permissive=0</code> — this was actually blocked. <code>permissive=1</code> means it was allowed and logged.</li>
+</ul>
+<p>Two more tools turn that into English:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ausearch<span class="hl-w"> </span>-m<span class="hl-w"> </span>avc<span class="hl-w"> </span>-ts<span class="hl-w"> </span>recent<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>audit2why<span class="hl-w">      </span><span class="hl-c1"># why it was denied, and what would allow it</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sealert<span class="hl-w"> </span>-a<span class="hl-w"> </span>/var/log/audit/audit.log<span class="hl-w">         </span><span class="hl-c1"># setroubleshoot's report, with suggestions</span>
+</code></pre>
+
+<p><code>audit2why</code> is worth internalising, because it distinguishes the cases: <em>&quot;one of the following
+booleans was set incorrectly&quot;</em> is a completely different fix from <em>&quot;you may want to report this as a
+bug&quot;</em>. But read what it offers rather than pasting it. For this lab's first denial — nginx refused a
+bind on 8090 — <code>audit2why</code> on Rocky 10 says:</p>
+<pre><code>	Was caused by:
+	The boolean nis_enabled was set incorrectly.
+	…
+	Allow access by executing:
+	# setsebool -P nis_enabled 1
+</code></pre>
+<p><code>nis_enabled</code> would indeed make the error go away, because it lets many confined domains bind <em>any</em>
+unreserved port. It is a switch for NIS clients, and turning it on to host a web page on 8090 widens
+every one of those domains to fix one. The correct answer — label the one port — is not a boolean,
+so <code>audit2why</code> cannot suggest it. For its second denial (the proxy's outbound connection) it lists
+four booleans at once — <code>httpd_can_network_connect</code>, <code>httpd_can_network_relay</code>,
+<code>httpd_can_connect_ftp</code>, <code>httpd_use_openstack</code> — and picking the one that describes what the service
+does is your job. Treat <code>audit2why</code> as a list of <em>things that would work</em>, not a recommendation.</p>
+<p>One more practical detail: <code>ausearch</code> reads standard input when it is not attached to a terminal. At
+a prompt that never matters; in a script, a pipeline started from cron, or a remote command without a
+tty, it silently reads an empty stdin and reports <code>&lt;no matches&gt;</code>. <code>ausearch --input-logs …</code> makes it
+read the audit log regardless.</p>
+<p>And there is a trap in the audit log itself: <strong>dontaudit</strong> rules mean some
+denials are silenced by default, so an empty <code>ausearch</code> is not proof that SELinux is innocent. When
+you suspect it anyway:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semodule<span class="hl-w"> </span>-DB<span class="hl-w">          </span><span class="hl-c1"># disable dontaudit rules and rebuild the policy</span>
+<span class="hl-go">… reproduce …</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semodule<span class="hl-w"> </span>-B<span class="hl-w">           </span><span class="hl-c1"># put them back</span>
+</code></pre>
+
+<h3 id="the-four-fixes-in-order-of-preference">The four fixes, in order of preference</h3>
+<p>When SELinux blocks something, exactly one of these is usually right:</p>
+<p><strong>1. The file's label is wrong</strong> — the file is in the wrong place, or arrived by a route that did
+not label it (a <code>mv</code> from a home directory preserves the old label; a <code>cp</code> takes the destination's).
+Fix the label, and fix it in the policy so it stays fixed:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semanage<span class="hl-w"> </span>fcontext<span class="hl-w"> </span>-a<span class="hl-w"> </span>-t<span class="hl-w"> </span>httpd_sys_content_t<span class="hl-w"> </span><span class="hl-s1">'/srv/status(/.*)?'</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>restorecon<span class="hl-w"> </span>-Rv<span class="hl-w"> </span>/srv/status
+</code></pre>
+
+<p><strong>2. A port's label is wrong</strong> — the daemon is on a non-standard port. Add the port to the type the
+daemon is allowed to bind:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semanage<span class="hl-w"> </span>port<span class="hl-w"> </span>-a<span class="hl-w"> </span>-t<span class="hl-w"> </span>http_port_t<span class="hl-w"> </span>-p<span class="hl-w"> </span>tcp<span class="hl-w"> </span><span class="hl-m">8090</span><span class="hl-w">     </span><span class="hl-c1"># -a to add</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semanage<span class="hl-w"> </span>port<span class="hl-w"> </span>-m<span class="hl-w"> </span>-t<span class="hl-w"> </span>http_port_t<span class="hl-w"> </span>-p<span class="hl-w"> </span>tcp<span class="hl-w"> </span><span class="hl-m">8090</span><span class="hl-w">     </span><span class="hl-c1"># -m if the port is already labelled</span>
+</code></pre>
+
+<p><strong>3. A boolean is off</strong> — the policy has a switch for this case, because the case is legitimate but
+not universal:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>getsebool<span class="hl-w"> </span>-a<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>httpd_can
+<span class="hl-go">httpd_can_network_connect --&gt; off</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>setsebool<span class="hl-w"> </span>-P<span class="hl-w"> </span>httpd_can_network_connect<span class="hl-w"> </span>on
+</code></pre>
+
+<p><strong>4. None of the above</strong> — then, and only then, a custom module built from the denials with
+<code>audit2allow -M</code>. On the exam and in real life this is almost always the wrong answer, because
+reaching for it means you have stopped asking what the policy was protecting.</p>
+<p>What is <em>not</em> on the list: turning SELinux off. Which brings us to the fifth fix that is not a fix.</p>
+<h3 id="permissive-is-a-diagnostic-disabled-is-a-decision">Permissive is a diagnostic; disabled is a decision</h3>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>getenforce
+<span class="hl-go">Enforcing</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>setenforce<span class="hl-w"> </span><span class="hl-m">0</span><span class="hl-w">            </span><span class="hl-c1"># permissive: log denials, allow them. Reversible instantly.</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>setenforce<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w">            </span><span class="hl-c1"># back to enforcing</span>
+</code></pre>
+
+<p>Permissive mode is genuinely useful: it answers &quot;is SELinux the reason?&quot; in one command, and — more
+usefully — it lets you reproduce the failure and collect <strong>every</strong> denial in one run, instead of
+fixing one label, hitting the next denial, and fixing that. Then you set it back.</p>
+<p><code>SELINUX=disabled</code> in <code>/etc/selinux/config</code> is a different thing entirely. It takes effect at the
+next boot, stops labelling new files, and coming back from it requires a <strong>full filesystem relabel</strong>
+— because everything created while it was off has no valid label. That is minutes to hours on a
+real machine, plus a second reboot.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>grep<span class="hl-w"> </span>^SELINUX<span class="hl-o">=</span><span class="hl-w"> </span>/etc/selinux/config
+<span class="hl-go">SELINUX=enforcing              # enforcing | permissive | disabled  (at boot)</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>touch<span class="hl-w"> </span>/.autorelabel<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>reboot<span class="hl-w">     </span><span class="hl-c1"># relabel everything on the way up</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>fixfiles<span class="hl-w"> </span>-R<span class="hl-w"> </span>nginx<span class="hl-w"> </span>restore<span class="hl-w">              </span><span class="hl-c1"># or relabel just one package's files</span>
+</code></pre>
+
+<p>This lab grades SELinux being enforcing — as a check that already passes on the broken machine,
+which exists purely to fail anyone who &quot;fixes&quot; the other five by switching the policy off. That is
+not a trick; it is the actual professional standard. Disabling SELinux to make an application work
+is the single most common way a RHEL machine ends up out of compliance.</p>
+<h3 id="chcon-versus-semanage-fcontext"><code>chcon</code> versus <code>semanage fcontext</code></h3>
+<p>Two commands change a file's label, and they are not alternatives:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chcon<span class="hl-w"> </span>-t<span class="hl-w"> </span>httpd_sys_content_t<span class="hl-w"> </span>/srv/status/index.html<span class="hl-w">      </span><span class="hl-c1"># write the label NOW</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semanage<span class="hl-w"> </span>fcontext<span class="hl-w"> </span>-a<span class="hl-w"> </span>-t<span class="hl-w"> </span>httpd_sys_content_t<span class="hl-w"> </span><span class="hl-s1">'/srv/status(/.*)?'</span><span class="hl-w">   </span><span class="hl-c1"># change the RULE</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>restorecon<span class="hl-w"> </span>-Rv<span class="hl-w"> </span>/srv/status<span class="hl-w">                              </span><span class="hl-c1"># apply the rules</span>
+</code></pre>
+
+<p><code>chcon</code> writes a label onto the inode and changes nothing about what the policy believes that path
+<em>should</em> be. The policy's own view lives in the file-context rules:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semanage<span class="hl-w"> </span>fcontext<span class="hl-w"> </span>-l<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span><span class="hl-s1">'^/srv'</span>
+<span class="hl-go">/srv/.*      all files      system_u:object_r:var_t:s0</span>
+</code></pre>
+
+<p>So the policy thinks everything under <code>/srv</code> is <code>var_t</code> — which is why the site files came out
+labelled that way, and why <code>restorecon</code> would happily undo a <code>chcon</code>. And <code>restorecon</code> does not run
+only when you run it: a relabel after a policy update, <code>/.autorelabel</code>, <code>fixfiles</code>, or a helpful
+colleague will all revert it. A <code>chcon</code> fix is a fix with a hidden expiry date.</p>
+<p>You can ask what the policy thinks without changing anything, and this is the command that proves
+your fix is real:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>restorecon<span class="hl-w"> </span>-R<span class="hl-w"> </span>-n<span class="hl-w"> </span>-v<span class="hl-w"> </span>/srv/status<span class="hl-w">     </span><span class="hl-c1"># -n = dry run: list what WOULD change</span>
+</code></pre>
+
+<p>Silence means every label under that path already matches the rules — the fix is in the policy.
+Output means the labels are right by accident and a relabel will take them away. This lab's third
+check runs exactly that, which is why <code>chcon</code> passes the eye test and fails the grade.</p>
+<p>The regular expression in an <code>fcontext</code> rule is worth getting right: <code>'/srv/status(/.*)?'</code> matches
+the directory itself <em>and</em> everything beneath it. Quote it so the shell does not expand it, do not
+put a trailing slash on the directory, and use <code>-a</code> to add a rule, <code>-m</code> to modify one that exists,
+<code>-d</code> to delete yours. <code>semanage fcontext -C -l</code> lists only the local customisations — handy for
+seeing what you have actually changed on a machine.</p>
+<h3 id="firewalld-two-configurations-several-zones">firewalld: two configurations, several zones</h3>
+<p>firewalld keeps a <strong>runtime</strong> configuration and a <strong>permanent</strong> one, deliberately, so a mistake
+made over SSH can be undone by not saving it. Nearly every firewalld bug is a confusion between
+them:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--add-port<span class="hl-o">=</span><span class="hl-m">8090</span>/tcp<span class="hl-w">                 </span><span class="hl-c1"># runtime only — gone at reboot/reload</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--permanent<span class="hl-w"> </span>--add-port<span class="hl-o">=</span><span class="hl-m">8090</span>/tcp<span class="hl-w">     </span><span class="hl-c1"># permanent only — not open right now</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--reload<span class="hl-w">                            </span><span class="hl-c1"># load permanent into runtime</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--runtime-to-permanent<span class="hl-w">              </span><span class="hl-c1"># the other direction: save what works</span>
+</code></pre>
+
+<p>The habit worth building: <code>--permanent</code>, then <code>--reload</code>. Or <code>--add-port</code> twice, once with and once
+without. And note what <code>--reload</code> does to anything you added at runtime and never saved: it
+discards it. That is the mechanism behind &quot;the port was open this morning&quot;.</p>
+<p>Rules live in <strong>zones</strong>, and a zone applies to the interfaces assigned to it. Asking the wrong
+zone's configuration is the other half of the confusion:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--get-active-zones
+<span class="hl-go">public (default)</span>
+<span class="hl-go">  interfaces: eth0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--get-zone-of-interface<span class="hl-o">=</span>eth0
+<span class="hl-go">public</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--zone<span class="hl-o">=</span>public<span class="hl-w"> </span>--list-all
+<span class="hl-go">public (default, active)</span>
+<span class="hl-go">  target: default</span>
+<span class="hl-go">  interfaces: eth0</span>
+<span class="hl-go">  services: cockpit dhcpv6-client ssh</span>
+<span class="hl-go">  ports: 8080/tcp</span>
+<span class="hl-go">  …</span>
+</code></pre>
+
+<p>There is the fourth fault, plainly: <code>8080/tcp</code>, not <code>8090/tcp</code>. Somebody typed the port the way
+they always type it.</p>
+<p>Ports can also be named, and named is better where a name exists — <code>--add-service=http</code> is
+self-documenting and covers what the service definition says it covers (80/tcp, and 443 for
+<code>https</code>). It does <strong>not</strong> cover 8090; a non-standard port is a <code>--add-port</code>, or your own service
+definition in <code>/etc/firewalld/services/</code>.</p>
+<p>One subtlety that matters for reading this lab's checks: traffic to <code>127.0.0.1</code> does not pass
+through the zone at all — the loopback interface is handled by the trusted zone. So the site would
+answer on localhost with the firewall entirely wrong, and a check that fetched <code>127.0.0.1:8090</code> would
+prove nothing about the firewall. That is why this lab's firewall check queries the configuration in
+both places instead of making a connection. When you test a firewall, test it from another machine,
+or read the rules.</p>
+<h3 id="networkmanager-owns-the-addresses">NetworkManager owns the addresses</h3>
+<p>On RHEL 9 and 10 there are no <code>ifcfg-*</code> scripts to edit: NetworkManager stores connection profiles
+as keyfiles under <code>/etc/NetworkManager/system-connections/</code>, and the supported way to change one is
+<code>nmcli</code>. The distinction to hold on to is <strong>device</strong> versus <strong>connection profile</strong> — the device is
+the hardware, the profile is the configuration that gets applied to it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>nmcli<span class="hl-w"> </span>device<span class="hl-w"> </span>status
+<span class="hl-go">DEVICE  TYPE      STATE                   CONNECTION</span>
+<span class="hl-go">eth0    ethernet  connected               cloud-init eth0</span>
+<span class="hl-go">lo      loopback  connected (externally)  lo</span>
+
+<span class="hl-gp">$ </span><span class="hl-nv">con</span><span class="hl-o">=</span><span class="hl-k">$(</span>nmcli<span class="hl-w"> </span>-g<span class="hl-w"> </span>GENERAL.CONNECTION<span class="hl-w"> </span>device<span class="hl-w"> </span>show<span class="hl-w"> </span>eth0<span class="hl-k">)</span>
+<span class="hl-gp">$ </span>nmcli<span class="hl-w"> </span>-g<span class="hl-w"> </span>ipv4.method,ipv4.addresses<span class="hl-w"> </span>connection<span class="hl-w"> </span>show<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$con</span><span class="hl-s2">"</span>
+<span class="hl-go">auto</span>
+
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>nmcli<span class="hl-w"> </span>connection<span class="hl-w"> </span>modify<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$con</span><span class="hl-s2">"</span><span class="hl-w"> </span>+ipv4.addresses<span class="hl-w"> </span><span class="hl-m">192</span>.168.5.50/24
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>nmcli<span class="hl-w"> </span>device<span class="hl-w"> </span>reapply<span class="hl-w"> </span>eth0
+<span class="hl-go">Connection successfully reapplied to device 'eth0'.</span>
+<span class="hl-gp">$ </span>nmcli<span class="hl-w"> </span>-g<span class="hl-w"> </span>ipv4.method,ipv4.addresses<span class="hl-w"> </span>connection<span class="hl-w"> </span>show<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$con</span><span class="hl-s2">"</span>
+<span class="hl-go">auto</span>
+<span class="hl-go">192.168.5.50/24</span>
+</code></pre>
+
+<p>The profile is named <code>cloud-init eth0</code> — cloud images name it after whatever created it, which is why
+you ask the device for its connection instead of guessing the name, and quote it because it contains a
+space. It uses <code>ipv4.method auto</code>, so its main address comes from DHCP and the <code>addresses</code> list starts
+empty; a static address added to an <code>auto</code> profile is carried <em>alongside</em> the DHCP lease, which is
+exactly what &quot;an additional address&quot; means.</p>
+<p>The <code>+</code> prefix <strong>adds</strong> to a list-valued property; without it you replace the whole list. On this
+machine the list was empty, so it makes no difference — but on a server configured with
+<code>ipv4.method manual</code>, the list holds the address you are connected over, and replacing it is how people
+lock themselves out. <code>-ipv4.addresses &lt;value&gt;</code>
+removes one. And modifying a profile does not apply it: <code>nmcli device reapply</code> pushes the change to
+the running device without dropping the link, while <code>nmcli connection up &quot;$con&quot;</code> re-activates the
+profile from scratch. Either works; <code>reapply</code> is gentler.</p>
+<p>Compare with the command that does not persist:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ip<span class="hl-w"> </span>addr<span class="hl-w"> </span>add<span class="hl-w"> </span><span class="hl-m">192</span>.168.5.50/24<span class="hl-w"> </span>dev<span class="hl-w"> </span>eth0<span class="hl-w">     </span><span class="hl-c1"># the running kernel only. Gone at reboot.</span>
+</code></pre>
+
+<p><code>ip</code> talks to the kernel; it does not tell NetworkManager anything, and NetworkManager may well
+remove the address again when it next reapplies the profile. <code>ip</code> is for looking (<code>ip -4 addr</code>,
+<code>ip route</code>, <code>ip -br link</code>) and for temporary experiments. Everything you want to keep goes through
+<code>nmcli</code>.</p>
+<p>The hostname has the same split, and <code>hostnamectl</code> handles both halves:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>hostname<span class="hl-w"> </span>web01.lab.example<span class="hl-w">         </span><span class="hl-c1"># running kernel only</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>hostnamectl<span class="hl-w"> </span>set-hostname<span class="hl-w"> </span>web01.lab.example<span class="hl-w">    </span><span class="hl-c1"># /etc/hostname AND the running kernel</span>
+<span class="hl-gp">$ </span>hostnamectl<span class="hl-w"> </span>hostname<span class="hl-w"> </span>--static
+<span class="hl-go">web01.lab.example</span>
+</code></pre>
+
+<p>There are three hostnames in systemd's model: <strong>static</strong> (<code>/etc/hostname</code>, what you set),
+<strong>transient</strong> (from DHCP or <code>hostname</code>, lost at reboot) and <strong>pretty</strong> (a free-form label). The
+static one is what survives, and <code>hostnamectl</code> with no arguments shows all of them. On a cloud
+image, watch for cloud-init overwriting the name at boot; <code>preserve_hostname: true</code> in
+<code>/etc/cloud/cloud.cfg.d/</code> is how you stop it, and this lab's machine already has that so your
+correct fix is not undone.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>nginx is enabled but not running, and nothing answers on 8090.</p>
+<p><strong>1. Why will the daemon not start?</strong> Ask systemd, not nginx:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>status<span class="hl-w"> </span>nginx<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-6
+<span class="hl-go">× nginx.service - The nginx HTTP and reverse proxy server</span>
+<span class="hl-go">     Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; preset: disabled)</span>
+<span class="hl-go">     Active: failed (Result: exit-code) since Sun 2026-09-13 04:59:19 UTC; 1s ago</span>
+<span class="hl-go">    Process: 1490 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)</span>
+<span class="hl-go">    Process: 1491 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=1/FAILURE)</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>nginx<span class="hl-w"> </span>-b<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-4
+<span class="hl-go">nginx[1491]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span>
+<span class="hl-go">nginx[1491]: nginx: [emerg] bind() to 0.0.0.0:8090 failed (13: Permission denied)</span>
+<span class="hl-go">nginx[1491]: nginx: configuration file /etc/nginx/nginx.conf test failed</span>
+<span class="hl-go">systemd[1]: Failed to start nginx.service - The nginx HTTP and reverse proxy server.</span>
+</code></pre>
+
+<p>Note where it failed: <code>ExecStartPre=/usr/sbin/nginx -t</code>, the configuration test the unit runs before
+starting. The test binds the listen sockets to prove it can, so a refused bind fails the <em>test</em> —
+<em>syntax is ok</em>, then <em>test failed</em>, which reads like a contradiction until you see the line between
+them.</p>
+<p>Errno 13 on a bind, as root. Nothing in the ordinary permission model can produce that. Is the port
+in use?</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ss<span class="hl-w"> </span>-lntp<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span><span class="hl-m">8090</span>
+<span class="hl-gp hl-gp-VirtualEnv">(nothing)</span>
+</code></pre>
+
+<p>No. So it is a label. <strong>2. Read the denial:</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ausearch<span class="hl-w"> </span>-m<span class="hl-w"> </span>avc<span class="hl-w"> </span>-ts<span class="hl-w"> </span>recent<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">type=AVC msg=audit(1789275559.419:226): avc:  denied  { name_bind } for  pid=1491 comm="nginx"</span>
+<span class="hl-go">  src=8090 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:unreserved_port_t:s0</span>
+<span class="hl-go">  tclass=tcp_socket permissive=0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ausearch<span class="hl-w"> </span>-m<span class="hl-w"> </span>avc<span class="hl-w"> </span>-ts<span class="hl-w"> </span>recent<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>audit2why<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>setsebool
+<span class="hl-gp">	# </span>setsebool<span class="hl-w"> </span>-P<span class="hl-w"> </span>nis_enabled<span class="hl-w"> </span><span class="hl-m">1</span>
+</code></pre>
+
+<p>The suggestion is the trap described above: it would work, and it would let every NIS-aware domain
+bind any port. Do not take it.</p>
+<p><code>name_bind</code>, <code>httpd_t</code>, port 8090 labelled <code>unreserved_port_t</code>. <strong>3. Ask which ports the domain may
+bind, and add this one:</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semanage<span class="hl-w"> </span>port<span class="hl-w"> </span>-l<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-w<span class="hl-w"> </span>http_port_t
+<span class="hl-go">http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000</span>
+<span class="hl-go">http_port_t                    udp      80, 443</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semanage<span class="hl-w"> </span>port<span class="hl-w"> </span>-a<span class="hl-w"> </span>-t<span class="hl-w"> </span>http_port_t<span class="hl-w"> </span>-p<span class="hl-w"> </span>tcp<span class="hl-w"> </span><span class="hl-m">8090</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semanage<span class="hl-w"> </span>port<span class="hl-w"> </span>-l<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-w<span class="hl-w"> </span>http_port_t
+<span class="hl-go">http_port_t                    tcp      8090, 80, 81, 443, 488, 8008, 8009, 8443, 9000</span>
+<span class="hl-go">http_port_t                    udp      80, 443</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semanage<span class="hl-w"> </span>port<span class="hl-w"> </span>-C<span class="hl-w"> </span>-l<span class="hl-w">          </span><span class="hl-c1"># only your local changes</span>
+<span class="hl-go">SELinux Port Type              Proto    Port Number</span>
+
+<span class="hl-go">http_port_t                    tcp      8090</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>nginx
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w"> </span>nginx
+<span class="hl-go">active</span>
+</code></pre>
+
+<p><strong>4. The next symptom is the next layer.</strong> The daemon is up; the page is not:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-si<span class="hl-w"> </span>localhost:8090/<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1
+<span class="hl-go">HTTP/1.1 403 Forbidden</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>tail<span class="hl-w"> </span>-1<span class="hl-w"> </span>/var/log/nginx/error.log
+<span class="hl-go">2026/09/13 05:00:23 [error] 2253#2253: *1 "/srv/status/index.html" is forbidden</span>
+<span class="hl-go">  (13: Permission denied), client: 127.0.0.1, server: web01.lab.example, request: "GET / HTTP/1.1"</span>
+</code></pre>
+
+<p>Errno 13 again — and again the ordinary permissions are fine:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/srv/status/index.html
+<span class="hl-go">-rw-r--r--. 1 root root 67 Sep 13 04:59 /srv/status/index.html</span>
+</code></pre>
+
+<p>World-readable, so <code>r--</code> is not the problem. The dot at the end of the mode string is the hint: this
+file has an SELinux context. Look at it, and at what the policy expects it to be:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-Zd<span class="hl-w"> </span>/srv/status<span class="hl-w"> </span>/srv/status/index.html
+<span class="hl-go">unconfined_u:object_r:var_t:s0 /srv/status</span>
+<span class="hl-go">unconfined_u:object_r:var_t:s0 /srv/status/index.html</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semanage<span class="hl-w"> </span>fcontext<span class="hl-w"> </span>-l<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span><span class="hl-s1">'^/srv'</span>
+<span class="hl-go">/srv                                               all files          system_u:object_r:var_t:s0</span>
+<span class="hl-go">/srv/([^/]*/)?ftp(/.*)?                            all files          system_u:object_r:public_content_t:s0</span>
+<span class="hl-go">/srv/([^/]*/)?rsync(/.*)?                          all files          system_u:object_r:public_content_t:s0</span>
+<span class="hl-go">/srv/([^/]*/)?www(/.*)?                            all files          system_u:object_r:httpd_sys_content_t:s0</span>
+<span class="hl-go">/srv/([^/]*/)?www/logs(/.*)?                       all files          system_u:object_r:httpd_log_t:s0</span>
+<span class="hl-go">/srv/.*                                            all files          system_u:object_r:var_t:s0</span>
+<span class="hl-go">…</span>
+</code></pre>
+
+<p><code>var_t</code>, and the policy agrees it should be <code>var_t</code> — so this is not a file whose label drifted, it
+is a file in a location the policy has no web-content rule for. The listing is instructive, though:
+the policy <em>does</em> know about web content under <code>/srv</code> — in a directory called <code>www</code>, as
+<code>/srv/www/</code> or <code>/srv/&lt;site&gt;/www/</code>. Had the team put the site in <code>/srv/status/www</code>, <code>restorecon</code> alone
+would have labelled it correctly. Since the requirement is <code>/srv/status</code>, add a rule for it, then apply
+it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>semanage<span class="hl-w"> </span>fcontext<span class="hl-w"> </span>-a<span class="hl-w"> </span>-t<span class="hl-w"> </span>httpd_sys_content_t<span class="hl-w"> </span><span class="hl-s1">'/srv/status(/.*)?'</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>restorecon<span class="hl-w"> </span>-Rv<span class="hl-w"> </span>/srv/status
+<span class="hl-go">Relabeled /srv/status from unconfined_u:object_r:var_t:s0 to unconfined_u:object_r:httpd_sys_content_t:s0</span>
+<span class="hl-go">Relabeled /srv/status/index.html from unconfined_u:object_r:var_t:s0 to unconfined_u:object_r:httpd_sys_content_t:s0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>restorecon<span class="hl-w"> </span>-R<span class="hl-w"> </span>-n<span class="hl-w"> </span>-v<span class="hl-w"> </span>/srv/status<span class="hl-w">      </span><span class="hl-c1"># the proof: silence means the policy agrees</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>localhost:8090/<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1
+<span class="hl-go">&lt;!doctype html&gt;&lt;title&gt;status&lt;/title&gt;&lt;h1&gt;Norboten web01 status&lt;/h1&gt;</span>
+</code></pre>
+
+<p><strong>5. The proxy is the third layer.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-si<span class="hl-w"> </span>localhost:8090/api/status<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1
+<span class="hl-go">HTTP/1.1 502 Bad Gateway</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>tail<span class="hl-w"> </span>-1<span class="hl-w"> </span>/var/log/nginx/error.log
+<span class="hl-go">2026/09/13 05:00:24 [crit] 2253#2253: *3 connect() to 127.0.0.1:9100 failed (13: Permission denied)</span>
+<span class="hl-go">  while connecting to upstream, … upstream: "http://127.0.0.1:9100/status"</span>
+</code></pre>
+
+<p>The third errno 13. Is the backend actually up?</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w"> </span>status-api
+<span class="hl-go">active</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:9100/status
+<span class="hl-go">{"ok": true, "service": "status-api"}</span>
+</code></pre>
+
+<p>The backend answers when <em>you</em> ask it. So this is not the network and not the backend — it is nginx
+being refused an outbound connection:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ausearch<span class="hl-w"> </span>-m<span class="hl-w"> </span>avc<span class="hl-w"> </span>-ts<span class="hl-w"> </span>recent<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>name_connect<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">type=AVC msg=audit(1789275624.605:581): avc:  denied  { name_connect } for  pid=2253 comm="nginx"</span>
+<span class="hl-go">  dest=9100 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:hplip_port_t:s0</span>
+<span class="hl-go">  tclass=tcp_socket permissive=0</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ausearch<span class="hl-w"> </span>-m<span class="hl-w"> </span>avc<span class="hl-w"> </span>-ts<span class="hl-w"> </span>recent<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-A2<span class="hl-w"> </span>name_connect<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>audit2why<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'boolean|setsebool'</span>
+<span class="hl-go">	One of the following booleans was set incorrectly.</span>
+<span class="hl-gp">	# </span>setsebool<span class="hl-w"> </span>-P<span class="hl-w"> </span>httpd_can_network_connect<span class="hl-w"> </span><span class="hl-m">1</span>
+<span class="hl-gp">	# </span>setsebool<span class="hl-w"> </span>-P<span class="hl-w"> </span>httpd_can_network_relay<span class="hl-w"> </span><span class="hl-m">1</span>
+<span class="hl-gp">	# </span>setsebool<span class="hl-w"> </span>-P<span class="hl-w"> </span>httpd_can_connect_ftp<span class="hl-w"> </span><span class="hl-m">1</span>
+<span class="hl-gp">	# </span>setsebool<span class="hl-w"> </span>-P<span class="hl-w"> </span>httpd_use_openstack<span class="hl-w"> </span><span class="hl-m">1</span>
+</code></pre>
+
+<p>Two things to read. The target is <code>hplip_port_t</code>: port 9100 is labelled for HP printer traffic,
+because that is its registered use — which is why labelling an arbitrary backend port is not the fix
+here. And <code>audit2why</code> offers four booleans. Only one describes what nginx is doing: connecting to a
+backend over the network. That is exactly the case booleans exist for: a web server making outbound connections is normal for
+a proxy and suspicious for a plain content server, so the policy asks.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>getsebool<span class="hl-w"> </span>httpd_can_network_connect
+<span class="hl-go">httpd_can_network_connect --&gt; off</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>setsebool<span class="hl-w"> </span>-P<span class="hl-w"> </span>httpd_can_network_connect<span class="hl-w"> </span>on
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>localhost:8090/api/status
+<span class="hl-go">{"ok": true, "service": "status-api"}</span>
+</code></pre>
+
+<p><code>-P</code> writes the value to the policy store as well as setting it now. Without it, the boolean reverts
+at the next boot — which is the same class of mistake as everything else in this lab.</p>
+<p><strong>6. The firewall, in the zone that applies.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--get-zone-of-interface<span class="hl-o">=</span>eth0
+<span class="hl-go">public</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--zone<span class="hl-o">=</span>public<span class="hl-w"> </span>--list-all<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>ports
+<span class="hl-go">  ports: 8080/tcp</span>
+<span class="hl-go">  forward-ports:</span>
+<span class="hl-go">  source-ports:</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--permanent<span class="hl-w"> </span>--zone<span class="hl-o">=</span>public<span class="hl-w"> </span>--add-port<span class="hl-o">=</span><span class="hl-m">8090</span>/tcp
+<span class="hl-go">success</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--permanent<span class="hl-w"> </span>--zone<span class="hl-o">=</span>public<span class="hl-w"> </span>--remove-port<span class="hl-o">=</span><span class="hl-m">8080</span>/tcp
+<span class="hl-go">success</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--reload
+<span class="hl-go">success</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--zone<span class="hl-o">=</span>public<span class="hl-w"> </span>--query-port<span class="hl-o">=</span><span class="hl-m">8090</span>/tcp<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span>open-now
+<span class="hl-go">yes</span>
+<span class="hl-go">open-now</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--permanent<span class="hl-w"> </span>--zone<span class="hl-o">=</span>public<span class="hl-w"> </span>--query-port<span class="hl-o">=</span><span class="hl-m">8090</span>/tcp<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span>open-after-reboot
+<span class="hl-go">yes</span>
+<span class="hl-go">open-after-reboot</span>
+</code></pre>
+
+<p>Both questions asked separately, because they are separate configurations.</p>
+<p><strong>7. The name and the address, through the tools that own them.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>hostnamectl<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-2
+<span class="hl-go">     Static hostname: lima-nb-rhcsa-04</span>
+<span class="hl-go">  Transient hostname: web01.lab.example</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>hostnamectl<span class="hl-w"> </span>set-hostname<span class="hl-w"> </span>web01.lab.example
+<span class="hl-gp">$ </span>hostnamectl<span class="hl-w"> </span>hostname<span class="hl-w"> </span>--static
+<span class="hl-go">web01.lab.example</span>
+
+<span class="hl-gp">$ </span><span class="hl-nv">con</span><span class="hl-o">=</span><span class="hl-k">$(</span>nmcli<span class="hl-w"> </span>-g<span class="hl-w"> </span>GENERAL.CONNECTION<span class="hl-w"> </span>device<span class="hl-w"> </span>show<span class="hl-w"> </span>eth0<span class="hl-k">)</span>
+<span class="hl-gp">$ </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$con</span><span class="hl-s2">"</span>
+<span class="hl-go">cloud-init eth0</span>
+<span class="hl-gp">$ </span>nmcli<span class="hl-w"> </span>-g<span class="hl-w"> </span>ipv4.method,ipv4.addresses<span class="hl-w"> </span>connection<span class="hl-w"> </span>show<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$con</span><span class="hl-s2">"</span>
+<span class="hl-go">auto</span>
+
+<span class="hl-gp">$ </span>ip<span class="hl-w"> </span>-4<span class="hl-w"> </span>-br<span class="hl-w"> </span>addr<span class="hl-w"> </span>show<span class="hl-w"> </span>eth0<span class="hl-w">                  </span><span class="hl-c1"># the address is there — added with `ip`, in memory only</span>
+<span class="hl-go">eth0             UP             192.168.5.15/24 192.168.5.50/24</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>nmcli<span class="hl-w"> </span>connection<span class="hl-w"> </span>modify<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$con</span><span class="hl-s2">"</span><span class="hl-w"> </span>+ipv4.addresses<span class="hl-w"> </span><span class="hl-m">192</span>.168.5.50/24
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>nmcli<span class="hl-w"> </span>device<span class="hl-w"> </span>reapply<span class="hl-w"> </span>eth0
+<span class="hl-go">Connection successfully reapplied to device 'eth0'.</span>
+<span class="hl-gp">$ </span>nmcli<span class="hl-w"> </span>-g<span class="hl-w"> </span>ipv4.addresses<span class="hl-w"> </span>connection<span class="hl-w"> </span>show<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$con</span><span class="hl-s2">"</span>
+<span class="hl-go">192.168.5.50/24</span>
+<span class="hl-gp">$ </span>ip<span class="hl-w"> </span>-4<span class="hl-w"> </span>-br<span class="hl-w"> </span>addr<span class="hl-w"> </span>show<span class="hl-w"> </span>eth0
+<span class="hl-go">eth0             UP             192.168.5.50/24 192.168.5.15/24</span>
+</code></pre>
+
+<p><code>hostnamectl</code> shows the split in one screen: the transient name is the one the <code>hostname</code> command
+set by hand, the static one is still the image's. And the address looked correct before any fix —
+which is precisely why reading <code>ip</code> proves nothing about the next boot. The profile is the evidence.</p>
+<p><strong>8. Reboot, and check all six again.</strong> The reboot is where <code>setenforce</code> without config,
+<code>setsebool</code> without <code>-P</code>, <code>firewall-cmd</code> without <code>--permanent</code>, <code>ip addr add</code> and <code>hostname</code> all
+reveal themselves:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>reboot
+<span class="hl-gp">$ </span>getenforce<span class="hl-p">;</span><span class="hl-w"> </span>hostnamectl<span class="hl-w"> </span>hostname<span class="hl-w"> </span>--static<span class="hl-p">;</span><span class="hl-w"> </span>ip<span class="hl-w"> </span>-4<span class="hl-w"> </span>-br<span class="hl-w"> </span>addr<span class="hl-w"> </span>show<span class="hl-w"> </span>eth0
+<span class="hl-gp">$ </span>getsebool<span class="hl-w"> </span>httpd_can_network_connect
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>firewall-cmd<span class="hl-w"> </span>--zone<span class="hl-o">=</span>public<span class="hl-w"> </span>--query-port<span class="hl-o">=</span><span class="hl-m">8090</span>/tcp
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>localhost:8090/<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-p">;</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>localhost:8090/api/status
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong><code>setenforce 0</code>, or <code>SELINUX=disabled</code>.</strong> It makes all three SELinux symptoms disappear at once,
+which is exactly why it is tempting and exactly why this lab grades enforcing mode. Permissive is a
+<em>diagnostic</em> — set it, reproduce, collect every denial, set it back. Disabled is a state you cannot
+leave without a full relabel and a second reboot, and on a real machine it is an audit finding.</p>
+<p><strong><code>chcon -R -t httpd_sys_content_t /srv/status</code>.</strong> The page starts working, the labels look right,
+and the next <code>restorecon</code>, policy update or <code>/.autorelabel</code> silently undoes it. <code>restorecon -Rnv</code>
+on the path is the test: if it lists files, your fix is temporary. The durable fix is
+<code>semanage fcontext -a</code> and then <code>restorecon</code>.</p>
+<p><strong>Reading only nginx's error log.</strong> The bind failure is in systemd's journal, the 403 and 502 are in
+nginx's log, and the <em>reason</em> for all three is in the audit log. A daemon does not know why SELinux
+refused it — it only sees <code>EACCES</code>.</p>
+<p><strong>Assuming <code>EACCES</code> means file permissions.</strong> <code>ls -l</code> shows <code>-rw-r--r-- root root</code> and world-readable
+content, and the natural conclusion is that the error message is lying. The trailing dot in
+<code>-rw-r--r--.</code> is the system telling you there is another label to look at.</p>
+<p><strong>Changing the port in nginx's config to 80.</strong> The site works, the SELinux port label is not needed,
+and the requirement — serve on 8090 — has been redefined rather than met. The same instinct in
+production is how a machine ends up with services on whichever ports happened to be easy.</p>
+<p><strong><code>audit2allow -M mysite</code> on the first denial.</strong> It produces a module that grants precisely the
+access a boolean or a label already offers, but as a permanent local policy exception nobody will ever
+review. Run <code>audit2why</code> first — and then read its suggestion rather than pasting it.</p>
+<p><strong>Taking <code>audit2why</code>'s first boolean.</strong> For the refused bind on 8090 it offers <code>nis_enabled</code>, which
+lets many domains bind any unreserved port; the right fix is <code>semanage port</code>, which <code>audit2why</code> never
+suggests because it is not a boolean. For the refused connection it lists four booleans, and only
+<code>httpd_can_network_connect</code> describes a reverse proxy.</p>
+<p><strong><code>setsebool</code> without <code>-P</code>.</strong> The boolean is on, everything works, and the next boot reverts it.
+<code>getsebool</code> after a reboot is the only honest test.</p>
+<p><strong><code>firewall-cmd --add-port</code> without <code>--permanent</code>, or <code>--permanent</code> without <code>--reload</code>.</strong> The first
+is open now and gone at reboot; the second is the reverse and looks like the command failed. And
+<code>--reload</code> discards anything added at runtime and never saved — <code>--runtime-to-permanent</code> is the
+escape hatch when you have got the runtime right interactively.</p>
+<p><strong>Fixing the firewall in the wrong zone.</strong> <code>--add-port</code> with no <code>--zone</code> applies to the <em>default</em>
+zone, which is not necessarily the zone eth0 is in. Ask
+<code>firewall-cmd --get-zone-of-interface=eth0</code> first.</p>
+<p><strong>Concluding the firewall is the reason localhost fails.</strong> Loopback traffic is handled by the
+trusted zone and never consults the port list, so <code>curl 127.0.0.1:8090</code> cannot be blocked by a
+missing rule. If localhost fails, the cause is on the machine — the daemon, the labels, the
+backend.</p>
+<p><strong><code>ip addr add</code> and <code>hostname</code>.</strong> Both change the running kernel and nothing on disk. The address
+may not even last that long: NetworkManager can remove it the next time it reapplies the profile.</p>
+<p><strong><code>nmcli connection modify &quot;$con&quot; ipv4.addresses 192.168.5.50/24</code> without the <code>+</code>.</strong> That replaces
+the address list, dropping the address you are connected over. If you are lucky you are on the
+console; if you are not, the machine is unreachable and the change persisted.</p>
+<p><strong>Editing <code>/etc/sysconfig/network-scripts/ifcfg-eth0</code>.</strong> That file is not in charge on RHEL 9 or 10
+— NetworkManager keyfiles are — and on many installs it does not exist at all. <code>nmcli</code> is the
+interface; the keyfile under <code>/etc/NetworkManager/system-connections/</code> is what it writes.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>SELinux:<span class="hl-w"> </span>look
+<span class="hl-go">getenforce ; sestatus                  # current mode, policy, and the boot setting</span>
+<span class="hl-go">ls -Z FILE ; ls -Zd DIR                # a file's context</span>
+<span class="hl-go">ps -eZ | grep nginx                    # a process's domain</span>
+<span class="hl-go">semanage port -l | grep -w http_port_t # which ports a type covers</span>
+<span class="hl-go">getsebool -a | grep httpd              # the booleans for a domain</span>
+<span class="hl-go">semanage fcontext -l | grep '^/srv'    # what the policy thinks a path should be</span>
+<span class="hl-go">semanage fcontext -C -l                # only the local customisations</span>
+
+<span class="hl-gp"># </span>SELinux:<span class="hl-w"> </span>the<span class="hl-w"> </span>denial
+<span class="hl-go">ausearch -m avc -ts recent             # denials, recent first (--input-logs in scripts: no tty = reads stdin)</span>
+<span class="hl-go">ausearch -m avc -ts recent | audit2why # what WOULD allow it — a list to judge, not advice</span>
+<span class="hl-go">sealert -a /var/log/audit/audit.log    # setroubleshoot's report</span>
+<span class="hl-go">semodule -DB … semodule -B             # unmask dontaudit rules while you reproduce</span>
+
+<span class="hl-gp"># </span>SELinux:<span class="hl-w"> </span>fix
+<span class="hl-go">semanage fcontext -a -t httpd_sys_content_t '/srv/status(/.*)?'</span>
+<span class="hl-go">restorecon -Rv /srv/status             # apply the rules</span>
+<span class="hl-go">restorecon -R -n -v /srv/status        # DRY RUN: silence = the policy agrees with the labels</span>
+<span class="hl-go">semanage port -a -t http_port_t -p tcp 8090     # -m if the port already has a type</span>
+<span class="hl-go">setsebool -P httpd_can_network_connect on       # -P or it reverts at boot</span>
+<span class="hl-go">chcon -t TYPE FILE                     # now only — temporary by design</span>
+<span class="hl-go">touch /.autorelabel &amp;&amp; reboot          # full relabel</span>
+<span class="hl-go">fixfiles -R nginx restore              # relabel one package's files</span>
+<span class="hl-go">setenforce 0 / 1                       # permissive / enforcing — a diagnostic, not a fix</span>
+
+<span class="hl-gp"># </span>firewalld
+<span class="hl-go">firewall-cmd --state</span>
+<span class="hl-go">firewall-cmd --get-active-zones ; firewall-cmd --get-zone-of-interface=eth0</span>
+<span class="hl-go">firewall-cmd --zone=public --list-all</span>
+<span class="hl-go">firewall-cmd --permanent --zone=public --add-port=8090/tcp ; firewall-cmd --reload</span>
+<span class="hl-go">firewall-cmd --permanent --zone=public --add-service=http</span>
+<span class="hl-go">firewall-cmd --zone=public --query-port=8090/tcp          # runtime</span>
+<span class="hl-go">firewall-cmd --permanent --zone=public --query-port=8090/tcp   # after reboot</span>
+<span class="hl-go">firewall-cmd --runtime-to-permanent    # save what you got right interactively</span>
+<span class="hl-go">firewall-cmd --get-services            # the named services available</span>
+
+<span class="hl-gp"># </span>network,<span class="hl-w"> </span>persistently
+<span class="hl-go">nmcli device status ; nmcli connection show</span>
+<span class="hl-go">nmcli -g GENERAL.CONNECTION device show eth0        # which profile is on the device</span>
+<span class="hl-go">nmcli connection modify "$con" +ipv4.addresses 192.168.5.50/24   # + adds, no + replaces</span>
+<span class="hl-go">nmcli connection modify "$con" ipv4.gateway … ipv4.dns … ipv4.method manual</span>
+<span class="hl-go">nmcli device reapply eth0              # apply without dropping the link</span>
+<span class="hl-go">nmcli connection up "$con"             # re-activate the profile</span>
+<span class="hl-go">hostnamectl set-hostname web01.lab.example</span>
+<span class="hl-go">hostnamectl hostname --static          # what survives a reboot</span>
+
+<span class="hl-gp"># </span>network,<span class="hl-w"> </span><span class="hl-k">for</span><span class="hl-w"> </span>looking<span class="hl-w"> </span>only
+<span class="hl-go">ip -4 -br addr ; ip route ; ss -lntp</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<p>Manual pages: <code>man 8 ausearch</code>, <code>man 8 semanage-port</code>, <code>man 8 getsebool</code>, <code>man 8 setsebool</code>, <code>man 8 semanage-fcontext</code>, <code>man 8 restorecon</code>, <code>man 1 firewall-cmd</code>, <code>man 1 nmcli</code>, <code>man 1 hostnamectl</code>, <code>man 8 selinux</code>.</p>
+<p>The whole subject, end to end: the topic journal <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p><code>nginx: [emerg] bind() to 0.0.0.0:8090 failed (13: Permission denied)</code>, running as root, with
+nothing else listening on the port. What is refusing it, and which command fixes it?</p>
+<blockquote>
+<p>SELinux: port 8090 is not labelled with a type the <code>httpd_t</code> domain may bind. The audit log
+shows <code>denied { name_bind } … tclass=tcp_socket</code>. Fix with
+<code>semanage port -a -t http_port_t -p tcp 8090</code>. Errno 13 on a bind as root — rather than errno
+98, already in use — is the signature.</p>
+</blockquote>
+</li>
+<li>
+<p>A file is <code>-rw-r--r--. root root</code> and the web server gets <em>Permission denied</em> reading it. Where
+is the information <code>ls -l</code> is not showing you?</p>
+<blockquote>
+<p>In the SELinux context — the trailing dot in the mode string says there is one. <code>ls -Z</code> shows
+the type; here <code>var_t</code> rather than <code>httpd_sys_content_t</code>, which the policy does not let
+<code>httpd_t</code> read.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between <code>chcon -t httpd_sys_content_t</code> and
+<code>semanage fcontext -a -t httpd_sys_content_t</code> + <code>restorecon</code>, and how do you prove which one was
+used?</p>
+<blockquote>
+<p><code>chcon</code> writes a label onto the inode; the policy still believes the path should have its old
+type, so any relabel reverts it. <code>semanage fcontext</code> changes the rule and <code>restorecon</code> applies
+it. <code>restorecon -R -n -v PATH</code> is the proof: it lists every file whose label differs from the
+rules, so silence means the fix is in the policy.</p>
+</blockquote>
+</li>
+<li>
+<p>When is <code>audit2allow -M</code> the right answer, and what should you run before you consider it?</p>
+<blockquote>
+<p>Almost never on RHCSA: only when the access is legitimate and no boolean, file-context rule or
+port label covers it. Run <code>audit2why</code> first — it lists the booleans that would allow the access,
+and a boolean is a supported switch while a local module is an unreviewed policy exception. Read
+the list, though: for a refused port bind it suggests <code>nis_enabled</code>, far broader than the
+<code>semanage port</code> label that is the real fix.</p>
+</blockquote>
+</li>
+<li>
+<p>Your change works and <code>getenforce</code> says Permissive. What is the professional problem with leaving
+it there, and what is the difference from <code>SELINUX=disabled</code>?</p>
+<blockquote>
+<p>Permissive logs denials and allows them: the machine is unprotected, and the finding is that
+every application bug becomes a silent policy violation. But it is reversible with
+<code>setenforce 1</code>. <code>disabled</code> also stops labelling new files, so returning to enforcing needs a
+full relabel (<code>touch /.autorelabel</code>) and a second reboot.</p>
+</blockquote>
+</li>
+<li>
+<p>You run <code>firewall-cmd --add-port=8090/tcp</code> and it works. Two hours later, after a colleague runs
+<code>firewall-cmd --reload</code>, it does not. Why?</p>
+<blockquote>
+<p>The rule was added to the runtime configuration only. <code>--reload</code> replaces runtime with the
+permanent configuration, discarding unsaved runtime rules. Use <code>--permanent</code> and then
+<code>--reload</code>, or <code>--runtime-to-permanent</code> to save what you have.</p>
+</blockquote>
+</li>
+<li>
+<p>Why can a completely wrong firewall configuration still let <code>curl http://127.0.0.1:8090/</code>
+succeed?</p>
+<blockquote>
+<p>Loopback traffic is handled by the trusted zone and does not consult the zone's port list. A
+localhost test says nothing about the firewall — test from another host, or read the rules with
+<code>--list-all</code> in the zone the interface is actually in.</p>
+</blockquote>
+</li>
+<li>
+<p><code>ip addr add 192.168.5.50/24 dev eth0</code> and <code>hostname web01.lab.example</code> both appear to work and
+both are gone after a reboot. What owns each setting, and what are the persistent commands?</p>
+<blockquote>
+<p>NetworkManager owns the address — <code>nmcli connection modify &quot;$con&quot; +ipv4.addresses …</code> then
+<code>nmcli device reapply eth0</code>; the <code>+</code> matters, since without it you replace the whole address
+list. systemd owns the hostname — <code>hostnamectl set-hostname …</code>, which writes <code>/etc/hostname</code>
+(the static name) as well as setting the running one. <code>ip</code> and <code>hostname</code> talk only to the
+running kernel.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

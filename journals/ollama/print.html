@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ollama on a server — a model is a service, a file, a cache and a timer</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Ollama on a server — a model is a service, a file, a cache and a timer</h1>
+  <div class="meta">ollama, ai-services · 45 minutes · 2067 words</div>
+</header>
+<p>Ollama makes running a language model on your own hardware look like running any other daemon:
+install one binary, start <code>ollama serve</code>, and an HTTP API on port 11434 lists models, generates text,
+chats and computes embeddings. That resemblance is useful and a little misleading. A model server
+behaves unlike a web application in three ways that matter to whoever runs it: what it loads is huge
+and has to be warmed up, how much memory it needs depends on settings rather than on traffic, and what
+it gives the model to read is bounded by a context window that silently cuts off whatever does not fit.</p>
+<p>This journal follows one server through a morning’s work on Norboten’s automation image, recorded
+before it moved to Ubuntu 26.04 (<code>ubuntu-26.04-automation</code>) —
+Ollama 0.34.0, <code>qwen2.5:0.5b</code> and the <code>all-minilm</code> embedding model on a 2-CPU, 3 GB VM — and ties
+together what the automation track’s four Ollama labs take apart one at a time: <code>ai-01</code> (the service
+account and a proxy for streamed answers), <code>ollama-01</code> (exposure and origins), <code>ollama-02</code> (Modelfiles and
+context) and <code>ollama-03</code> (memory).</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Run Ollama as a systemd service with its own account and model directory, and configure it through
+its environment.</li>
+<li>Use the API to list, load, query, embed and unload models, and read its timings.</li>
+<li>Explain keep-alive, preload a model and predict when it unloads.</li>
+<li>Build a model with a Modelfile and keep its context window large enough for its instructions.</li>
+<li>Size context and parallelism to memory, and cap the service safely.</li>
+<li>Keep the server off the network and put authentication in front of it.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>The service</h3>
+<p>Ollama is configured by environment variables read by <code>ollama serve</code>. Under systemd:</p>
+<pre><code class="language-ini">[Service]
+User=ollama
+Group=ollama
+Environment=HOME=/var/lib/ollama
+Environment=OLLAMA_MODELS=/var/lib/ollama/models
+ExecStart=/usr/local/bin/ollama serve
+Restart=on-failure
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>variable</th>
+<th>default</th>
+<th>what it controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OLLAMA_HOST</code></td>
+<td><code>127.0.0.1:11434</code></td>
+<td>listen address (and where the <code>ollama</code> client connects)</td>
+</tr>
+<tr>
+<td><code>OLLAMA_MODELS</code></td>
+<td><code>~/.ollama/models</code> of the serving user</td>
+<td>model blobs and manifests</td>
+</tr>
+<tr>
+<td><code>OLLAMA_ORIGINS</code></td>
+<td>local origins</td>
+<td>extra web origins allowed to call it from a browser</td>
+</tr>
+<tr>
+<td><code>OLLAMA_KEEP_ALIVE</code></td>
+<td><code>5m</code></td>
+<td>how long a loaded model stays in memory</td>
+</tr>
+<tr>
+<td><code>OLLAMA_CONTEXT_LENGTH</code></td>
+<td>4096</td>
+<td>default context window</td>
+</tr>
+<tr>
+<td><code>OLLAMA_NUM_PARALLEL</code></td>
+<td>1</td>
+<td>simultaneous requests per loaded model</td>
+</tr>
+<tr>
+<td><code>OLLAMA_MAX_LOADED_MODELS</code></td>
+<td>3 (CPU)</td>
+<td>models kept loaded at once, memory permitting</td>
+</tr>
+<tr>
+<td><code>OLLAMA_MAX_QUEUE</code></td>
+<td>512</td>
+<td>queued requests before 503</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>ollama</code> command is an HTTP client of that server. <code>ollama pull</code>, <code>create</code> and <code>rm</code> ask the server to
+act; the files are written as the server’s user under its <code>OLLAMA_MODELS</code>, whoever typed the command.</p>
+<p>The API has no authentication. Keep <code>OLLAMA_HOST</code> on loopback and publish it through a proxy that
+authenticates (<code>ollama-01</code>); give the proxy <code>proxy_buffering off</code> and a long <code>proxy_read_timeout</code> for
+answers that stream (<code>ai-01</code>).</p>
+<h3>Models on disk</h3>
+<p>A model is a manifest pointing at content-addressed blobs: weights, template, parameters, system prompt.
+<code>qwen2.5:0.5b</code> is 494 million parameters quantized to about 4 bits (<code>Q4_K_M</code>), a 398 MB file; <code>all-minilm</code>
+is 23 million parameters in 16-bit floats, 46 MB. Both together occupy 424 MB of <code>/var/lib/ollama/models</code>
+on the image — pulled at build time, because a lab machine has no internet.</p>
+<p>A <strong>Modelfile</strong> derives a model: <code>FROM</code> a base, <code>PARAMETER</code> lines (<code>num_ctx</code>, <code>temperature</code>, <code>seed</code>,
+<code>stop</code>, …), a <code>SYSTEM</code> prompt, optional <code>MESSAGE</code> examples. <code>ollama create</code> reads it once and stores a new
+manifest that reuses the base’s weight blobs. Editing the file changes nothing until the model is created
+again; <code>ollama show --modelfile</code> tells you what the server holds.</p>
+<h3>What a request costs: load, prompt, generation</h3>
+<p>Every response carries timings in <strong>nanoseconds</strong>: <code>load_duration</code> (bringing the model into memory),
+<code>prompt_eval_count</code> and <code>prompt_eval_duration</code> (reading the prompt), <code>eval_count</code> and <code>eval_duration</code>
+(generating). The first request after a load pays the load; the rest do not, until the model is unloaded.</p>
+<p><strong>Keep-alive</strong> decides when that happens. Each loaded model has an expiry: five minutes after its last
+request by default, <code>OLLAMA_KEEP_ALIVE</code> for the server, or <code>keep_alive</code> in a request (a duration, seconds,
+<code>0</code> to unload right after, any negative number for never). A request with a model and no prompt loads it
+and returns — the documented way to preload. <code>ollama stop &lt;model&gt;</code> unloads now.</p>
+<h3>Context windows</h3>
+<p><code>num_ctx</code> bounds everything one request holds — system prompt, conversation, question and answer. Chat is
+stateless: each request resends the whole conversation, so the prompt grows with every turn. When a prompt
+does not fit, Ollama cuts it to about half the window, keeping a few tokens from the start and the most
+recent text, logs <code>truncating input prompt</code>, and answers anyway (<code>ollama-02</code>: a 1,388-token prompt became
+130 tokens at <code>num_ctx</code> 256). Options in a request override the model’s parameters, which override the
+server’s defaults.</p>
+<h3>Memory</h3>
+<p>A loaded model holds its weights, working memory, and a <strong>key-value cache</strong> sized for context length ×
+parallel requests. <code>ollama-03</code> measured <code>qwen2.5:0.5b</code>: 734 MiB peak at 4,096 × 2; 1,398 MiB at 16,384 × 4;
+a 3,072 MB cache allocation (and failure) at 32,768 × 8. A systemd <code>MemoryMax=</code> below the working set gets
+the process OOM-killed inside its cgroup; a cache the machine cannot provide fails with HTTP 500 instead.</p>
+<h3>Embeddings</h3>
+<p><code>/api/embed</code> turns texts into vectors — 384 numbers each for <code>all-minilm</code> — placed so that similar meanings
+are close. Retrieval-augmented generation embeds documents ahead of time, embeds the question, fetches the
+closest passages, and puts them in the chat model’s context. Vectors are comparable only within one
+embedding model.</p>
+<h2>A failure, walked through</h2>
+<p>The morning: the service is installed and enabled on a fresh VM, and the chat backend’s first request of the
+day is slow. What is on disk, and what is loaded:</p>
+<pre><code class="language-console">$ curl -s 127.0.0.1:11434/api/tags | jq -c '.models[] | {name, size, details: .details | {family, parameter_size, quantization_level}}'
+{&quot;name&quot;:&quot;all-minilm:latest&quot;,&quot;size&quot;:45960996,&quot;details&quot;:{&quot;family&quot;:&quot;bert&quot;,&quot;parameter_size&quot;:&quot;23M&quot;,&quot;quantization_level&quot;:&quot;F16&quot;}}
+{&quot;name&quot;:&quot;qwen2.5:0.5b&quot;,&quot;size&quot;:397821319,&quot;details&quot;:{&quot;family&quot;:&quot;qwen2&quot;,&quot;parameter_size&quot;:&quot;494.03M&quot;,&quot;quantization_level&quot;:&quot;Q4_K_M&quot;}}
+$ curl -s 127.0.0.1:11434/api/ps
+{&quot;models&quot;:[]}
+</code></pre>
+<p>Nothing loaded: the first question pays the load. Preload instead, and look at the expiry:</p>
+<pre><code class="language-console">$ time curl -s 127.0.0.1:11434/api/generate -d '{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;}' | jq -c '{done, done_reason}'
+{&quot;done&quot;:true,&quot;done_reason&quot;:&quot;load&quot;}
+real	0m1.099s
+$ date -u +%H:%M:%S; curl -s 127.0.0.1:11434/api/ps | jq -c '.models[] | {name, expires_at}'
+20:44:21
+{&quot;name&quot;:&quot;qwen2.5:0.5b&quot;,&quot;expires_at&quot;:&quot;2026-09-14T20:49:21.834045013Z&quot;}
+</code></pre>
+<p>A 1.1-second load, and five minutes of life. The next question costs almost nothing to start:</p>
+<pre><code class="language-console">$ curl -s 127.0.0.1:11434/api/generate -d '{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;prompt&quot;:&quot;Name one Linux command.&quot;,&quot;stream&quot;:false,
+    &quot;options&quot;:{&quot;num_predict&quot;:8,&quot;temperature&quot;:0}}' | jq -c '{response, load_duration, prompt_eval_duration, eval_count, eval_duration}'
+{&quot;response&quot;:&quot;One Linux command is `ls`.&quot;,&quot;load_duration&quot;:276667,&quot;prompt_eval_duration&quot;:261954999,&quot;eval_count&quot;:8,&quot;eval_duration&quot;:79914000}
+</code></pre>
+<p>0.3 ms to “load”, 0.26 s to read the prompt, and eight tokens in 0.08 s — about 100 tokens a second for this
+model on two vCPUs. With a small model on a CPU the load is short; a model ten times the size takes
+correspondingly longer to read into memory, which is why preloading and keep-alive matter.</p>
+<p>Keep it loaded, then send an ordinary request:</p>
+<pre><code class="language-console">$ curl -s 127.0.0.1:11434/api/generate -d '{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;keep_alive&quot;:-1}' &gt;/dev/null
+$ curl -s 127.0.0.1:11434/api/ps | jq -r '.models[].expires_at'
+2318-12-25T20:31:39.046054987Z
+$ curl -s 127.0.0.1:11434/api/generate -d '{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;prompt&quot;:&quot;hi&quot;,&quot;stream&quot;:false,&quot;options&quot;:{&quot;num_predict&quot;:1}}' &gt;/dev/null
+$ curl -s 127.0.0.1:11434/api/ps | jq -r '.models[].expires_at'
+2318-12-25T20:31:39.097215279Z
+</code></pre>
+<p>“Forever” is a date three centuries away. The ordinary request did not bring back the five-minute default:
+the loaded model kept the last keep-alive it was given. The same happens the other way. After a restart:</p>
+<pre><code class="language-console">$ curl -s 127.0.0.1:11434/api/generate -d '{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;keep_alive&quot;:&quot;2m&quot;}' &gt;/dev/null
+$ date -u +%H:%M:%S; curl -s 127.0.0.1:11434/api/ps | jq -r '.models[].expires_at'
+20:44:38
+2026-09-14T20:46:38.878194029Z
+$ curl -s 127.0.0.1:11434/api/generate -d '{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;prompt&quot;:&quot;hi&quot;,&quot;stream&quot;:false,&quot;options&quot;:{&quot;num_predict&quot;:1}}' &gt;/dev/null
+$ curl -s 127.0.0.1:11434/api/ps | jq -r '.models[].expires_at'
+2026-09-14T20:46:39.101225529Z
+</code></pre>
+<p>Two minutes again, not five. On a shared server, one client that sends <code>keep_alive</code> sets the lifetime for
+everyone’s requests to that model until it unloads — set <code>OLLAMA_KEEP_ALIVE</code> on the server and keep clients
+from sending their own. <code>ollama stop</code> ends it at once:</p>
+<pre><code class="language-console">$ ollama stop qwen2.5:0.5b; curl -s 127.0.0.1:11434/api/ps
+{&quot;models&quot;:[]}
+</code></pre>
+<p>The retrieval side of the chat uses the embedding model:</p>
+<pre><code class="language-console">$ curl -s 127.0.0.1:11434/api/embed -d '{&quot;model&quot;:&quot;all-minilm&quot;,&quot;input&quot;:[&quot;disk full&quot;,&quot;no space left on device&quot;,&quot;refund request&quot;]}' \
+    | jq -c '{dims: (.embeddings[0]|length), n: (.embeddings|length)}'
+{&quot;dims&quot;:384,&quot;n&quot;:3}
+$ # cosine similarity of the three vectors, computed in Python
+disk full ~ no space left on device: 0.621
+disk full ~ refund request: 0.228
+</code></pre>
+<p>The phrasings share no words and still score far closer than the unrelated one — what lexical search cannot
+do. And a tool written for the OpenAI API needs only a base URL:</p>
+<pre><code class="language-console">$ curl -s 127.0.0.1:11434/v1/chat/completions -H 'Content-Type: application/json' \
+    -d '{&quot;model&quot;:&quot;qwen2.5:0.5b&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Say OK.&quot;}],&quot;max_tokens&quot;:3}' \
+    | jq -c '{object, content: .choices[0].message.content, usage}'
+{&quot;object&quot;:&quot;chat.completion&quot;,&quot;content&quot;:&quot;OK, I&quot;,&quot;usage&quot;:{&quot;prompt_tokens&quot;:32,&quot;prompt_tokens_details&quot;:{&quot;cached_tokens&quot;:0},&quot;completion_tokens&quot;:3,&quot;total_tokens&quot;:35}}
+</code></pre>
+<p>(Three tokens are three tokens: “OK, I”.) Both models are now loaded, and the service’s memory shows it:</p>
+<pre><code class="language-console">$ curl -s 127.0.0.1:11434/api/ps | jq -c '[.models[] | {name, size}]'
+[{&quot;name&quot;:&quot;qwen2.5:0.5b&quot;,&quot;size&quot;:628862482},{&quot;name&quot;:&quot;all-minilm:latest&quot;,&quot;size&quot;:48203038}]
+$ systemctl show ollama -p MemoryPeak -p MemoryCurrent
+MemoryCurrent=1255858176
+MemoryPeak=1322995712
+</code></pre>
+<p>The loaded sizes add to 646 MiB; the cgroup counts 1.2 GiB, because it also charges the page cache of the model
+files the service read. That difference is the headroom a <code>MemoryMax=</code> has to leave: set a limit from
+measurements like these, not from the size of the model file.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Treating the model file size as the memory need.</strong> Weights plus runtime plus a cache that scales with
+context × parallel, plus page cache in the cgroup’s accounting.</p>
+<p><strong><code>OLLAMA_HOST=0.0.0.0</code> so another machine can reach it.</strong> It can — and so can everyone else. Loopback and a
+proxy with authentication.</p>
+<p><strong><code>OLLAMA_ORIGINS=*</code> for a web page.</strong> Allow the page’s origin, nothing more.</p>
+<p><strong>Editing a Modelfile and not rebuilding.</strong> The server does not read it again.</p>
+<p><strong>Shrinking <code>num_ctx</code> for speed.</strong> Long prompts are truncated without an error; the model answers without its
+instructions.</p>
+<p><strong>Relying on the five-minute default while clients send <code>keep_alive</code>.</strong> The last one given sticks to the loaded
+model.</p>
+<p><strong><code>OLLAMA_NUM_PARALLEL</code> equal to the number of users.</strong> It is simultaneous requests; each slot costs a full context
+of cache.</p>
+<p><strong>Mixing embedding models in one index.</strong> Similarities between vectors of different models mean nothing.</p>
+<p><strong>Expecting a 0.5B model to follow a long rulebook.</strong> Small local models are good at short, constrained work and
+at answering from retrieved passages; they are poor at complex instructions and know little.</p>
+<h2>Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>the service will not start, or cannot find its models</td>
+<td>it runs as <code>ollama</code> and the model directory belongs to someone else</td>
+<td><code>systemctl status ollama</code>; <code>ls -ld $OLLAMA_MODELS</code></td>
+</tr>
+<tr>
+<td>other machines can use the model server</td>
+<td><code>OLLAMA_HOST=0.0.0.0</code> with no proxy or authentication in front</td>
+<td><code>ss -ltnp 'sport = :11434'</code>; <code>systemctl cat ollama</code></td>
+</tr>
+<tr>
+<td>a browser page cannot call the API</td>
+<td>the page’s origin is not allowed</td>
+<td><code>OLLAMA_ORIGINS</code>; the request’s <code>Origin</code> header</td>
+</tr>
+<tr>
+<td>a model ignores the start of a long system prompt</td>
+<td>the context window truncates the prompt</td>
+<td><code>prompt_eval_count</code> in the response; <code>num_ctx</code></td>
+</tr>
+<tr>
+<td>a model loads, then the server is killed</td>
+<td>memory: the model plus its KV cache exceed the unit’s <code>MemoryMax=</code> or the machine</td>
+<td><code>journalctl -u ollama</code>; the kernel log; <code>MemoryPeak</code></td>
+</tr>
+<tr>
+<td>answers vary from run to run</td>
+<td>sampling: temperature above zero</td>
+<td><code>ollama show MODEL --parameters</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># service
+systemctl cat ollama; systemctl show -p Environment ollama
+sudo systemctl edit ollama                       # drop-in: Environment=&quot;OLLAMA_…&quot;
+sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart ollama
+sudo ss -ltnp | grep 11434                       # 127.0.0.1 only
+
+# models
+ollama list                                      # on disk      (GET /api/tags)
+ollama ps                                        # loaded, until when (GET /api/ps)
+ollama show NAME --modelfile | --parameters      # definition   (POST /api/show)
+ollama create NAME -f Modelfile                  # build from a Modelfile
+ollama stop NAME                                 # unload now
+ollama rm NAME                                   # delete
+
+# requests
+curl -s 127.0.0.1:11434/api/generate -d '{&quot;model&quot;:&quot;M&quot;}'                         # preload
+curl -s 127.0.0.1:11434/api/generate -d '{&quot;model&quot;:&quot;M&quot;,&quot;keep_alive&quot;:-1}'         # keep loaded
+curl -s 127.0.0.1:11434/api/chat -d '{&quot;model&quot;:&quot;M&quot;,&quot;stream&quot;:false,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;…&quot;}],
+  &quot;options&quot;:{&quot;num_ctx&quot;:4096,&quot;temperature&quot;:0.2,&quot;num_predict&quot;:200},&quot;format&quot;:{…schema…}}'
+curl -s 127.0.0.1:11434/api/embed -d '{&quot;model&quot;:&quot;all-minilm&quot;,&quot;input&quot;:[&quot;a&quot;,&quot;b&quot;]}'
+curl -s 127.0.0.1:11434/v1/chat/completions -d '{&quot;model&quot;:&quot;M&quot;,&quot;messages&quot;:[…]}'   # OpenAI-compatible
+#   durations are nanoseconds; tokens/s = eval_count / (eval_duration / 1e9)
+#   prompt_eval_count &lt; expected → truncated: journalctl -u ollama | grep 'truncating input'
+
+# memory
+systemctl show ollama -p MemoryMax -p MemoryPeak -p NRestarts
+sudo journalctl -u ollama -o cat | grep -E 'projected to use|n_ctx|insufficient memory|oom-kill'
+
+# Modelfile
+FROM qwen2.5:0.5b
+PARAMETER num_ctx 4096
+PARAMETER temperature 0.2
+SYSTEM &quot;&quot;&quot;…&quot;&quot;&quot;
+</code></pre>
+<h2>Exercises</h2>
+<ol>
+<li>Ask the API a question and read <code>load_duration</code>, <code>prompt_eval_count</code> and <code>eval_count</code> in the
+answer; ask again and compare the load time.</li>
+<li>Build a model with <code>num_ctx 256</code> and a long system prompt; compare <code>prompt_eval_count</code> with the
+prompt’s length.</li>
+<li>Raise <code>OLLAMA_NUM_PARALLEL</code> and the context length, load a model, and read <code>/api/ps</code> and the unit’s
+memory use.</li>
+<li>Change a Modelfile’s <code>PARAMETER temperature</code> and compare <code>ollama show --modelfile</code> before and after
+<code>ollama create</code>.</li>
+<li>Move the service to <code>0.0.0.0</code> in a drop-in and check who can reach it; then put it back behind a
+proxy with authentication.</li>
+</ol>
+<h2>Sources</h2>
+<ul>
+<li>Ollama’s FAQ (environment, networking, memory): https://docs.ollama.com/faq</li>
+<li>The Modelfile reference: https://docs.ollama.com/modelfile</li>
+<li>The API reference: https://docs.ollama.com/api</li>
+<li><code>man 5 systemd.resource-control</code> — <code>MemoryMax=</code> for the service.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Why does <code>ollama pull</code> run by your own account still write the model as the <code>ollama</code> user?</p>
+<blockquote>
+<p>The CLI only asks the server to pull; the server writes under its own <code>OLLAMA_MODELS</code> as the account it
+runs as.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a request containing only a model name do, and why would you send one?</p>
+<blockquote>
+<p>It loads the model into memory and returns (<code>done_reason: &quot;load&quot;</code>), so the first real question does not pay
+the load time.</p>
+</blockquote>
+</li>
+<li>
+<p>A model was loaded with <code>keep_alive: -1</code>. A later request sends no <code>keep_alive</code>. When does the model unload,
+according to the lab VM?</p>
+<blockquote>
+<p>Not at all: the loaded model kept the last keep-alive it was given. It unloads on <code>ollama stop</code>, a
+<code>keep_alive: 0</code> request, or a restart.</p>
+</blockquote>
+</li>
+<li>
+<p>From <code>eval_count</code> 8 and <code>eval_duration</code> 79914000, how fast is generation?</p>
+<blockquote>
+<p>Durations are nanoseconds: 8 tokens in 0.0799 s, about 100 tokens per second.</p>
+</blockquote>
+</li>
+<li>
+<p>Two models report loaded sizes adding to 646 MiB, and <code>MemoryCurrent</code> says 1.2 GiB. Where is the rest?</p>
+<blockquote>
+<p>The cgroup also charges page cache for the model files the service read, plus runtime memory. A memory
+limit has to leave room for it.</p>
+</blockquote>
+</li>
+<li>
+<p>What happens to a 1,388-token prompt sent to a model with <code>num_ctx</code> 256, and how do you notice?</p>
+<blockquote>
+<p>It is truncated to about half the window (130 tokens), keeping the start and the most recent text; the answer
+comes back normally. <code>prompt_eval_count</code> and the server’s “truncating input prompt” log line show it.</p>
+</blockquote>
+</li>
+<li>
+<p>Two phrasings share no words, yet their <code>all-minilm</code> embeddings score 0.621 while an unrelated phrase scores
+0.228. What does that make possible, and what must stay constant?</p>
+<blockquote>
+<p>Retrieval by meaning rather than by shared words. Every vector compared must come from the same embedding
+model.</p>
+</blockquote>
+</li>
+<li>
+<p>Name the three controls that keep a model server private and usable from one web page.</p>
+<blockquote>
+<p><code>OLLAMA_HOST</code> on loopback, a proxy that requires authentication, and <code>OLLAMA_ORIGINS</code> listing only that
+page’s origin.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

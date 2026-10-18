@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inside a container, localhost is the container</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Inside a container, localhost is the container</h1>
+  <div class="meta">containers, networking · 40 minutes · 2199 words</div>
+</header>
+<p>The shop is two nginx containers in one Compose project: <code>web</code>, the public front, and <code>api</code>, which
+serves a status document. The front’s configuration passes <code>/api/</code> to <code>http://localhost:8089/</code>, and
+port 8089 is where the API is published. From the host, <code>curl http://127.0.0.1:8089/</code> works, so the
+configuration looks right. From inside <code>web</code> it cannot work, because inside a container <code>localhost</code> is
+that container, and nothing in the <code>web</code> container listens on 8089.</p>
+<p>The obvious correction — proxy to the service by its name, <code>api</code> — made <code>web</code> refuse to start, and
+that was put down to “Docker DNS being flaky”. It was not flaky. The two services had been placed on
+two different networks, and a container can only resolve and reach the containers it shares a network
+with. On top of that the API had been published on the host “for debugging”, and neither service had
+a restart policy, so after a reboot nothing came back until someone typed <code>docker compose up</code>.</p>
+<p>This journal is about how Compose services find each other, what publishing a port does and does not
+do, and how a stack survives a reboot.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Explain what <code>localhost</code> means in a container, and what an address in a published port refers to.</li>
+<li>Describe Compose’s default network, service-name DNS, and what user-defined networks change.</li>
+<li>Diagnose name resolution and connectivity from inside a container with <code>exec</code>.</li>
+<li>Explain why nginx fails at start-up when an upstream name does not resolve.</li>
+<li>Expose a service to other containers without publishing it on the host.</li>
+<li>Make a Compose stack come back after a reboot with restart policies, and know what else must hold.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Every container has its own network namespace</h3>
+<p>A container gets its own network stack: its own interfaces, routing table, and its own loopback. In a
+container, <code>127.0.0.1</code> and <code>::1</code> are the container’s loopback — not the host’s, and not any other
+container’s. A process in <code>web</code> connecting to <code>localhost:8089</code> is connecting to port 8089 <strong>in <code>web</code></strong>.</p>
+<p><strong>Publishing</strong> (<code>ports: [&quot;8089:80&quot;]</code>) is a host-side feature: Docker listens on the host’s port 8089
+and forwards to port 80 in the container. It exists for clients outside Docker. It does nothing for
+traffic between containers, which should not go through the host at all.</p>
+<h3>How Compose services find each other</h3>
+<p><code>docker compose up</code> creates a network for the project — <code>shop_default</code> — and attaches every service to
+it, unless the file says otherwise. On a user-defined network, Docker runs an embedded DNS server
+(127.0.0.11 inside each container) that resolves:</p>
+<ul>
+<li>the <strong>service name</strong> (<code>api</code>) to the addresses of that service’s containers;</li>
+<li>the container name (<code>shop-api-1</code>) and any <code>aliases</code>.</li>
+</ul>
+<p>So in a default Compose project, <code>web</code> reaches the API at <code>http://api:80/</code> — the service name and the
+<strong>container’s</strong> port, not the published one. No <code>ports:</code> entry is involved.</p>
+<h3>What user-defined networks change</h3>
+<p><code>networks:</code> lets a file place services on separate networks, which is a real tool: a database on a
+<code>back</code> network that only the application can reach, a proxy on <code>front</code> and <code>back</code> both. The rule that
+follows is simple and absolute: <strong>two containers can talk only if they share at least one network</strong>,
+and names resolve only across networks the asking container is attached to.</p>
+<p>The shop’s file declared <code>front</code> for <code>web</code> and <code>back</code> for <code>api</code>, and attached each service to only one
+of them. The intent was probably “web is public, api is internal”; the result was two isolated
+containers. The intent is expressed by <em>publishing</em> only <code>web</code> — not by separating them. If you do want
+separate networks, the service that must reach both goes on both:</p>
+<pre><code class="language-yaml">services:
+  web:
+    networks: [front, back]
+  api:
+    networks: [back]
+</code></pre>
+<h3>Why <code>proxy_pass http://api/</code> made nginx exit</h3>
+<p>nginx resolves the host names in <code>proxy_pass</code> <strong>once, when it loads its configuration</strong>, using the
+system resolver. If a name does not resolve, the configuration is invalid and nginx refuses to start:
+<code>[emerg] host not found in upstream &quot;api&quot;</code>. In a container whose main process is nginx, that means the
+container exits immediately. This is not DNS flakiness; it is nginx reporting, at the earliest possible
+moment, that the name does not exist on any network the container can see.</p>
+<p>Two consequences worth knowing for real stacks:</p>
+<ul>
+<li>Start order matters for this nginx behaviour only in that the <em>name</em> must resolve, which requires the
+<code>api</code> container to exist on a shared network. <code>depends_on</code> makes Compose create and start <code>api</code> before
+<code>web</code>.</li>
+<li>Because nginx caches the address, recreating <code>api</code> with a new IP can leave a running <code>web</code> proxying to
+the old one. Configuring <code>resolver 127.0.0.11 valid=10s;</code> with a variable in <code>proxy_pass</code> makes nginx
+re-resolve; restarting <code>web</code> works too.</li>
+</ul>
+<p><code>nginx -t</code> tests a configuration without starting the server, and running it in a throwaway container
+on the relevant network reproduces exactly what the real container would do.</p>
+<h3>Exposing versus publishing</h3>
+<table>
+<thead>
+<tr>
+<th>Compose key</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(nothing)</td>
+<td>reachable from containers on a shared network, on any port the process listens on</td>
+</tr>
+<tr>
+<td><code>expose: [&quot;80&quot;]</code></td>
+<td>documentation and metadata only; changes no connectivity</td>
+</tr>
+<tr>
+<td><code>ports: [&quot;8089:80&quot;]</code></td>
+<td>also reachable from outside, on the host’s 8089, on every host address</td>
+</tr>
+<tr>
+<td><code>ports: [&quot;127.0.0.1:8089:80&quot;]</code></td>
+<td>reachable from the host itself only</td>
+</tr>
+</tbody>
+</table>
+<p>An internal API needs no <code>ports</code> entry at all. Publishing it “for debugging” makes it reachable by
+anything that can reach the host — bypassing whatever authentication, rate limiting or TLS the front
+provides. For debugging, use <code>docker compose exec web wget -qO- http://api/…</code>, or a temporary
+<code>docker run --rm --network shop_default …</code> container.</p>
+<h3>Surviving a reboot</h3>
+<p>At boot, <code>docker.service</code> starts, and the Docker daemon starts the containers whose <strong>restart policy</strong>
+says so:</p>
+<table>
+<thead>
+<tr>
+<th><code>restart:</code></th>
+<th>After a daemon restart or reboot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>no</code> (default)</td>
+<td>stays stopped</td>
+</tr>
+<tr>
+<td><code>on-failure</code></td>
+<td>restarts after a non-zero exit; not a dependable way to start a service at boot</td>
+</tr>
+<tr>
+<td><code>unless-stopped</code></td>
+<td>started again, unless someone stopped it with <code>docker stop</code> / <code>compose stop</code></td>
+</tr>
+<tr>
+<td><code>always</code></td>
+<td>started again, even if it had been stopped manually</td>
+</tr>
+</tbody>
+</table>
+<p>Compose files are not re-read at boot — the policy is stored with each container when it is created.
+So adding <code>restart:</code> to the file changes nothing until <code>docker compose up -d</code> recreates the containers.
+And <code>docker.service</code> itself must be enabled.</p>
+<p>The alternative is a systemd unit that runs <code>docker compose up</code> (and <code>down</code> on stop) in the project
+directory — useful when the stack must start in a particular order relative to other units, or when it
+should be managed like any other service. Either way, something has to own the start-up.</p>
+<h3>Networks left behind</h3>
+<p><code>docker compose up</code> creates networks declared in the file, but it does not delete networks that were
+declared in an <em>earlier</em> version of the file. After removing <code>front</code> and <code>back</code> from the file, they
+remain until <code>docker network rm shop_front shop_back</code> or <code>docker compose down</code> (run before the file
+change) removes them. They are harmless when unused, and confusing when reading <code>docker network ls</code>.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the track’s lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. See the symptom from outside.</strong></p>
+<pre><code class="language-console">$ curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8088/; curl -s -w '\n%{http_code}\n' http://127.0.0.1:8088/api/status.json
+200
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;502 Bad Gateway&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;center&gt;&lt;h1&gt;502 Bad Gateway&lt;/h1&gt;&lt;/center&gt;
+&lt;hr&gt;&lt;center&gt;nginx/1.29.8&lt;/center&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+502
+$ cd /srv/shop &amp;&amp; sudo docker compose ps --format 'table {{.Service}}\t{{.State}}\t{{.Ports}}'
+SERVICE   STATE     PORTS
+api       running   0.0.0.0:8089-&gt;80/tcp, :::8089-&gt;80/tcp
+web       running   0.0.0.0:8088-&gt;80/tcp, :::8088-&gt;80/tcp
+$ cd /srv/shop &amp;&amp; sudo docker compose logs web 2&gt;&amp;1 | grep -i error | tail -n 2
+web-1  | 2026/09/14 03:58:50 [error] 22#22: *2 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: &quot;GET /api/status.json HTTP/1.1&quot;, upstream: &quot;http://[::1]:8089/status.json&quot;, host: &quot;127.0.0.1:8088&quot;
+web-1  | 2026/09/14 03:58:50 [error] 22#22: *2 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: &quot;GET /api/status.json HTTP/1.1&quot;, upstream: &quot;http://127.0.0.1:8089/status.json&quot;, host: &quot;127.0.0.1:8088&quot;
+</code></pre>
+<p>The front works; <code>/api/</code> is a 502. nginx’s log names the upstream it tried: <code>[::1]:8089</code>, then
+<code>127.0.0.1:8089</code> — <code>localhost</code> resolved to both loopback addresses, and both refused.</p>
+<p><strong>2. Test the same request from inside <code>web</code>, and from the host.</strong></p>
+<pre><code class="language-console">$ cat /srv/shop/web/default.conf
+server {
+    listen 80;
+
+    location / {
+        return 200 &quot;shop front\n&quot;;
+    }
+
+    location /api/ {
+        proxy_pass http://localhost:8089/;
+    }
+}
+$ cd /srv/shop &amp;&amp; sudo docker compose exec web wget -qO- http://localhost:8089/status.json; echo &quot;exit=$?&quot;
+wget: can't connect to remote host: Connection refused
+exit=1
+$ curl -s http://127.0.0.1:8089/status.json
+{&quot;service&quot;: &quot;api&quot;, &quot;status&quot;: &quot;ok&quot;, &quot;orders_queued&quot;: 12}
+</code></pre>
+<p>The same URL fails in the container and works on the host. That is the whole difference between the
+container’s loopback and the host’s.</p>
+<p><strong>3. Look at the networks.</strong></p>
+<pre><code class="language-console">$ cat /srv/shop/compose.yaml
+name: shop
+
+services:
+  web:
+    image: nginx:1.29-alpine
+    ports:
+      - &quot;8088:80&quot;
+    volumes:
+      - ./web/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - front
+
+  api:
+    image: nginx:1.29-alpine
+    ports:
+      - &quot;8089:80&quot;  # debugging
+    volumes:
+      - ./api/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./api/status.json:/srv/api/status.json:ro
+    networks:
+      - back
+
+networks:
+  front: {}
+  back: {}
+$ sudo docker network ls --filter name=shop
+NETWORK ID     NAME         DRIVER    SCOPE
+3187275a3111   shop_back    bridge    local
+14952a86641f   shop_front   bridge    local
+$ for c in shop-web-1 shop-api-1; do printf '%s: ' $c; sudo docker inspect $c --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}'; echo; done
+shop-web-1: shop_front 
+
+shop-api-1: shop_back 
+$ cd /srv/shop &amp;&amp; sudo docker compose exec web getent hosts api; echo &quot;exit=$?&quot;
+exit=2
+</code></pre>
+<p><code>web</code> is on <code>shop_front</code> only, <code>api</code> on <code>shop_back</code> only. From <code>web</code>, the name <code>api</code> does not resolve
+(<code>getent</code> exit 2: not found).</p>
+<p><strong>4. Reproduce the crash the colleague saw</strong>, with a throwaway container on <code>web</code>’s network:</p>
+<pre><code class="language-console">$ printf 'server { listen 80; location /api/ { proxy_pass http://api:80/; } }\n' &gt; /tmp/by-name.conf &amp;&amp; sudo docker run --rm --network shop_front -v /tmp/by-name.conf:/etc/nginx/conf.d/default.conf:ro nginx:1.29-alpine nginx -t
+/docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+/docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+10-listen-on-ipv6-by-default.sh: info: can not modify /etc/nginx/conf.d/default.conf (read-only file system?)
+/docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+/docker-entrypoint.sh: Configuration complete; ready for start up
+2026/09/14 03:59:01 [emerg] 1#1: host not found in upstream &quot;api&quot; in /etc/nginx/conf.d/default.conf:1
+nginx: [emerg] host not found in upstream &quot;api&quot; in /etc/nginx/conf.d/default.conf:1
+nginx: configuration file /etc/nginx/nginx.conf test failed
+</code></pre>
+<p>The right configuration, on the wrong network, is an <code>[emerg]</code> at load time. The fix is the network,
+not the name.</p>
+<p><strong>5. Check what happens at boot.</strong></p>
+<pre><code class="language-console">$ sudo docker inspect shop-web-1 shop-api-1 --format '{{.Name}} restart={{.HostConfig.RestartPolicy.Name}}'
+/shop-web-1 restart=no
+/shop-api-1 restart=no
+$ systemctl is-enabled docker
+enabled
+</code></pre>
+<p>Docker starts at boot; the containers are told not to.</p>
+<p><strong>6. Fix the file and the proxy target, and recreate.</strong> One network (Compose’s default), no published
+port for <code>api</code>, a restart policy for both, and <code>web</code> started after <code>api</code>:</p>
+<pre><code class="language-yaml">name: shop
+
+services:
+  web:
+    image: nginx:1.29-alpine
+    restart: unless-stopped
+    ports:
+      - &quot;8088:80&quot;
+    volumes:
+      - ./web/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api
+
+  api:
+    image: nginx:1.29-alpine
+    restart: unless-stopped
+    volumes:
+      - ./api/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./api/status.json:/srv/api/status.json:ro
+</code></pre>
+<pre><code class="language-console">$ sudo sed -i 's#proxy_pass http://localhost:8089/;#proxy_pass http://api:80/;#' /srv/shop/web/default.conf &amp;&amp; grep proxy_pass /srv/shop/web/default.conf
+        proxy_pass http://api:80/;
+$ cd /srv/shop &amp;&amp; sudo docker compose config --quiet &amp;&amp; echo &quot;compose file: valid&quot;
+compose file: valid
+$ cd /srv/shop &amp;&amp; sudo docker compose up -d --remove-orphans 2&gt;&amp;1
+ Network shop_default  Creating
+ Network shop_default  Created
+ Container shop-api-1  Recreate
+ Container shop-api-1  Recreated
+ Container shop-web-1  Recreate
+ Container shop-web-1  Recreated
+ Container shop-api-1  Starting
+ Container shop-api-1  Started
+ Container shop-web-1  Starting
+ Container shop-web-1  Started
+</code></pre>
+<p>Compose created the default network and <strong>recreated</strong> both containers — which is what puts the new
+restart policy and network into effect. <code>api</code> started first.</p>
+<p><strong>7. Verify from outside and from inside.</strong></p>
+<pre><code class="language-console">$ sleep 2; curl -s -w '\n%{http_code}\n' http://127.0.0.1:8088/api/status.json
+{&quot;service&quot;: &quot;api&quot;, &quot;status&quot;: &quot;ok&quot;, &quot;orders_queued&quot;: 12}
+
+200
+$ cd /srv/shop &amp;&amp; sudo docker compose ps --format 'table {{.Service}}\t{{.State}}\t{{.Ports}}'
+SERVICE   STATE     PORTS
+api       running   80/tcp
+web       running   0.0.0.0:8088-&gt;80/tcp, :::8088-&gt;80/tcp
+$ curl -sS http://127.0.0.1:8089/status.json; echo &quot;exit=$?&quot;
+curl: (7) Failed to connect to 127.0.0.1 port 8089 after 0 ms: Could not connect to server
+exit=7
+$ sudo docker inspect shop-web-1 shop-api-1 --format '{{.Name}} restart={{.HostConfig.RestartPolicy.Name}} networks={{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}'
+/shop-web-1 restart=unless-stopped networks=shop_default
+/shop-api-1 restart=unless-stopped networks=shop_default
+$ cd /srv/shop &amp;&amp; sudo docker compose exec web getent hosts api
+172.20.0.2        api  api
+$ sudo docker network ls --filter name=shop
+NETWORK ID     NAME           DRIVER    SCOPE
+3187275a3111   shop_back      bridge    local
+5de515be3552   shop_default   bridge    local
+14952a86641f   shop_front     bridge    local
+</code></pre>
+<p>The API answers through the front; it is listed as <code>80/tcp</code> with no host binding and refuses on 8089;
+both containers are on <code>shop_default</code> with <code>unless-stopped</code>; <code>api</code> resolves inside <code>web</code>. The old
+<code>shop_front</code> and <code>shop_back</code> networks are still listed, unused — <code>docker network rm</code> would tidy them.</p>
+<p><strong>8. Grade.</strong> The API through the front, no published API port, and both services running and set to
+restart — before and after the reboot.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Changing <code>localhost</code> to the host’s IP address, <code>172.17.0.1</code> or <code>host.docker.internal</code>.</strong> It makes
+the front reach the API through the host’s published port: it works, depends on the publish that
+should not exist, and breaks when the port is removed or the host’s address changes.</p>
+<p><strong>Changing the proxy to <code>api:8089</code>.</strong> 8089 is the <em>published</em> port on the host. Between containers the
+API listens on its own port, 80.</p>
+<p><strong><code>network_mode: host</code> for <code>web</code>.</strong> <code>localhost:8089</code> then works, because the container shares the host’s
+network stack — and every port nginx opens is opened on the host. It removes the isolation instead of
+using it.</p>
+<p><strong>Adding <code>links: [api]</code>.</strong> A legacy option. It adds an alias, but it cannot connect services that share
+no network. Shared networks are the mechanism.</p>
+<p><strong>Leaving <code>ports: [&quot;8089:80&quot;]</code> because “only the front is advertised”.</strong> A published port is reachable
+by anything that can reach the host, whether or not anyone advertises it.</p>
+<p><strong>Adding <code>restart: unless-stopped</code> and rebooting without <code>docker compose up -d</code>.</strong> The policy is stored
+in the container when it is created; the old containers still say <code>no</code>.</p>
+<p><strong><code>restart: always</code> on a container you sometimes stop for maintenance.</strong> It comes back at the next
+daemon restart even though you stopped it on purpose; <code>unless-stopped</code> respects the stop.</p>
+<p><strong>Blaming DNS and adding <code>extra_hosts</code> or hard-coded IP addresses.</strong> Container addresses change when
+containers are recreated. Service names on a shared network are the stable interface.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console">$ docker compose ps                                   # services, state, published ports
+$ docker compose logs SERVICE                         # nginx's upstream errors name the address it tried
+$ docker compose exec SERVICE wget -qO- http://api/   # test from inside a container
+$ docker compose exec SERVICE getent hosts NAME       # does a name resolve in that container?
+$ docker network ls; docker network inspect NET       # which containers are on which network
+$ docker inspect C --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}'
+$ docker inspect C --format '{{.HostConfig.RestartPolicy.Name}}'
+$ docker compose config --quiet                       # validate the file
+$ docker compose up -d --remove-orphans               # apply: recreate what changed
+$ docker compose down                                 # stop and remove containers and project networks
+$ docker run --rm --network NET -v ./x.conf:/etc/nginx/conf.d/default.conf:ro nginx:1.29-alpine nginx -t
+</code></pre>
+<pre><code class="language-yaml">services:
+  web:
+    ports: [&quot;8088:80&quot;]          # only the public service is published
+    restart: unless-stopped
+    depends_on: [api]
+  api:
+    restart: unless-stopped     # no ports: reachable as http://api:80 from web
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Resolves here, listens there, routes until Tuesday</em> (topic journal <code>networking</code>) — Listening on loopback, or on everything</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.docker.com/compose/how-tos/networking/</li>
+<li>https://docs.docker.com/engine/containers/start-containers-automatically/</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>The container that ran fine until the machine rebooted</em> (<code>containers</code>), <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A container connects to <code>localhost:8089</code>. Whose port 8089 is that?</p>
+<blockquote>
+<p>The container’s own: each container has its own network namespace and loopback, so <code>localhost</code> is the container itself, not the host or another container.</p>
+</blockquote>
+</li>
+<li>
+<p>How does <code>web</code> reach <code>api</code> in a Compose project with no <code>networks:</code> section, and on which port?</p>
+<blockquote>
+<p>By the service name through Docker’s embedded DNS on the project’s default network — <code>http://api:80/</code>, the port the API container listens on, not a published port.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did nginx with <code>proxy_pass http://api:80/</code> refuse to start while the services were on separate networks?</p>
+<blockquote>
+<p>nginx resolves upstream names when it loads its configuration; <code>api</code> did not resolve from a container attached only to <code>shop_front</code>, so nginx failed with <code>host not found in upstream</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between <code>expose</code> and <code>ports</code> in a Compose file?</p>
+<blockquote>
+<p><code>expose</code> is metadata and changes no connectivity; <code>ports</code> publishes a container port on the host, on every host address unless an IP is given.</p>
+</blockquote>
+</li>
+<li>
+<p>After adding <code>restart: unless-stopped</code> to the file, why do the containers still not start at boot until you run <code>docker compose up -d</code>?</p>
+<blockquote>
+<p>The restart policy is stored in each container when it is created; the existing containers keep <code>no</code> until Compose recreates them.</p>
+</blockquote>
+</li>
+<li>
+<p>What else must be true for <code>unless-stopped</code> containers to come back after a reboot?</p>
+<blockquote>
+<p>The Docker daemon must start at boot (<code>docker.service</code> enabled), and the containers must not have been stopped manually before the reboot.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is proxying to the host’s published port a poor fix, even though it works?</p>
+<blockquote>
+<p>It routes internal traffic out through the host, requires the API to stay published (reachable by anyone who can reach the host), and depends on the host’s address.</p>
+</blockquote>
+</li>
+<li>
+<p>After the fix, <code>docker network ls</code> still lists <code>shop_front</code> and <code>shop_back</code>. Why, and what removes them?</p>
+<blockquote>
+<p>Compose does not delete networks that are no longer declared in the file; <code>docker network rm shop_front shop_back</code>, or <code>docker compose down</code> before changing the file, removes them.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

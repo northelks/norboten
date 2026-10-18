@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publish when complete, clean up however it ends</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Publish when complete, clean up however it ends</h1>
+  <div class="meta">bash, linux-basics · 35 minutes · 1694 words</div>
+</header>
+<p>An export is read by someone else. That one fact changes what “done” means for the script that
+writes it: the warehouse importer does not wait for the script to finish, it takes whatever file has
+the right name the moment the name appears. So a file that is still being written, or that was cut
+short by a failure or a signal, is not a harmless leftover — it is a wrong answer delivered to another
+system.</p>
+<p><code>export-orders</code> makes three mistakes that all come from forgetting that. It writes straight to the
+name the importer watches. It keeps its work in a file with a fixed name in <code>/tmp</code>, shared by every
+run on the machine. And it has no idea it can be stopped: nothing cleans up when it fails, and nothing
+at all runs when it receives <code>SIGTERM</code>.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Publish a file atomically: write it under a name nobody reads, then <code>mv</code> it into place.</li>
+<li>Create private temporary files with <code>mktemp</code>, and say why a fixed name in <code>/tmp</code> is a bug and a
+security problem.</li>
+<li>Install an <code>EXIT</code> trap that removes temporary files on success, failure and signals, and know
+which shells run it when a signal kills the script.</li>
+<li>Explain why trapping <code>SIGTERM</code> yourself makes a script slower to stop, not safer.</li>
+<li>Stop a whole process group the way systemd stops a unit, and test a script against it.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Readers do not wait</h3>
+<p>A redirection such as <code>gzip -c work &gt; &quot;$DEST/$name&quot;</code> creates the file with its final name first,
+then fills it. From the first byte, a reader that lists the directory sees <code>orders-…csv.gz</code>. If the
+script is killed, the disk is full, or an input fails half way, the file stays short under a name that
+says “complete”.</p>
+<p>The fix is to separate <em>writing</em> from <em>publishing</em>. Write to a name the reader ignores — here a hidden
+<code>.orders.XXXXXX</code> in the same directory — and when it is complete, <code>mv</code> it to the final name. Within one
+file system <code>mv</code> is a <code>rename(2)</code>: the name points at the old inode or at the new one, never at
+something in between. The temporary file has to be in the same directory (or at least the same file
+system); across file systems <code>mv</code> falls back to copying, and the half-written window is back.</p>
+<h3>Temporary files that belong to one run</h3>
+<p><code>/tmp/export.tmp</code> is the same path for every run by every user. Two runs at once truncate and delete
+each other’s work. A file left behind by one user can make another user’s run fail, because the
+sticky <code>/tmp</code> directory will not let them replace it. And a predictable name in a world-writable
+directory is a classic attack: another user creates it first, as a symlink to a file of yours.</p>
+<p><code>mktemp</code> creates a new file with a random name, exclusively and with mode <code>0600</code>, and prints the name.
+It honours <code>TMPDIR</code>. <code>mktemp &quot;$DEST/.orders.XXXXXX&quot;</code> does the same in a chosen directory.</p>
+<h3>Traps: what runs when a script ends</h3>
+<p><code>trap cleanup EXIT</code> runs <code>cleanup</code> when the shell exits: at the end of the script, through <code>exit</code>,
+because <code>set -e</code> stopped it — and, in bash, when a signal such as <code>SIGTERM</code>, <code>SIGINT</code> or <code>SIGHUP</code> kills
+it. Bash handles those fatal signals by running the <code>EXIT</code> trap and then dying of the signal, so the
+exit status still says what happened (128 + the signal number: 143 for <code>SIGTERM</code>). That one line is
+enough cleanup for a bash script.</p>
+<p>It is not portable. <code>dash</code>, which is <code>/bin/sh</code> on Ubuntu, does not run an <code>EXIT</code> trap when a signal
+kills it; a POSIX <code>sh</code> script has to trap the signals too. Which shell runs the script is decided by
+its <code>#!</code> line, not by the shell you test it from.</p>
+<h3>Trapping <code>SIGTERM</code> yourself makes a script wait</h3>
+<p>When bash has <strong>no</strong> trap for <code>SIGTERM</code>, the signal is handled at once, even while the script is
+waiting for a foreground command: the <code>EXIT</code> trap runs and bash exits. When the script <strong>does</strong> trap
+<code>SIGTERM</code>, bash runs that trap only after the foreground command returns — and then carries on with
+the next line unless the trap exits. A trap such as <code>trap 'echo stopping' TERM</code> turns “stop now” into
+“finish this command, print something, and keep going”. If the command is blocked — reading from a
+pipe nobody writes to, waiting on a stalled network file — the script does not stop at all until
+systemd sends <code>SIGKILL</code>, and <code>SIGKILL</code> runs no trap.</p>
+<p>So in bash, trap <code>EXIT</code> for cleanup and leave <code>SIGTERM</code> alone, unless the script has a real reason to
+finish its current step first; in that case start the long command in the background and <code>wait</code> for
+it, because <code>wait</code> is interrupted by a trapped signal.</p>
+<h3>Stopping a group, as systemd does</h3>
+<p>When systemd stops a unit, it sends <code>SIGTERM</code> to every process in the unit’s control group, waits
+(90 seconds by default), and then sends <code>SIGKILL</code>. From a shell, <code>setsid cmd &amp;</code> puts a command in a
+new session and process group, and <code>kill -TERM -- -PID</code> signals the whole group — the same shape.
+That is how this lab’s grader stops the export, and it is the honest way to test cleanup: a signal
+sent to the script alone is a situation that rarely happens.</p>
+<h2>A failure, walked through</h2>
+<p>Run on the lab’s own machine: <code>ubuntu-26.04-devops</code>, GNU bash 5.3.9, before any change.</p>
+<p>An order file that cannot be read, and an unprivileged user running the export into a directory of
+its own:</p>
+<pre><code class="language-console">$ sudo chmod 000 /srv/orders/afternoon.csv; sudo -u nobody env EXPORT_DEST=/tmp/exp1 bash -c 'mkdir -p /tmp/exp1; export-orders' 2&gt;&amp;1; echo &quot;exit status: $?&quot;; ls -l /tmp/exp1 /tmp/export.tmp; sudo chmod 644 /srv/orders/afternoon.csv
+tail: cannot open '/srv/orders/afternoon.csv' for reading: Permission denied
+exported to /tmp/exp1/orders-2026-09-16.csv.gz
+exit status: 0
+/tmp/exp1:
+total 4
+-rw-r--r-- 1 nobody nogroup 64 Sep 16 16:06 orders-2026-09-16.csv.gz
+ls: cannot access '/tmp/export.tmp': No such file or directory
+</code></pre>
+<p>A 64-byte export with the morning’s rows only, published under the final name, with exit status 0.
+The same happens when the destination itself cannot be written:</p>
+<pre><code class="language-console">$ export-orders 2&gt;&amp;1; echo &quot;exit status: $?&quot;
+/usr/local/bin/export-orders: line 13: /srv/exports/orders-2026-09-16.csv.gz: Permission denied
+exported to /srv/exports/orders-2026-09-16.csv.gz
+exit status: 0
+</code></pre>
+<p>Now an export stopped half way. The second order file is a named pipe, so reading it blocks — the
+export is mid-way and stays there — and the whole process group gets <code>SIGTERM</code>, as it would from
+systemd:</p>
+<pre><code class="language-console">$ mkdir -p /tmp/slow/src /tmp/slow/dest &amp;&amp; printf 'id,sku,qty\n1,A,1\n' &gt; /tmp/slow/src/a.csv &amp;&amp; mkfifo /tmp/slow/src/b.csv &amp;&amp; sudo rm -f /tmp/export.tmp; (EXPORT_SRC=/tmp/slow/src EXPORT_DEST=/tmp/slow/dest setsid export-orders &amp; echo $! &gt; /tmp/slow/pid); sleep 1; kill -TERM -- -$(cat /tmp/slow/pid); sleep 1; ls -l /tmp/slow/dest /tmp/export.tmp; cat /tmp/export.tmp
+-rw-rw-r-- 1 northelks northelks 17 Sep 16 16:06 /tmp/export.tmp
+
+/tmp/slow/dest:
+total 0
+id,sku,qty
+1,A,1
+</code></pre>
+<p>The shared work file is left in <code>/tmp</code> with half an export in it, owned by whoever ran last.</p>
+<p>Three experiments show what a trap does with a signal. With only an <code>EXIT</code> trap, bash cleans up and
+dies of the signal; <code>dash</code> does not run the trap at all; and a <code>TERM</code> trap waits for the foreground
+command, then lets the script carry on:</p>
+<pre><code class="language-console">$ bash -c 'trap &quot;echo cleaned&quot; EXIT; sleep 5; echo after' &amp; sleep 1; kill -TERM $!; wait $!; echo &quot;status=$?&quot;
+cleaned
+status=143
+$ sh -c 'trap &quot;echo cleaned&quot; EXIT; kill -TERM $$; echo after'; echo &quot;status=$?&quot;
+status=143
+Terminated                 sh -c 'trap &quot;echo cleaned&quot; EXIT; kill -TERM $$; echo after'
+$ bash -c 'trap &quot;echo trap ran&quot; TERM; sleep 3; echo after' &amp; sleep 1; kill -TERM $!; wait $!; echo &quot;status=$?&quot;
+trap ran
+after
+status=0
+</code></pre>
+<p>The last one is the trap you do not want: it ran two seconds late, and the script then went on as if
+nothing had happened.</p>
+<p>After the fix — <code>set -euo pipefail</code>, a private work file from <code>mktemp</code>, the partial export as a hidden
+<code>.orders.XXXXXX</code> in the destination, and an <code>EXIT</code> trap that removes both — the same interruption,
+looking at the destination before and after the signal:</p>
+<pre><code class="language-console">$ mkdir -p /tmp/slow/src /tmp/slow/dest &amp;&amp; printf 'id,sku,qty\n1,A,1\n' &gt; /tmp/slow/src/a.csv &amp;&amp; mkfifo /tmp/slow/src/b.csv; (EXPORT_SRC=/tmp/slow/src EXPORT_DEST=/tmp/slow/dest setsid export-orders &amp; echo $! &gt; /tmp/slow/pid); sleep 1; ls -la /tmp/slow/dest; kill -TERM -- -$(cat /tmp/slow/pid); sleep 1; ls -la /tmp/slow/dest; ls /tmp/export.tmp 2&gt;&amp;1
+total 0
+drwxrwxr-x 2 northelks northelks  60 Sep 16 16:10 .
+drwxrwxr-x 4 northelks northelks 100 Sep 16 16:10 ..
+-rw------- 1 northelks northelks   0 Sep 16 16:10 .orders.NcK4lp
+total 0
+drwxrwxr-x 2 northelks northelks  40 Sep 16 16:10 .
+drwxrwxr-x 4 northelks northelks 100 Sep 16 16:10 ..
+ls: cannot access '/tmp/export.tmp': No such file or directory
+</code></pre>
+<p>While it runs, the only file in the destination is a hidden, private one the importer ignores; after
+the signal there is nothing at all. And a good run still publishes the whole export:</p>
+<pre><code class="language-console">$ rm /tmp/slow/src/b.csv; mkdir -p /tmp/good &amp;&amp; EXPORT_DEST=/tmp/good export-orders; echo &quot;exit status: $?&quot;; zcat /tmp/good/orders-*.csv.gz
+exported to /tmp/good/orders-2026-09-16.csv.gz
+exit status: 0
+id,sku,qty
+1003,WASHER-6,200
+1001,BOLT-M6,40
+1002,NUT-M6,40
+</code></pre>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong>Deleting the temporary file at the end.</strong> <code>rm $tmp</code> as the last line runs only when every line
+before it succeeded; a failure or a signal skips it. That is the original script.</li>
+<li><strong>Adding <code>trap '…' TERM</code> “to be safe”.</strong> In bash it delays the reaction to the signal until the
+current command ends, and a trap that does not <code>exit</code> lets the script continue. The <code>EXIT</code> trap
+already runs when <code>SIGTERM</code> kills bash.</li>
+<li><strong>Testing cleanup with <code>sh script</code>.</strong> <code>dash</code> does not run an <code>EXIT</code> trap on a signal; run the script
+the way its <code>#!</code> line says.</li>
+<li><strong>Writing the temporary file to <code>/tmp</code> and moving it to <code>/srv/exports</code>.</strong> Across file systems <code>mv</code>
+copies, and the importer can see the copy in progress. Keep the partial file in the destination
+directory, under a name the reader ignores.</li>
+<li><strong>A name with <code>$$</code> in it.</strong> <code>/tmp/export.$$</code> is unique per process but predictable, and it is not
+created exclusively or privately. <code>mktemp</code> is.</li>
+<li><strong>Checking only the happy path.</strong> A cleanup that was never exercised does not work. Test failure and
+interruption on purpose, with a signal to the process group.</li>
+<li><strong>Relying on <code>set -e</code> for cleanup.</strong> It stops the script; it does not remove anything.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash">set -euo pipefail
+work=$(mktemp)                                  # private, 0600, honours TMPDIR
+part=$(mktemp &quot;$DEST/.orders.XXXXXX&quot;)           # same directory as the final file
+cleanup() { rm -f -- &quot;$work&quot; &quot;$part&quot;; }
+trap cleanup EXIT            # bash: also runs when SIGTERM/SIGINT/SIGHUP kill the script
+
+produce &gt; &quot;$part&quot;
+chmod 644 &quot;$part&quot;
+mv -f -- &quot;$part&quot; &quot;$DEST/$name&quot;                  # atomic within one file system
+
+long_command &amp; wait $!                          # a trapped signal interrupts wait
+setsid cmd &amp; kill -TERM -- -$!                  # signal a whole process group
+</code></pre>
+<h2>Going deeper</h2>
+<ul>
+<li><code>man 1 bash</code>, <em>SIGNALS</em> and the <code>trap</code> builtin, for exactly when traps run.</li>
+<li><code>man 1 mktemp</code> and <code>man 2 rename</code>.</li>
+<li><code>man 5 systemd.kill</code>, <code>KillMode=</code> and <code>TimeoutStopSec=</code>, for how a unit is stopped.</li>
+<li><code>man 7 signal</code>, for the default action of each signal.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Why is <code>gzip -c work &gt; &quot;$DEST/orders-$(date +%F).csv.gz&quot;</code> unsafe when an importer watches <code>$DEST</code>?</p>
+<blockquote>
+<p>The redirection creates the final name before gzip has written anything, so the importer can
+take a partial file; a failure or a signal leaves it partial for good.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must the partial file live in the same directory, or file system, as the final one?</p>
+<blockquote>
+<p>Only a rename within one file system is atomic; across file systems <code>mv</code> copies, and the copy is
+visible while it is being written.</p>
+</blockquote>
+</li>
+<li>
+<p>Does <code>trap cleanup EXIT</code> run when bash is killed by <code>SIGTERM</code>? And in <code>dash</code>?</p>
+<blockquote>
+<p>In bash, yes: bash runs the <code>EXIT</code> trap and then dies of the signal, with status 143. <code>dash</code> does
+not run it, so a POSIX <code>sh</code> script has to trap the signals as well.</p>
+</blockquote>
+</li>
+<li>
+<p>What changes when a bash script traps <code>SIGTERM</code> itself?</p>
+<blockquote>
+<p>The trap runs only after the current foreground command returns, and the script continues
+afterwards unless the trap exits — so the script stops later, or not at all if that command is
+blocked.</p>
+</blockquote>
+</li>
+<li>
+<p>What three problems does a fixed path such as <code>/tmp/export.tmp</code> cause?</p>
+<blockquote>
+<p>Concurrent runs overwrite and delete each other’s work, a leftover owned by another user makes
+later runs fail, and a predictable name in a world-writable directory can be pre-created as a
+symlink by someone else.</p>
+</blockquote>
+</li>
+<li>
+<p>How does systemd stop a running service?</p>
+<blockquote>
+<p>It sends <code>SIGTERM</code> to every process in the unit’s control group, waits for <code>TimeoutStopSec=</code>, then
+sends <code>SIGKILL</code> to whatever remains.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

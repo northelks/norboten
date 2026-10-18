@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A script run by a timer inherits nothing you set up for yourself</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A script run by a timer inherits nothing you set up for yourself</h1>
+  <div class="meta">bash, boot-systemd · 30 minutes · 1474 words</div>
+</header>
+<p>“It works when I run it” is the most expensive sentence in operations, because it is true. The
+person saying it is logged in, in an interactive shell that has read a start-up file, sitting in a
+directory they chose, with a <code>PATH</code> somebody extended years ago. The timer that runs the same script
+at five in the morning has none of that: a short <code>PATH</code>, the root directory as its working directory,
+no terminal, and no start-up files at all.</p>
+<p><code>nightly-report</code> depends on two of those things without saying so — a helper found only through a
+<code>PATH</code> added in root’s <code>.bashrc</code>, and a configuration file found only because the same <code>.bashrc</code>
+changes into <code>/opt/reports</code>. On top of that it cannot fail: whatever goes wrong, it empties the
+report and exits 0.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>List what a systemd service inherits — environment, working directory, start-up files — and how
+that differs from an interactive login shell.</li>
+<li>Explain when bash reads <code>.bashrc</code>, <code>.profile</code> and <code>/etc/environment</code>, and why none of them
+reaches a timer’s run.</li>
+<li>Write a script that names everything it needs: an explicit <code>PATH</code>, absolute paths, configuration
+by absolute default.</li>
+<li>Explain the search rule of the <code>.</code> (source) command for a name without a slash.</li>
+<li>Keep the previous output when a run fails, by writing to a temporary file and renaming it.</li>
+<li>Reproduce a timer’s environment by hand with <code>env -i</code> and <code>systemd-run</code>.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Two kinds of shell, and what each one reads</h3>
+<p>Bash decides which start-up files to read from how it was started. A <strong>login</strong> shell reads
+<code>/etc/profile</code> and the first of <code>~/.bash_profile</code>, <code>~/.bash_login</code>, <code>~/.profile</code>. An <strong>interactive
+non-login</strong> shell reads <code>~/.bashrc</code>. A <strong>non-interactive</strong> shell — <code>bash script</code>, <code>bash -c '…'</code>, the
+interpreter named in a script’s <code>#!</code> line — reads neither (only a file named in <code>$BASH_ENV</code>, if set).</p>
+<p>Ubuntu’s default <code>~/.bashrc</code> also begins by checking whether the shell is interactive and returning
+immediately if it is not. Anything appended to the end of the file, as the <code>PATH</code> for the reporting
+tools was, exists only in shells where a person is typing.</p>
+<h3>What a service gets instead</h3>
+<p>systemd starts a service’s process directly, not through a shell. The environment is built from the
+manager’s own small default — a <code>PATH</code> of the standard system directories — plus whatever the unit
+sets with <code>Environment=</code> or <code>EnvironmentFile=</code>. The working directory is <code>/</code> unless
+<code>WorkingDirectory=</code> says otherwise, and <code>HOME</code> cannot be relied on — on this machine it arrives
+empty. There is no terminal. <code>/etc/environment</code> is read by PAM for logins, not by systemd for services.</p>
+<p><code>env -i</code> reproduces the empty end of that range from any shell: it starts a program with no
+environment at all. <code>systemd-run --wait --pipe</code> runs a command as a transient service, so it gets
+exactly what a real unit would.</p>
+<h3>How a script finds a command</h3>
+<p>A command without a slash is searched for in each directory of <code>PATH</code>, in order. When <code>PATH</code> is
+unset, bash substitutes a built-in default of standard directories. A helper installed in
+<code>/opt/reports/tools/bin</code> is therefore found only by callers whose <code>PATH</code> includes that directory,
+which is to say only by the shells that read that one <code>.bashrc</code>.</p>
+<p>A script that must run anywhere sets its own <code>PATH</code> at the top, or calls its helpers by absolute
+path. Both make the dependency visible in the script, instead of in someone’s shell configuration.</p>
+<h3>How <code>.</code> finds a file</h3>
+<p><code>. report.conf</code> does not simply read <code>./report.conf</code>. For a name with no slash, bash first searches
+<code>PATH</code> for a readable file of that name, and only then (outside POSIX mode) looks in the current
+directory. Under the timer the current directory is <code>/</code>, so the configuration is not found at all;
+in an unlucky <code>PATH</code>, a different <code>report.conf</code> could be found instead. <code>. &quot;$conf&quot;</code> with an absolute
+default removes both surprises.</p>
+<h3>A redirection happens first</h3>
+<p>In <code>{ …; } &gt; &quot;$out&quot;</code>, the shell opens <code>$out</code> for writing — truncating it — before the commands in the
+group run. If they then fail, the report is already gone. Writing to a temporary file in the same
+directory and renaming it over the report with <code>mv</code> only when everything worked means a failure
+leaves yesterday’s report in place, and a reader never sees a half-written one. <code>rename(2)</code> within one
+file system is atomic.</p>
+<h3>Exit status, again</h3>
+<p>Nothing in the original script checks that the configuration was read, and its last command is
+<code>echo &quot;report written…&quot;</code>, which succeeds. So the service’s main process exits 0, and systemd records
+<code>Result=success</code> for a run that produced an empty report. <code>set -euo pipefail</code> plus an explicit test
+of the configuration file turn “nothing to report” into a failure the unit can show.</p>
+<h2>A failure, walked through</h2>
+<p>Run on the lab’s own machine: <code>ubuntu-26.04-devops</code>, GNU bash 5.3.9, before any change.</p>
+<p>Starting the service the way the timer does, and reading its journal:</p>
+<pre><code class="language-console">$ sudo systemctl start nightly-report.service; sudo journalctl -u nightly-report.service -b --no-pager -o cat | tail -4
+/opt/reports/bin/nightly-report: line 4: report.conf: No such file or directory
+report written to /var/lib/reports/latest.txt
+nightly-report.service: Deactivated successfully.
+Finished nightly-report.service - Disk use per project, for the morning mail.
+</code></pre>
+<p>The script told the journal what went wrong and then told systemd that all was well. The report it
+left is a header and nothing else. In an interactive shell, the same script works:</p>
+<pre><code class="language-console">$ sudo bash -ic '/opt/reports/bin/nightly-report' 2&gt;/dev/null; sudo cat /var/lib/reports/latest.txt
+report written to /var/lib/reports/latest.txt
+Disk use per project, 2026-09-16
+/srv/projects/alpha                             300 KiB
+/srv/projects/beta                              124 KiB
+</code></pre>
+<p>A non-interactive shell as root — no <code>-i</code> — fails exactly like the timer, and the start of root’s
+<code>.bashrc</code> shows why:</p>
+<pre><code class="language-console">$ sudo bash -c '/opt/reports/bin/nightly-report' 2&gt;&amp;1; echo &quot;exit status: $?&quot;
+/opt/reports/bin/nightly-report: line 4: report.conf: No such file or directory
+report written to /var/lib/reports/latest.txt
+exit status: 0
+$ sudo head -12 /root/.bashrc | grep -n 'interactive' -A3
+5:# If not running interactively, don't do anything
+6-[ -z &quot;$PS1&quot; ] &amp;&amp; return
+7-
+</code></pre>
+<p>What a service actually starts with can be seen directly, with a transient unit:</p>
+<pre><code class="language-console">$ sudo systemd-run --wait --pipe -q sh -c 'echo &quot;PATH=$PATH&quot;; pwd; echo &quot;HOME=${HOME-unset}&quot;'
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+/
+HOME=
+</code></pre>
+<p>No <code>/opt/reports/tools/bin</code>, and <code>/</code> as the working directory. The search rule of <code>.</code> is easy to
+demonstrate as well — a <code>report.conf</code> found through <code>PATH</code> wins over none at all:</p>
+<pre><code class="language-console">$ cd /tmp &amp;&amp; echo 'echo found the one in PATH' &gt; /tmp/report.conf &amp;&amp; PATH=/tmp:$PATH bash -c '. report.conf'
+found the one in PATH
+</code></pre>
+<p>Finally, what a missing configuration does to the previous report:</p>
+<pre><code class="language-console">$ sudo sh -c 'echo &quot;Disk use per project, yesterday&quot; &gt; /root/old.txt; REPORT_CONF=/nonexistent REPORT_OUT=/root/old.txt /opt/reports/bin/nightly-report 2&gt;&amp;1; echo &quot;exit status: $?&quot;; wc -c /root/old.txt'
+/opt/reports/bin/nightly-report: line 4: /nonexistent: No such file or directory
+report written to /root/old.txt
+exit status: 0
+33 /root/old.txt
+</code></pre>
+<p>Yesterday’s 32-byte report was replaced by today’s header, and the exit status is still 0.</p>
+<p>After the fix — <code>PATH</code> set inside the script, the configuration by absolute default and checked
+before use, the report written to a temporary file and renamed — an empty environment is enough:</p>
+<pre><code class="language-console">$ sudo env -i REPORT_OUT=/tmp/new.txt /opt/reports/bin/nightly-report; echo &quot;exit status: $?&quot;; cat /tmp/new.txt
+report written to /tmp/new.txt
+exit status: 0
+Disk use per project, 2026-09-16
+/srv/projects/alpha                             300 KiB
+/srv/projects/beta                              124 KiB
+$ sudo sh -c 'echo &quot;Disk use per project, yesterday&quot; &gt; /root/old.txt; REPORT_CONF=/nonexistent REPORT_OUT=/root/old.txt /opt/reports/bin/nightly-report 2&gt;&amp;1; echo &quot;exit status: $?&quot;; cat /root/old.txt'
+nightly-report: cannot read /nonexistent
+exit status: 1
+Disk use per project, yesterday
+</code></pre>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong>Adding the <code>PATH</code> to another start-up file</strong> — <code>/etc/profile</code>, <code>/etc/environment</code>, root’s
+<code>.profile</code>. None of them is read by a service. The script still depends on its caller.</li>
+<li><strong>Fixing only the unit.</strong> <code>Environment=PATH=…</code> and <code>WorkingDirectory=/opt/reports</code> make the timer’s
+run work, and the next person to run the script from cron, from Ansible or from another directory
+meets the same failure. Setting them in the unit as well is fine; relying on them is not.</li>
+<li><strong><code>cd &quot;$(dirname &quot;$0&quot;)&quot;</code> at the top.</strong> It finds the directory of the script, <code>/opt/reports/bin</code>,
+which is not where the configuration lives, and <code>$0</code> is not reliable when a script is sourced or
+started through a symlink.</li>
+<li><strong>Testing with <code>sudo -i</code>.</strong> An interactive login shell is the one environment the timer never has.
+Test with <code>env -i</code> and <code>systemd-run</code>.</li>
+<li><strong><code>set -e</code> alone.</strong> It stops the script at a failed <code>.</code>, before the report is touched — but a
+failure inside the redirected group, such as a helper that is not found, comes after the report
+has been truncated. The temporary file is what keeps yesterday’s report in every case.</li>
+<li><strong>Trusting <code>Result=success</code>.</strong> It reports an exit status. Read the report, or make the script’s exit
+status mean something.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># at the top of a script that runs unattended
+set -euo pipefail
+PATH=/opt/reports/tools/bin:/usr/sbin:/usr/bin:/sbin:/bin
+conf=${REPORT_CONF:-/opt/reports/report.conf}
+[ -r &quot;$conf&quot; ] || { echo &quot;cannot read $conf&quot; &gt;&amp;2; exit 1; }
+. &quot;$conf&quot;
+
+# replace output only on success
+tmp=$(mktemp &quot;$out.XXXXXX&quot;); trap 'rm -f -- &quot;$tmp&quot;' EXIT
+generate &gt; &quot;$tmp&quot; &amp;&amp; mv -f -- &quot;$tmp&quot; &quot;$out&quot;
+
+env -i /path/to/script                        # nothing inherited
+sudo systemd-run --wait --pipe -q cmd         # exactly what a service gets
+systemctl show unit -p Result -p ExecMainStatus
+sudo journalctl -u unit -b -o cat             # what the run printed
+</code></pre>
+<p>In a unit, when it has to: <code>Environment=</code>, <code>EnvironmentFile=</code>, <code>WorkingDirectory=</code>, <code>User=</code>.</p>
+<h2>Going deeper</h2>
+<ul>
+<li><code>man 1 bash</code>, <em>INVOCATION</em>, for exactly which files each kind of shell reads.</li>
+<li><code>man 5 systemd.exec</code>, <em>Environment variables in spawned processes</em> and <code>WorkingDirectory=</code>.</li>
+<li><code>man 1 env</code> and <code>man 1 systemd-run</code>, for reproducing an unattended environment by hand.</li>
+<li>The monitoring journal, <a href="../../journals/monitoring/#a-check-is-an-exit-status">a check is an exit status</a>.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Which of root’s start-up files does a service started by systemd read?</p>
+<blockquote>
+<p>None. systemd starts the process directly, with its own environment; <code>.bashrc</code>, <code>.profile</code> and
+<code>/etc/environment</code> belong to shells and logins.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did the report work in <code>sudo bash -ic</code> but not in <code>sudo bash -c</code>?</p>
+<blockquote>
+<p>Only the interactive shell reads <code>.bashrc</code>, and Ubuntu’s <code>.bashrc</code> returns early in a
+non-interactive shell, before the lines that extend <code>PATH</code> and change directory.</p>
+</blockquote>
+</li>
+<li>
+<p>What is a service’s working directory unless the unit says otherwise?</p>
+<blockquote>
+<p>The root directory, <code>/</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Where does <code>. report.conf</code> look for the file?</p>
+<blockquote>
+<p>In the directories of <code>PATH</code> first, then (outside POSIX mode) in the current directory.</p>
+</blockquote>
+</li>
+<li>
+<p>Why was yesterday’s report emptied even though the run failed?</p>
+<blockquote>
+<p>The output redirection truncates the file before the commands that fill it run; writing to a
+temporary file and renaming it on success keeps the old one.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you run a command with exactly the environment a systemd service would have?</p>
+<blockquote>
+<p><code>systemd-run --wait --pipe</code> runs it as a transient service; <code>env -i</code> gives the empty-environment
+extreme from any shell.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A folder is shared by its group, not by its permissions alone · Norboten</title>
+<meta name="description" content="Three people share a folder and none of them can work in it. It is tempting to see one fault — &amp;quot;the permissions are wrong&amp;quot; — and one fix, chmod -R 777">
+<link rel="canonical" href="https://norboten.org/journals/linux-05-shared-folder-locks-people-out/"><meta property="og:title" content="A folder is shared by its group, not by its permissions alone · Norboten">
+<meta property="og:description" content="Three people share a folder and none of them can work in it. It is tempting to see one fault — &amp;quot;the permissions are wrong&amp;quot; — and one fix, chmod -R 777">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/linux-05-shared-folder-locks-people-out/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A folder is shared by its group, not by its permissions alone · Norboten">
+<meta name="twitter:description" content="Three people share a folder and none of them can work in it. It is tempting to see one fault — &amp;quot;the permissions are wrong&amp;quot; — and one fix, chmod -R 777">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A folder is shared by its group, not by its permissions alone",
+  "description": "Three people share a folder and none of them can work in it. It is tempting to see one fault \u2014 \u0026quot;the permissions are wrong\u0026quot; \u2014 and one fix, chmod -R 777",
+  "url": "https://norboten.org/journals/linux-05-shared-folder-locks-people-out/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2312,
+  "timeRequired": "PT30M",
+  "about": ["Users and permissions", "Linux basics"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Shared Folder That Locks People Out</div>
+    <h1>A folder is shared by its group, not by its permissions alone</h1>
+    <p class="muted">
+      30 minutes' reading · 2312 words ·<span class="tag">Users and permissions</span><span class="tag">Linux basics</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 153 words</title><rect x="0.0" y="0" width="40.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 861 words</title><rect x="43.8" y="0" width="229.8" height="30" rx="4" fill="#1d2a23"/><text x="51.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 716 words</title><rect x="276.6" y="0" width="191.1" height="30" rx="4" fill="#4ade80"/><text x="284.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 285 words</title><rect x="470.7" y="0" width="76.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 237 words</title><rect x="549.8" y="0" width="63.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 67 words</title><rect x="616.1" y="0" width="17.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 461 words</title><rect x="637.0" y="0" width="123.0" height="30" rx="4" fill="#1d2a23"/><text x="645.0" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/linux-05-shared-folder-locks-people-out/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Three people share a folder and none of them can work in it. It is tempting to see one fault — &quot;the
+permissions are wrong&quot; — and one fix, <code>chmod -R 777</code>. There are really four separate questions, and
+each has its own answer in a different place: <strong>who is in the group</strong> (<code>/etc/group</code>), <strong>what the files
+that already exist allow</strong> (their owner, group and mode bits), <strong>what files created tomorrow will
+allow</strong> (the directory's setgid bit, the author's umask, default ACLs), and <strong>what everyone else can
+reach</strong> (the &quot;other&quot; bits — on the directory as much as on the files).</p>
+<p>The lab's folder gets every one of them wrong, and a previous admin's hardening makes the third worse:
+every login runs <code>umask 077</code>, so anything anyone writes is private to its author the moment it is
+saved. Fixing today's files with <code>chmod</code> without touching the third question gives a folder that
+works this afternoon and is broken again tomorrow morning.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Say how the kernel picks <em>one</em> of owner, group or other for a given user and file, and why the
+choice is not cumulative.</li>
+<li>Explain what read, write and execute mean on a directory, and why a file can be unreachable even
+when its own bits allow reading.</li>
+<li>Add a user to a supplementary group without removing their other groups, and know when the change
+takes effect.</li>
+<li>Give a group access to an existing tree with <code>chgrp -R</code> and <code>chmod -R g+rwX,o-rwx</code>, and say what the
+capital <code>X</code> is for.</li>
+<li>Use the setgid bit on a directory so new files inherit its group.</li>
+<li>Read a umask and predict the mode of a file created under it; find where a login sets it.</li>
+<li>Use default ACLs to keep group access on new files regardless of the author's umask, and read the
+<code>mask</code> and <code>#effective</code> lines <code>getfacl</code> prints.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="one-class-chosen-once">One class, chosen once</h3>
+<p>Every file has an owner, a group and nine mode bits: <code>rwx</code> for the owner, <code>rwx</code> for the group, <code>rwx</code>
+for everyone else. When a process opens the file, the kernel does not add these up. It picks exactly
+one class and uses only its bits:</p>
+<ol>
+<li>If the process's user <strong>is the owner</strong>, the owner bits decide — even if they allow less than the
+group bits would.</li>
+<li>Otherwise, if the owning group is the process's primary group <strong>or any of its supplementary
+groups</strong>, the group bits decide.</li>
+<li>Otherwise the other bits decide.</li>
+</ol>
+<p>root skips the check for reading and writing. That is why the grader, and you with <code>sudo</code>, see
+everything, and why you must look at the folder through the users' own eyes — <code>su - bob</code> — to see
+what bob sees.</p>
+<p>In the broken folder, <code>budget.csv</code> is <code>-rw-r--r-- bob bob</code>. bob is its owner and may write. alice is
+not bob and not in the group <code>bob</code>, so the other bits apply: read only. dave is in the same position
+as alice — which is exactly the problem, because dave is not on the team.</p>
+<h3 id="directories-read-lists-write-changes-execute-enters">Directories: read lists, write changes, execute enters</h3>
+<p>On a directory the same bits mean different things:</p>
+<table>
+<thead>
+<tr>
+<th>bit</th>
+<th>on a file</th>
+<th>on a directory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>r</code></td>
+<td>read the contents</td>
+<td>list the names in it</td>
+</tr>
+<tr>
+<td><code>w</code></td>
+<td>change the contents</td>
+<td>create, rename and delete entries in it (with <code>x</code>)</td>
+</tr>
+<tr>
+<td><code>x</code></td>
+<td>run it</td>
+<td>enter it: reach anything inside by name</td>
+</tr>
+</tbody>
+</table>
+<p>Two consequences matter here. A file is reachable only if you have <code>x</code> on <strong>every directory on the
+path</strong> to it, so taking <code>x</code> away from others on <code>/srv/reports</code> locks dave out of every file inside,
+whatever those files' own bits say. And deleting a file needs write on the <em>directory</em>, not on the
+file: anyone with <code>w</code> and <code>x</code> on a shared folder can delete anyone else's report. (The sticky bit,
+<code>chmod +t</code>, restricts deletion to the file's owner; <code>/tmp</code> uses it. A team that edits each other's
+files usually does not want it, but it is the answer when they should only add.)</p>
+<h3 id="groups-membership-is-read-at-login">Groups: membership is read at login</h3>
+<p>A user's groups are listed in <code>/etc/group</code>. <code>usermod -aG reports carol</code> appends <code>reports</code> to carol's
+supplementary groups; without <code>-a</code>, <code>-G</code> <em>replaces</em> them and silently removes every other group she
+had. The change is recorded at once, but a process's groups are fixed when it is created, so a
+session that was already open keeps its old list. <code>su - carol</code>, a new SSH login or <code>newgrp reports</code>
+picks up the new one. This is the most common reason a correct fix &quot;does not work&quot; until someone logs
+out.</p>
+<h3 id="what-decides-a-new-files-mode">What decides a new file's mode</h3>
+<p>A program that creates a file asks for a mode — usually <code>0666</code> for files and <code>0777</code> for directories —
+and the kernel removes the bits set in the process's <strong>umask</strong>. With the usual <code>022</code>, files come out
+<code>0644</code> and directories <code>0755</code>. With <code>002</code> — Ubuntu's default for users who have their own private
+group, applied by <code>pam_umask</code> — they come out <code>0664</code> and <code>0775</code>. With the hardening in this lab,
+<code>077</code>, they come out <code>0600</code> and <code>0700</code>: nobody but the author can do anything.</p>
+<p>A umask is inherited by child processes, and it is set in more than one place: <code>/etc/login.defs</code>
+(<code>UMASK</code>, read by <code>pam_umask</code>), <code>/etc/profile</code> and <code>/etc/profile.d/*.sh</code> for login shells, and a
+user's own <code>~/.profile</code> or <code>~/.bashrc</code>. The last one to run wins. Here it is
+<code>/etc/profile.d/00-hardening.sh</code>.</p>
+<p>The new file's <strong>group</strong> is decided separately. Normally it is the creator's primary group — alice's
+files get the group <code>alice</code>. If the directory has the <strong>setgid</strong> bit (<code>chmod g+s</code>, shown as <code>s</code> in the
+group execute position), new entries get the directory's group instead, and new subdirectories inherit
+the setgid bit, so the rule propagates down the tree.</p>
+<h3 id="default-acls-group-access-the-umask-cannot-remove">Default ACLs: group access the umask cannot remove</h3>
+<p>POSIX ACLs add entries beyond the three classes: <code>group:reports:rwx</code> grants that named group access
+whether or not it owns the file. An ACL on a directory can also carry <strong>default</strong> entries, which are
+copied onto every file and directory created inside it.</p>
+<p>Default ACLs change how the umask applies: when the parent directory has a default ACL, the umask is
+not used at all. The new file's ACL comes from the defaults, limited only by the mode the program
+asked for. So a default <code>group:reports:rwx</code> gives every new file group read and write even under
+<code>umask 077</code> — which is why the reference solution uses it.</p>
+<p>One more entry appears whenever named entries exist: the <strong>mask</strong>. It is the maximum any named user,
+named group or the owning group can get, and it is what <code>ls -l</code> shows in the group position. A file
+created with mode <code>0666</code> gets a mask of <code>rw-</code>, so <code>getfacl</code> prints <code>group:reports:rwx #effective:rw-</code>:
+the entry says <code>rwx</code>, the mask cuts it to <code>rw-</code>. A later <code>chmod g-w</code> lowers the mask, and with it every
+named entry at once — a frequent surprise.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>The roster names three people. The group has two:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/srv/reports/TEAM.txt
+<span class="hl-go">reports team: alice bob carol</span>
+<span class="hl-gp">$ </span>getent<span class="hl-w"> </span>group<span class="hl-w"> </span>reports
+<span class="hl-go">reports:x:1001:alice,bob</span>
+<span class="hl-gp">$ </span>id<span class="hl-w"> </span>carol<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>id<span class="hl-w"> </span>dave
+<span class="hl-go">uid=1003(carol) gid=1004(carol) groups=1004(carol)</span>
+<span class="hl-go">uid=1004(dave) gid=1005(dave) groups=1005(dave)</span>
+</code></pre>
+
+<p><strong>1. Look at the folder as a listing, then as the people who use it.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-la<span class="hl-w"> </span>/srv/reports<span class="hl-w"> </span>/srv/reports/drafts
+<span class="hl-go">/srv/reports:</span>
+<span class="hl-go">drwxr-xr-x 3 alice alice 4096 Sep 14 09:57 .</span>
+<span class="hl-go">-rw------- 1 alice alice   31 Sep 14 09:57 2026-q3-summary.txt</span>
+<span class="hl-go">-rw-r--r-- 1 alice root    30 Sep 14 09:57 TEAM.txt</span>
+<span class="hl-go">-rw-r--r-- 1 bob   bob     38 Sep 14 09:57 budget.csv</span>
+<span class="hl-go">drwxr-xr-x 2 bob   bob   4096 Sep 14 09:57 drafts</span>
+
+<span class="hl-go">/srv/reports/drafts:</span>
+<span class="hl-go">-rw------- 1 bob   bob     21 Sep 14 09:57 q4-outline.txt</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>bob<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'cat /srv/reports/2026-q3-summary.txt'</span>
+<span class="hl-go">cat: /srv/reports/2026-q3-summary.txt: Permission denied</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>dave<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'cat /srv/reports/budget.csv'</span>
+<span class="hl-go">item,amount</span>
+<span class="hl-go">servers,1200</span>
+<span class="hl-go">licences,300</span>
+</code></pre>
+
+<p>Every file belongs to its author's private group, so the group bits never apply to a teammate, and the
+folder is <code>755</code> — open to everyone for reading.</p>
+<p><strong>2. Find out what tomorrow's files will look like.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>alice<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'umask; touch /srv/reports/scratch.txt; ls -l /srv/reports/scratch.txt'</span>
+<span class="hl-go">0077</span>
+<span class="hl-go">-rw------- 1 alice alice 0 Sep 14 09:57 /srv/reports/scratch.txt</span>
+<span class="hl-gp">$ </span>grep<span class="hl-w"> </span>-rn<span class="hl-w"> </span><span class="hl-nb">umask</span><span class="hl-w"> </span>/etc/profile<span class="hl-w"> </span>/etc/profile.d/<span class="hl-w"> </span>/etc/login.defs<span class="hl-w"> </span>/etc/pam.d/common-session<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-v<span class="hl-w"> </span><span class="hl-s1">':#'</span>
+<span class="hl-go">/etc/profile.d/00-hardening.sh:2:umask 077</span>
+<span class="hl-go">/etc/pam.d/common-session:23:session optional			pam_umask.so</span>
+</code></pre>
+
+<p><code>pam_umask</code> would give <code>002</code>; the profile snippet runs later and wins.</p>
+<p><strong>3. Fix the group, then the existing tree.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>usermod<span class="hl-w"> </span>-aG<span class="hl-w"> </span>reports<span class="hl-w"> </span>carol
+<span class="hl-gp">$ </span>id<span class="hl-w"> </span>carol
+<span class="hl-go">uid=1003(carol) gid=1004(carol) groups=1004(carol),1001(reports)</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chgrp<span class="hl-w"> </span>-R<span class="hl-w"> </span>reports<span class="hl-w"> </span>/srv/reports
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span>-R<span class="hl-w"> </span>g+rwX,o-rwx<span class="hl-w"> </span>/srv/reports
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>find<span class="hl-w"> </span>/srv/reports<span class="hl-w"> </span>-type<span class="hl-w"> </span>d<span class="hl-w"> </span>-exec<span class="hl-w"> </span>chmod<span class="hl-w"> </span>g+s<span class="hl-w"> </span><span class="hl-o">{}</span><span class="hl-w"> </span>+
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-ld<span class="hl-w"> </span>/srv/reports<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>ls<span class="hl-w"> </span>-la<span class="hl-w"> </span>/srv/reports
+<span class="hl-go">drwxrws--- 3 alice reports 4096 Sep 14 09:57 /srv/reports</span>
+<span class="hl-go">drwxrws--- 3 alice reports 4096 Sep 14 09:57 .</span>
+<span class="hl-go">-rw-rw---- 1 alice reports   31 Sep 14 09:57 2026-q3-summary.txt</span>
+<span class="hl-go">-rw-rw---- 1 alice reports   30 Sep 14 09:57 TEAM.txt</span>
+<span class="hl-go">-rw-rw---- 1 bob   reports   38 Sep 14 09:57 budget.csv</span>
+<span class="hl-go">drwxrws--- 2 bob   reports 4096 Sep 14 09:57 drafts</span>
+</code></pre>
+
+<p><code>g+rwX</code> gives the group read and write, and execute only where it makes sense: on directories, and on
+files that were already executable for someone. A lowercase <code>x</code> would have marked every report as a
+program. Note that the plain <code>ls</code> of the folder, as <code>learner</code>, would now be refused: you are not on the
+team either.</p>
+<p><strong>4. Check tomorrow, not just today.</strong> The setgid bit got the group right; the umask still wins:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>alice<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'echo "first draft" &gt; /srv/reports/q4-plan.txt'</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/srv/reports/q4-plan.txt
+<span class="hl-go">-rw------- 1 alice reports 12 Sep 14 09:57 /srv/reports/q4-plan.txt</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>bob<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'echo "bob was here" &gt;&gt; /srv/reports/q4-plan.txt'</span>
+<span class="hl-go">-bash: line 1: /srv/reports/q4-plan.txt: Permission denied</span>
+</code></pre>
+
+<p><strong>5. Give the group a default ACL.</strong> <code>-m</code> sets the entry on what exists; <code>-d -m</code> sets the default for
+what will be created:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>setfacl<span class="hl-w"> </span>-R<span class="hl-w"> </span>-m<span class="hl-w"> </span>g:reports:rwX<span class="hl-w"> </span>/srv/reports
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>setfacl<span class="hl-w"> </span>-R<span class="hl-w"> </span>-d<span class="hl-w"> </span>-m<span class="hl-w"> </span>g:reports:rwX<span class="hl-w"> </span>/srv/reports
+<span class="hl-gp">$ </span>getfacl<span class="hl-w"> </span>-p<span class="hl-w"> </span>/srv/reports
+<span class="hl-gp"># </span>file:<span class="hl-w"> </span>/srv/reports
+<span class="hl-gp"># </span>owner:<span class="hl-w"> </span>alice
+<span class="hl-gp"># </span>group:<span class="hl-w"> </span>reports
+<span class="hl-gp"># </span>flags:<span class="hl-w"> </span>-s-
+<span class="hl-go">user::rwx</span>
+<span class="hl-go">group::rwx</span>
+<span class="hl-go">group:reports:rwx</span>
+<span class="hl-go">mask::rwx</span>
+<span class="hl-go">other::---</span>
+<span class="hl-go">default:user::rwx</span>
+<span class="hl-go">default:group::rwx</span>
+<span class="hl-go">default:group:reports:rwx</span>
+<span class="hl-go">default:mask::rwx</span>
+<span class="hl-go">default:other::---</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>alice<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'echo "second draft" &gt; /srv/reports/q4-plan-v2.txt'</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>getfacl<span class="hl-w"> </span>-p<span class="hl-w"> </span>/srv/reports/q4-plan-v2.txt
+<span class="hl-gp"># </span>file:<span class="hl-w"> </span>/srv/reports/q4-plan-v2.txt
+<span class="hl-gp"># </span>owner:<span class="hl-w"> </span>alice
+<span class="hl-gp"># </span>group:<span class="hl-w"> </span>reports
+<span class="hl-go">user::rw-</span>
+<span class="hl-gp">group::rwx	#</span>effective:rw-
+<span class="hl-gp">group:reports:rwx	#</span>effective:rw-
+<span class="hl-go">mask::rw-</span>
+<span class="hl-go">other::---</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>bob<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'echo "bob was here" &gt;&gt; /srv/reports/q4-plan-v2.txt &amp;&amp; tail -1 /srv/reports/q4-plan-v2.txt'</span>
+<span class="hl-go">bob was here</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>carol<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'mkdir /srv/reports/carol-notes &amp;&amp; ls -ld /srv/reports/carol-notes'</span>
+<span class="hl-go">drwxrws---+ 2 carol reports 4096 Sep 14 09:57 /srv/reports/carol-notes</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>dave<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'ls /srv/reports'</span>
+<span class="hl-go">ls: cannot open directory '/srv/reports': Permission denied</span>
+</code></pre>
+
+<p>The <code>+</code> after the mode is <code>ls</code> saying &quot;there is an ACL; the nine bits are not the whole story&quot;.
+carol's new directory is group <code>reports</code>, setgid, and carries the defaults on. With the test files
+removed, the grader passed all four checks.</p>
+<p>The same result is available without ACLs: keep the setgid directories and give the team a umask that
+keeps group write (<code>umask 007</code>) where their logins set it. That depends on every program the team uses
+honouring a login umask — an editor started from a desktop session or a file copied in by a service
+may not — which is the argument for the ACL.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong><code>chmod -R 777</code>.</strong> Everyone can do everything, including dave, including deleting the whole folder.
+It also stops working tomorrow: new files are still created under <code>umask 077</code>.</p>
+<p><strong><code>usermod -G reports carol</code>.</strong> Without <code>-a</code>, carol loses every other supplementary group she had —
+<code>sudo</code>, perhaps. Always <code>-aG</code>, or <code>gpasswd -a carol reports</code>.</p>
+<p><strong>Testing as yourself with <code>sudo</code>.</strong> root is not subject to the permission check for reading and
+writing, so everything &quot;works&quot;. Test as the people concerned: <code>su - bob -c '…'</code>.</p>
+<p><strong>Testing in a session that was already open.</strong> Group membership is read when a process starts. A
+shell opened before <code>usermod</code> still does not have the group; log in again, or use <code>su -</code>.</p>
+<p><strong>Fixing the files and not the directories.</strong> Without <code>x</code> on <code>drafts</code>, nobody reaches the files in
+it however open they are. And without <code>w</code> on a directory, nobody can create or rename anything in it.</p>
+<p><strong><code>chmod -R g+x</code></strong> instead of <code>g+X</code>. Every report becomes executable. Harmless until someone runs one.</p>
+<p><strong>Removing the hardening snippet.</strong> It works in this folder, and it also makes every file every user
+creates anywhere group-readable. The hardening had a purpose; the team folder needed an exception, not
+the removal of the rule.</p>
+<p><strong>Setting only access ACLs (<code>setfacl -m</code>) without defaults (<code>-d -m</code>).</strong> Today's files work, tomorrow's
+do not — the same trap as <code>chmod</code>, with more typing.</p>
+<p><strong><code>chmod g-w</code> on an ACL'd file to &quot;tidy up&quot;.</strong> It lowers the mask, and every named entry loses write
+with it; <code>getfacl</code> shows <code>#effective:r--</code> and bob is locked out again.</p>
+<p><strong>Copying files in with <code>cp -p</code> or <code>rsync -a</code> from elsewhere.</strong> Preserving modes and groups preserves
+the old private ones. Copy without preserving, or fix the group afterwards.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># who, and in which groups</span>
+id<span class="hl-w"> </span>alice<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>id<span class="hl-w"> </span>-nG<span class="hl-w"> </span>alice<span class="hl-w">              </span><span class="hl-c1"># groups by name</span>
+getent<span class="hl-w"> </span>group<span class="hl-w"> </span>reports<span class="hl-w">                 </span><span class="hl-c1"># the group's members</span>
+sudo<span class="hl-w"> </span>usermod<span class="hl-w"> </span>-aG<span class="hl-w"> </span>reports<span class="hl-w"> </span>carol<span class="hl-w">       </span><span class="hl-c1"># append (-a!) a supplementary group</span>
+sudo<span class="hl-w"> </span>gpasswd<span class="hl-w"> </span>-a<span class="hl-w"> </span>carol<span class="hl-w"> </span>reports<span class="hl-w">        </span><span class="hl-c1"># the same; gpasswd -d removes</span>
+newgrp<span class="hl-w"> </span>reports<span class="hl-w">                       </span><span class="hl-c1"># a shell with the new group, without logging out</span>
+
+<span class="hl-c1"># what is there</span>
+ls<span class="hl-w"> </span>-la<span class="hl-w"> </span>/srv/reports<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>stat<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'%A %U:%G %n'</span><span class="hl-w"> </span>/srv/reports/*
+namei<span class="hl-w"> </span>-l<span class="hl-w"> </span>/srv/reports/drafts/q4-outline.txt<span class="hl-w">   </span><span class="hl-c1"># every directory on the path, with its bits</span>
+sudo<span class="hl-w"> </span>su<span class="hl-w"> </span>-<span class="hl-w"> </span>bob<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'test -w /srv/reports/budget.csv &amp;&amp; echo writable'</span>
+
+<span class="hl-c1"># existing files</span>
+sudo<span class="hl-w"> </span>chgrp<span class="hl-w"> </span>-R<span class="hl-w"> </span>reports<span class="hl-w"> </span>/srv/reports
+sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span>-R<span class="hl-w"> </span>g+rwX,o-rwx<span class="hl-w"> </span>/srv/reports<span class="hl-w">        </span><span class="hl-c1"># X: execute only for dirs (and already-executables)</span>
+sudo<span class="hl-w"> </span>find<span class="hl-w"> </span>/srv/reports<span class="hl-w"> </span>-type<span class="hl-w"> </span>d<span class="hl-w"> </span>-exec<span class="hl-w"> </span>chmod<span class="hl-w"> </span>g+s<span class="hl-w"> </span><span class="hl-o">{}</span><span class="hl-w"> </span>+<span class="hl-w">   </span><span class="hl-c1"># setgid: new entries get the dir's group</span>
+chmod<span class="hl-w"> </span>+t<span class="hl-w"> </span>/srv/drop<span class="hl-w">                            </span><span class="hl-c1"># sticky: only the owner may delete their file</span>
+
+<span class="hl-c1"># new files</span>
+<span class="hl-nb">umask</span><span class="hl-w">                                </span><span class="hl-c1"># 0022 → 644/755, 0002 → 664/775, 0077 → 600/700</span>
+grep<span class="hl-w"> </span>-rn<span class="hl-w"> </span><span class="hl-nb">umask</span><span class="hl-w"> </span>/etc/profile<span class="hl-w"> </span>/etc/profile.d<span class="hl-w"> </span>/etc/login.defs<span class="hl-w"> </span>~/.profile<span class="hl-w"> </span>~/.bashrc
+<span class="hl-c1"># default ACLs ignore the umask:</span>
+sudo<span class="hl-w"> </span>setfacl<span class="hl-w"> </span>-R<span class="hl-w">  </span>-m<span class="hl-w"> </span>g:reports:rwX<span class="hl-w"> </span>/srv/reports<span class="hl-w">   </span><span class="hl-c1"># what exists</span>
+sudo<span class="hl-w"> </span>setfacl<span class="hl-w"> </span>-R<span class="hl-w"> </span>-d<span class="hl-w"> </span>-m<span class="hl-w"> </span>g:reports:rwX<span class="hl-w"> </span>/srv/reports<span class="hl-w"> </span><span class="hl-c1"># what will be created</span>
+getfacl<span class="hl-w"> </span>-p<span class="hl-w"> </span>/srv/reports<span class="hl-w">              </span><span class="hl-c1"># mask:: caps named entries; #effective: shows the result</span>
+sudo<span class="hl-w"> </span>setfacl<span class="hl-w"> </span>-R<span class="hl-w"> </span>-b<span class="hl-w"> </span>/srv/reports<span class="hl-w">      </span><span class="hl-c1"># remove all ACL entries</span>
+<span class="hl-c1"># ls -l shows '+' when a file has an ACL; the group bits it shows are the mask</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>Nine letters and a refusal</em> (lab journal <code>hello</code>) — How the kernel picks a triad</li>
+</ul>
+<p>Manual pages: <code>man 1 id</code>, <code>man 1 getent</code>, <code>man 1 chmod</code>, <code>man 5 login.defs</code>, <code>man 5 acl</code>.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>alice owns <code>plan.txt</code>, mode <code>0460</code> (<code>r--rw----</code>), group <code>reports</code>, and alice is in <code>reports</code>. Can
+alice write to it?</p>
+<blockquote>
+<p>No. The owner class is chosen first and only its bits count: <code>r--</code>. Being in the group does not
+add the group's <code>rw-</code>. The kernel picks one class, it does not combine them.</p>
+</blockquote>
+</li>
+<li>
+<p><code>budget.csv</code> is <code>-rw-rw-rw-</code> but dave cannot read it. What could stop him?</p>
+<blockquote>
+<p>A directory on the path. Reaching a file needs execute on every directory leading to it; with
+<code>/srv/reports</code> at <code>drwxrws---</code>, dave, as &quot;other&quot;, cannot enter it, so the file's own bits are
+never consulted.</p>
+</blockquote>
+</li>
+<li>
+<p>After <code>sudo usermod -aG reports carol</code>, carol's already-open terminal still cannot write to the
+folder. Why, and what are two ways to get the group without a reboot?</p>
+<blockquote>
+<p>A process's groups are set when it starts; the shell that was open before the change keeps its
+old list. A new login (<code>su - carol</code>, a new SSH session) reads the new membership; <code>newgrp reports</code>
+starts a shell with it.</p>
+</blockquote>
+</li>
+<li>
+<p>With <code>umask 077</code>, a program creates a file asking for mode <code>0666</code> in a directory that has no ACL.
+What mode does the file get, and which group?</p>
+<blockquote>
+<p><code>0600</code>: the umask removes group and other bits. The group is the creator's primary group — unless
+the directory is setgid, in which case it is the directory's group.</p>
+</blockquote>
+</li>
+<li>
+<p>What does the setgid bit do on a directory, and what does it not do?</p>
+<blockquote>
+<p>New files and subdirectories get the directory's group instead of the creator's primary group,
+and new subdirectories inherit setgid. It does not change any permission bits: under a <code>077</code>
+umask the file has the right group and still no group access.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does a default ACL entry <code>group:reports:rwx</code> give group write to new files even under
+<code>umask 077</code>?</p>
+<blockquote>
+<p>When the parent directory has a default ACL, the umask is not applied. The new file's ACL is
+copied from the defaults and limited only by the mode the program requested (<code>0666</code> for a file),
+so the named group gets <code>rw-</code>.</p>
+</blockquote>
+</li>
+<li>
+<p><code>getfacl</code> shows <code>group:reports:rwx #effective:r--</code>. What is limiting the group, and what command
+typically causes it?</p>
+<blockquote>
+<p>The mask entry, which caps named users, named groups and the owning group; here it is <code>r--</code>.
+A <code>chmod g-w</code> (or any chmod of the group bits) on a file with an ACL sets the mask.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>chmod -R g+rwX</code> better than <code>chmod -R g+rwx</code> for a folder of documents?</p>
+<blockquote>
+<p>Capital <code>X</code> adds execute only to directories, which need it to be entered, and to files that are
+already executable for someone. Lowercase <code>x</code> marks every document as a program.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A loaded model costs its weights plus a cache for every token it may hold · Norboten</title>
+<meta name="description" content="&amp;quot;The model is 400 MB&amp;quot; is true of the file and says little about the server. To answer, the runtime loads the weights, adds its own working memory, and">
+<link rel="canonical" href="https://norboten.org/journals/ollama-03-the-model-that-will-not-load/"><meta property="og:title" content="A loaded model costs its weights plus a cache for every token it may hold · Norboten">
+<meta property="og:description" content="&amp;quot;The model is 400 MB&amp;quot; is true of the file and says little about the server. To answer, the runtime loads the weights, adds its own working memory, and">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/ollama-03-the-model-that-will-not-load/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A loaded model costs its weights plus a cache for every token it may hold · Norboten">
+<meta name="twitter:description" content="&amp;quot;The model is 400 MB&amp;quot; is true of the file and says little about the server. To answer, the runtime loads the weights, adds its own working memory, and">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A loaded model costs its weights plus a cache for every token it may hold",
+  "description": "\u0026quot;The model is 400 MB\u0026quot; is true of the file and says little about the server. To answer, the runtime loads the weights, adds its own working memory, and",
+  "url": "https://norboten.org/journals/ollama-03-the-model-that-will-not-load/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1492,
+  "timeRequired": "PT35M",
+  "about": ["Ollama", "Kernel and performance", "Boot and systemd"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Model That Will Not Load</div>
+    <h1>A loaded model costs its weights plus a cache for every token it may hold</h1>
+    <p class="muted">
+      35 minutes' reading · 1492 words ·<span class="tag">Ollama</span><span class="tag">Kernel and performance</span><span class="tag">Boot and systemd</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 60 words</title><rect x="0.0" y="0" width="25.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 448 words</title><rect x="28.5" y="0" width="190.7" height="30" rx="4" fill="#1d2a23"/><text x="36.5" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 409 words</title><rect x="222.3" y="0" width="174.1" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 192 words</title><rect x="399.4" y="0" width="81.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 154 words</title><rect x="484.1" y="0" width="65.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 115 words</title><rect x="552.7" y="0" width="49.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 365 words</title><rect x="604.6" y="0" width="155.4" height="30" rx="4" fill="#1d2a23"/><text x="612.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/ollama-03-the-model-that-will-not-load/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>&quot;The model is 400 MB&quot; is true of the file and says little about the server. To answer, the runtime
+loads the weights, adds its own working memory, and reserves a <strong>key-value cache</strong>: for every token of
+context, in every request slot it may serve at once, the intermediate results of every layer, so each
+new token does not recompute the whole conversation. That cache grows with the context length and with
+the number of parallel requests, multiplied.</p>
+<p>This machine's tuning asked for 32,768 tokens of context for eight people at once — a cache of three
+gigabytes on a three-gigabyte machine — and then capped the service at 400 MB because the model file is
+400 MB. The result is two different failures that look alike from the outside: the kernel killing the
+server mid-load, and the server refusing to allocate what it was told to. Telling them apart is most of
+the lab.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Estimate what a model server will need from context length and parallelism, and measure it.</li>
+<li>Read <code>MemoryMax=</code>, <code>MemoryPeak</code> and <code>NRestarts</code> for a service, and find the kernel's OOM message.</li>
+<li>Distinguish an out-of-memory kill from a failed allocation in the journal and from the client.</li>
+<li>Choose a memory limit that protects the machine without killing the service.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="what-the-server-holds">What the server holds</h3>
+<p>For <code>qwen2.5:0.5b</code> (a 4-bit file of about 400 MB), Ollama reports the loaded size in <code>/api/ps</code>, and systemd
+records the service's peak memory. Measured on the lab VM (2 CPUs, 3 GB), one load each:</p>
+<table>
+<thead>
+<tr>
+<th><code>OLLAMA_CONTEXT_LENGTH</code></th>
+<th><code>OLLAMA_NUM_PARALLEL</code></th>
+<th>loaded size (<code>/api/ps</code>)</th>
+<th>service <code>MemoryPeak</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4,096</td>
+<td>1</td>
+<td>600 MiB</td>
+<td>734 MiB</td>
+</tr>
+<tr>
+<td>4,096</td>
+<td>2</td>
+<td>688 MiB</td>
+<td>734 MiB</td>
+</tr>
+<tr>
+<td>8,192</td>
+<td>2</td>
+<td>792 MiB</td>
+<td>813 MiB</td>
+</tr>
+<tr>
+<td>16,384</td>
+<td>4</td>
+<td>1,488 MiB</td>
+<td>1,398 MiB</td>
+</tr>
+<tr>
+<td>32,768</td>
+<td>8</td>
+<td>— load fails: 3,072 MiB for the cache alone</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>The cache is sized for <strong>context × parallel</strong> tokens: 32,768 × 8 is 262,144 tokens, and the runtime's log
+says so (<code>n_ctx = 262144</code>, <code>n_ctx_seq = 32768</code>). Doubling either doubles the cache. &quot;Eight people on the
+team&quot; does not mean eight requests at the same instant; requests beyond <code>OLLAMA_NUM_PARALLEL</code> wait in a
+queue (<code>OLLAMA_MAX_QUEUE</code>, 512 by default) rather than failing.</p>
+<p>Before loading, Ollama 0.34 estimates the need and logs it — here <code>projected to use 3645 MiB of host memory vs. 2973 MiB of total host memory</code>. It compares with the machine's memory, <strong>not</strong> with the
+service's cgroup limit.</p>
+<h3 id="memorymax-and-the-oom-killer">MemoryMax and the OOM killer</h3>
+<p>systemd runs each service in its own control group. <code>MemoryMax=</code> caps that group; when its memory reaches
+the cap and cannot be reclaimed, the kernel's OOM killer kills a process <strong>inside that group</strong>, however
+much memory the rest of the machine has. The traces:</p>
+<ul>
+<li><code>journalctl -u ollama</code>: <code>A process of this unit has been killed by the OOM killer.</code> and <code>Failed with result 'oom-kill'</code>, then <code>Scheduled restart job</code> if the unit restarts;</li>
+<li><code>journalctl -k</code>: <code>Memory cgroup out of memory: Killed process … (llama-server)</code> with
+<code>constraint=CONSTRAINT_MEMCG</code>;</li>
+<li><code>systemctl show ollama -p NRestarts</code> goes up; the client's connection is simply closed.</li>
+</ul>
+<p><code>MemoryPeak</code> (the group's high-water mark since the unit started) shows how close a working service comes
+to its cap. <code>MemoryHigh=</code> is the softer sibling: above it the kernel throttles and reclaims instead of
+killing.</p>
+<h3 id="a-failed-allocation-is-not-a-kill">A failed allocation is not a kill</h3>
+<p>When the cap is large enough to start but the runtime asks for a single block it cannot get, the runtime
+itself fails: <code>ggml_aligned_malloc: insufficient memory (attempted to allocate 3072.00 MB)</code>, <code>failed to allocate buffer for kv cache</code>, <code>Load failed</code>. The server stays up, <code>NRestarts</code> does not change, and the
+client receives HTTP 500 with that error in the body. The fix is the same kind — ask for less — but the
+evidence is in a different place, and raising <code>MemoryMax</code> does nothing for it.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the lab VM (Ollama 0.34.0, systemd 257). A question, as the team asks it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'\nHTTP %{http_code}\n'</span><span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/generate<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"qwen2.5:0.5b","prompt":"Name one Linux command.","stream":false,"options":{"num_predict":8}}'</span>
+
+<span class="hl-go">HTTP 000</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>ollama<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryMax<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryPeak<span class="hl-w"> </span>-p<span class="hl-w"> </span>NRestarts
+<span class="hl-go">NRestarts=1</span>
+<span class="hl-go">MemoryPeak=29376512</span>
+<span class="hl-go">MemoryMax=419430400</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>ollama<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'projected|OOM|oom-kill|Scheduled restart'</span>
+<span class="hl-go">common_params_fit_impl: projected to use 3645 MiB of host memory vs. 2973 MiB of total host memory</span>
+<span class="hl-go">ollama.service: A process of this unit has been killed by the OOM killer.</span>
+<span class="hl-go">ollama.service: Failed with result 'oom-kill'.</span>
+<span class="hl-go">ollama.service: Scheduled restart job, restart counter is at 1.</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-k<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'memory cgroup out of memory'</span>
+<span class="hl-go">kernel: Memory cgroup out of memory: Killed process 940 (llama-server) total-vm:1001312kB, anon-rss:380628kB, …</span>
+</code></pre>
+
+<p>No HTTP response at all, one restart, and a peak that reset with the restart. The drop-in holds the whole
+tuning:</p>
+<pre class="hl"><code class="language-ini"><span class="hl-c1"># /etc/systemd/system/ollama.service.d/tuning.conf</span>
+<span class="hl-k">[Service]</span>
+<span class="hl-na">Environment</span><span class="hl-o">=</span><span class="hl-s">"OLLAMA_CONTEXT_LENGTH=32768"</span>
+<span class="hl-na">Environment</span><span class="hl-o">=</span><span class="hl-s">"OLLAMA_NUM_PARALLEL=8"</span>
+<span class="hl-na">MemoryMax</span><span class="hl-o">=</span><span class="hl-s">400M</span>
+</code></pre>
+
+<p>The obvious fix is the limit. Raising it to 1536M:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'s/^MemoryMax=400M/MemoryMax=1536M/'</span><span class="hl-w"> </span>/etc/systemd/system/ollama.service.d/tuning.conf
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>ollama
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/generate<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{…}'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span>.error
+<span class="hl-go">llama-server process has terminated: exit status 1: ggml_aligned_malloc: insufficient memory (attempted to allocate 3072.00 MB)</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>ollama<span class="hl-w"> </span>-p<span class="hl-w"> </span>NRestarts<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryPeak
+<span class="hl-go">NRestarts=0</span>
+<span class="hl-go">MemoryPeak=777523200</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>ollama<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'kv cache'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">llama_init_from_model: failed to initialize the context: failed to allocate buffer for kv cache</span>
+</code></pre>
+
+<p>A different failure: nothing was killed, the server answered with an error, and the cause is the three
+gigabytes of cache — no limit that fits on this machine would help. Size the cache to the need — 4,096
+tokens, two at a time — and keep a limit with room above it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'[Service]\nEnvironment="OLLAMA_CONTEXT_LENGTH=4096"\nEnvironment="OLLAMA_NUM_PARALLEL=2"\nMemoryMax=1536M\n'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>/etc/systemd/system/ollama.service.d/tuning.conf
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>ollama
+<span class="hl-gp">$ </span><span class="hl-nb">time</span><span class="hl-w"> </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/generate<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{…}'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{response, load_duration}'</span>
+<span class="hl-go">{"response":"Linux is a Unix-like operating system,","load_duration":603007669}</span>
+<span class="hl-go">real	0m0.908s</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/ps<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'.models[] | {name, size, context_length}'</span>
+<span class="hl-go">{"name":"qwen2.5:0.5b","size":721231542,"context_length":4096}</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>ollama<span class="hl-w"> </span>-p<span class="hl-w"> </span>NRestarts<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryPeak<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryMax
+<span class="hl-go">NRestarts=0</span>
+<span class="hl-go">MemoryPeak=769761280</span>
+<span class="hl-go">MemoryMax=1610612736</span>
+</code></pre>
+
+<p>Loaded in 0.6 s, a peak of 734 MiB under a 1,536 MiB cap. (The answer itself — &quot;Linux is a Unix-like
+operating system,&quot; for &quot;name one Linux command&quot; — is what eight tokens of a half-billion-parameter model
+buy.) The grader asks again after a reboot.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Removing <code>MemoryMax=</code> altogether.</strong> The service works, and the next oversized setting takes the whole
+machine into swap or the global OOM killer, which may pick sshd.</p>
+<p><strong>Raising the limit until the error changes.</strong> The kill becomes an allocation failure; no limit on a 3 GB
+machine holds a 3 GB cache plus everything else.</p>
+<p><strong>Sizing <code>OLLAMA_NUM_PARALLEL</code> to the team.</strong> It is simultaneous requests, not users. Excess requests
+queue; each parallel slot costs a full context of cache.</p>
+<p><strong>Setting the context to 512 to save memory.</strong> Everything loads, and every prompt longer than a few hundred
+tokens is truncated (see the previous lab). The team asked for 4,096.</p>
+<p><strong>Reading <code>MemoryPeak</code> after a crash.</strong> It is reset when the unit restarts; the kill's size is in the
+kernel log and in <code>Consumed … memory peak</code> in the unit's journal.</p>
+<p><strong>Testing with <code>ollama run</code> in a terminal.</strong> The client talks to the same server, so it does exercise the
+limits — but it hides the HTTP status. <code>curl -w '%{http_code}'</code> shows 000 for a kill and 500 for an
+allocation failure.</p>
+<p><strong>Forgetting <code>daemon-reload</code>.</strong> Resource settings in a drop-in do not apply until systemd rereads it.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># what the unit is allowed, what it used, whether it died</span>
+systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>ollama<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryMax<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryHigh<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryPeak<span class="hl-w"> </span>-p<span class="hl-w"> </span>MemoryCurrent<span class="hl-w"> </span>-p<span class="hl-w"> </span>NRestarts<span class="hl-w"> </span>-p<span class="hl-w"> </span>Result
+systemctl<span class="hl-w"> </span>cat<span class="hl-w"> </span>ollama
+sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>ollama<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'oom-kill|OOM killer|Scheduled restart|Consumed'</span>
+sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-k<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'out of memory'</span>
+
+<span class="hl-c1"># what the runtime tried</span>
+sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>ollama<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'projected to use|n_ctx|insufficient memory|kv cache|Load failed'</span>
+
+<span class="hl-c1"># what is loaded, and how big</span>
+curl<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/ps<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span><span class="hl-s1">'.models[] | {name, size, context_length, expires_at}'</span>
+
+<span class="hl-c1"># from the client: 000 = connection dropped (killed), 500 = error answered</span>
+curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span><span class="hl-m">127</span>.0.0.1:11434/api/generate<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">'{"model":"qwen2.5:0.5b","prompt":"hi","stream":false}'</span>
+
+<span class="hl-c1"># sizing</span>
+<span class="hl-o">[</span>Service<span class="hl-o">]</span>
+<span class="hl-nv">Environment</span><span class="hl-o">=</span><span class="hl-s2">"OLLAMA_CONTEXT_LENGTH=4096"</span><span class="hl-w">     </span><span class="hl-c1"># tokens per request</span>
+<span class="hl-nv">Environment</span><span class="hl-o">=</span><span class="hl-s2">"OLLAMA_NUM_PARALLEL=2"</span><span class="hl-w">          </span><span class="hl-c1"># simultaneous requests; cache ∝ context × parallel</span>
+<span class="hl-nv">MemoryMax</span><span class="hl-o">=</span>1536M<span class="hl-w">                              </span><span class="hl-c1"># hard cap: OOM kill inside the cgroup</span>
+<span class="hl-nv">MemoryHigh</span><span class="hl-o">=</span>1200M<span class="hl-w">                             </span><span class="hl-c1"># soft: throttle and reclaim first</span>
+sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>daemon-reload<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>ollama
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>The limits nobody set, and the numbers everybody misreads</em> (topic journal <code>kernel-performance</code>) — OOM: the machine's, or the cgroup's</li>
+<li><em>Ollama on a server</em> (topic journal <code>ollama</code>) — Memory</li>
+<li><em>Ollama on a server</em> (topic journal <code>ollama</code>) — Context windows</li>
+</ul>
+<p>Manual pages: <code>man 5 systemd.resource-control</code>.</p>
+<p>The whole subject, end to end: the topic journals <em>Ollama on a server</em> (<code>ollama</code>), <em>The limits nobody set, and the numbers everybody misreads</em> (<code>kernel-performance</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Why does a model server need more memory than the model file, and which two settings multiply the
+extra?</p>
+<blockquote>
+<p>Besides the weights it holds working memory and a key-value cache for every token it may process;
+the cache is sized by <code>OLLAMA_CONTEXT_LENGTH</code> times <code>OLLAMA_NUM_PARALLEL</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>The journal says <code>Failed with result 'oom-kill'</code> on a machine with 2 GB free. What limit was hit, and
+where does the kernel say so?</p>
+<blockquote>
+<p>The unit's <code>MemoryMax=</code> cgroup limit. <code>journalctl -k</code> shows <code>Memory cgroup out of memory</code> with
+<code>constraint=CONSTRAINT_MEMCG</code> and the killed process.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a client see in each case: the server killed mid-load, and the server failing to allocate its
+cache?</p>
+<blockquote>
+<p>A dropped connection with no HTTP status (curl reports 000) for the kill; HTTP 500 with the allocation
+error in the body for the failure, with the server still running.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did raising <code>MemoryMax</code> to 1536M not make the 32,768 × 8 configuration work?</p>
+<blockquote>
+<p>The cache alone needed 3,072 MB, more than the limit and more than the machine could provide; the
+failure became an allocation error instead of a kill.</p>
+</blockquote>
+</li>
+<li>
+<p>The team has eight members. Why is <code>OLLAMA_NUM_PARALLEL=2</code> still a reasonable setting?</p>
+<blockquote>
+<p>It limits simultaneous requests, not users. Requests beyond it wait in Ollama's queue; each parallel
+slot costs a full context of cache memory.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between <code>MemoryMax=</code> and <code>MemoryHigh=</code>?</p>
+<blockquote>
+<p><code>MemoryMax</code> is a hard limit: at it, the kernel OOM-kills within the cgroup. <code>MemoryHigh</code> is a
+throttling point: above it the kernel reclaims and slows the group rather than killing.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is removing the memory limit the wrong fix?</p>
+<blockquote>
+<p>The service then competes with everything else on the machine; an oversized setting pushes the whole
+system into swap or the global OOM killer, which may kill something more important.</p>
+</blockquote>
+</li>
+<li>
+<p>Ollama logged <code>projected to use 3645 MiB of host memory vs. 2973 MiB of total host memory</code>. Why did that
+estimate not prevent the 400 MB kill?</p>
+<blockquote>
+<p>It compares with the machine's memory, not with the service's cgroup limit, so a load that &quot;fits the
+host&quot; can still exceed <code>MemoryMax</code>.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

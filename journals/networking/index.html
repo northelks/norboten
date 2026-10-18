@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resolves here, listens there, routes until Tuesday · Norboten</title>
+<meta name="description" content="Most &amp;quot;network problems&amp;quot; on a server are not packets lost on a wire. They are questions answered by the wrong tool: a name that one program resolves an">
+<link rel="canonical" href="https://norboten.org/journals/networking/"><meta property="og:title" content="Resolves here, listens there, routes until Tuesday · Norboten">
+<meta property="og:description" content="Most &amp;quot;network problems&amp;quot; on a server are not packets lost on a wire. They are questions answered by the wrong tool: a name that one program resolves an">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/networking/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Resolves here, listens there, routes until Tuesday · Norboten">
+<meta name="twitter:description" content="Most &amp;quot;network problems&amp;quot; on a server are not packets lost on a wire. They are questions answered by the wrong tool: a name that one program resolves an">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Resolves here, listens there, routes until Tuesday",
+  "description": "Most \u0026quot;network problems\u0026quot; on a server are not packets lost on a wire. They are questions answered by the wrong tool: a name that one program resolves an",
+  "url": "https://norboten.org/journals/networking/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2436,
+  "timeRequired": "PT35M",
+  "about": ["Networking"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal</div>
+    <h1>Resolves here, listens there, routes until Tuesday</h1>
+    <p class="muted">
+      35 minutes' reading · 2436 words ·<span class="tag">Networking</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 91 words</title><rect x="0.0" y="0" width="23.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 1044 words</title><rect x="26.5" y="0" width="269.5" height="30" rx="4" fill="#1d2a23"/><text x="34.5" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 374 words</title><rect x="299.0" y="0" width="96.5" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 240 words</title><rect x="398.6" y="0" width="62.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#symptoms-and-causes"><title>Symptoms and causes — 230 words</title><rect x="463.5" y="0" width="59.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 215 words</title><rect x="525.9" y="0" width="55.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#exercises"><title>Exercises — 153 words</title><rect x="584.4" y="0" width="39.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#sources"><title>Sources — 69 words</title><rect x="626.9" y="0" width="17.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 435 words</title><rect x="647.7" y="0" width="112.3" height="30" rx="4" fill="#1d2a23"/><text x="655.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#symptoms-and-causes">Symptoms and causes</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#exercises">Exercises</a></li>
+          <li><a href="#sources">Sources</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Most &quot;network problems&quot; on a server are not packets lost on a wire. They are questions answered by the
+wrong tool: a name that one program resolves and another says does not exist, a service that answers
+every request from the machine itself and none from anywhere else, a DNS server or a route that was
+correct when someone set it and gone after the next restart of something unrelated. Each has a precise
+cause, and each is found by asking the question the way the application asks it.</p>
+<p>This journal works through those on a Rocky Linux 10 lab machine managed by NetworkManager, and every
+output in it was recorded there — including one assumption of the author's that turned out to be wrong
+when tested, which is noted where it happened.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Explain how a program turns a name into an address, and why <code>getent</code>, <code>ping</code> and <code>curl</code> can disagree
+with <code>dig</code> and <code>host</code>.</li>
+<li>Read <code>dig</code>'s answer and exit status correctly, and not mistake one for the other.</li>
+<li>Tell a service bound to loopback from one bound to all addresses, from <code>ss</code> alone.</li>
+<li>Set DNS servers and routes so they survive NetworkManager and a reboot, and know what happens to hand
+edits of <code>/etc/resolv.conf</code>.</li>
+<li>Ask the kernel which route and source address it will use for a destination.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="name-resolution-goes-through-nss-not-through-dns">Name resolution goes through NSS, not through DNS</h3>
+<p>Applications do not &quot;query DNS&quot;. They call the C library's resolver (<code>getaddrinfo</code>), which follows the
+<code>hosts:</code> line in <code>/etc/nsswitch.conf</code>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>grep<span class="hl-w"> </span><span class="hl-s1">'^hosts'</span><span class="hl-w"> </span>/etc/nsswitch.conf
+<span class="hl-go">hosts:      files  dns myhostname</span>
+</code></pre>
+
+<p><code>files</code> is <code>/etc/hosts</code>, <code>dns</code> is the servers in <code>/etc/resolv.conf</code>, <code>myhostname</code> answers for the
+machine's own name — in that order, first answer wins. So a name added to <code>/etc/hosts</code>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"10.20.30.40 db.internal"</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>-a<span class="hl-w"> </span>/etc/hosts
+</code></pre>
+
+<p>is a real name for every program that uses the resolver — and does not exist for the DNS tools, which
+talk to a DNS server directly and never read <code>/etc/hosts</code>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>getent<span class="hl-w"> </span>hosts<span class="hl-w"> </span>db.internal<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"getent=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">10.20.30.40     db.internal</span>
+<span class="hl-go">getent=0</span>
+<span class="hl-gp">$ </span>ping<span class="hl-w"> </span>-c1<span class="hl-w"> </span>-W1<span class="hl-w"> </span>db.internal<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1
+<span class="hl-go">PING db.internal (10.20.30.40) 56(84) bytes of data.</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span>http://db.internal/<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"curl=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">curl=28</span>
+<span class="hl-gp">$ </span>host<span class="hl-w"> </span>db.internal<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"host=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">Host db.internal not found: 3(NXDOMAIN)</span>
+<span class="hl-go">host=1</span>
+<span class="hl-gp">$ </span>dig<span class="hl-w"> </span>+short<span class="hl-w"> </span>db.internal<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"dig=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">dig=0</span>
+</code></pre>
+
+<p><code>ping</code> and <code>curl</code> resolved it (curl then timed out connecting — exit 28 is a connection timeout, not a
+name failure, which would be 6). <code>host</code> and <code>dig</code> said the name does not exist, because in DNS it does
+not. <strong><code>getent hosts NAME</code> answers the question the application asks</strong>; <code>dig</code> answers a narrower
+question about one DNS server. Use <code>dig</code> when the question really is about DNS — which record a server
+holds, TTLs, which server answered — and <code>getent</code> when the question is &quot;what will my program connect
+to&quot;.</p>
+<p>Note the last line: <strong><code>dig</code> exits 0 for a name that does not exist</strong>. Its exit status says whether it got
+an answer from a server, and NXDOMAIN is an answer. <code>+short</code> prints nothing and exits 0. A script that
+checks <code>dig +short NAME</code> for success is checking that the network is up, not that the name resolves.
+Read the status in the header (<code>dig NAME | grep status:</code>) or test for non-empty output.</p>
+<h3 id="who-writes-etcresolvconf">Who writes <code>/etc/resolv.conf</code></h3>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/etc/resolv.conf
+<span class="hl-gp"># </span>Generated<span class="hl-w"> </span>by<span class="hl-w"> </span>NetworkManager
+<span class="hl-go">nameserver 192.168.5.3</span>
+<span class="hl-go">nameserver fec0::3</span>
+</code></pre>
+
+<p>The first line is the warning. On this machine <code>systemd-resolved</code> is not running
+(<code>systemctl is-active systemd-resolved</code> → <code>inactive</code>), and NetworkManager writes the file from the active
+connection profiles — here from DHCP. A hand edit is not rejected; it is simply overwritten the next time
+NetworkManager regenerates the file. Tested on the lab machine:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'nameserver 192.168.5.99\n'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>tee<span class="hl-w"> </span>/etc/resolv.conf
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>nmcli<span class="hl-w"> </span>device<span class="hl-w"> </span>reapply<span class="hl-w"> </span>eth0<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/resolv.conf
+<span class="hl-go">nameserver 192.168.5.99</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>restart<span class="hl-w"> </span>NetworkManager<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/resolv.conf
+<span class="hl-gp"># </span>Generated<span class="hl-w"> </span>by<span class="hl-w"> </span>NetworkManager
+<span class="hl-go">nameserver 192.168.5.3</span>
+<span class="hl-go">nameserver fec0::3</span>
+</code></pre>
+
+<p>The edit survived a <code>reapply</code> and vanished at the next restart of NetworkManager — and it would vanish at
+a DHCP renewal or a reboot too. That is the most insidious kind of fix: it works long enough to be
+forgotten. Set DNS in the profile:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">con</span><span class="hl-o">=</span><span class="hl-k">$(</span>nmcli<span class="hl-w"> </span>-g<span class="hl-w"> </span>GENERAL.CONNECTION<span class="hl-w"> </span>device<span class="hl-w"> </span>show<span class="hl-w"> </span>eth0<span class="hl-k">)</span><span class="hl-w">        </span><span class="hl-c1"># "cloud-init eth0" here</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>nmcli<span class="hl-w"> </span>connection<span class="hl-w"> </span>modify<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$con</span><span class="hl-s2">"</span><span class="hl-w"> </span>ipv4.dns<span class="hl-w"> </span><span class="hl-m">192</span>.168.5.3<span class="hl-w"> </span>ipv4.ignore-auto-dns<span class="hl-w"> </span>yes<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>ipv4.dns-search<span class="hl-w"> </span>lab.internal
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>nmcli<span class="hl-w"> </span>device<span class="hl-w"> </span>reapply<span class="hl-w"> </span>eth0<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/resolv.conf
+<span class="hl-gp"># </span>Generated<span class="hl-w"> </span>by<span class="hl-w"> </span>NetworkManager
+<span class="hl-go">search lab.internal</span>
+<span class="hl-go">nameserver 192.168.5.3</span>
+<span class="hl-go">nameserver fec0::3</span>
+</code></pre>
+
+<p><code>ipv4.ignore-auto-dns yes</code> stops the DHCP-supplied servers being added to yours; without it you get both.
+The <code>fec0::3</code> line is still there because it comes from IPv6 autoconfiguration, which is a separate
+setting (<code>ipv6.ignore-auto-dns</code>). After a reboot the file was unchanged — this configuration lives in the
+profile.</p>
+<h3 id="listening-on-loopback-or-on-everything">Listening on loopback, or on everything</h3>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ss<span class="hl-w"> </span>-lnt<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span><span class="hl-m">860</span>
+<span class="hl-go">LISTEN 0      5            0.0.0.0:8602      0.0.0.0:*</span>
+<span class="hl-go">LISTEN 0      5          127.0.0.1:8601      0.0.0.0:*</span>
+</code></pre>
+
+<p>The <strong>local address</strong> column is the whole story. <code>127.0.0.1:8601</code> accepts connections only to the
+loopback address; <code>0.0.0.0:8602</code> accepts them on every IPv4 address the machine has. From the machine
+itself:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span>http://127.0.0.1:8601/
+<span class="hl-go">200</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code} exit=%{exitcode}\n'</span><span class="hl-w"> </span>http://192.168.5.15:8601/
+<span class="hl-go">000 exit=7</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span>http://192.168.5.15:8602/
+<span class="hl-go">200</span>
+</code></pre>
+
+<p>The loopback-bound service refused a connection to the machine's own network address (exit 7,
+connection refused) — exactly what a client on another host would get. This is the classic &quot;it works on
+the server&quot;: every test run <em>on</em> the server with <code>localhost</code> passes. Test with the address a client uses.</p>
+<p>Binding loopback is often deliberate — a database, a model server, anything that should be reached only
+through a local proxy (see the ai-01 journal). The mistake is not binding loopback; it is not knowing you
+did. And a connection from the machine to its own address travels over the loopback interface, so it
+tests the binding, not the firewall: firewalld's zone rules apply to traffic arriving on <code>eth0</code> from
+elsewhere (see rhcsa-04).</p>
+<h3 id="routes-ask-the-kernel">Routes: ask the kernel</h3>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ip<span class="hl-w"> </span>route
+<span class="hl-go">default via 192.168.5.2 dev eth0 proto dhcp src 192.168.5.15 metric 100</span>
+<span class="hl-go">192.168.5.0/24 dev eth0 proto kernel scope link src 192.168.5.15 metric 100</span>
+<span class="hl-gp">$ </span>ip<span class="hl-w"> </span>route<span class="hl-w"> </span>get<span class="hl-w"> </span><span class="hl-m">10</span>.20.30.40
+<span class="hl-go">10.20.30.40 via 192.168.5.2 dev eth0 src 192.168.5.15 uid 501</span>
+</code></pre>
+
+<p><code>ip route get</code> answers the only question that matters — for this destination, which gateway, which
+interface, which source address — using the same lookup the kernel uses for real traffic, including
+policy rules and metrics you might not have spotted in the table.</p>
+<p>A route added with <code>ip route add</code> is a change to the running kernel:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>ip<span class="hl-w"> </span>route<span class="hl-w"> </span>add<span class="hl-w"> </span><span class="hl-m">10</span>.99.0.0/16<span class="hl-w"> </span>via<span class="hl-w"> </span><span class="hl-m">192</span>.168.5.2
+</code></pre>
+
+<p>Here the author expected a NetworkManager restart to remove it, tested that, and was wrong: after
+<code>systemctl restart NetworkManager</code> the route was still in the table — NetworkManager does not flush routes
+it did not create. A reboot did remove it. A route in the connection profile survived both:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>nmcli<span class="hl-w"> </span>connection<span class="hl-w"> </span>modify<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$con</span><span class="hl-s2">"</span><span class="hl-w"> </span>+ipv4.routes<span class="hl-w"> </span><span class="hl-s2">"10.20.30.0/24 192.168.5.2"</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>nmcli<span class="hl-w"> </span>device<span class="hl-w"> </span>reapply<span class="hl-w"> </span>eth0
+<span class="hl-gp">$ </span>ip<span class="hl-w"> </span>route<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'10\.(20|99)'</span>
+<span class="hl-go">10.20.30.0/24 via 192.168.5.2 dev eth0 proto static metric 100</span>
+<span class="hl-go">10.99.0.0/16 via 192.168.5.2 dev eth0</span>
+<span class="hl-go">…after a reboot:</span>
+<span class="hl-go">10.20.30.0/24 via 192.168.5.2 dev eth0 proto static metric 100</span>
+</code></pre>
+
+<p>The two lines even look different before the reboot: NetworkManager's route carries <code>proto static metric 100</code>; the hand-added one has neither. That is how to spot a runtime-only route in a table before a reboot
+finds it for you.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>An application on this server is configured to use <code>db.internal</code>. A new monitoring host cannot reach the
+application's API on port 8601. On the server, the team says, &quot;everything works&quot;.</p>
+<p><strong>1. Reproduce the claim, then reproduce the client.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code}\n'</span><span class="hl-w"> </span>http://127.0.0.1:8601/
+<span class="hl-go">200</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s1">'%{http_code} exit=%{exitcode}\n'</span><span class="hl-w"> </span>http://192.168.5.15:8601/
+<span class="hl-go">000 exit=7</span>
+</code></pre>
+
+<p>Works on loopback, refused on the address clients use.</p>
+<p><strong>2. Ask what is listening, and on which address.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ss<span class="hl-w"> </span>-lntp<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span><span class="hl-m">8601</span>
+<span class="hl-go">LISTEN 0      5          127.0.0.1:8601      0.0.0.0:*</span>
+</code></pre>
+
+<p>Bound to loopback only. The fix is in the application's configuration (bind <code>0.0.0.0</code> or the specific
+address), and then the firewall has to allow the port — a separate step, because a local test cannot
+see the firewall.</p>
+<p><strong>3. Meanwhile, someone &quot;found a DNS problem&quot;.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>dig<span class="hl-w"> </span>+short<span class="hl-w"> </span>db.internal<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">exit=0</span>
+<span class="hl-gp">$ </span>host<span class="hl-w"> </span>db.internal
+<span class="hl-go">Host db.internal not found: 3(NXDOMAIN)</span>
+</code></pre>
+
+<p>Empty output with a zero exit, and NXDOMAIN. But the application does not ask DNS:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>grep<span class="hl-w"> </span><span class="hl-s1">'^hosts'</span><span class="hl-w"> </span>/etc/nsswitch.conf
+<span class="hl-go">hosts:      files  dns myhostname</span>
+<span class="hl-gp">$ </span>getent<span class="hl-w"> </span>hosts<span class="hl-w"> </span>db.internal
+<span class="hl-go">10.20.30.40     db.internal</span>
+</code></pre>
+
+<p>The name comes from <code>/etc/hosts</code>, and the application resolves it correctly. There is no DNS problem —
+there is a name that exists only on this one machine, which is its own risk: move the application and
+the name goes nowhere. If it should exist everywhere, it belongs in DNS.</p>
+<p><strong>4. Check the fixes from last week are real.</strong> The DNS server was &quot;changed&quot; by editing
+<code>/etc/resolv.conf</code>, and a route to the database network was &quot;added&quot;:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>head<span class="hl-w"> </span>-1<span class="hl-w"> </span>/etc/resolv.conf
+<span class="hl-gp"># </span>Generated<span class="hl-w"> </span>by<span class="hl-w"> </span>NetworkManager
+<span class="hl-gp">$ </span>nmcli<span class="hl-w"> </span>-g<span class="hl-w"> </span>ipv4.dns,ipv4.ignore-auto-dns<span class="hl-w"> </span>connection<span class="hl-w"> </span>show<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$con</span><span class="hl-s2">"</span>
+<span class="hl-go">…</span>
+<span class="hl-gp">$ </span>ip<span class="hl-w"> </span>route<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span><span class="hl-m">10</span>.20.30
+<span class="hl-go">10.20.30.0/24 via 192.168.5.2 dev eth0</span>
+</code></pre>
+
+<p>No <code>proto static</code> on the route: it was added with <code>ip</code>, and the next reboot removes it. Put both in the
+profile (<code>ipv4.dns</code>, <code>ipv4.ignore-auto-dns</code>, <code>+ipv4.routes</code>), reapply, and confirm the route now shows
+<code>proto static</code>.</p>
+<p><strong>5. Prove it with the restarts that matter.</strong> Restart NetworkManager and check <code>/etc/resolv.conf</code>; reboot
+and check <code>ip route</code>. On the lab machine the profile's DNS servers and route survived both, the hand edit
+did not survive the NetworkManager restart, and the <code>ip</code>-added route did not survive the reboot.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Testing a name with <code>dig</code> or <code>host</code> and concluding the application cannot resolve it.</strong> They bypass
+<code>/etc/hosts</code> and NSS. <code>getent hosts NAME</code> resolves the way the application does.</p>
+<p><strong>Treating <code>dig</code>'s exit status as &quot;the name exists&quot;.</strong> It exits 0 on NXDOMAIN. Check <code>status:</code> in the
+header, or that <code>+short</code> printed something.</p>
+<p><strong>Editing <code>/etc/resolv.conf</code> on a NetworkManager machine.</strong> It lasts until NetworkManager rewrites the file
+— which on the lab machine was the next <code>systemctl restart NetworkManager</code>. Set <code>ipv4.dns</code> in the
+profile.</p>
+<p><strong>Forgetting <code>ipv4.ignore-auto-dns</code>.</strong> Your servers are added to the DHCP ones, not substituted for them,
+and which one answers depends on order.</p>
+<p><strong>Testing a service with <code>curl localhost</code>.</strong> A loopback-bound service passes that test and refuses every
+real client. Test with the address a client uses, and read the local-address column of <code>ss -lnt</code>.</p>
+<p><strong>Assuming a local test proves the firewall.</strong> Traffic to the machine's own address goes over loopback.
+Test from another host, or read the zone's rules.</p>
+<p><strong><code>ip route add</code> as a fix.</strong> It survives more than you might expect (a NetworkManager restart, on the lab
+machine) and not the reboot. <code>nmcli connection modify … +ipv4.routes</code>, and look for <code>proto static</code>.</p>
+<p><strong>Reading the route table instead of asking.</strong> <code>ip route get DEST</code> applies metrics, policy rules and the
+source-address choice for you.</p>
+<p><strong>Keeping important names in one machine's <code>/etc/hosts</code>.</strong> They resolve on that machine only, and the next
+server built for the same job cannot find its database.</p>
+<h2 id="symptoms-and-causes">Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dig name</code> answers, <code>curl name</code> says it cannot resolve</td>
+<td>the name is in <code>/etc/hosts</code>, or NSS asks another source first or not at all</td>
+<td><code>getent hosts name</code>; the <code>hosts:</code> line of <code>/etc/nsswitch.conf</code></td>
+</tr>
+<tr>
+<td><code>curl name</code> works, <code>dig name</code> gets <code>NXDOMAIN</code></td>
+<td>the name exists only in <code>/etc/hosts</code> or a local resolver's zone</td>
+<td><code>getent hosts name</code>; <code>dig @server name</code></td>
+</tr>
+<tr>
+<td>a DNS server you set by hand is gone after a reboot or a reconnect</td>
+<td>something else owns <code>/etc/resolv.conf</code> — NetworkManager or systemd-resolved</td>
+<td><code>ls -l /etc/resolv.conf</code>; <code>nmcli -f ipv4.dns connection show NAME</code></td>
+</tr>
+<tr>
+<td>a service answers <code>curl localhost:PORT</code> and times out from other machines</td>
+<td>it listens on <code>127.0.0.1</code>, or a firewall drops the port</td>
+<td><code>ss -ltnp 'sport = :PORT'</code>; the firewall's rules</td>
+</tr>
+<tr>
+<td>connections to one network go out the wrong interface</td>
+<td>a more specific or lower-metric route elsewhere</td>
+<td><code>ip route get ADDRESS</code></td>
+</tr>
+<tr>
+<td>a route added with <code>ip route add</code> is gone the next day</td>
+<td>it was never in the connection profile</td>
+<td><code>nmcli -f ipv4.routes connection show NAME</code></td>
+</tr>
+<tr>
+<td>&quot;connection refused&quot; versus a timeout</td>
+<td>refused: something answered with a reset (nothing listens); timeout: nothing answered at all (a drop, or no route)</td>
+<td><code>ss -ltn</code>; the firewall; <code>ip route get</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>names,<span class="hl-w"> </span>the<span class="hl-w"> </span>way<span class="hl-w"> </span>applications<span class="hl-w"> </span>resolve<span class="hl-w"> </span>them
+<span class="hl-go">grep '^hosts' /etc/nsswitch.conf          # files dns myhostname — the order</span>
+<span class="hl-go">getent hosts NAME ; getent ahosts NAME    # through NSS: /etc/hosts, then DNS, …</span>
+<span class="hl-go">dig NAME ; dig +short NAME                # DNS only — exit 0 even for NXDOMAIN</span>
+<span class="hl-go">dig NAME | grep status:                   # NOERROR / NXDOMAIN / SERVFAIL</span>
+<span class="hl-go">dig @192.168.5.3 NAME                     # ask one specific server</span>
+<span class="hl-go">host NAME                                 # DNS only, exit 1 on NXDOMAIN</span>
+
+<span class="hl-gp"># </span>who<span class="hl-w"> </span>configures<span class="hl-w"> </span>DNS
+<span class="hl-go">head -1 /etc/resolv.conf                  # "Generated by NetworkManager" = do not edit</span>
+<span class="hl-go">systemctl is-active systemd-resolved</span>
+<span class="hl-go">nmcli connection modify "$con" ipv4.dns "A B" ipv4.ignore-auto-dns yes ipv4.dns-search DOMAIN</span>
+<span class="hl-go">nmcli device reapply eth0</span>
+
+<span class="hl-gp"># </span>listening
+<span class="hl-go">ss -lntp                                  # local address: 127.0.0.1 = loopback only, 0.0.0.0 = all IPv4</span>
+<span class="hl-go">ss -lnup                                  # UDP</span>
+<span class="hl-go">curl -m 2 http://CLIENT_FACING_ADDRESS:PORT/    # not localhost</span>
+<span class="hl-gp"># </span>curl<span class="hl-w"> </span>exit:<span class="hl-w"> </span><span class="hl-m">6</span><span class="hl-w"> </span>cannot<span class="hl-w"> </span>resolve,<span class="hl-w"> </span><span class="hl-m">7</span><span class="hl-w"> </span>refused,<span class="hl-w"> </span><span class="hl-m">28</span><span class="hl-w"> </span>timeout
+
+<span class="hl-gp"># </span>routes
+<span class="hl-go">ip route ; ip -6 route</span>
+<span class="hl-go">ip route get DEST                         # gateway, interface and source the kernel will use</span>
+<span class="hl-go">ip route add NET via GW                   # runtime only (gone at reboot)</span>
+<span class="hl-go">nmcli connection modify "$con" +ipv4.routes "NET GW" ; nmcli device reapply eth0</span>
+<span class="hl-gp"># </span>NetworkManager<span class="hl-err">'</span>s<span class="hl-w"> </span>routes<span class="hl-w"> </span>show<span class="hl-w"> </span><span class="hl-s2">"proto static metric N"</span><span class="hl-p">;</span><span class="hl-w"> </span>hand-added<span class="hl-w"> </span>ones<span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span>not
+
+<span class="hl-gp"># </span>addresses
+<span class="hl-go">ip -4 -br addr ; nmcli -g GENERAL.CONNECTION device show eth0</span>
+</code></pre>
+
+<h2 id="exercises">Exercises</h2>
+<ol>
+<li>On a lab machine, add a name to <code>/etc/hosts</code> and compare <code>getent hosts</code>, <code>ping -c1</code>, <code>dig +short</code>
+and <code>host</code> for it. Which ones read the file, and why?</li>
+<li>Start <code>python3 -m http.server 8000 --bind 127.0.0.1</code>, then with <code>--bind 0.0.0.0</code>; read <code>ss -ltn</code> for
+each and connect from another machine or container. What does each state look like in <code>ss</code>?</li>
+<li>Set a DNS server with <code>nmcli connection modify … ipv4.dns</code>, then <code>nmcli connection up</code>, and read
+<code>/etc/resolv.conf</code> before and after. Then edit the file by hand and reconnect.</li>
+<li>Run <code>ip route get</code> for an address on the local network, for <code>1.1.1.1</code>, and for an address a more
+specific route covers. Which interface and source address does the kernel pick each time?</li>
+<li>Make a port refuse and a port time out (stop a service; drop a port in the firewall) and time
+<code>curl</code> against both. Which error does each produce?</li>
+</ol>
+<h2 id="sources">Sources</h2>
+<ul>
+<li><code>man 5 nsswitch.conf</code>, <code>man 3 getaddrinfo</code> — how programs resolve names.</li>
+<li><code>man 5 resolv.conf</code> — the resolver's configuration, and who is meant to write it.</li>
+<li><code>man 8 ss</code>, <code>man 8 ip-route</code> — sockets and routes, asked of the kernel.</li>
+<li><code>man 1 nmcli</code>, <code>man 5 nm-settings-nmcli</code> — connection profiles, and the properties that persist.</li>
+<li>NetworkManager's nmcli reference: https://networkmanager.dev/docs/api/latest/nmcli.html</li>
+<li>The Linux man-pages project online: https://www.man7.org/linux/man-pages/man5/nsswitch.conf.5.html</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>A name is in <code>/etc/hosts</code>. <code>ping NAME</code> works and <code>host NAME</code> says NXDOMAIN. Which one tells you what an
+application will do, and why do they differ?</p>
+<blockquote>
+<p><code>ping</code> — like <code>curl</code> and any program using <code>getaddrinfo</code> — resolves through NSS, which reads
+<code>/etc/hosts</code> first according to <code>/etc/nsswitch.conf</code>. <code>host</code> and <code>dig</code> query a DNS server directly and
+never read <code>/etc/hosts</code>. <code>getent hosts NAME</code> is the dedicated tool for the application's view.</p>
+</blockquote>
+</li>
+<li>
+<p>A health script runs <code>dig +short db.example.com &amp;&amp; echo ok</code>. What does it actually test?</p>
+<blockquote>
+<p>That a DNS server answered. <code>dig</code> exits 0 even for NXDOMAIN, and <code>+short</code> then prints nothing, so the
+script prints <code>ok</code> for a name that does not exist. Check the <code>status:</code> line or test for non-empty
+output.</p>
+</blockquote>
+</li>
+<li>
+<p>You edit <code>/etc/resolv.conf</code> on a NetworkManager-managed machine. How long does the change last, and
+where should it be made?</p>
+<blockquote>
+<p>Until NetworkManager regenerates the file — on the lab machine it survived <code>nmcli device reapply</code> and
+was overwritten by the next NetworkManager restart; DHCP renewals and reboots do the same. Set
+<code>ipv4.dns</code> (and usually <code>ipv4.ignore-auto-dns yes</code>) in the connection profile and reapply.</p>
+</blockquote>
+</li>
+<li>
+<p><code>ss -lnt</code> shows <code>127.0.0.1:8601</code>. What does <code>curl http://127.0.0.1:8601/</code> prove, and what do clients on
+other machines get?</p>
+<blockquote>
+<p>It proves the service works over loopback only. The socket accepts connections to 127.0.0.1, so
+connections to the machine's network address are refused (curl exit 7) — which is what every remote
+client gets.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is a test from the server to its own network address not a test of the firewall?</p>
+<blockquote>
+<p>Traffic from a machine to its own address is delivered over the loopback interface, so it never
+arrives on the external interface where the zone's rules apply. It tests the service's binding, not
+the firewall.</p>
+</blockquote>
+</li>
+<li>
+<p>A route was added with <code>ip route add</code> and a route was added with <code>nmcli connection modify +ipv4.routes</code>. How can you tell them apart in <code>ip route</code>, and which survives a reboot?</p>
+<blockquote>
+<p>The NetworkManager route shows <code>proto static metric 100</code>; the hand-added one shows neither. Only the
+profile's route survives a reboot. (On the lab machine the <code>ip</code> route even survived a NetworkManager
+restart — which is why restarting NetworkManager is not a test of persistence.)</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>ip route get 10.20.30.40</code> tell you that reading <code>ip route</code> might not?</p>
+<blockquote>
+<p>The result of the kernel's actual lookup for that destination — the gateway, the outgoing interface
+and the source address — after metrics, more specific routes and policy rules are applied.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

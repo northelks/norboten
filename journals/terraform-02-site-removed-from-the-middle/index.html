@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>count numbers things; for_each names them · Norboten</title>
+<meta name="description" content="Three virtual hosts, one list: sites = [&amp;quot;shop&amp;quot;, &amp;quot;blog&amp;quot;, &amp;quot;docs&amp;quot;]. Terraform creates a configuration file and a cookie secret for ea">
+<link rel="canonical" href="https://norboten.org/journals/terraform-02-site-removed-from-the-middle/"><meta property="og:title" content="count numbers things; for_each names them · Norboten">
+<meta property="og:description" content="Three virtual hosts, one list: sites = [&amp;quot;shop&amp;quot;, &amp;quot;blog&amp;quot;, &amp;quot;docs&amp;quot;]. Terraform creates a configuration file and a cookie secret for ea">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/terraform-02-site-removed-from-the-middle/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="count numbers things; for_each names them · Norboten">
+<meta name="twitter:description" content="Three virtual hosts, one list: sites = [&amp;quot;shop&amp;quot;, &amp;quot;blog&amp;quot;, &amp;quot;docs&amp;quot;]. Terraform creates a configuration file and a cookie secret for ea">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "count numbers things; for_each names them",
+  "description": "Three virtual hosts, one list: sites = [\u0026quot;shop\u0026quot;, \u0026quot;blog\u0026quot;, \u0026quot;docs\u0026quot;]. Terraform creates a configuration file and a cookie secret for ea",
+  "url": "https://norboten.org/journals/terraform-02-site-removed-from-the-middle/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2008,
+  "timeRequired": "PT40M",
+  "about": ["Terraform", "Networking"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Site Removed From the Middle</div>
+    <h1>count numbers things; for_each names them</h1>
+    <p class="muted">
+      40 minutes' reading · 2008 words ·<span class="tag">Terraform</span><span class="tag">Networking</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 114 words</title><rect x="0.0" y="0" width="31.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 837 words</title><rect x="34.8" y="0" width="233.2" height="30" rx="4" fill="#1d2a23"/><text x="42.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 854 words</title><rect x="271.0" y="0" width="238.0" height="30" rx="4" fill="#4ade80"/><text x="279.0" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 242 words</title><rect x="511.9" y="0" width="67.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 140 words</title><rect x="582.4" y="0" width="39.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 139 words</title><rect x="624.4" y="0" width="38.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 337 words</title><rect x="666.1" y="0" width="93.9" height="30" rx="4" fill="#1d2a23"/><text x="674.1" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/terraform-02-site-removed-from-the-middle/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Three virtual hosts, one list: <code>sites = [&quot;shop&quot;, &quot;blog&quot;, &quot;docs&quot;]</code>. Terraform creates a configuration
+file and a cookie secret for each, and derives each site's port from its position — 8100, 8101, 8102.
+It has worked for months. Then the blog is retired, <code>&quot;blog&quot;</code> is taken out of the middle of the list, and
+the plan wants to rewrite <code>docs</code> with the blog's port and the blog's secret, and to delete <code>docs.conf</code>.
+The engineer who ran the plan stopped, correctly, and nothing was applied.</p>
+<p>The plan was not wrong. With <code>count</code>, Terraform does not know the instances as <code>shop</code>, <code>blog</code> and <code>docs</code>.
+It knows them as <code>[0]</code>, <code>[1]</code> and <code>[2]</code>, and the list only supplies what each index should look like
+right now. Remove the element at index 1 and <code>docs</code> becomes index 1: the resource at <code>[1]</code> must change
+from the blog to the docs site, and <code>[2]</code> has nothing left to describe. Everything derived from the index
+— the port, the secret it was paired with — moves with it.</p>
+<p><code>for_each</code> over a map gives each instance a <strong>key</strong> instead of a position. Removing <code>blog</code> then removes
+exactly the instances keyed <code>&quot;blog&quot;</code> and touches nothing else. Converting an existing <code>count</code> resource
+to <code>for_each</code> is a refactoring, and like every refactoring in Terraform it needs <code>moved</code> blocks, so the
+live objects keep their identity under their new addresses.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Explain how <code>count</code> and <code>for_each</code> address their instances, and why removing an element from the
+middle of a <code>count</code> list shifts everything after it.</li>
+<li>Read a plan that says <code>must be replaced</code>, <code>index [2] is out of range for count</code> or <code>resource does not use count</code>, and predict what apply would do.</li>
+<li>Convert a <code>count</code> resource to <code>for_each</code> over a map without replacing live instances, using <code>moved</code>
+blocks from indexes to keys.</li>
+<li>Keep values stable by naming them explicitly (a port per site) rather than deriving them from a
+position.</li>
+<li>Check a configuration change with <code>terraform fmt</code>, <code>validate</code> and a plan before applying, and prove
+the result with <code>-detailed-exitcode</code>.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="how-count-addresses-instances">How <code>count</code> addresses instances</h3>
+<pre class="hl"><code class="language-hcl"><span class="hl-kr">resource</span><span class="hl-w"> </span><span class="hl-nc">"local_file"</span><span class="hl-w"> </span><span class="hl-nv">"vhost"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">count</span><span class="hl-w">    </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">length</span><span class="hl-p">(</span><span class="hl-nv">var.sites</span><span class="hl-p">)</span>
+<span class="hl-w">  </span><span class="hl-na">filename</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-s2">"/etc/nginx-sites/${var.sites[count.index]}.conf"</span>
+<span class="hl-w">  </span><span class="hl-na">content</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">templatefile</span><span class="hl-p">(</span><span class="hl-s2">"${path.module}/vhost.conf.tftpl"</span><span class="hl-p">,</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">    </span><span class="hl-na">name</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">var.sites[count.index</span><span class="hl-p">]</span>
+<span class="hl-w">    </span><span class="hl-na">port</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-m">8100</span><span class="hl-w"> </span><span class="hl-err">+</span><span class="hl-w"> </span><span class="hl-nv">count.index</span>
+<span class="hl-w">    </span><span class="hl-na">secret</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_id.cookie_secret[count.index].hex</span>
+<span class="hl-w">  </span><span class="hl-p">})</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<p><code>count = 3</code> creates <code>local_file.vhost[0]</code>, <code>[1]</code> and <code>[2]</code>. The only identity an instance has is its
+index; what the index <em>means</em> comes from the list at plan time. With <code>[&quot;shop&quot;, &quot;blog&quot;, &quot;docs&quot;]</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>name</th>
+<th>port</th>
+<th>secret</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vhost[0]</code> / <code>cookie_secret[0]</code></td>
+<td>shop</td>
+<td>8100</td>
+<td>secret 0</td>
+</tr>
+<tr>
+<td><code>vhost[1]</code> / <code>cookie_secret[1]</code></td>
+<td>blog</td>
+<td>8101</td>
+<td>secret 1</td>
+</tr>
+<tr>
+<td><code>vhost[2]</code> / <code>cookie_secret[2]</code></td>
+<td>docs</td>
+<td>8102</td>
+<td>secret 2</td>
+</tr>
+</tbody>
+</table>
+<p>After removing <code>&quot;blog&quot;</code>, <code>length</code> is 2 and the list is <code>[&quot;shop&quot;, &quot;docs&quot;]</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>wants to describe</th>
+<th>consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vhost[0]</code></td>
+<td>shop, 8100, secret 0</td>
+<td>unchanged</td>
+</tr>
+<tr>
+<td><code>vhost[1]</code></td>
+<td>docs, <strong>8101</strong>, <strong>secret 1</strong></td>
+<td>the blog's file becomes the docs file, with the blog's port and secret</td>
+</tr>
+<tr>
+<td><code>vhost[2]</code></td>
+<td>nothing — index out of range</td>
+<td>destroyed, deleting <code>docs.conf</code></td>
+</tr>
+<tr>
+<td><code>cookie_secret[1]</code></td>
+<td>kept</td>
+<td>docs inherits the blog's secret</td>
+</tr>
+<tr>
+<td><code>cookie_secret[2]</code></td>
+<td>nothing</td>
+<td>destroyed: docs's real secret is gone</td>
+</tr>
+</tbody>
+</table>
+<p>That is why <code>count</code> is the right tool only for <strong>identical, interchangeable</strong> instances — &quot;three worker
+VMs&quot;, where it does not matter which one disappears — and the wrong tool for a collection of named
+things.</p>
+<h3 id="how-for_each-addresses-instances">How <code>for_each</code> addresses instances</h3>
+<pre class="hl"><code class="language-hcl"><span class="hl-kr">variable</span><span class="hl-w"> </span><span class="hl-nv">"sites"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">type</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">map</span><span class="hl-p">(</span><span class="hl-kt">object</span><span class="hl-p">({</span><span class="hl-w"> </span><span class="hl-na">port</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-kt">number</span><span class="hl-w"> </span><span class="hl-p">}))</span>
+<span class="hl-w">  </span><span class="hl-nb">default</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">    </span><span class="hl-nb">shop</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-p">{</span><span class="hl-w"> </span><span class="hl-na">port</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-m">8100</span><span class="hl-w"> </span><span class="hl-p">}</span>
+<span class="hl-w">    </span><span class="hl-nb">docs</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-p">{</span><span class="hl-w"> </span><span class="hl-na">port</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-m">8102</span><span class="hl-w"> </span><span class="hl-p">}</span>
+<span class="hl-w">  </span><span class="hl-p">}</span>
+<span class="hl-p">}</span>
+
+<span class="hl-kr">resource</span><span class="hl-w"> </span><span class="hl-nc">"local_file"</span><span class="hl-w"> </span><span class="hl-nv">"vhost"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">for_each</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">var.sites</span>
+<span class="hl-w">  </span><span class="hl-na">filename</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-s2">"/etc/nginx-sites/${each.key}.conf"</span>
+<span class="hl-w">  </span><span class="hl-na">content</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">templatefile</span><span class="hl-p">(</span><span class="hl-s2">"${path.module}/vhost.conf.tftpl"</span><span class="hl-p">,</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">    </span><span class="hl-na">name</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">each.key</span>
+<span class="hl-w">    </span><span class="hl-na">port</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">each.value.port</span>
+<span class="hl-w">    </span><span class="hl-na">secret</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_id.cookie_secret[each.key].hex</span>
+<span class="hl-w">  </span><span class="hl-p">})</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<p>Instances are <code>local_file.vhost[&quot;shop&quot;]</code> and <code>local_file.vhost[&quot;docs&quot;]</code>. <code>each.key</code> is the map key,
+<code>each.value</code> the value. Keys are the identity: adding, removing or reordering entries affects only the
+instances whose keys changed. A <code>set(string)</code> works too (<code>toset(var.names)</code>), with <code>each.key</code> and
+<code>each.value</code> both the element.</p>
+<p>Two design choices come with it:</p>
+<ul>
+<li><strong>Name the values that must not move.</strong> The port was <code>8100 + count.index</code>, a value derived from a
+position. With <code>for_each</code> there is no position, so the port becomes explicit data: <code>docs</code> keeps 8102
+even though it is now the second of two sites.</li>
+<li><strong>Key related resources the same way.</strong> <code>random_id.cookie_secret[each.key]</code> ties each site's secret
+to its site by name, not by coincidence of order.</li>
+</ul>
+<p><code>for_each</code> keys must be known at plan time — they cannot come from attributes that only exist after
+apply (a resource's generated ID, for instance). Static names from variables are exactly right.</p>
+<h3 id="converting-without-replacing-moved-blocks">Converting without replacing: moved blocks</h3>
+<p>Changing <code>count</code> to <code>for_each</code> changes every address: <code>[0]</code> is not <code>[&quot;shop&quot;]</code>. Without help, the plan
+would destroy all the index-addressed instances and create key-addressed ones — new files, and new
+random secrets. <code>moved</code> blocks connect them:</p>
+<pre class="hl"><code class="language-hcl"><span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_id.cookie_secret[0</span><span class="hl-p">]</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_id.cookie_secret</span><span class="hl-p">[</span><span class="hl-s2">"shop"</span><span class="hl-p">]</span>
+<span class="hl-p">}</span>
+
+<span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_id.cookie_secret[2</span><span class="hl-p">]</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_id.cookie_secret</span><span class="hl-p">[</span><span class="hl-s2">"docs"</span><span class="hl-p">]</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<p>…and the same two for <code>local_file.vhost</code>. There is no move for <code>[1]</code>: the blog is being retired, so its
+instances are left at an address the configuration no longer has, and the plan destroys them — which is
+the only change anyone wanted. Moves are declared per instance, for every resource that uses the
+collection; forgetting the <code>random_id</code> moves would keep the files and still regenerate the secrets.</p>
+<p>The same thing can be done with <code>terraform state mv 'local_file.vhost[0]' 'local_file.vhost[&quot;shop&quot;]'</code>
+(note the quoting), but <code>moved</code> blocks are reviewed with the change and show up in the plan.</p>
+<h3 id="reading-the-plan">Reading the plan</h3>
+<table>
+<thead>
+<tr>
+<th>Plan text</th>
+<th>Meaning here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>local_file.vhost[1] must be replaced</code> with <code>filename … # forces replacement</code></td>
+<td>index 1 now describes a different file; <code>local_file</code> cannot rename a file in place</td>
+</tr>
+<tr>
+<td><code>(because index [2] is out of range for count)</code></td>
+<td>the list got shorter; the last index has nothing to describe</td>
+</tr>
+<tr>
+<td><code>(because resource does not use count)</code></td>
+<td>an index address remains after switching to <code>for_each</code>, and no <code>moved</code> claims it</td>
+</tr>
+<tr>
+<td><code>has moved to</code></td>
+<td>a <code>moved</code> block matched</td>
+</tr>
+<tr>
+<td><code>(because key [&quot;shop&quot;] is not in for_each map)</code></td>
+<td>a key was removed from the map</td>
+</tr>
+</tbody>
+</table>
+<p><code>Plan: 0 to add, 0 to change, 2 to destroy</code> after the rewrite is the target: two destroys, both for the
+blog.</p>
+<h3 id="checking-a-change-before-applying-it">Checking a change before applying it</h3>
+<ul>
+<li><code>terraform fmt -check</code> fails on files that are not in canonical format — cheap, and catches stray
+edits.</li>
+<li><code>terraform validate</code> checks syntax, references and types without touching state or providers'
+APIs — a mistyped <code>each.value.prot</code> fails here.</li>
+<li><code>terraform plan</code> shows what apply would do; read every <code>destroy</code>.</li>
+<li>After applying, <code>terraform plan -detailed-exitcode</code> exits 0 when the configuration and reality agree.</li>
+</ul>
+<p>A plan with a <code>-var</code> override is a safe way to rehearse the <em>next</em> change: what would removing <code>shop</code>
+do? With <code>for_each</code>, the answer names only <code>shop</code>.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the track's lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. See what is live, and keep a copy of what must not change.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>/etc/nginx-sites<span class="hl-p">;</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-h<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'listen|cookie_secret'</span><span class="hl-w"> </span>/etc/nginx-sites/*.conf
+<span class="hl-go">blog.conf</span>
+<span class="hl-go">docs.conf</span>
+<span class="hl-go">shop.conf</span>
+<span class="hl-go">    listen 8101;</span>
+<span class="hl-go">    set $cookie_secret "535bb0ff9b932fee525e0febc9a99821";</span>
+<span class="hl-go">    listen 8102;</span>
+<span class="hl-go">    set $cookie_secret "42d96e5fae1eab423461668c6d0d5b87";</span>
+<span class="hl-go">    listen 8100;</span>
+<span class="hl-go">    set $cookie_secret "71308859d4fec3c48cd160e3b0bb4272";</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/sites<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>terraform<span class="hl-w"> </span>state<span class="hl-w"> </span>list
+<span class="hl-go">local_file.vhost[0]</span>
+<span class="hl-go">local_file.vhost[1]</span>
+<span class="hl-go">local_file.vhost[2]</span>
+<span class="hl-go">random_id.cookie_secret[0]</span>
+<span class="hl-go">random_id.cookie_secret[1]</span>
+<span class="hl-go">random_id.cookie_secret[2]</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>cp<span class="hl-w"> </span>/etc/nginx-sites/docs.conf<span class="hl-w"> </span>/etc/nginx-sites/shop.conf<span class="hl-w"> </span>/tmp/<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">644</span><span class="hl-w"> </span>/tmp/docs.conf<span class="hl-w"> </span>/tmp/shop.conf
+</code></pre>
+
+<p>The files are listed alphabetically, so the <code>grep</code> output is blog, docs, shop: docs listens on 8102 with
+secret <code>42d96e5f…</code>. The state knows the instances only by index.</p>
+<p><strong>2. Read the configuration and the plan</strong> (filtered to the decisive lines):</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/srv/sites/main.tf
+<span class="hl-go">variable "sites" {</span>
+<span class="hl-go">  type    = list(string)</span>
+<span class="hl-go">  default = ["shop", "docs"]</span>
+<span class="hl-go">}</span>
+
+<span class="hl-go">resource "random_id" "cookie_secret" {</span>
+<span class="hl-go">  count       = length(var.sites)</span>
+<span class="hl-go">  byte_length = 16</span>
+<span class="hl-go">}</span>
+
+<span class="hl-go">resource "local_file" "vhost" {</span>
+<span class="hl-go">  count    = length(var.sites)</span>
+<span class="hl-go">  filename = "/etc/nginx-sites/${var.sites[count.index]}.conf"</span>
+<span class="hl-go">  content = templatefile("${path.module}/vhost.conf.tftpl", {</span>
+<span class="hl-go">    name   = var.sites[count.index]</span>
+<span class="hl-go">    port   = 8100 + count.index</span>
+<span class="hl-go">    secret = random_id.cookie_secret[count.index].hex</span>
+<span class="hl-go">  })</span>
+<span class="hl-go">  file_permission = "0644"</span>
+<span class="hl-go">}</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/sites<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">CHECKPOINT_DISABLE</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-no-color<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'^  # |^Plan:|filename|listen|cookie_secret|forces replacement'</span>
+<span class="hl-go">random_id.cookie_secret[1]: Refreshing state... [id=U1uw_5uTL-5SXg_ryamYIQ]</span>
+<span class="hl-go">random_id.cookie_secret[2]: Refreshing state... [id=QtluX64eq0I0YWaMbQ1bhw]</span>
+<span class="hl-go">random_id.cookie_secret[0]: Refreshing state... [id=cTCIWdT-w8SM0WDjsLtCcg]</span>
+<span class="hl-gp">  # </span>local_file.vhost<span class="hl-o">[</span><span class="hl-m">1</span><span class="hl-o">]</span><span class="hl-w"> </span>must<span class="hl-w"> </span>be<span class="hl-w"> </span>replaced
+<span class="hl-go">      ~ content              = &lt;&lt;-EOT # forces replacement</span>
+<span class="hl-go">                listen 8101;</span>
+<span class="hl-go">                set $cookie_secret "535bb0ff9b932fee525e0febc9a99821";</span>
+<span class="hl-go">      ~ filename             = "/etc/nginx-sites/blog.conf" -&gt; "/etc/nginx-sites/docs.conf" # forces replacement</span>
+<span class="hl-gp">  # </span>local_file.vhost<span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>index<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>is<span class="hl-w"> </span>out<span class="hl-w"> </span>of<span class="hl-w"> </span>range<span class="hl-w"> </span><span class="hl-k">for</span><span class="hl-w"> </span>count<span class="hl-o">)</span>
+<span class="hl-go">                listen 8102;</span>
+<span class="hl-go">                set $cookie_secret "42d96e5fae1eab423461668c6d0d5b87";</span>
+<span class="hl-go">      - filename             = "/etc/nginx-sites/docs.conf" -&gt; null</span>
+<span class="hl-gp">  # </span>random_id.cookie_secret<span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>index<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>is<span class="hl-w"> </span>out<span class="hl-w"> </span>of<span class="hl-w"> </span>range<span class="hl-w"> </span><span class="hl-k">for</span><span class="hl-w"> </span>count<span class="hl-o">)</span>
+<span class="hl-go">  - resource "random_id" "cookie_secret" {</span>
+<span class="hl-go">Plan: 1 to add, 0 to change, 3 to destroy.</span>
+</code></pre>
+
+<p>Exactly the shift predicted: <code>vhost[1]</code> would turn <code>blog.conf</code> into <code>docs.conf</code> with port 8101 and the
+blog's secret <code>535bb0ff…</code>, <code>vhost[2]</code> — the real <code>docs.conf</code> with 8102 — would be destroyed, and docs's
+secret with it.</p>
+<p><strong>3. Rewrite the configuration with named sites, explicit ports and moves.</strong> <code>/srv/sites/main.tf</code>:</p>
+<pre class="hl"><code class="language-hcl"><span class="hl-kr">variable</span><span class="hl-w"> </span><span class="hl-nv">"sites"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">description</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-s2">"Each site and its port. Ports are explicit, so removing a site moves nothing."</span>
+<span class="hl-w">  </span><span class="hl-na">type</span><span class="hl-w">        </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">map</span><span class="hl-p">(</span><span class="hl-kt">object</span><span class="hl-p">({</span><span class="hl-w"> </span><span class="hl-na">port</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-kt">number</span><span class="hl-w"> </span><span class="hl-p">}))</span>
+<span class="hl-w">  </span><span class="hl-nb">default</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">    </span><span class="hl-nb">shop</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-p">{</span><span class="hl-w"> </span><span class="hl-na">port</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-m">8100</span><span class="hl-w"> </span><span class="hl-p">}</span>
+<span class="hl-w">    </span><span class="hl-nb">docs</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-p">{</span><span class="hl-w"> </span><span class="hl-na">port</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-m">8102</span><span class="hl-w"> </span><span class="hl-p">}</span>
+<span class="hl-w">  </span><span class="hl-p">}</span>
+<span class="hl-p">}</span>
+
+<span class="hl-kr">resource</span><span class="hl-w"> </span><span class="hl-nc">"random_id"</span><span class="hl-w"> </span><span class="hl-nv">"cookie_secret"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">for_each</span><span class="hl-w">    </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">var.sites</span>
+<span class="hl-w">  </span><span class="hl-na">byte_length</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-m">16</span>
+<span class="hl-p">}</span>
+
+<span class="hl-kr">resource</span><span class="hl-w"> </span><span class="hl-nc">"local_file"</span><span class="hl-w"> </span><span class="hl-nv">"vhost"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">for_each</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">var.sites</span>
+<span class="hl-w">  </span><span class="hl-na">filename</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-s2">"/etc/nginx-sites/${each.key}.conf"</span>
+<span class="hl-w">  </span><span class="hl-na">content</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">templatefile</span><span class="hl-p">(</span><span class="hl-s2">"${path.module}/vhost.conf.tftpl"</span><span class="hl-p">,</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">    </span><span class="hl-na">name</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">each.key</span>
+<span class="hl-w">    </span><span class="hl-na">port</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">each.value.port</span>
+<span class="hl-w">    </span><span class="hl-na">secret</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_id.cookie_secret[each.key].hex</span>
+<span class="hl-w">  </span><span class="hl-p">})</span>
+<span class="hl-w">  </span><span class="hl-na">file_permission</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-s2">"0644"</span>
+<span class="hl-p">}</span>
+
+<span class="hl-c1"># from positions to names: shop was [0], docs was [2]; the blog's [1] is destroyed</span>
+<span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_id.cookie_secret[0</span><span class="hl-p">]</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_id.cookie_secret</span><span class="hl-p">[</span><span class="hl-s2">"shop"</span><span class="hl-p">]</span>
+<span class="hl-p">}</span>
+
+<span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_id.cookie_secret[2</span><span class="hl-p">]</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">random_id.cookie_secret</span><span class="hl-p">[</span><span class="hl-s2">"docs"</span><span class="hl-p">]</span>
+<span class="hl-p">}</span>
+
+<span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">local_file.vhost[0</span><span class="hl-p">]</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">local_file.vhost</span><span class="hl-p">[</span><span class="hl-s2">"shop"</span><span class="hl-p">]</span>
+<span class="hl-p">}</span>
+
+<span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">local_file.vhost[2</span><span class="hl-p">]</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">local_file.vhost</span><span class="hl-p">[</span><span class="hl-s2">"docs"</span><span class="hl-p">]</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/sites<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">CHECKPOINT_DISABLE</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>fmt<span class="hl-w"> </span>-check<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">CHECKPOINT_DISABLE</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>validate<span class="hl-w"> </span>-no-color
+<span class="hl-go">Success! The configuration is valid.</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/sites<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">CHECKPOINT_DISABLE</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-no-color<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'^  # |^Plan:'</span>
+<span class="hl-gp">  # </span>local_file.vhost<span class="hl-o">[</span><span class="hl-m">1</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>resource<span class="hl-w"> </span>does<span class="hl-w"> </span>not<span class="hl-w"> </span>use<span class="hl-w"> </span>count<span class="hl-o">)</span>
+<span class="hl-gp">  # </span>local_file.vhost<span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>has<span class="hl-w"> </span>moved<span class="hl-w"> </span>to<span class="hl-w"> </span>local_file.vhost<span class="hl-o">[</span><span class="hl-s2">"docs"</span><span class="hl-o">]</span>
+<span class="hl-gp">  # </span>local_file.vhost<span class="hl-o">[</span><span class="hl-m">0</span><span class="hl-o">]</span><span class="hl-w"> </span>has<span class="hl-w"> </span>moved<span class="hl-w"> </span>to<span class="hl-w"> </span>local_file.vhost<span class="hl-o">[</span><span class="hl-s2">"shop"</span><span class="hl-o">]</span>
+<span class="hl-gp">  # </span>random_id.cookie_secret<span class="hl-o">[</span><span class="hl-m">1</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>resource<span class="hl-w"> </span>does<span class="hl-w"> </span>not<span class="hl-w"> </span>use<span class="hl-w"> </span>count<span class="hl-o">)</span>
+<span class="hl-gp">  # </span>random_id.cookie_secret<span class="hl-o">[</span><span class="hl-m">2</span><span class="hl-o">]</span><span class="hl-w"> </span>has<span class="hl-w"> </span>moved<span class="hl-w"> </span>to<span class="hl-w"> </span>random_id.cookie_secret<span class="hl-o">[</span><span class="hl-s2">"docs"</span><span class="hl-o">]</span>
+<span class="hl-gp">  # </span>random_id.cookie_secret<span class="hl-o">[</span><span class="hl-m">0</span><span class="hl-o">]</span><span class="hl-w"> </span>has<span class="hl-w"> </span>moved<span class="hl-w"> </span>to<span class="hl-w"> </span>random_id.cookie_secret<span class="hl-o">[</span><span class="hl-s2">"shop"</span><span class="hl-o">]</span>
+<span class="hl-go">Plan: 0 to add, 0 to change, 2 to destroy.</span>
+</code></pre>
+
+<p>Four moves, and the only two destroys are index <code>[1]</code> — the blog.</p>
+<p><strong>4. Apply, and prove nothing else changed.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/sites<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">CHECKPOINT_DISABLE</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>apply<span class="hl-w"> </span>-auto-approve<span class="hl-w"> </span>-no-color<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'Destroying|Destruction complete|Creating|Creation complete|^Apply complete'</span>
+<span class="hl-go">local_file.vhost[1]: Destroying... [id=b43f6bd102757fe86bc5423cd68a64ee450ce75e]</span>
+<span class="hl-go">local_file.vhost[1]: Destruction complete after 0s</span>
+<span class="hl-go">random_id.cookie_secret[1]: Destroying... [id=U1uw_5uTL-5SXg_ryamYIQ]</span>
+<span class="hl-go">random_id.cookie_secret[1]: Destruction complete after 0s</span>
+<span class="hl-go">Apply complete! Resources: 0 added, 0 changed, 2 destroyed.</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/sites<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">CHECKPOINT_DISABLE</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-detailed-exitcode<span class="hl-w"> </span>-no-color<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-si">${</span><span class="hl-nv">PIPESTATUS</span><span class="hl-p">[0]</span><span class="hl-si">}</span><span class="hl-s2">"</span>
+<span class="hl-go">Terraform has compared your real infrastructure against your configuration</span>
+<span class="hl-go">and found no differences, so no changes are needed.</span>
+<span class="hl-go">exit=0</span>
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/sites<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>terraform<span class="hl-w"> </span>state<span class="hl-w"> </span>list
+<span class="hl-go">local_file.vhost["docs"]</span>
+<span class="hl-go">local_file.vhost["shop"]</span>
+<span class="hl-go">random_id.cookie_secret["docs"]</span>
+<span class="hl-go">random_id.cookie_secret["shop"]</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>/etc/nginx-sites<span class="hl-p">;</span><span class="hl-w"> </span>cmp<span class="hl-w"> </span>/tmp/docs.conf<span class="hl-w"> </span>/etc/nginx-sites/docs.conf<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>cmp<span class="hl-w"> </span>/tmp/shop.conf<span class="hl-w"> </span>/etc/nginx-sites/shop.conf<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"shop and docs: byte-identical"</span>
+<span class="hl-go">docs.conf</span>
+<span class="hl-go">shop.conf</span>
+<span class="hl-go">shop and docs: byte-identical</span>
+</code></pre>
+
+<p>The blog's file and secret are gone, the state is keyed by name, and <code>shop.conf</code> and <code>docs.conf</code> are
+byte-for-byte what they were before — same ports, same secrets.</p>
+<p><strong>5. Rehearse the next removal.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/srv/sites<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span><span class="hl-nv">CHECKPOINT_DISABLE</span><span class="hl-o">=</span><span class="hl-m">1</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-no-color<span class="hl-w"> </span>-var<span class="hl-w"> </span><span class="hl-s1">'sites={docs={port=8102}}'</span><span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'^  # |^Plan:'</span>
+<span class="hl-gp">  # </span>local_file.vhost<span class="hl-o">[</span><span class="hl-s2">"shop"</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>key<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-s2">"shop"</span><span class="hl-o">]</span><span class="hl-w"> </span>is<span class="hl-w"> </span>not<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>for_each<span class="hl-w"> </span>map<span class="hl-o">)</span>
+<span class="hl-gp">  # </span>random_id.cookie_secret<span class="hl-o">[</span><span class="hl-s2">"shop"</span><span class="hl-o">]</span><span class="hl-w"> </span>will<span class="hl-w"> </span>be<span class="hl-w"> </span>destroyed
+<span class="hl-gp">  # </span><span class="hl-o">(</span>because<span class="hl-w"> </span>key<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-s2">"shop"</span><span class="hl-o">]</span><span class="hl-w"> </span>is<span class="hl-w"> </span>not<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>for_each<span class="hl-w"> </span>map<span class="hl-o">)</span>
+<span class="hl-go">Plan: 0 to add, 0 to change, 2 to destroy.</span>
+</code></pre>
+
+<p>Removing <code>shop</code> now plans to touch only <code>shop</code>. That is the property the refactoring bought.</p>
+<p><strong>6. Grade.</strong> The blog gone from disk and state, shop and docs unchanged with a clean plan, and every
+instance keyed by name — before and after the reboot.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Applying the <code>count</code> plan &quot;because the blog is being removed anyway&quot;.</strong> docs gets the blog's port and
+secret, and <code>docs.conf</code> is deleted by the destroy of <code>[2]</code>. Sessions are invalidated and the site moves
+port.</p>
+<p><strong>Keeping <code>count</code> and putting <code>&quot;blog&quot;</code> back as an empty placeholder.</strong> It works until the next removal,
+and turns the list into a record of history that everyone must know not to touch.</p>
+<p><strong>Switching to <code>for_each</code> without <code>moved</code> blocks.</strong> Every instance is destroyed and recreated; every
+cookie secret is regenerated. The files may end up identical except for the secrets, which is the part
+that mattered.</p>
+<p><strong>Adding moves for <code>local_file.vhost</code> only.</strong> The files keep their addresses, and <code>random_id</code> instances are
+recreated with new values, which the files then pick up on the same apply.</p>
+<p><strong><code>toset(var.sites)</code> with the old list and <code>8100 + index(...)</code> for the port.</strong> The port is still derived
+from a position, so removing an element still shifts the ports after it. Store the data you mean.</p>
+<p><strong>A move from <code>[1]</code> to <code>[&quot;docs&quot;]</code>.</strong> Index 1 was the blog. The move would carry the blog's secret to docs,
+and the plan would then show docs's file being rewritten with it.</p>
+<p><strong><code>terraform state rm</code> for the blog instances.</strong> Terraform forgets them but the blog's file and secret
+stay on disk, unmanaged. Let the plan destroy them.</p>
+<p><strong>Skipping <code>fmt</code> and <code>validate</code>.</strong> They are free and immediate; a typo in <code>each.value.port</code> otherwise
+surfaces in the middle of reading a plan.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-hcl"><span class="hl-kr">resource</span><span class="hl-w"> </span><span class="hl-nc">"x"</span><span class="hl-w"> </span><span class="hl-nv">"y"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">count</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nf">length</span><span class="hl-p">(</span><span class="hl-nv">var.list</span><span class="hl-p">)</span><span class="hl-c1">          # instances [0], [1], … — for interchangeable things</span>
+<span class="hl-w">  </span><span class="hl-na">name</span><span class="hl-w">  </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">var.list[count.index</span><span class="hl-p">]</span>
+<span class="hl-p">}</span>
+
+<span class="hl-kr">resource</span><span class="hl-w"> </span><span class="hl-nc">"x"</span><span class="hl-w"> </span><span class="hl-nv">"y"</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">for_each</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">var.map</span><span class="hl-c1">                # instances ["key"] — for named things</span>
+<span class="hl-w">  </span><span class="hl-na">name</span><span class="hl-w">     </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">each.key</span>
+<span class="hl-w">  </span><span class="hl-na">size</span><span class="hl-w">     </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">each.value.size</span>
+<span class="hl-p">}</span>
+
+<span class="hl-nb">moved</span><span class="hl-w"> </span><span class="hl-p">{</span>
+<span class="hl-w">  </span><span class="hl-na">from</span><span class="hl-w"> </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">x.y[0</span><span class="hl-p">]</span>
+<span class="hl-w">  </span><span class="hl-na">to</span><span class="hl-w">   </span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nv">x.y</span><span class="hl-p">[</span><span class="hl-s2">"shop"</span><span class="hl-p">]</span>
+<span class="hl-p">}</span>
+</code></pre>
+
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>state<span class="hl-w"> </span>list<span class="hl-w">                               </span><span class="hl-c1"># [0] = count, ["key"] = for_each</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>fmt<span class="hl-w"> </span>-check<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>terraform<span class="hl-w"> </span>validate
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-E<span class="hl-w"> </span><span class="hl-s1">'^  # |^Plan:'</span><span class="hl-w">            </span><span class="hl-c1"># the actions and their reasons</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-var<span class="hl-w"> </span><span class="hl-s1">'sites={docs={port=8102}}'</span><span class="hl-w">     </span><span class="hl-c1"># rehearse a change without editing files</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>apply
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>plan<span class="hl-w"> </span>-detailed-exitcode<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-nv">$?</span><span class="hl-w">         </span><span class="hl-c1"># 0 = nothing left to do</span>
+<span class="hl-gp">$ </span>terraform<span class="hl-w"> </span>state<span class="hl-w"> </span>mv<span class="hl-w"> </span><span class="hl-s1">'x.y[0]'</span><span class="hl-w"> </span><span class="hl-s1">'x.y["shop"]'</span><span class="hl-w">          </span><span class="hl-c1"># the one-off alternative to a moved block</span>
+<span class="hl-gp">$ </span>cmp<span class="hl-w"> </span>before<span class="hl-w"> </span>after<span class="hl-w">                                   </span><span class="hl-c1"># prove a file did not change</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — Saved plans, and what &quot;stale&quot; protects</li>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — count gives instances numbers, and numbers shift</li>
+<li><em>The plan says three to destroy, and you only removed one</em> (topic journal <code>terraform</code>) — for_each gives instances names</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>The plan says three to destroy, and you only removed one</em> (<code>terraform</code>), <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>With <code>count = length([&quot;shop&quot;, &quot;blog&quot;, &quot;docs&quot;])</code>, what address does the docs site have, and what happens to it when <code>&quot;blog&quot;</code> is removed from the list?</p>
+<blockquote>
+<p><code>[2]</code>. After the removal docs is described by <code>[1]</code> — which is the blog's existing instance, so it is replaced with docs's name but the blog's position-derived port and paired secret — and <code>[2]</code> is destroyed as out of range.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did the docs site inherit the blog's cookie secret in the <code>count</code> plan?</p>
+<blockquote>
+<p>The secret was chosen by <code>random_id.cookie_secret[count.index]</code>; docs moved to index 1, whose <code>random_id</code> instance was the blog's, while <code>cookie_secret[2]</code> was destroyed.</p>
+</blockquote>
+</li>
+<li>
+<p>How does <code>for_each</code> avoid the shift?</p>
+<blockquote>
+<p>Instances are addressed by map keys such as <code>[&quot;docs&quot;]</code>; removing a key affects only that key's instances, whatever the order or number of the others.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must the port become explicit data when converting to <code>for_each</code>?</p>
+<blockquote>
+<p>With <code>count</code> it was derived from the index; there is no index in <code>for_each</code>, and deriving it from any position would shift it again when an element is removed. Storing <code>port</code> per site keeps it fixed.</p>
+</blockquote>
+</li>
+<li>
+<p>Which <code>moved</code> blocks does the conversion need, and why is there none for <code>[1]</code>?</p>
+<blockquote>
+<p>From <code>[0]</code> to <code>[&quot;shop&quot;]</code> and from <code>[2]</code> to <code>[&quot;docs&quot;]</code>, for both <code>random_id.cookie_secret</code> and <code>local_file.vhost</code>; <code>[1]</code> is the blog, which is meant to be destroyed.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>(because resource does not use count)</code> mean in a plan?</p>
+<blockquote>
+<p>An instance with an index address remains in state after the resource switched to <code>for_each</code>, and no <code>moved</code> block claims it, so Terraform will destroy it.</p>
+</blockquote>
+</li>
+<li>
+<p>How can you check what removing another site would do, without editing any file?</p>
+<blockquote>
+<p>Run <code>terraform plan -var 'sites={…}'</code> with the map minus that site, and read which addresses the plan destroys.</p>
+</blockquote>
+</li>
+<li>
+<p>After the apply, how do you prove shop and docs did not change?</p>
+<blockquote>
+<p><code>terraform plan -detailed-exitcode</code> exits 0, <code>terraform state list</code> shows keyed addresses, and <code>cmp</code> against copies taken before shows the files are byte-identical.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

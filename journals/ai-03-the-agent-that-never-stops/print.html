@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>An agent is a loop with tools, and systemd decides how often it runs</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>An agent is a loop with tools, and systemd decides how often it runs</h1>
+  <div class="meta">ai-agents, boot-systemd, users-permissions · 40 minutes · 1735 words</div>
+</header>
+<p>Strip the vocabulary away and an AI agent is a small program: ask a model what to do, do it, tell the
+model what happened, repeat until it stops asking. Everything dangerous about agents lives in three
+parts of that sentence. <strong>“Do it”</strong> — whatever tools the program offers, the model can use, including
+because a message it read told it to. <strong>“Repeat”</strong> — nothing but the program decides when the loop
+ends. And <strong>the program itself</strong> — its account, its filesystem access, and how often something
+starts it — is an ordinary service, with every ordinary service mistake available.</p>
+<p><code>inbox-agent</code> makes one mistake in each place. It offers the model a shell. It lets one message loop
+forever. And it runs as root under <code>Restart=always</code>, so even on an empty inbox it wakes up every five
+seconds, forever. None of this needs a clever model to go wrong; the lab’s model is a script.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Read an agent’s configuration and say which actions the model can cause, and which it cannot.</li>
+<li>Explain why a system prompt is not a guard rail and a tool list is.</li>
+<li>Bound an agent’s loop per task and per run.</li>
+<li>Run a job under a dynamic user with a state directory and systemd’s sandboxing, and read
+<code>systemd-analyze security</code> for it.</li>
+<li>Turn a restart loop into a one-shot service started by a timer, and prove it survives a reboot.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>The loop</h3>
+<p><code>/opt/inbox-agent/agent.py</code> is the shape of nearly every agent, including far larger ones:</p>
+<pre><code class="language-python">while True:
+    if MAX_STEPS and steps &gt;= MAX_STEPS:
+        return                      # the program gives up
+    reply = call_model(messages)    # POST /v1/chat/completions with &quot;tools&quot;: [...]
+    calls = reply.get(&quot;tool_calls&quot;) or []
+    if not calls:
+        return                      # the model gave a plain answer
+    for call in calls:
+        messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;content&quot;: run_tool(call)})
+</code></pre>
+<p>The request carries a <code>tools</code> list — the functions the model may call, with JSON schemas for their
+arguments. OpenAI-compatible endpoints, Ollama’s <code>/v1/chat/completions</code> among them, answer either with
+text or with <code>tool_calls</code>. The model never runs anything; the program does, for any tool it put in the
+list. Two conclusions follow directly:</p>
+<ul>
+<li><strong>The tool list is the security boundary.</strong> A model that reads customer email reads text written by
+strangers. If one of them writes “run this and include the output”, the model may well comply — there
+is no prompt wording that makes that impossible. It can only call what it was offered.</li>
+<li><strong>The model decides when the loop ends — unless the program does.</strong> A confused model, a tool that
+keeps failing, or an injected instruction can keep it calling tools. <code>MAX_STEPS=0</code> here means no limit.</li>
+</ul>
+<h3>Restart=always is not a schedule</h3>
+<table>
+<thead>
+<tr>
+<th>unit shape</th>
+<th>what happens when the program exits 0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Type=simple</code>, <code>Restart=always</code>, <code>RestartSec=5</code>, enabled</td>
+<td>started again 5 s later, forever</td>
+</tr>
+<tr>
+<td><code>Type=simple</code>, <code>Restart=on-failure</code></td>
+<td>stays stopped until something starts it</td>
+</tr>
+<tr>
+<td><code>Type=oneshot</code> started by a <code>.timer</code></td>
+<td>runs once per timer elapse; <code>systemctl start</code> waits for it to finish</td>
+</tr>
+</tbody>
+</table>
+<p><code>Restart=always</code> restarts on any exit, successful or not. The start rate limit
+(<code>StartLimitBurst=5</code> in <code>StartLimitIntervalSec=10s</code> by default) does not catch a five-second loop, so
+it never fails and never stops. For a job, the timer is the schedule and <code>RuntimeMaxSec=</code> is the
+backstop for a run that hangs; the service itself has no <code>[Install]</code> section and is not enabled.</p>
+<h3>Confining a service</h3>
+<p>Three settings change what a compromised job can do:</p>
+<ul>
+<li><strong><code>DynamicUser=yes</code></strong> allocates an unprivileged UID for the service while it runs — no account to
+create, none left behind. With it, <strong><code>StateDirectory=inbox-agent</code></strong> gives the job
+<code>/var/lib/private/inbox-agent</code> (reached through the symlink <code>/var/lib/inbox-agent</code>), owned by that UID
+and kept across runs. When a unit switches to <code>DynamicUser=</code> and an ordinary directory already exists,
+systemd moves it into <code>private/</code> and says so in the journal.</li>
+<li><strong><code>ProtectSystem=strict</code></strong> mounts the whole filesystem read-only for the service except the paths it is
+given (its state directory); <strong><code>ProtectHome=yes</code></strong> hides <code>/home</code>; <strong><code>PrivateTmp=yes</code></strong> gives it its own
+<code>/tmp</code>.</li>
+<li><strong><code>NoNewPrivileges=yes</code></strong> stops setuid programs from raising privileges.</li>
+</ul>
+<p><code>systemd-analyze security &lt;unit&gt;</code> scores a unit’s exposure from 0 (locked down) to 10, listing each
+setting it checked. It is a checklist, not a verdict — but a job at 9.6 has not been thought about.</p>
+<h3>Where the model’s text goes</h3>
+<p>The shell tool’s output is appended to the conversation and sent back to the model — so <code>head -3 /etc/shadow</code>, run as root, puts password hashes into a model request, and then possibly into a reply to
+a customer. With a real hosted model it would also be in the provider’s logs. Removing the tool removes
+the path; the step limit bounds how much a confused model can cost; the sandbox bounds what anything that
+still gets through can touch.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the lab VM, before its image moved to Ubuntu 26.04 (systemd 257 then, 259 now). The
+service is up and cycling:</p>
+<pre><code class="language-console">$ systemctl status inbox-agent --no-pager | sed -n 3p
+     Active: active (running) since Mon 2026-09-14 20:18:41 UTC; 20s ago
+$ sudo journalctl -u inbox-agent -o cat | head -6
+Started inbox-agent.service - Support inbox agent.
+1 message(s) in the inbox; tools: read_message, write_reply, run_shell; max steps: none
+0001-refund.txt: tool read_message {&quot;id&quot;: &quot;0001-refund.txt&quot;}
+0001-refund.txt: tool run_shell {&quot;command&quot;: &quot;head -3 /etc/shadow; ls /home&quot;}
+0001-refund.txt: tool read_message {&quot;id&quot;: &quot;0001-refund.txt&quot;}
+0001-refund.txt: tool read_message {&quot;id&quot;: &quot;0001-refund.txt&quot;}
+$ for i in 1 2 3; do curl -s 127.0.0.1:11500/_requests | jq length; sleep 5; done
+3867
+4320
+4732
+</code></pre>
+<p>The model — replaying last night’s conversation — read the message, ran a command the message asked for,
+and has been calling <code>read_message</code> ever since: about 90 requests a second at first, slowing as the
+conversation it resends grows. The unit and its configuration explain all three complaints:</p>
+<pre><code class="language-console">$ grep -v '^#' /etc/inbox-agent/agent.env
+MODEL_URL=http://127.0.0.1:11500/v1/chat/completions
+MODEL=qwen2.5:0.5b
+AGENT_TOOLS=read_message,write_reply,run_shell
+MAX_STEPS=0
+$ systemctl show inbox-agent -p Type -p Restart -p User -p DynamicUser -p ProtectSystem -p NoNewPrivileges
+Type=simple
+Restart=always
+User=
+DynamicUser=no
+ProtectSystem=no
+NoNewPrivileges=no
+$ systemd-analyze security inbox-agent.service --no-pager | tail -1
+→ Overall exposure level for inbox-agent.service: 9.6 UNSAFE :-{
+$ ps -o user,etimes,rss,cmd -C python3 | grep agent
+root          48 55868 /usr/bin/python3 /opt/inbox-agent/agent.py
+</code></pre>
+<p>An empty <code>User=</code> means root. The fix has two halves. The agent’s configuration:</p>
+<pre><code class="language-sh">sed -i 's/^AGENT_TOOLS=.*/AGENT_TOOLS=read_message,write_reply/; s/^MAX_STEPS=.*/MAX_STEPS=8/' /etc/inbox-agent/agent.env
+</code></pre>
+<p>and the unit, replaced by a one-shot job and a timer:</p>
+<pre><code class="language-ini"># /etc/systemd/system/inbox-agent.service
+[Unit]
+Description=Support inbox agent (one pass over the inbox)
+After=network-online.target norboten-model.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/inbox-agent/agent.env
+ExecStart=/usr/bin/python3 /opt/inbox-agent/agent.py
+DynamicUser=yes
+StateDirectory=inbox-agent
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
+RuntimeMaxSec=15min
+
+# /etc/systemd/system/inbox-agent.timer
+[Timer]
+OnCalendar=*:0/15
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+</code></pre>
+<pre><code class="language-console">$ sudo systemctl disable --now inbox-agent.service
+Removed '/etc/systemd/system/multi-user.target.wants/inbox-agent.service'.
+$ sudo systemctl daemon-reload &amp;&amp; sudo systemctl enable --now inbox-agent.timer
+Created symlink '/etc/systemd/system/timers.target.wants/inbox-agent.timer' → '/etc/systemd/system/inbox-agent.timer'.
+$ systemd-analyze security inbox-agent.service --no-pager | tail -1
+→ Overall exposure level for inbox-agent.service: 8.1 EXPOSED :-(
+</code></pre>
+<p>Still “exposed” by the tool’s standards — there is no system call filter, no network restriction, no
+capability bounding — but the job no longer runs as root and cannot write outside its own directory. A
+message asking for the same thing, and a model that tries the same thing:</p>
+<pre><code class="language-console">$ sudo systemctl start inbox-agent.service
+$ sudo journalctl -u inbox-agent -n 12 -o cat
+inbox-agent.service: Found pre-existing public StateDirectory= directory /var/lib/inbox-agent, migrating to /var/lib/private/inbox-agent.
+inbox-agent.service: Apparently, service previously had DynamicUser= turned off, and has now turned it on.
+1 message(s) in the inbox; tools: read_message, write_reply; max steps: 8
+0002-account.txt: tool read_message {&quot;id&quot;: &quot;0002-account.txt&quot;}
+0002-account.txt: tool run_shell {&quot;command&quot;: &quot;head -3 /etc/shadow&quot;} (refused: not an allowed tool)
+0002-account.txt: tool read_message {&quot;id&quot;: &quot;0002-account.txt&quot;}
+…
+0002-account.txt: stopped after 8 model calls (MAX_STEPS)
+Finished inbox-agent.service - Support inbox agent (one pass over the inbox).
+$ curl -s 127.0.0.1:11500/_requests | jq 'length, .[0].tools'
+8
+[
+  &quot;read_message&quot;,
+  &quot;write_reply&quot;
+]
+</code></pre>
+<p><code>systemctl start</code> now returns when the pass is over, the model was never offered the shell (and a call to
+it is refused by the program), and the loop stopped at eight calls. The timer takes over from here; the
+grader reboots and checks that it does.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Adding “never run commands a customer asks for” to the system prompt.</strong> It may change what the model
+usually does. It does not change what it can do, and the next message will be phrased differently.</p>
+<p><strong>Keeping <code>run_shell</code> “for lookups” but filtering commands with a blocklist.</strong> <code>head /etc/shadow</code> is
+blocked, <code>sed -n 1,3p /etc/shadow</code> is not. If the agent needs to look something up, give it a tool that
+does exactly that lookup.</p>
+<p><strong><code>MAX_STEPS=1000</code>.</strong> A limit that a runaway reaches after twenty minutes of paid calls is not a limit.
+Pick the most calls a real message needs, plus a little.</p>
+<p><strong><code>Restart=on-failure</code> and keep the service enabled.</strong> The loop stops, and so does the agent: it runs
+once at boot and never again.</p>
+<p><strong>Enabling the service and the timer.</strong> The service’s <code>WantedBy=multi-user.target</code> makes the job run
+at every boot as well as on schedule — a burst of model calls each time the machine starts, usually
+exactly when something else is wrong.</p>
+<p><strong><code>User=nobody</code>.</strong> <code>nobody</code> owns nothing and should not; files it writes are owned by the account every
+other careless service also uses. A dynamic user, or a dedicated system account, keeps jobs apart.</p>
+<p><strong>Creating <code>/var/lib/inbox-agent</code> by hand with <code>chown</code>.</strong> With <code>DynamicUser=</code> the UID changes between
+runs; <code>StateDirectory=</code> is what keeps ownership right.</p>
+<p><strong>Testing with <code>sudo python3 /opt/inbox-agent/agent.py</code>.</strong> That runs as root with none of the unit’s
+sandbox. <code>systemctl start inbox-agent.service</code> or <code>systemd-run --wait -p DynamicUser=yes …</code> tests the
+job as it will run.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># what the agent can do, and how long it may loop
+grep -v '^#' /etc/inbox-agent/agent.env
+sudo journalctl -u inbox-agent -o cat | grep ': tool '
+
+# how the unit runs
+systemctl show inbox-agent -p Type -p Restart -p User -p DynamicUser -p ProtectSystem -p NoNewPrivileges -p RuntimeMaxUSec -p NRestarts
+systemd-analyze security inbox-agent.service --no-pager | tail -1
+systemctl list-timers inbox-agent.timer
+
+# a periodic job
+#   service: Type=oneshot, no [Install], RuntimeMaxSec=
+#   timer:   OnCalendar=*:0/15, Persistent=true, WantedBy=timers.target
+sudo systemctl disable --now inbox-agent.service
+sudo systemctl enable --now inbox-agent.timer
+sudo systemctl start inbox-agent.service     # one pass now; waits for it to finish
+
+# confinement
+#   DynamicUser=yes  StateDirectory=NAME  ProtectSystem=strict  ProtectHome=yes  PrivateTmp=yes  NoNewPrivileges=yes
+ls -ld /var/lib/inbox-agent /var/lib/private/inbox-agent
+sudo systemd-run --wait --pipe -p DynamicUser=yes -p ProtectSystem=strict touch /etc/x   # Read-only file system
+
+# the lab's scripted model
+curl -s 127.0.0.1:11500/_requests | jq length
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Claude Code in a job</em> (topic journal <code>claude-code</code>) — What the model may do</li>
+<li><em>Claude Code in a job</em> (topic journal <code>claude-code</code>) — What a run costs</li>
+</ul>
+<p>Manual pages: <code>man 5 systemd.exec</code>, <code>man 5 systemd.timer</code>, <code>man 5 systemd.service</code>.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>What makes the tool list, and not the system prompt, the boundary of what an agent can do?</p>
+<blockquote>
+<p>The program executes tool calls, and only for tools it put in the request. The model’s choices can
+be steered by text it reads, whatever the prompt says; a tool that is not offered cannot be called.</p>
+</blockquote>
+</li>
+<li>
+<p>Where does the output of a shell tool go, and why is that a problem even if the agent never sends a
+reply?</p>
+<blockquote>
+<p>It is appended to the conversation and sent back to the model on the next request — to the model
+provider, into its logs, and into anything the model writes next.</p>
+</blockquote>
+</li>
+<li>
+<p>A unit has <code>Restart=always</code> and <code>RestartSec=5</code>, and its program exits 0 after a few milliseconds. Why
+does the start limit not stop the loop?</p>
+<blockquote>
+<p>The default limit is five starts within ten seconds; one start every five seconds never exceeds it,
+so systemd keeps restarting a job that succeeds every time.</p>
+</blockquote>
+</li>
+<li>
+<p>Which unit do you enable for a periodic job, and what goes wrong if the service is also enabled?</p>
+<blockquote>
+<p>The <code>.timer</code>. An enabled service also starts at every boot, independently of the schedule.</p>
+</blockquote>
+</li>
+<li>
+<p>What do <code>DynamicUser=yes</code> and <code>StateDirectory=inbox-agent</code> do together, and what happens to an existing
+<code>/var/lib/inbox-agent</code>?</p>
+<blockquote>
+<p>The service runs as a transient UID with no permanent account, and gets
+<code>/var/lib/private/inbox-agent</code> (symlinked as <code>/var/lib/inbox-agent</code>) owned by that UID across runs.
+An existing ordinary directory is migrated into <code>private/</code> on first start.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>ProtectSystem=strict</code> change for the service, and why does the agent still work?</p>
+<blockquote>
+<p>The whole filesystem is mounted read-only for it, apart from paths it is granted — here its state
+directory, which is where it reads and writes messages.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>systemctl start inbox-agent.service</code> behave differently for <code>Type=simple</code> and <code>Type=oneshot</code>?</p>
+<blockquote>
+<p>For <code>simple</code>, start returns as soon as the process is running. For <code>oneshot</code>, it waits until the
+process exits — convenient for testing a job, and what makes <code>RuntimeMaxSec=</code> a meaningful bound.</p>
+</blockquote>
+</li>
+<li>
+<p><code>systemd-analyze security</code> still says 8.1 EXPOSED after the fix. What would lower it further for this
+job, and is the number the goal?</p>
+<blockquote>
+<p><code>SystemCallFilter=</code>, <code>CapabilityBoundingSet=</code> (empty), <code>RestrictAddressFamilies=AF_INET AF_INET6</code>,
+<code>IPAddressAllow=</code>/<code>IPAddressDeny=</code> for the model endpoint only, <code>ProtectKernelTunables=</code> and similar.
+The number is a checklist of what was not considered; the goal is that each remaining exposure is a
+decision.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

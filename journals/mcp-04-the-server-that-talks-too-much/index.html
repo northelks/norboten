@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Server That Talks Too Much — on stdio, stdout belongs to the protocol · Norboten</title>
+<meta name="description" content="A stdio MCP server has two output streams and they are not interchangeable. The client reads stdout as the protocol — newline-delimited JSON-RPC, one message pe">
+<link rel="canonical" href="https://norboten.org/journals/mcp-04-the-server-that-talks-too-much/"><meta property="og:title" content="The Server That Talks Too Much — on stdio, stdout belongs to the protocol · Norboten">
+<meta property="og:description" content="A stdio MCP server has two output streams and they are not interchangeable. The client reads stdout as the protocol — newline-delimited JSON-RPC, one message pe">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/mcp-04-the-server-that-talks-too-much/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Server That Talks Too Much — on stdio, stdout belongs to the protocol · Norboten">
+<meta name="twitter:description" content="A stdio MCP server has two output streams and they are not interchangeable. The client reads stdout as the protocol — newline-delimited JSON-RPC, one message pe">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "The Server That Talks Too Much \u2014 on stdio, stdout belongs to the protocol",
+  "description": "A stdio MCP server has two output streams and they are not interchangeable. The client reads stdout as the protocol \u2014 newline-delimited JSON-RPC, one message pe",
+  "url": "https://norboten.org/journals/mcp-04-the-server-that-talks-too-much/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1026,
+  "timeRequired": "PT20M",
+  "about": ["Model Context Protocol", "Logging and journald"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Server That Talks Too Much</div>
+    <h1>The Server That Talks Too Much — on stdio, stdout belongs to the protocol</h1>
+    <p class="muted">
+      20 minutes' reading · 1026 words ·<span class="tag">Model Context Protocol</span><span class="tag">Logging and journald</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 68 words</title><rect x="0.0" y="0" width="43.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 338 words</title><rect x="46.1" y="0" width="214.2" height="30" rx="4" fill="#1d2a23"/><text x="54.1" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 304 words</title><rect x="263.3" y="0" width="192.6" height="30" rx="4" fill="#4ade80"/><text x="271.3" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 125 words</title><rect x="458.9" y="0" width="79.2" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 60 words</title><rect x="541.1" y="0" width="38.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 86 words</title><rect x="582.1" y="0" width="54.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 190 words</title><rect x="639.6" y="0" width="120.4" height="30" rx="4" fill="#1d2a23"/><text x="647.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/mcp-04-the-server-that-talks-too-much/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>A stdio MCP server has two output streams and they are not interchangeable. The client reads stdout as
+the protocol — newline-delimited JSON-RPC, one message per line — and nothing else may appear there.
+stderr is the server's own: the client may log it, show it, or drop it, but never parses it. Print a
+greeting to stdout, or log to it, and the server may work perfectly by hand while the client cannot
+understand a word. This lab's server did both.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Say what a stdio MCP client reads from stdout and from stderr.</li>
+<li>Find everything that writes to a server's stdout: the server, its logging, and whatever starts it.</li>
+<li>Explain why one stray line can break the handshake while another merely wastes the client's time.</li>
+<li>Move a server's diagnostics off stdout without losing them.</li>
+<li>Check a server's stdout line by line, without a client.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="framing-one-message-per-line">Framing: one message per line</h3>
+<p>The stdio transport frames messages by newline. The client reads a line, parses it as JSON, and expects
+a JSON-RPC message: a response to something it sent, a request, or a notification. The specification
+says a server must not write anything to stdout that is not a valid message. How a client treats a line
+that breaks the rule is up to the client: Claude Code 2.1.270, as the walkthrough shows, skips a line
+that is not JSON — but it cannot recover a message that shares its line with something else.</p>
+<h3 id="two-polluters-two-effects">Two polluters, two effects</h3>
+<p>The wrapper <code>/usr/local/bin/metrics-mcp</code> prints <code>metrics-mcp 3.1 ready </code> — without a newline — before
+it hands over to Python. The first thing the server writes is its answer to <code>initialize</code>, so the answer
+becomes <code>metrics-mcp 3.1 ready {&quot;jsonrpc&quot;: …}</code>: one line that is not JSON. The client never sees the
+answer to its first request, waits, and gives up. That is fatal.</p>
+<p>The debug log (<code>&quot;log_to&quot;: &quot;stdout&quot;</code>) writes a line after every reply. Each is a line of its own, so a
+tolerant client skips them and carries on: harmless to Claude Code today, a protocol violation all the
+same, noise in every exchange, and fatal to a stricter client — or to this one if a log line is ever
+written without its newline.</p>
+<h3 id="where-diagnostics-should-go">Where diagnostics should go</h3>
+<p>stderr, or a file. Claude Code keeps a stdio server's stderr for its debug output; a file survives
+restarts and can be rotated. The one wrong answer is <code>log_level: off</code>: the log was turned on to chase a
+slow answer, and whoever turned it on still needs it.</p>
+<h3 id="wrappers-are-part-of-the-server">Wrappers are part of the server</h3>
+<p>Whatever <code>.mcp.json</code> names as the command is the server, as far as the client is concerned: a shell
+wrapper, <code>npx</code>, <code>uvx</code>, a <code>docker run</code>. Anything any of them prints to stdout reaches the client. Package
+managers that announce what they install are a classic source; a wrapper's <code>echo</code> is another.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the lab's container (Ubuntu 26.04, Claude Code 2.1.270; JSON files shown on one line).
+The command the project runs, the wrapper, and the server's settings:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>~/ops/.mcp.json<span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/usr/local/bin/metrics-mcp<span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/metrics-mcp/config.json
+<span class="hl-go">{"mcpServers": {"metrics": {"type": "stdio", "command": "/usr/local/bin/metrics-mcp"}}}</span>
+<span class="hl-gp">#</span>!/bin/sh
+<span class="hl-gp"># </span>Start<span class="hl-w"> </span>the<span class="hl-w"> </span>metrics<span class="hl-w"> </span>MCP<span class="hl-w"> </span>server.<span class="hl-w"> </span>Kept<span class="hl-w"> </span>as<span class="hl-w"> </span>a<span class="hl-w"> </span>wrapper<span class="hl-w"> </span>so<span class="hl-w"> </span>the<span class="hl-w"> </span>version<span class="hl-w"> </span>shows<span class="hl-w"> </span>when<span class="hl-w"> </span>it<span class="hl-w"> </span>starts.
+<span class="hl-go">printf 'metrics-mcp 3.1 ready '</span>
+<span class="hl-go">exec python3 /opt/metrics-mcp/metrics_mcp.py "$@"</span>
+<span class="hl-go">{"log_level": "debug", "log_to": "stdout"}</span>
+</code></pre>
+
+<p>The server by hand, stderr thrown away — so this is exactly what a client reads:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'%s\n'</span><span class="hl-w"> </span><span class="hl-s1">'{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'</span><span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-s1">'{"jsonrpc":"2.0","id":2,"method":"tools/list"}'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>/usr/local/bin/metrics-mcp<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null
+<span class="hl-go">metrics-mcp 3.1 ready {"jsonrpc": "2.0", "id": 1, "result": {"protocolVersion": "2025-06-18", ...}}</span>
+<span class="hl-go">18:57:49 DEBUG metrics: handled initialize (id 1), pid 90</span>
+<span class="hl-go">{"jsonrpc": "2.0", "id": 2, "result": {"tools": [{"name": "get_load", ...}]}}</span>
+<span class="hl-go">18:57:49 DEBUG metrics: handled tools/list (id 2), pid 90</span>
+</code></pre>
+
+<p>It works, to a person. The job, with a model that asks for <code>get_load</code>, sees:</p>
+<pre><code class="language-text">mcp tools offered: []
+get_load: &lt;tool_use_error&gt;Error: No such tool available: mcp__metrics__get_load. The MCP server
+'metrics' is still connecting. Call WaitForMcpServers to wait for it, then try again.&lt;/tool_use_error&gt;
+</code></pre>
+<p>Send the banner to stderr (<code>printf 'metrics-mcp 3.1 ready\n' &gt;&amp;2</code>) and nothing else, and the job
+connects — the debug lines are still on stdout, and Claude Code skips them:</p>
+<pre><code class="language-text">mcp tools offered: ['mcp__metrics__get_load']
+get_load: load 2.46 2.38 2.28; disk / 55% used; cpus 8
+</code></pre>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'%s\n'</span><span class="hl-w"> </span><span class="hl-s1">'{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>/usr/local/bin/metrics-mcp<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null
+<span class="hl-go">{"jsonrpc": "2.0", "id": 1, "result": {"protocolVersion": "2025-06-18", ...}}</span>
+<span class="hl-go">18:58:07 DEBUG metrics: handled initialize (id 1), pid 164</span>
+</code></pre>
+
+<p>Then <code>&quot;log_to&quot;: &quot;stderr&quot;</code>: stdout carries the protocol and nothing else, and the log is where it
+belongs:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'%s\n'</span><span class="hl-w"> </span><span class="hl-s1">'{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>/usr/local/bin/metrics-mcp<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/tmp/err.txt
+<span class="hl-go">{"jsonrpc": "2.0", "id": 1, "result": {"protocolVersion": "2025-06-18", ...}}</span>
+<span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/tmp/err.txt
+<span class="hl-go">metrics-mcp 3.1 ready</span>
+<span class="hl-go">18:58:07 DEBUG metrics: handled initialize (id 1), pid 178</span>
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong>Fixing the banner and stopping.</strong> The job connects, which looks like done; stdout still carries a
+log line per message, and the next client, or the next missing newline, breaks again.</li>
+<li><strong><code>log_level: off</code>.</strong> Quiet stdout, and the diagnostics someone switched on deliberately are gone.</li>
+<li><strong>Testing the server with stderr and stdout mixed on the terminal.</strong> Everything looks fine because a
+person skips the noise. Throw stderr away (<code>2&gt;/dev/null</code>) to see what a client sees.</li>
+<li><strong>Blaming Claude Code's timeout.</strong> Waiting longer for an answer that was mangled on the wire changes
+nothing.</li>
+<li><strong>Changing <code>.mcp.json</code> to run the Python file directly.</strong> It drops the banner, and the log on stdout
+stays; and the wrapper was there for a reason someone will restore.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre><code class="language-text">&lt;command&gt; 2&gt;/dev/null &lt; requests.jsonl          # stdout exactly as the client reads it
+&lt;command&gt; 2&gt;&amp;1 &gt;/dev/null &lt; requests.jsonl      # only what went to stderr
+python3 -c 'import json,sys; [json.loads(l) for l in sys.stdin]'   # fails on the first bad line
+printf '...' &gt;&amp;2                                # a wrapper's messages, on stderr
+claude --debug                                  # Claude Code's own view of MCP start-up
+</code></pre>
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>The Model Context Protocol</em> (topic journal <code>mcp</code>) — Transports</li>
+</ul>
+<p>Manual pages: <code>man 3 stdout</code>.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://modelcontextprotocol.io/specification/2026-07-28/basic/transports</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>The Model Context Protocol</em> (<code>mcp</code>), <em>The log lines that were never written down</em> (<code>logging-journald</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>What may a stdio MCP server write to stdout?</p>
+<blockquote>
+<p>Only JSON-RPC messages, one per line; everything else — logs, banners, progress — belongs on stderr
+or in a file.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did the banner stop the connection while the log lines did not?</p>
+<blockquote>
+<p>The banner had no newline, so it shared a line with the answer to <code>initialize</code> and that answer was
+lost; each log line was a line of its own, which Claude Code skips.</p>
+</blockquote>
+</li>
+<li>
+<p>After moving the banner to stderr the job works. Why is the lab not finished?</p>
+<blockquote>
+<p>The log still writes to stdout, which breaks the protocol for stricter clients and on the next
+missing newline; stdout must carry only protocol messages.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is turning logging off the wrong fix?</p>
+<blockquote>
+<p>It removes the diagnostics someone needs, and hides the real problem instead of fixing where the
+output goes.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you see exactly what a client receives from a stdio server?</p>
+<blockquote>
+<p>Run its command with JSON-RPC requests on stdin and stderr redirected away; every remaining line
+must parse as a JSON-RPC message.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

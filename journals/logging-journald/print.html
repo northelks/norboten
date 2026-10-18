@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The log lines that were never written down</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>The log lines that were never written down</h1>
+  <div class="meta">logging-journald · 35 minutes · 2479 words</div>
+</header>
+<p>After an incident, the logs are the only witness, and everyone assumes the witness saw everything.
+It did not. A logging pipeline makes decisions of its own: it drops messages from a service that logs
+too fast, it files a program’s error output under “info”, it keeps a second copy somewhere else with a
+different set of rules, and it deletes old entries to make room. None of that is a failure of the logging
+system. All of it is invisible unless you know where to look — and the time to learn it is before the
+incident, not while reading a log with a hole in the middle.</p>
+<p>Every number below was produced on a Rocky Linux 10 lab machine, where systemd-journald collects
+everything and rsyslog copies it on to <code>/var/log/messages</code>, as on any RHEL-family server.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Say how a service’s output reaches the journal, and which priority it gets on the way.</li>
+<li>Recognise journald’s rate limiting, find the message that reports it, and set a per-service limit.</li>
+<li>Explain why <code>/var/log/messages</code> and the journal can disagree about the same service.</li>
+<li>Query the journal precisely: by unit, by identifier, by priority, by invocation, by boot.</li>
+<li>Know where the journal stores data, how big it may grow, and how to see and change that.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Everything a service prints becomes a journal entry</h3>
+<p>A systemd service’s standard output and standard error are connected to journald by default
+(<code>StandardOutput=journal</code>). Each line becomes an entry with structured fields — the message, the unit,
+the PID, the syslog identifier, a <strong>priority</strong>. A program can also send to the journal through syslog
+(<code>logger</code>, <code>syslog(3)</code>) or the journal API; those entries are attributed to the unit the process runs in
+as well.</p>
+<p>A tiny script run as <code>prio.service</code>, writing four ways:</p>
+<pre><code class="language-sh">echo plain stdout
+echo to stderr &gt;&amp;2
+echo &quot;&lt;3&gt;tagged error&quot;
+logger -p user.warning -t chatty2 warned via logger
+</code></pre>
+<p>and what the journal recorded, as <code>PRIORITY  _SYSTEMD_UNIT  SYSLOG_IDENTIFIER | MESSAGE</code>:</p>
+<pre><code>6 prio.service prio    | plain stdout
+6 prio.service prio    | to stderr
+3 prio.service prio    | tagged error
+4 prio.service chatty2 | warned via logger
+</code></pre>
+<p>Three things to take from that.</p>
+<p><strong>Standard error is not an error.</strong> Both streams are logged at priority 6, <code>info</code>. A program that writes
+its failures to stderr — which is correct practice — does not produce <code>err</code> entries, and a filter on
+priority will not find them:</p>
+<pre><code class="language-console">$ sudo journalctl -u prio -b -p err -o cat
+tagged error
+</code></pre>
+<p><strong>Priority can be set per line</strong> by prefixing it <code>&lt;N&gt;</code> (0 emerg … 3 err, 4 warning, 6 info, 7 debug):
+<code>&lt;3&gt;tagged error</code> arrived as priority 3 with the prefix removed. That is <code>SyslogLevelPrefix=</code>, on by
+default, and it is how a service written for systemd marks its errors without a logging library.</p>
+<p><strong><code>-u</code> means the unit, <code>-t</code> means the identifier.</strong> The <code>logger</code> line has identifier <code>chatty2</code>, but it
+ran inside <code>prio.service</code>, so <code>journalctl -u prio</code> shows it and <code>journalctl -t chatty2</code> shows it too. A
+query by <code>-t</code> for a program’s name misses everything that program printed to stdout (identifier
+<code>prio</code>); a query by <code>-u</code> catches everything the unit’s processes produced.</p>
+<h3>journald rate-limits per service</h3>
+<p>journald protects itself from a service that floods it: by default, more than 10,000 messages in 30
+seconds from one service and the rest of that interval is dropped. The documented detail that matters
+is that the burst is <strong>multiplied by a factor derived from free disk space</strong>, so the real limit depends
+on the machine.</p>
+<p>A stand-in batch job printing 100,000 tagged lines as fast as it could:</p>
+<pre><code class="language-console">$ sudo systemctl start chatty
+$ sudo journalctl -b -o cat | grep -c '^runA order'
+35000
+</code></pre>
+<p>35,000 kept — <code>runA order 0</code> through <code>runA order 34999</code>, the default 10,000 scaled by 3.5 on this
+machine’s free space — and 65,000 gone. The only
+record of it is a message journald writes <em>after</em> the interval, when the service next logs:</p>
+<pre><code>systemd-journald[594]: Suppressed 65000 messages from chatty.service
+</code></pre>
+<p>Note what the surviving lines are: the <strong>first</strong> 35,000. A job that logs its progress and then, at the
+end, its one error, has its error dropped. An earlier run of 200,000 lines, started while the previous
+run’s window was still open, kept 15,000 and reported <code>Suppressed 185000 messages</code> — the limit is per
+service <em>per interval</em>, shared by consecutive runs.</p>
+<p>A unit can set its own limit:</p>
+<pre><code class="language-ini">[Service]
+LogRateLimitIntervalSec=30s
+LogRateLimitBurst=1000
+</code></pre>
+<p>With that, the same job (5,000 lines) kept 3,500 — the per-unit burst of 1,000 scaled by the same factor
+of 3.5. <code>LogRateLimitBurst=0</code> turns the limit off for that unit, which is reasonable for a service whose
+full output you need and whose volume you trust, and a bad idea for anything that can loop.</p>
+<h3>rsyslog keeps a second copy, with its own limit</h3>
+<p>On RHEL-family systems rsyslog reads the journal through its <code>imjournal</code> module and writes the classic
+files, <code>/var/log/messages</code> among them:</p>
+<pre><code>module(load=&quot;imjournal&quot;             # provides access to the systemd journal
+       UsePid=&quot;system&quot;
+       FileCreateMode=&quot;0644&quot;
+       StateFile=&quot;imjournal.state&quot;)
+</code></pre>
+<p><code>imjournal</code> has a rate limit of its own (documented default: 20,000 messages per 600 seconds), and when
+it applies, rsyslog says so in the journal:</p>
+<pre><code>rsyslogd[1167]: imjournal from &lt;lima-nb-hello:chatty&gt;: begin to drop messages due to rate-limiting
+</code></pre>
+<p>After the runs above, the two logs disagreed flatly:</p>
+<pre><code class="language-console">$ sudo grep -c 'order .* processed' /var/log/messages
+19941
+$ sudo grep -c 'runA order' /var/log/messages
+0
+</code></pre>
+<p><code>/var/log/messages</code> held about 20,000 lines from the first runs and <strong>none</strong> from the later one, which
+the journal had 35,000 lines of — rsyslog’s ten-minute window was already spent. So “grep the messages
+file” and “query the journal” are two different witnesses with two different blind spots, and a
+colleague who says the log shows nothing may be reading the other one. (Ubuntu’s cloud image keeps
+both too: rsyslog writes <code>/var/log/syslog</code> from the journal. A container has neither, and there a
+program’s own log file is the only witness.)</p>
+<h3>Where the journal lives, and how big it gets</h3>
+<pre><code class="language-console">$ sudo journalctl -u systemd-journald -b | grep 'System Journal'
+systemd-journald[594]: System Journal (/var/log/journal/a92…/) is 16M, max 1.4G, 1.4G free.
+$ sudo journalctl --disk-usage
+Archived and active journals take up 48M in the file system.
+</code></pre>
+<p>With persistent storage (see the rhcsa-05 journal for <code>Storage=</code>), entries go to <code>/var/log/journal/</code>;
+before that directory is usable, and with volatile storage, to <code>/run/log/journal/</code>. journald reports its
+limits at start: here at most 1.4 GiB — by default 10% of the filesystem, capped at 4 GiB — and it removes
+the oldest archived files to stay under <code>SystemMaxUse=</code>. So the journal is never “full”; it quietly gets
+<em>shorter</em>. <code>journalctl --list-boots</code> shows how far back it goes, and <code>--vacuum-size=</code>, <code>--vacuum-time=</code>
+trim it on demand.</p>
+<p>The effective configuration is the main file plus drop-ins, in order, and <code>systemd-analyze</code> prints the
+merged result:</p>
+<pre><code class="language-console">$ systemd-analyze cat-config systemd/journald.conf | grep -v '^#' | grep -v '^$'
+[Journal]
+Audit=
+[Journal]
+Storage=persistent
+</code></pre>
+<h3>Asking precise questions</h3>
+<pre><code class="language-console">$ sudo journalctl -u chatty -b                        # this unit, this boot
+$ sudo journalctl _SYSTEMD_INVOCATION_ID=$(systemctl show -p InvocationID --value chatty)   # this run
+$ sudo journalctl -b -p warning                        # priority 4 and more severe
+$ sudo journalctl -t chatty2                           # by syslog identifier
+$ sudo journalctl -u prio -o json | head -1            # every field of an entry
+$ sudo journalctl -k -b                                # the kernel's messages
+$ sudo journalctl --since '10 min ago' -u shop         # a time window
+</code></pre>
+<p><code>-o json</code> (or <code>-o verbose</code>) is the answer to “why did my filter not match”: it shows the fields an entry
+really has. And <code>InvocationID</code> only exists while the unit is loaded with a current run — for a finished
+oneshot, <code>systemctl show -p InvocationID</code> can come back empty, and the query above matches nothing. Use a
+time window for runs that have ended.</p>
+<p>Reading the system journal needs privilege: an ordinary account sees only its own entries unless it is
+in <code>adm</code>, <code>systemd-journal</code> or <code>wheel</code> (see the linux-02 journal).</p>
+<h2>A failure, walked through</h2>
+<p>A nightly import processed 100,000 records and failed at the end. The on-call engineer greps
+<code>/var/log/messages</code> and finds nothing from the import at all. The journal shows progress lines and then
+simply stops, well before the end. Nobody can see the error.</p>
+<p><strong>1. Count what the journal has, and look for the report of what it does not.</strong></p>
+<pre><code class="language-console">$ sudo journalctl -b -o cat | grep -c '^runA order'
+35000
+$ sudo journalctl -b | grep Suppressed
+systemd-journald[594]: Suppressed 65000 messages from chatty.service
+</code></pre>
+<p>The journal kept the first 35,000 lines and dropped 65,000, and it says so — once, afterwards, in a line
+from <code>systemd-journald</code>, not from the job. The error was among the dropped lines.</p>
+<p><strong>2. Explain the other log.</strong></p>
+<pre><code class="language-console">$ sudo grep -c 'runA order' /var/log/messages
+0
+$ sudo journalctl -b -t rsyslogd | grep rate
+rsyslogd[1167]: imjournal from &lt;lima-nb-hello:chatty&gt;: begin to drop messages due to rate-limiting
+</code></pre>
+<p>rsyslog had its own window already used up by an earlier run, and dropped every line of this one.</p>
+<p><strong>3. Check whether the error could have been found by priority.</strong> The job writes errors to stderr:</p>
+<pre><code class="language-console">$ sudo journalctl -u prio -b -p err -o cat
+tagged error
+</code></pre>
+<p>Only a line with an explicit <code>&lt;3&gt;</code> prefix is an <code>err</code>. Plain stderr is <code>info</code>, so <code>journalctl -p err</code>
+would not have found the job’s failure even if it had been kept.</p>
+<p><strong>4. Fix the service, not the logging system.</strong> A job that prints a line per record is logging data, not
+events. Make the progress summary periodic (every 10,000 records), write the failure with a priority,
+and give the unit a limit that matches what it legitimately produces:</p>
+<pre><code class="language-ini">[Service]
+LogRateLimitIntervalSec=30s
+LogRateLimitBurst=5000
+</code></pre>
+<pre><code class="language-python">print(f&quot;&lt;3&gt;import failed at record {i}: {err}&quot;, flush=True)
+</code></pre>
+<p><strong>5. Verify the limit and the priority.</strong> Run the job at its real volume, count the lines, confirm no
+<code>Suppressed</code> report follows the next run, and query <code>-p err</code>: the failure is now the one thing a priority
+filter finds.</p>
+<p><strong>6. Decide which log is authoritative.</strong> On this machine the journal kept more than
+<code>/var/log/messages</code> and carries the structured fields; make it the source for investigations and for
+forwarding, and treat the rsyslog copy as a convenience with its own limits.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Assuming the log has every line.</strong> journald and rsyslog both drop floods, silently in the moment. Look
+for <code>Suppressed N messages from UNIT</code> and <code>imjournal … drop messages due to rate-limiting</code>.</p>
+<p><strong>Looking for the error at the end of a truncated log.</strong> Rate limiting keeps the <em>first</em> messages of an
+interval, so the end — where failures usually are — is what goes.</p>
+<p><strong>Filtering on <code>-p err</code> to find a service’s failures.</strong> stdout and stderr are both <code>info</code> (6). Only
+explicit priorities — a <code>&lt;3&gt;</code> prefix, syslog with a level — produce <code>err</code>.</p>
+<p><strong>Querying by <code>-t PROGRAM</code> for a service’s output.</strong> The identifier of stdout lines is the executable
+name, and child programs using <code>logger</code> have their own. <code>-u UNIT</code> catches all of it.</p>
+<p><strong>Treating <code>/var/log/messages</code> and the journal as the same log.</strong> They are filled by different code with
+different limits; after a flood they disagreed by tens of thousands of lines.</p>
+<p><strong>Turning rate limiting off globally.</strong> <code>RateLimitBurst=0</code> in <code>journald.conf</code> lets one looping service
+fill the disk and push out every other service’s history. Set a limit per unit instead.</p>
+<p><strong>Expecting the journal to report “disk full”.</strong> It deletes its oldest files to stay under
+<code>SystemMaxUse=</code>. Check <code>--list-boots</code> and <code>--disk-usage</code> to see how far back the evidence really goes.</p>
+<p><strong>Querying by <code>InvocationID</code> after the run has finished.</strong> For a finished oneshot the property may be
+empty and the query matches nothing. Use a time window.</p>
+<p><strong>Reading the journal without privilege.</strong> An ordinary account sees only its own entries, and the
+empty result looks like “nothing was logged”.</p>
+<h2>Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a service’s messages stop mid-burst; journald logs “Suppressed N messages”</td>
+<td>the per-unit rate limit</td>
+<td><code>journalctl -u systemd-journald</code>; <code>RateLimitIntervalSec=</code>, <code>RateLimitBurst=</code></td>
+</tr>
+<tr>
+<td>last boot’s logs are missing</td>
+<td>the journal is volatile (<code>Storage=volatile</code>, or <code>auto</code> with no <code>/var/log/journal</code>)</td>
+<td><code>journalctl --list-boots</code>; <code>ls /var/log/journal</code></td>
+</tr>
+<tr>
+<td><code>/var/log/journal</code> grows until the disk fills</td>
+<td>no size limit, or one larger than the filesystem allows</td>
+<td><code>journalctl --disk-usage</code>; <code>SystemMaxUse=</code></td>
+</tr>
+<tr>
+<td><code>/var/log/messages</code> or <code>/var/log/syslog</code> has lines the journal lacks, or the other way round</td>
+<td>rsyslog and journald have separate limits and filters</td>
+<td>both, side by side, for the same minute</td>
+</tr>
+<tr>
+<td>a unit’s output is absent from the journal</td>
+<td>it logs to a file of its own, or its stdout goes elsewhere (<code>StandardOutput=</code>)</td>
+<td><code>systemctl show -p StandardOutput UNIT</code>; the program’s configuration</td>
+</tr>
+<tr>
+<td>messages from a script have no unit</td>
+<td>it was run by hand or by cron, not as a unit</td>
+<td><code>journalctl -t IDENTIFIER</code>; <code>_SYSTEMD_UNIT=</code> in <code>-o verbose</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># querying
+journalctl -u UNIT -b                      # unit, this boot (includes logger lines from its processes)
+journalctl -t IDENTIFIER                   # by syslog identifier
+journalctl -p err -b                       # priority 3 and worse: 0 emerg 1 alert 2 crit 3 err 4 warning 5 notice 6 info 7 debug
+journalctl --since '10 min ago' --until now
+journalctl _SYSTEMD_INVOCATION_ID=ID       # one run (while the unit still has one)
+journalctl -k -b ; journalctl -b -1        # kernel ; previous boot
+journalctl -u UNIT -o json | head -1       # the real fields — why a filter does not match
+journalctl -o cat                          # messages only
+
+# rate limiting
+journalctl -b | grep Suppressed            # &quot;Suppressed N messages from UNIT&quot; — after the interval
+# journald.conf  RateLimitIntervalSec=30s RateLimitBurst=10000   (burst scaled by free disk space)
+# unit           LogRateLimitIntervalSec= LogRateLimitBurst=     (0 = off for that unit)
+journalctl -t rsyslogd | grep rate         # rsyslog imjournal drops, a separate limit
+
+# priorities from a service
+# stdout and stderr → 6 (info);  echo &quot;&lt;3&gt;message&quot; → 3 (err);  logger -p user.warning → 4
+
+# storage
+journalctl --disk-usage ; journalctl --list-boots
+journalctl -u systemd-journald -b | grep 'System Journal'     # current size, max, free
+journalctl --vacuum-size=500M ; journalctl --vacuum-time=2weeks
+systemd-analyze cat-config systemd/journald.conf               # merged configuration
+</code></pre>
+<h2>Exercises</h2>
+<ol>
+<li>Write a unit that prints 2,000 lines in a second; read the journal for it and for journald itself.
+How many lines were kept, and where does journald say so?</li>
+<li>Compare <code>journalctl --list-boots</code> with <code>Storage=volatile</code> and with <code>Storage=persistent</code> across a
+reboot of a lab machine.</li>
+<li>Set <code>SystemMaxUse=</code> in a drop-in under <code>/etc/systemd/journald.conf.d/</code>, restart journald, and check
+<code>journalctl --disk-usage</code> and <code>journalctl --vacuum-size=</code> together.</li>
+<li>Find every field journald stored for one message with <code>journalctl -o verbose -n1 -u UNIT</code>, then
+select by one of them (<code>_PID=</code>, <code>_COMM=</code>, <code>PRIORITY=</code>).</li>
+<li>Log with <code>logger -t mytest hello</code> and find the line in the journal and in rsyslog’s file. Which
+fields does each keep?</li>
+</ol>
+<h2>Sources</h2>
+<ul>
+<li><code>man 5 journald.conf</code> — storage, size limits, rate limits, forwarding.</li>
+<li><code>man 1 journalctl</code> — selecting by unit, boot, priority, field, time.</li>
+<li><code>man 5 systemd.exec</code> — <code>StandardOutput=</code>, <code>StandardError=</code>, <code>LogRateLimitIntervalSec=</code> per unit.</li>
+<li>systemd’s manual online: https://www.freedesktop.org/software/systemd/man/latest/journald.conf.html</li>
+<li>rsyslog’s documentation: https://www.rsyslog.com/doc/</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A service writes its errors to stderr. Why does <code>journalctl -u SERVICE -p err</code> show none of them, and
+how can the service mark a line as an error?</p>
+<blockquote>
+<p>Standard output and standard error are both logged at priority 6 (<code>info</code>). A line prefixed <code>&lt;3&gt;</code> is
+logged at priority 3 (<code>err</code>) with the prefix removed, as is a syslog message sent with an error
+level.</p>
+</blockquote>
+</li>
+<li>
+<p>A job logs 100,000 lines in a burst and the journal keeps 35,000. Which lines survive, and where is
+the evidence that the others were dropped?</p>
+<blockquote>
+<p>The first ones in the rate-limit interval; later lines — including a final error — are dropped. After
+the interval, when the service logs again, journald writes <em>Suppressed N messages from UNIT</em>.</p>
+</blockquote>
+</li>
+<li>
+<p>The documented default is 10,000 messages per 30 seconds. Why did the lab machine keep 35,000?</p>
+<blockquote>
+<p>The effective burst is multiplied by a factor derived from the journal’s available disk space; on this
+machine the factor was 3.5. A per-unit <code>LogRateLimitBurst=1000</code> was scaled the same way, keeping
+3,500.</p>
+</blockquote>
+</li>
+<li>
+<p>The journal has thousands of lines from a service and <code>/var/log/messages</code> has none from the same run.
+How can both be right?</p>
+<blockquote>
+<p>rsyslog fills <code>/var/log/messages</code> by reading the journal through <code>imjournal</code>, which has its own rate
+limit and window. If that window was used up by an earlier flood, rsyslog drops the whole run and
+logs <em>imjournal … begin to drop messages due to rate-limiting</em>, while the journal applied its own,
+different limit.</p>
+</blockquote>
+</li>
+<li>
+<p>A program run by <code>backup.service</code> calls <code>logger -t backup-tool</code>. Does <code>journalctl -u backup</code> show those
+lines? Does <code>journalctl -t backup</code> show the service’s stdout?</p>
+<blockquote>
+<p><code>-u backup</code> shows them, because entries are attributed to the unit the process runs in. <code>-t backup</code>
+shows only entries whose identifier is <code>backup</code>; stdout lines carry the executable’s name and the
+logger lines carry <code>backup-tool</code>, so it may show neither.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>RateLimitBurst=0</code> in <code>journald.conf</code> a worse fix than <code>LogRateLimitBurst=</code> in one unit?</p>
+<blockquote>
+<p>Globally unlimited, one looping service can fill the journal’s space and cause its oldest files — every
+other service’s history — to be deleted. A per-unit limit raises the ceiling only for the service
+whose volume you trust.</p>
+</blockquote>
+</li>
+<li>
+<p>What happens when the journal reaches <code>SystemMaxUse=</code>, and how do you know how much history you still
+have?</p>
+<blockquote>
+<p>journald deletes the oldest archived journal files to stay under the limit, without any error. Check
+<code>journalctl --list-boots</code>, <code>journalctl --disk-usage</code>, and the <em>System Journal … max … free</em> line
+journald logs at start.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A development install is not an installation</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A development install is not an installation</h1>
+  <div class="meta">python, users-permissions · 35 minutes · 2191 words</div>
+</header>
+<p><code>netprobe</code> works. It works for the colleague who installed it, it works when they run it with
+<code>sudo</code>, and it has worked on their laptop for months. On this machine every other user gets
+<code>command not found</code>, and when they call the program by its full path they get <code>Permission denied</code>,
+and when someone opens up the permissions they get <code>ModuleNotFoundError: No module named 'netprobe'</code>.
+Three different errors, three layers of the same misunderstanding.</p>
+<p>The colleague did what developers are taught to do: create a virtual environment and run
+<code>pip install --editable .</code> from their checkout. That is exactly right for developing a package. It is
+exactly wrong for installing a tool that other people use, because an editable install <strong>does not put
+the code in the environment at all</strong> — it leaves a pointer to the checkout, and the checkout is in
+<code>/root</code>, which nobody else may enter. The venv directory was also created with permissions only root
+could use, and nothing on anyone’s <code>PATH</code> led to it.</p>
+<p>This journal is about what a virtual environment actually is, what the different kinds of install put
+into it, and how to deploy a Python tool for every user of a machine — offline, from wheels, without
+touching the system Python.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Say what a virtual environment contains, and why its <code>bin/</code> programs work without activating it.</li>
+<li>Tell an editable install from a normal one with <code>pip list</code>, <code>pip show</code> and the files in
+<code>site-packages</code>, and say what each depends on at run time.</li>
+<li>Diagnose <code>command not found</code>, <code>Permission denied</code> and <code>ModuleNotFoundError</code> as three separate layers:
+<code>PATH</code>, directory permissions, and the import path.</li>
+<li>Install a local project into a venv without network access, using <code>--no-index --find-links</code>.</li>
+<li>Make an application in <code>/opt</code> usable by every account: modes, a link on the default <code>PATH</code>.</li>
+<li>Explain why <code>pip install</code> into Ubuntu’s system Python is refused, and what to do instead.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>What a virtual environment is</h3>
+<p>A venv is a directory:</p>
+<pre><code>/opt/netprobe/venv/
+├── pyvenv.cfg                    home = /usr/bin, version = 3.13.x
+├── bin/
+│   ├── python -&gt; python3 -&gt; /usr/bin/python3
+│   ├── pip
+│   └── netprobe                  a console script: #!/opt/netprobe/venv/bin/python3
+└── lib/python3.13/site-packages/ the packages this environment can import
+</code></pre>
+<p>When <code>bin/python</code> starts, it finds <code>pyvenv.cfg</code> next to it and uses that directory’s <code>site-packages</code>
+instead of the system’s. That is the whole trick. <strong>Activation is not required</strong>: <code>source bin/activate</code> only puts <code>bin/</code> at the front of <code>PATH</code> so that typing <code>python</code> or <code>netprobe</code> finds the
+venv’s copies. Any program in <code>bin/</code> has the venv’s interpreter in its <code>#!</code> line and works from
+anywhere — from systemd, from cron, through a symlink in <code>/usr/local/bin</code>.</p>
+<p>A consequence worth remembering: the interpreter itself is a symlink to the system Python. A venv
+isolates <em>packages</em>, not the Python binary, and it breaks if the system Python it was built from is
+upgraded to a new minor version.</p>
+<h3>Three kinds of install</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What lands in <code>site-packages</code></th>
+<th>Depends on at run time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pip install .</code> or <code>pip install pkg.whl</code></td>
+<td>the package’s files, copied, plus <code>pkg-X.dist-info</code></td>
+<td>nothing outside the venv</td>
+</tr>
+<tr>
+<td><code>pip install -e .</code> (editable)</td>
+<td>a <code>.pth</code> file or an import hook pointing at the source tree, plus <code>dist-info</code></td>
+<td>the source directory, readable by whoever runs it</td>
+</tr>
+<tr>
+<td><code>pip install --user .</code></td>
+<td>files under <code>~/.local/lib/python3.X/site-packages</code> of the installing user</td>
+<td>that user’s home, and that user’s Python</td>
+</tr>
+</tbody>
+</table>
+<p>An editable install exists so that a developer’s edits take effect without reinstalling. It does that
+by <strong>not copying the code</strong>. Modern setuptools implements it (PEP 660) either with a <code>.pth</code> file — a
+text file in <code>site-packages</code> whose lines are added to <code>sys.path</code> at start-up — or, for some layouts,
+with a small generated import finder. Either way, every import of <code>netprobe</code> goes to the checkout.</p>
+<p><code>pip list</code> shows editable installs with their project location, and <code>pip show</code> prints an
+“Editable project location” line. Those two are the quickest way to spot one.</p>
+<h3>Why the error changes as you fix things</h3>
+<p>Running <code>netprobe</code> as an unprivileged user fails at three layers, in order:</p>
+<ol>
+<li><strong><code>PATH</code>.</strong> <code>netprobe: command not found</code> (exit 127) — no directory on the user’s <code>PATH</code> contains a
+program of that name. Nothing on the system linked <code>/opt/netprobe/venv/bin/netprobe</code> anywhere.</li>
+<li><strong>Directory permissions.</strong> <code>Permission denied</code> (exit 126) — to execute <code>/opt/netprobe/venv/bin/ netprobe</code>, a user needs search (<code>x</code>) permission on every directory on the way. The venv was mode
+0750, owner root, group root: other users cannot pass through it.</li>
+<li><strong>The import path.</strong> With the venv opened up, Python starts, reads the <code>.pth</code> file, adds
+<code>/root/src/netprobe/src</code> to <code>sys.path</code> — and cannot see anything there, because <code>/root</code> is 0700.
+Python does not complain about unreadable path entries; it just does not find the module:
+<code>ModuleNotFoundError</code>.</li>
+</ol>
+<p>Root never hits any of these, which is why the tool “works”. Testing as root proves nothing about other
+users. Test as one.</p>
+<h3>A normal install, offline</h3>
+<p>The project has a <code>pyproject.toml</code> with a build backend (<code>setuptools</code>) and one dependency (<code>pyyaml</code>).
+<code>pip install /path/to/project</code> builds a wheel from it and installs the wheel. Building needs the
+backend, and by default pip builds in an <strong>isolated</strong> environment into which it installs the build
+requirements — which, with no internet, must come from somewhere local:</p>
+<pre><code class="language-console">$ pip install --no-index --find-links /opt/wheels /opt/netprobe/src
+</code></pre>
+<ul>
+<li><code>--no-index</code> forbids PyPI entirely, so a missing wheel is an error instead of a hang on the network.</li>
+<li><code>--find-links DIR</code> lets pip use the wheels in a directory, both for the build requirements
+(<code>setuptools</code>) and for runtime dependencies (<code>pyyaml</code>).</li>
+<li><code>pip download -d DIR pkg…</code> on a machine with network access is how such a directory is made; wheels
+are specific to the Python version and CPU architecture when they contain compiled code (the
+<code>cp313 … aarch64</code> in PyYAML’s file name).</li>
+</ul>
+<p>The source must be somewhere pip — and, for an editable install, every user — can read. Copying it to
+<code>/opt/netprobe/src</code> next to the venv keeps the deployment in one place. After a normal install the
+source could be deleted; keeping it documents exactly what was installed.</p>
+<h3>Making it usable by everyone</h3>
+<p>Two things, both outside Python:</p>
+<pre><code class="language-console">$ sudo chmod -R a+rX /opt/netprobe
+$ sudo ln -sfn /opt/netprobe/venv/bin/netprobe /usr/local/bin/netprobe
+</code></pre>
+<p><code>a+rX</code> gives everyone read access, and search/execute access <strong>only</strong> to directories and files that are
+already executable for someone — the capital <code>X</code>. That opens the venv without making every data file
+executable. <code>/usr/local/bin</code> is on the default <code>PATH</code> of every user and of most service managers, and
+it is the place administrators put locally installed programs. A symlink works because the console
+script finds its interpreter through its <code>#!</code> line, not through the directory it is called from.</p>
+<p>A wrapper script (<code>exec /opt/netprobe/venv/bin/netprobe &quot;$@&quot;</code>) is the alternative when the tool needs
+environment variables set.</p>
+<h3>Why not just <code>sudo pip install</code>?</h3>
+<p>On Ubuntu 23.04 and later (and other distributions following PEP 668), the system Python is marked
+<strong>externally managed</strong>: <code>pip install</code> outside a venv fails with <code>externally-managed-environment</code>,
+because packages installed that way can overwrite files that <code>apt</code> owns and break system tools.
+<code>--break-system-packages</code> overrides it and does what it says. For applications, the choices are a venv
+in <code>/opt</code> as here, <code>pipx</code> (which automates exactly this: one venv per app plus a link in a <code>bin</code>
+directory), or the distribution’s package when one exists.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the track’s lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. Reproduce it as an ordinary user.</strong></p>
+<pre><code class="language-console">$ id -un; netprobe --version; echo &quot;exit=$?&quot;
+northelks
+bash: line 2: netprobe: command not found
+exit=127
+$ /opt/netprobe/venv/bin/netprobe --version; echo &quot;exit=$?&quot;
+bash: line 2: /opt/netprobe/venv/bin/netprobe: Permission denied
+exit=126
+$ ls -ld /opt/netprobe /opt/netprobe/venv
+drwxr-xr-x 3 root root 4096 Sep 14 03:42 /opt/netprobe
+drwxr-x--- 5 root root 4096 Sep 14 03:42 /opt/netprobe/venv
+</code></pre>
+<p>Exit 127 is “not found on <code>PATH</code>”; exit 126 is “found but cannot be executed”. The venv is <code>drwxr-x---</code>:
+nobody but root and group root can pass through it.</p>
+<p><strong>2. Confirm root is the only one it works for.</strong></p>
+<pre><code class="language-console">$ sudo /opt/netprobe/venv/bin/netprobe check --config /etc/netprobe/targets.yaml
+[{&quot;target&quot;: &quot;127.0.0.1:22&quot;, &quot;open&quot;: true}, {&quot;target&quot;: &quot;127.0.0.1:9&quot;, &quot;open&quot;: false}]
+</code></pre>
+<p><strong>3. Ask pip how it was installed.</strong></p>
+<pre><code class="language-console">$ sudo /opt/netprobe/venv/bin/pip list 2&gt;/dev/null
+Package  Version Editable project location
+-------- ------- -------------------------
+netprobe 1.4.0   /root/src/netprobe
+pip      25.1.1
+PyYAML   6.0.3
+$ sudo /opt/netprobe/venv/bin/pip show netprobe
+Name: netprobe
+Version: 1.4.0
+Summary: Which of these host:port targets accept a TCP connection?
+Home-page: 
+Author: 
+Author-email: 
+License: 
+Location: /opt/netprobe/venv/lib/python3.13/site-packages
+Editable project location: /root/src/netprobe
+Requires: pyyaml
+Required-by: 
+$ sudo sh -c 'ls /opt/netprobe/venv/lib/python3*/site-packages/ | grep -i netprobe'
+__editable__.netprobe-1.4.0.pth
+netprobe-1.4.0.dist-info
+$ sudo sh -c 'cat /opt/netprobe/venv/lib/python3*/site-packages/__editable__.netprobe-*.pth'
+/root/src/netprobe/src
+$ ls -ld /root
+drwx------ 6 root root 4096 Sep 14 03:42 /root
+</code></pre>
+<p>There is no <code>netprobe/</code> package directory in <code>site-packages</code> — only metadata and a <code>.pth</code> file whose
+single line is a path into root’s home, which is mode 0700.</p>
+<p><strong>4. Open the venv, and watch the next layer fail.</strong> (A deliberate intermediate step, to prove the
+diagnosis.)</p>
+<pre><code class="language-console">$ sudo chmod 755 /opt/netprobe/venv
+$ /opt/netprobe/venv/bin/netprobe --version; echo &quot;exit=$?&quot;
+Traceback (most recent call last):
+  File &quot;/opt/netprobe/venv/bin/netprobe&quot;, line 5, in &lt;module&gt;
+    from netprobe.cli import main
+ModuleNotFoundError: No module named 'netprobe'
+exit=1
+$ /opt/netprobe/venv/bin/python -c 'import netprobe'; echo &quot;exit=$?&quot;
+Traceback (most recent call last):
+  File &quot;&lt;string&gt;&quot;, line 1, in &lt;module&gt;
+    import netprobe
+ModuleNotFoundError: No module named 'netprobe'
+exit=1
+</code></pre>
+<p>The permission error is gone and the import error appears: Python added <code>/root/src/netprobe/src</code> to
+its path and could not see into it.</p>
+<p><strong>5. Install it properly, offline.</strong> What the wheelhouse holds, a readable copy of the source, then out
+with the editable install and in with a real one:</p>
+<pre><code class="language-console">$ ls /opt/wheels
+packaging-26.3-py3-none-any.whl
+pyyaml-6.0.3-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl
+setuptools-84.0.0-py3-none-any.whl
+wheel-0.48.0-py3-none-any.whl
+$ sudo cp -r /root/src/netprobe /opt/netprobe/src &amp;&amp; ls /opt/netprobe/src
+pyproject.toml
+src
+$ sudo /opt/netprobe/venv/bin/pip uninstall --yes netprobe
+Found existing installation: netprobe 1.4.0
+Uninstalling netprobe-1.4.0:
+  Successfully uninstalled netprobe-1.4.0
+$ sudo /opt/netprobe/venv/bin/pip install --no-index --find-links /opt/wheels /opt/netprobe/src
+Looking in links: /opt/wheels
+Processing /opt/netprobe/src
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: pyyaml&gt;=6 in /opt/netprobe/venv/lib/python3.13/site-packages (from netprobe==1.4.0) (6.0.3)
+Building wheels for collected packages: netprobe
+  Building wheel for netprobe (pyproject.toml): started
+  Building wheel for netprobe (pyproject.toml): finished with status 'done'
+  Created wheel for netprobe: filename=netprobe-1.4.0-py3-none-any.whl size=2215 sha256=6340c344279a6b8717d4c7ef60420a9bd9a31754960177f1cd7fe074ead18f10
+  Stored in directory: /tmp/pip-ephem-wheel-cache-nt0n1v2v/wheels/3a/f7/c5/44d95c4fa039065478af4fa4417fdc44361a9aec25c84f6c07
+Successfully built netprobe
+Installing collected packages: netprobe
+Successfully installed netprobe-1.4.0
+$ sudo /opt/netprobe/venv/bin/pip show -f netprobe | sed -n '1,12p'
+Name: netprobe
+Version: 1.4.0
+Summary: Which of these host:port targets accept a TCP connection?
+Home-page: 
+Author: 
+Author-email: 
+License: 
+Location: /opt/netprobe/venv/lib/python3.13/site-packages
+Requires: pyyaml
+Required-by: 
+Files:
+  ../../../bin/netprobe
+</code></pre>
+<p>“Installing build dependencies” came from <code>/opt/wheels</code> — no network was involved. The “Editable
+project location” line is gone, and <code>pip show -f</code> now lists real files.</p>
+<p><strong>6. Open it to everyone and put it on the <code>PATH</code>.</strong></p>
+<pre><code class="language-console">$ sudo chmod -R a+rX /opt/netprobe &amp;&amp; sudo ln -sfn /opt/netprobe/venv/bin/netprobe /usr/local/bin/netprobe &amp;&amp; ls -l /usr/local/bin/netprobe
+lrwxrwxrwx 1 root root 31 Sep 14 03:42 /usr/local/bin/netprobe -&gt; /opt/netprobe/venv/bin/netprobe
+$ head -1 /opt/netprobe/venv/bin/netprobe
+#!/opt/netprobe/venv/bin/python3
+</code></pre>
+<p>The console script names the venv’s interpreter, so the symlink needs no activation.</p>
+<p><strong>7. Test as the ordinary user — including with the original checkout gone.</strong></p>
+<pre><code class="language-console">$ netprobe --version; netprobe check --config /etc/netprobe/targets.yaml
+netprobe 1.4.0
+[{&quot;target&quot;: &quot;127.0.0.1:22&quot;, &quot;open&quot;: true}, {&quot;target&quot;: &quot;127.0.0.1:9&quot;, &quot;open&quot;: false}]
+$ /opt/netprobe/venv/bin/python -c 'import netprobe; print(netprobe.__file__)'
+/opt/netprobe/venv/lib/python3.13/site-packages/netprobe/__init__.py
+$ sudo mv /root/src/netprobe /root/src/netprobe.away &amp;&amp; netprobe --version; sudo mv /root/src/netprobe.away /root/src/netprobe
+netprobe 1.4.0
+</code></pre>
+<p>The package imports from inside the venv, and moving the developer’s checkout away changes nothing.</p>
+<p><strong>8. Grade.</strong> The checks ran as the unprivileged learner account, the machine rebooted, and they ran
+again: all three passed in both passes.</p>
+<h2>Common wrong turns</h2>
+<p><strong><code>chmod 755 /opt/netprobe/venv</code> and stopping there.</strong> It turns <code>Permission denied</code> into
+<code>ModuleNotFoundError</code>, which looks like a new, unrelated problem. The editable pointer is still there.</p>
+<p><strong><code>chmod 755 /root</code> to make the checkout readable.</strong> It exposes root’s home — SSH keys, shell history,
+credentials in dotfiles — to every account, in order to keep a development install alive in
+production.</p>
+<p><strong><code>sudo pip install --break-system-packages .</code></strong> It installs into the system Python, where the next
+<code>apt upgrade</code> of a Python package can break it or be broken by it, and it bypasses the venv that was
+created for exactly this reason.</p>
+<p><strong><code>pip install --user</code> as each user.</strong> Every account gets its own copy, of whatever version was
+current that day, in its home directory; nothing is shared, and services running as system accounts
+without a home cannot use it.</p>
+<p><strong>Activating the venv in <code>/etc/profile</code>.</strong> Activation only changes <code>PATH</code> for interactive login
+shells. cron, systemd and <code>sudo</code> do not read it. A link in <code>/usr/local/bin</code> works everywhere.</p>
+<p><strong>Reinstalling with <code>pip install -e /opt/netprobe/src</code>.</strong> Better than <code>/root</code>, but still a pointer:
+editing, moving or deleting <code>/opt/netprobe/src</code> changes the installed tool. Use a normal install.</p>
+<p><strong>Running <code>pip install</code> without <code>--no-index</code> on a machine without internet.</strong> pip tries PyPI first and
+waits for timeouts and retries before it falls back or fails. <code>--no-index</code> makes the failure immediate
+and the source of every package explicit.</p>
+<p><strong>Testing with <code>sudo</code>.</strong> Everything works as root. Test as the account that will use the tool.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console">$ python3 -m venv /opt/APP/venv                          # a venv (needs python3-venv on Ubuntu)
+$ /opt/APP/venv/bin/pip install --no-index --find-links /opt/wheels /opt/APP/src
+$ /opt/APP/venv/bin/pip list                             # editable installs show their location
+$ /opt/APP/venv/bin/pip show -f PKG                      # where it is, which files it installed
+$ /opt/APP/venv/bin/pip uninstall --yes PKG
+$ ls /opt/APP/venv/lib/python3*/site-packages/           # __editable__*.pth = editable install
+$ /opt/APP/venv/bin/python -c 'import PKG; print(PKG.__file__)'
+$ head -1 /opt/APP/venv/bin/TOOL                         # the interpreter a console script uses
+$ sudo chmod -R a+rX /opt/APP                            # readable to all; X only where already executable
+$ sudo ln -sfn /opt/APP/venv/bin/TOOL /usr/local/bin/TOOL
+$ pip download -d /opt/wheels PKG…                       # build a wheelhouse where there is network
+$ sudo -u someuser TOOL …                                # test as someone who is not root
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Exit status / error</th>
+<th>Layer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>127, <code>command not found</code></td>
+<td>nothing on <code>PATH</code> has that name</td>
+</tr>
+<tr>
+<td>126, <code>Permission denied</code></td>
+<td>a directory on the way, or the file, is not executable for you</td>
+</tr>
+<tr>
+<td><code>ModuleNotFoundError</code></td>
+<td>the interpreter runs, but the package is not on its import path</td>
+</tr>
+<tr>
+<td><code>externally-managed-environment</code></td>
+<td>pip refused to modify a distribution-managed Python</td>
+</tr>
+</tbody>
+</table>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.python.org/3/library/venv.html</li>
+<li>https://pip.pypa.io/en/stable/topics/local-project-installs/</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Why does a program in a venv’s <code>bin/</code> work without activating the venv?</p>
+<blockquote>
+<p>Its <code>#!</code> line names the venv’s own interpreter, which finds <code>pyvenv.cfg</code> and uses the venv’s <code>site-packages</code>; activation only changes <code>PATH</code> for convenience.</p>
+</blockquote>
+</li>
+<li>
+<p>What does an editable install put into <code>site-packages</code>, and what does it depend on at run time?</p>
+<blockquote>
+<p>Metadata plus a <code>.pth</code> file (or an import hook) that points at the source tree; at run time the source directory must exist and be readable by whoever imports the package.</p>
+</blockquote>
+</li>
+<li>
+<p>Name the three errors an ordinary user met, in order, and the layer each belongs to.</p>
+<blockquote>
+<p><code>command not found</code> (exit 127, <code>PATH</code>), <code>Permission denied</code> (exit 126, directory permissions on the venv), <code>ModuleNotFoundError</code> (import path pointing into unreadable <code>/root</code>).</p>
+</blockquote>
+</li>
+<li>
+<p>What do <code>--no-index</code> and <code>--find-links /opt/wheels</code> each do?</p>
+<blockquote>
+<p><code>--no-index</code> stops pip from contacting PyPI; <code>--find-links</code> lets it install packages — including build requirements such as setuptools — from the wheels in that directory.</p>
+</blockquote>
+</li>
+<li>
+<p>What does the capital <code>X</code> in <code>chmod -R a+rX</code> do differently from <code>a+rx</code>?</p>
+<blockquote>
+<p>It adds execute/search permission only to directories and to files already executable by someone, instead of making every file executable.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is a symlink in <code>/usr/local/bin</code> better than activating the venv in <code>/etc/profile</code>?</p>
+<blockquote>
+<p><code>/usr/local/bin</code> is on the default PATH for every user, cron and most service managers; activation in a profile only affects interactive login shells.</p>
+</blockquote>
+</li>
+<li>
+<p>What does Ubuntu’s <code>externally-managed-environment</code> error protect, and what are the proper alternatives?</p>
+<blockquote>
+<p>It stops pip from overwriting or conflicting with Python packages installed by apt in the system Python (PEP 668). Use a venv, pipx, or the distribution’s package.</p>
+</blockquote>
+</li>
+<li>
+<p>How can you prove an installed tool no longer depends on a developer’s checkout?</p>
+<blockquote>
+<p>Check <code>pip list</code>/<code>pip show</code> for an editable location and <code>PKG.__file__</code> pointing inside the venv, then move the checkout away and run the tool as an ordinary user.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Stream That Stops — a proxy in front of a remote MCP server</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>The Stream That Stops — a proxy in front of a remote MCP server</h1>
+  <div class="meta">mcp, networking · 30 minutes · 1092 words</div>
+</header>
+<p>A remote MCP server speaks Streamable HTTP: every message is a POST, and the answer is either one JSON
+body or, for anything that takes a while, a stream of server-sent events — progress notifications as
+the work goes, then the result. Put a reverse proxy in front of it and the proxy decides how that
+stream travels. nginx’s defaults are made for pages, not streams: it collects the upstream’s answer in
+buffers before passing it on, and it gives up on an upstream that stays silent for longer than its read
+timeout. Either one alone ruins a long tool call. This lab had both, and a server that could be reached
+around the proxy as well.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Describe how a Streamable HTTP server answers a long tool call, and what a client does meanwhile.</li>
+<li>Say what <code>proxy_buffering</code> and <code>proxy_read_timeout</code> do to an event stream, and measure it.</li>
+<li>Tell a proxy that cut a response apart from a server that failed.</li>
+<li>Keep a proxied server reachable through its proxy only, and check it from outside.</li>
+<li>Explain what a client-side tool timeout protects, and why it is no fix for a proxy.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>A long answer is a stream</h3>
+<p>The reports server answers <code>build_report</code> with <code>Content-Type: text/event-stream</code>: one <code>data:</code> line per
+event, a progress notification every three seconds, the result after nine. The first bytes leave at
+once — the status line and the first event — so a client knows the call is alive long before it is done.
+That is the point of streaming, and the thing a proxy can take away.</p>
+<h3>Buffering</h3>
+<p>With <code>proxy_buffering on</code> (nginx’s default), nginx reads the upstream response into memory and sends it
+to the client in large pieces — for a response that is never large, only when it ends. The client sees
+nothing for nine seconds and then everything at once: no progress, and no sign of life to tell a slow
+call from a hung one. <code>proxy_buffering off</code> passes each piece on as it arrives. (An upstream can ask for
+the same per response with an <code>X-Accel-Buffering: no</code> header; this server does not send one.)</p>
+<h3>The read timeout</h3>
+<p><code>proxy_read_timeout</code> is the longest nginx waits <em>between two reads</em> from the upstream, not for the whole
+response. Here it was two seconds and the server writes every three, so nginx closes the connection
+after the first gap — the error log says <code>upstream timed out … while reading upstream</code> — and the client
+gets a response with a status line and no result. The value has to exceed the longest silence a tool
+can have: the gap between progress events, or the whole call when a server sends none.</p>
+<h3>What the client does about it</h3>
+<p>A Streamable HTTP client that loses a stream before its result can wait, or try to resume it. Claude
+Code 2.1.270 waited, and the job hung until something killed it; the job now sets <code>MCP_TOOL_TIMEOUT</code>
+(milliseconds) so a call that has gone quiet fails after twenty seconds. That bounds the damage; it is
+not the fix. The fix is a proxy that passes the stream through.</p>
+<h3>One way in</h3>
+<p>A proxy in front of a server is where access is logged, rate-limited and, eventually, encrypted. A
+server that also listens on every address makes all of that optional: anyone who can reach the machine
+can go around it. The server binds <code>127.0.0.1</code>, and only nginx — on the same machine — can reach it.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the lab’s container (Ubuntu 26.04, nginx from Ubuntu’s archive, Claude Code 2.1.270; the
+site trimmed to its location block, the settings on one line). The proxy’s site and the server’s
+settings:</p>
+<pre><code class="language-console">$ cat /etc/nginx/conf.d/reports.conf; cat /etc/reports-mcp/config.json
+    location /mcp {
+        proxy_pass http://127.0.0.1:8931;
+        proxy_set_header Host $host;
+        proxy_read_timeout 2s;
+        proxy_buffering on;
+    }
+{&quot;bind&quot;: &quot;0.0.0.0&quot;, &quot;port&quot;: 8931, &quot;step_seconds&quot;: 3}
+</code></pre>
+<p>A small client that posts <code>tools/call build_report</code> and prints each line as it arrives, with the time.
+Straight to the server:</p>
+<pre><code class="language-text">  0.0s  HTTP/1.0 200 OK
+  0.0s  data: {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;method&quot;: &quot;notifications/progress&quot;, ...
+  3.0s  data: {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;method&quot;: &quot;notifications/progress&quot;, ...
+  6.0s  data: {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;method&quot;: &quot;notifications/progress&quot;, ...
+  9.0s  data: {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 7, &quot;result&quot;: {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: &quot;Weekly report W42-6c00: 3 i
+  9.0s  (connection closed)
+</code></pre>
+<p>Through nginx on <code>:8080</code>, one setting at a time, nginx restarted from scratch for each:</p>
+<pre><code class="language-text">== proxy_buffering on; proxy_read_timeout 2s
+  2.0s  HTTP/1.1 200 OK
+  2.0s  (connection closed)
+== proxy_buffering on; proxy_read_timeout 300s
+  9.0s  HTTP/1.1 200 OK
+  9.0s  data: … progress   (×3, all at once)
+  9.0s  data: … result
+  9.0s  (connection closed)
+== proxy_buffering off; proxy_read_timeout 2s
+  0.0s  HTTP/1.1 200 OK
+  0.0s  data: … progress
+  2.0s  (connection closed)
+== proxy_buffering off; proxy_read_timeout 300s
+  0.0s  HTTP/1.1 200 OK
+  0.0s  data: … progress
+  3.0s  data: … progress
+  6.0s  data: … progress
+  9.0s  data: … result
+  9.0s  (connection closed)
+</code></pre>
+<p>and nginx’s error log for the first: <code>upstream timed out (110: Connection timed out) while reading upstream</code>. The job, with the broken proxy and then the fixed one:</p>
+<pre><code class="language-text">21s  build_report: MCP server &quot;reports&quot; tool &quot;build_report&quot; timed out after 20s
+10s  build_report: Weekly report W42-6c00: 3 incidents, 2 changes, 0 open.
+</code></pre>
+<p>The way around the proxy, before and after <code>&quot;bind&quot;: &quot;127.0.0.1&quot;</code> and <code>sudo reports-mcp restart</code>:</p>
+<pre><code class="language-console">$ ss -Hltn &quot;sport = :8931&quot;; hostname -I
+LISTEN 0      5      0.0.0.0:8931 0.0.0.0:*
+172.17.0.6
+$ curl -s -o /dev/null -w &quot;%{http_code}\n&quot; -X POST … http://172.17.0.6:8931/mcp
+200
+$ ss -Hltn &quot;sport = :8931&quot;
+LISTEN 0      5      127.0.0.1:8931 0.0.0.0:*
+$ curl -s -o /dev/null -w &quot;%{http_code}\n&quot; -X POST -d &quot;{}&quot; http://172.17.0.6:8931/mcp
+000
+</code></pre>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong>Pointing <code>.mcp.json</code> at <code>:8931</code>.</strong> The report arrives; the proxy, its log and everything it will do
+are bypassed. The grader measures through <code>:8080</code>.</li>
+<li><strong>Raising the timeout and keeping the buffer.</strong> The report arrives after nine seconds, in one lump, with
+no progress — the second measurement above.</li>
+<li><strong>Turning the buffer off and keeping two seconds.</strong> One event, then the cut.</li>
+<li><strong>Raising <code>MCP_TOOL_TIMEOUT</code>.</strong> The client waits longer for a stream the proxy has already closed.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-text">nginx -t &amp;&amp; nginx -s reload                         # here: sudo proxy-restart
+proxy_buffering off;                                # pass the stream on as it arrives
+proxy_read_timeout 300s;                            # longest silence between two reads
+proxy_http_version 1.1; proxy_set_header Connection &quot;&quot;;
+sudo tail /var/log/nginx/error.log                  # &quot;upstream timed out … while reading upstream&quot;
+ss -Hltn &quot;sport = :8931&quot;                            # who listens, on which address
+curl -N -X POST -H 'Accept: application/json, text/event-stream' …    # -N: do not buffer either
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>The Model Context Protocol</em> (topic journal <code>mcp</code>) — Transports</li>
+</ul>
+<p>Manual pages: <code>man 8 ss</code>.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://nginx.org/en/docs/http/ngx_http_proxy_module.html</li>
+<li>https://html.spec.whatwg.org/multipage/server-sent-events.html</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>The Model Context Protocol</em> (<code>mcp</code>), <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>How does a Streamable HTTP server answer a tool call that takes a while?</p>
+<blockquote>
+<p>With a server-sent event stream: progress notifications as it goes, then the JSON-RPC result, all on
+the response to that POST.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>proxy_buffering on</code> do to that stream in nginx?</p>
+<blockquote>
+<p>nginx collects the response and sends it on in large pieces — for a short stream, only at the end — so
+the client gets no progress until the call is over.</p>
+</blockquote>
+</li>
+<li>
+<p><code>proxy_read_timeout</code> is 60 seconds and a tool call takes five minutes. When is that a problem?</p>
+<blockquote>
+<p>Only if the upstream is ever silent for more than 60 seconds; the timeout is between reads, so
+progress events every few seconds keep the connection alive.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is setting a client tool timeout not a fix here?</p>
+<blockquote>
+<p>It makes a lost stream fail sooner instead of hanging, but the proxy still cuts or holds back every
+long call.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must the server listen on loopback when it sits behind a proxy on the same machine?</p>
+<blockquote>
+<p>Otherwise clients can reach it directly and bypass the proxy’s logging, limits and TLS.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

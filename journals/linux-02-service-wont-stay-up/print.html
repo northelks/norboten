@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Four reasons a service will not stay up</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Four reasons a service will not stay up</h1>
+  <div class="meta">boot-systemd, firewall-selinux, networking · 40 minutes · 3421 words</div>
+</header>
+<p>“It sometimes comes up, and a few minutes later it is gone. After a reboot it never comes back, and
+colleagues see an old page saying the service was retired.” That is three different sentences about
+three different faults, reported as one problem — which is what a real ticket looks like. There is a
+fourth fault nobody mentioned, because nobody could see it.</p>
+<p>The four are: a config file the service user may not read, a retired unit still holding the port, an
+AppArmor profile pointing at a directory the data left years ago, and no restart policy at all.
+Each produces a plausible-but-wrong theory, and each is confirmed or killed by one command. The
+skill this lab teaches is not any single fix; it is <strong>getting the machine to tell you which of the
+four you are looking at</strong>, one question at a time, and resisting the urge to fix the security policy
+by removing it.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Read <code>systemctl status</code> and <code>journalctl -u</code> well enough to separate “the program never started”
+from “the program started and quit”.</li>
+<li>Test a service the way the service runs — as its own user, not as root.</li>
+<li>Find out which process owns a port, and why a unit that cannot bind flaps rather than fails.</li>
+<li>Recognise an AppArmor denial in the log, read the profile that caused it, and grant exactly the
+path that is missing.</li>
+<li>Say how AppArmor and SELinux differ in what they attach a rule to, and why that changes how you
+debug them.</li>
+<li>Choose a <code>Restart=</code> policy on purpose, and know what the start-rate limiter will do to you.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Ask the two questions in the right order</h3>
+<p>Every failing service is one of two stories, and the journal tells you which in its first line:</p>
+<p><strong>The program never ran.</strong> systemd could not execute it, or the unit did not load. The exit code is
+in the 200s (<code>203/EXEC</code>, <code>200/CHDIR</code>, <code>226/NAMESPACE</code>) and there is no output from the program
+itself, because there was no program.</p>
+<p><strong>The program ran and quit.</strong> Then the interesting output is the program’s own, and systemd is only
+reporting the corpse: <code>status=1</code>, or a Python traceback, or <code>status=0</code> for something that exited
+cleanly and was not supposed to.</p>
+<pre><code class="language-console">$ systemctl status notes
+× notes.service - notes internal web app
+     Loaded: loaded (/etc/systemd/system/notes.service; disabled; preset: enabled)
+     Active: failed (Result: exit-code) since Sun 2026-09-13 04:20:35 UTC; 986ms ago
+   Duration: 34ms
+    Process: 981 ExecStart=/usr/local/bin/notes-app (code=exited, status=1/FAILURE)
+
+$ sudo journalctl -u notes -b --no-pager | tail -5
+notes-app[981]:     with open(CONF) as f:  # raises PermissionError if the service user cannot read it
+notes-app[981]:          ~~~~^^^^^^
+notes-app[981]: PermissionError: [Errno 13] Permission denied: '/etc/notes/notes.ini'
+systemd[1]: notes.service: Main process exited, code=exited, status=1/FAILURE
+systemd[1]: notes.service: Failed with result 'exit-code'.
+</code></pre>
+<p>Note the <code>sudo</code> on <code>journalctl</code>. An ordinary account sees only its own messages — without it you get
+<em>“No journal files were opened due to insufficient permissions”</em> and nothing else, which is easy to
+misread as “the service logged nothing”. Membership of <code>adm</code> or <code>systemd-journal</code> is the alternative.</p>
+<p><code>status=1</code> with a traceback: the second story. The program started, and it could not read its own
+configuration. Note also <code>disabled</code> on the <code>Loaded:</code> line — a second fault, visible for free, which
+answers “after a reboot it never comes back”.</p>
+<h3>Test as the user, not as root</h3>
+<p>The reason this fault survived several people looking at it is that <code>sudo cat /etc/notes/notes.ini</code>
+works perfectly. Root does not consult the permission bits. The unit says <code>User=notes</code>, so the
+question to ask is what <strong>notes</strong> can read:</p>
+<pre><code class="language-console">$ ls -l /etc/notes/notes.ini
+-rw------- 1 root root 38 Sep 13 04:20 /etc/notes/notes.ini
+
+$ sudo -u notes cat /etc/notes/notes.ini
+cat: /etc/notes/notes.ini: Permission denied
+</code></pre>
+<p><code>0600 root:root</code> — readable by root alone. The conventional shape for a config file that a service
+user must read but nobody else should is <strong><code>root:&lt;service&gt; 0640</code></strong>: owned by root so the service
+cannot modify its own configuration, group-readable so it can read it.</p>
+<pre><code class="language-console">$ sudo chown root:notes /etc/notes/notes.ini
+$ sudo chmod 0640 /etc/notes/notes.ini
+$ sudo -u notes cat /etc/notes/notes.ini
+[notes]
+port = 8080
+</code></pre>
+<p>One detail specific to system users: <code>notes</code> has <code>/usr/sbin/nologin</code> as its shell, so <code>su - notes</code>
+fails — as you it asks for a password nobody has, and even as root it only prints <em>This account is
+currently not available</em> — and either way it tells you nothing about permissions. <code>sudo -u notes &lt;cmd&gt;</code> and <code>runuser -u notes -- &lt;cmd&gt;</code>
+both run a command without needing a login shell, which is why they are the right tools here. If you
+need a shell as such a user, <code>sudo -u notes -s /bin/bash</code> overrides it.</p>
+<h3>Who owns the port</h3>
+<p>The second symptom — colleagues seeing a retired page — is not your service misbehaving. It is
+something else answering. The header is the giveaway, and so is the listener:</p>
+<pre><code class="language-console">$ curl -si localhost:8080/ | head -3
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.13.5
+
+$ sudo ss -lntp | grep :8080
+LISTEN 0      5            0.0.0.0:8080      0.0.0.0:*    users:((&quot;python3&quot;,pid=870,fd=3))
+$ systemctl status 870            # systemd maps a PID back to its unit
+● notes-legacy.service - notes (legacy static page)
+     Loaded: loaded (/etc/systemd/system/notes-legacy.service; enabled; preset: enabled)
+</code></pre>
+<p><code>ss -lntp</code> — listening, numeric, TCP, with the process — is the command to have in your fingers;
+<code>-u</code> for UDP, <code>-x</code> for Unix sockets. <code>sudo lsof -i :8080</code> says the same thing. And <code>systemctl status &lt;pid&gt;</code> is the trick worth remembering: it names the <em>unit</em> a process belongs to, which turns “some
+python is on my port” into “an enabled unit I did not know about is on my port”.</p>
+<p>A retired unit is retired properly with both axes:</p>
+<pre><code class="language-console">$ sudo systemctl disable --now notes-legacy
+</code></pre>
+<p><code>--now</code> stops it, <code>disable</code> removes it from the next boot. Stopping without disabling means the port
+is free until the reboot, at which point your service loses the race — and it is a race, since
+nothing orders the two. If two units genuinely must never run together, say so in the unit:
+<code>Conflicts=notes-legacy.service</code> makes systemd stop one when starting the other.</p>
+<p>What a port conflict looks like from the other side is worth recognising, because it is easy to
+misread:</p>
+<pre><code class="language-console">$ sudo journalctl -u notes -b | tail -2
+notes-app[1455]: OSError: [Errno 98] Address already in use
+</code></pre>
+<p><code>EADDRINUSE</code> (98), not <code>EACCES</code> (13). Errno 13 on a bind would be a policy problem — SELinux port
+labels, or a low port without privileges (see the rhcsa-04 journal); 98 means another process simply
+has it.</p>
+<h3>AppArmor: rules attached to paths</h3>
+<p>Ubuntu’s mandatory access control is AppArmor, and the difference from SELinux is worth stating
+plainly, because it changes how you debug:</p>
+<ul>
+<li><strong>SELinux</strong> labels the <em>inode</em>. A rule is about a type — <code>httpd_sys_content_t</code> — and moving a file
+carries its label along. You debug by asking what label something has.</li>
+<li><strong>AppArmor</strong> matches the <em>path</em>. A rule is a literal or globbed filename inside a profile attached
+to an executable. Moving a file changes which rules apply to it, and nothing about the file itself
+records anything.</li>
+</ul>
+<p>So an AppArmor profile is a readable text file naming the paths one program may touch:</p>
+<pre><code>/usr/local/bin/notes-app {
+  include &lt;abstractions/base&gt;
+  include &lt;abstractions/python&gt;
+
+  network inet stream,
+
+  /usr/local/bin/notes-app r,
+  /usr/bin/python3* ix,
+  /etc/notes/ r,
+  /etc/notes/** r,
+
+  # notes data
+  /var/lib/notes/ r,
+  /var/lib/notes/** r,
+}
+</code></pre>
+<p>The syntax that matters:</p>
+<ul>
+<li><strong><code>r w a k l m ix px ux</code></strong> are the permissions: read, write, append, lock, link, memory-map, and
+the three “execute” flavours — <code>ix</code> inherits the current profile, <code>px</code> transitions to the target’s
+own profile, <code>ux</code> runs unconfined (avoid).</li>
+<li><strong>A trailing <code>/</code></strong> means the directory itself. <code>/srv/notes/ r</code> grants <em>listing the directory</em>;
+<code>/srv/notes/** r</code> grants reading the things inside it. You almost always need both, and forgetting
+the first produces a program that can read a file it cannot find.</li>
+<li><strong><code>*</code> does not cross <code>/</code>; <code>**</code> does.</strong> <code>/srv/notes/*</code> is one level, <code>/srv/notes/**</code> is the whole
+subtree.</li>
+<li><strong><code>include &lt;abstractions/…&gt;</code></strong> pulls in a curated set of rules (the dynamic linker, <code>/etc/nsswitch</code>,
+Python’s library paths). Reaching for an abstraction is nearly always better than guessing at
+twenty individual paths.</li>
+</ul>
+<p>The profile in this lab is enforcing and correct — for a data directory that no longer exists. The
+data is in <code>/srv/notes</code>; the profile still names <code>/var/lib/notes</code>. The program therefore starts,
+listens, answers, and returns a 500 for every request:</p>
+<pre><code class="language-console">$ curl -s localhost:8080/
+notes: cannot read /srv/notes: [Errno 13] Permission denied: '/srv/notes'
+</code></pre>
+<p>Errno 13 again, and this time the file permissions really are fine (<code>notes</code> owns the directory). When
+ownership says yes and the kernel says no, something above the permission bits is refusing — so go
+and read the denial.</p>
+<h3>Reading and fixing a denial</h3>
+<p>AppArmor denials go to the kernel audit log, which on an Ubuntu system means the journal and <code>dmesg</code>:</p>
+<pre><code class="language-console">$ sudo journalctl -k -b | grep -i apparmor | tail -3
+audit: type=1400 audit(…): apparmor=&quot;DENIED&quot; operation=&quot;open&quot; class=&quot;file&quot;
+  profile=&quot;/usr/local/bin/notes-app&quot; name=&quot;/usr/local/bin/&quot; pid=1034 comm=&quot;notes-app&quot;
+  requested_mask=&quot;r&quot; denied_mask=&quot;r&quot; fsuid=995 ouid=0
+audit: type=1400 audit(…): apparmor=&quot;DENIED&quot; operation=&quot;open&quot; class=&quot;file&quot;
+  profile=&quot;/usr/local/bin/notes-app&quot; name=&quot;/srv/notes/&quot; pid=1034 comm=&quot;notes-app&quot;
+  requested_mask=&quot;r&quot; denied_mask=&quot;r&quot; fsuid=995 ouid=995
+</code></pre>
+<p>There are two denials, and only one of them matters — which is typical. The first is the program
+listing its own directory, which it does not need and never notices; the second is the one that
+produces the 500. Match the denial to the symptom (<code>name=&quot;/srv/notes/&quot;</code> is the path in the error
+message) instead of granting everything the log mentions.</p>
+<p>Read it the way you read an SELinux AVC: <code>profile=</code> is who was refused, <code>name=</code> is what, and
+<code>denied_mask=</code> is which permission. Then:</p>
+<pre><code class="language-console">$ sudo aa-status | head -5           # how many profiles, and in which mode
+$ sudo apparmor_status               # the same command under its other name
+</code></pre>
+<p>The fix is to change the path in the profile — the rule is right in shape and wrong in location —
+and reload it. <strong>A profile is not consulted from the file; it is loaded into the kernel</strong>, so editing
+without reloading changes nothing:</p>
+<pre><code class="language-console">$ sudo sed -i 's#/var/lib/notes/#/srv/notes/#' /etc/apparmor.d/usr.local.bin.notes-app
+$ sudo apparmor_parser -r /etc/apparmor.d/usr.local.bin.notes-app     # -r = replace
+$ sudo systemctl restart notes
+</code></pre>
+<p><code>apparmor_parser -r</code> replaces a loaded profile; <code>-a</code> adds, <code>-R</code> removes. <code>systemctl reload apparmor</code>
+reloads everything. And the tooling can write rules for you from the denials, which is the right way
+round when a profile needs many rules:</p>
+<pre><code class="language-console">$ sudo aa-logprof                    # walk the recent denials, propose rules, you approve each
+$ sudo aa-genprof /usr/local/bin/notes-app    # build a profile from scratch by exercising the app
+</code></pre>
+<h3>The two modes, and the fix that is not a fix</h3>
+<pre><code class="language-console">$ sudo aa-complain /usr/local/bin/notes-app    # complain: log, do not block
+$ sudo aa-enforce  /usr/local/bin/notes-app    # enforce: block and log
+$ sudo aa-disable  /usr/local/bin/notes-app    # unload it entirely
+$ sudo cat /sys/kernel/security/apparmor/profiles | grep notes
+/usr/local/bin/notes-app (enforce)
+</code></pre>
+<p><strong>Complain mode is a diagnostic</strong>, exactly like SELinux’s permissive: put the profile in complain,
+exercise the application, collect every denial in one pass with <code>aa-logprof</code>, write the rules, go
+back to enforce. Leaving it in complain — or <code>aa-disable</code>, or <code>systemctl disable apparmor</code> — is
+turning the security control off to make the application work, which this lab grades against with a
+check that already passes on the broken machine. There is nothing artificial about that: an
+application that requires MAC to be off is a finding, and “it worked when we disabled AppArmor” is
+how it gets written down.</p>
+<p>The other tempting shortcut is to widen the rule instead of correcting it — <code>/** r,</code> grants the
+program read access to the entire filesystem, and the profile then documents nothing. The point of a
+profile is that it is a list of what this program legitimately needs; a wildcard at the root is the
+same as no profile with extra steps. And a third, subtler version: moving the <em>data</em> to
+<code>/var/lib/notes</code> so the existing rule matches. It would work — and it answers a question nobody
+asked, leaving the next person to wonder why the notes are not where every other document says they
+are.</p>
+<h3><code>Restart=</code>, and the limiter that stops it</h3>
+<p>A service that dies is a fact of life; whether it comes back is a policy you write down:</p>
+<table>
+<thead>
+<tr>
+<th><code>Restart=</code></th>
+<th>restarts after</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>no</code> (default)</td>
+<td>nothing. It stays dead.</td>
+</tr>
+<tr>
+<td><code>on-failure</code></td>
+<td>non-zero exit, signal, timeout, watchdog — <strong>the usual choice</strong></td>
+</tr>
+<tr>
+<td><code>on-abnormal</code></td>
+<td>signal, timeout, watchdog — but not a non-zero exit</td>
+</tr>
+<tr>
+<td><code>always</code></td>
+<td>any exit at all, clean included</td>
+</tr>
+</tbody>
+</table>
+<p>The app in this lab exits non-zero after a few minutes on purpose (its stand-in for a real leak), so
+<code>on-failure</code> is enough and is the honest description of the intent. <code>always</code> would also work, and
+would additionally restart a service that someone deliberately exited cleanly — which you sometimes
+want for a daemon that must never be absent, and sometimes very much do not.</p>
+<p>The neighbouring knobs:</p>
+<pre><code class="language-ini">[Service]
+Restart=on-failure
+# wait before restarting (default 100ms)
+RestartSec=2s
+
+[Unit]
+# the window…
+StartLimitIntervalSec=10s
+# …and how many starts are allowed in it
+StartLimitBurst=5
+</code></pre>
+<p>Those last two produce the message that looks like a new fault:</p>
+<pre><code>Failed to start notes.service: start request repeated too quickly
+</code></pre>
+<p>A service that fails immediately — because its config is unreadable, or its port is taken — will hit
+the limit within seconds, and then systemd stops trying. Nothing extra is broken; clear the counter
+with <code>systemctl reset-failed notes</code> once the real cause is fixed. And use a drop-in to add the
+policy, rather than editing a unit file in place:</p>
+<pre><code class="language-console">$ sudo mkdir -p /etc/systemd/system/notes.service.d
+$ printf '[Service]\nRestart=on-failure\n' | \
+    sudo tee /etc/systemd/system/notes.service.d/restart.conf
+$ sudo systemctl daemon-reload
+$ systemctl show -p Restart --value notes
+on-failure
+</code></pre>
+<p>(The rhcsa-02 journal covers drop-ins, <code>enable</code> versus <code>start</code>, and <code>systemctl cat</code> in detail; the
+same mechanics apply here.)</p>
+<h2>A failure, walked through</h2>
+<p><code>http://server:8080/</code> shows a page saying the service was retired.</p>
+<p><strong>1. Ask who is answering, before assuming it is your service.</strong></p>
+<pre><code class="language-console">$ curl -si localhost:8080/ | head -3
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.13.5
+$ systemctl is-active notes
+inactive
+</code></pre>
+<p>Your service is not even running, so whatever is on 8080 belongs to something else.</p>
+<p><strong>2. Find the owner, and its unit.</strong></p>
+<pre><code class="language-console">$ sudo ss -lntp | grep :8080
+LISTEN 0      5            0.0.0.0:8080      0.0.0.0:*    users:((&quot;python3&quot;,pid=870,fd=3))
+$ systemctl status 870 --no-pager | head -3
+● notes-legacy.service - notes (legacy static page)
+     Loaded: loaded (/etc/systemd/system/notes-legacy.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-09-13 04:20:27 UTC; 8s ago
+$ sudo systemctl disable --now notes-legacy
+Removed '/etc/systemd/system/multi-user.target.wants/notes-legacy.service'.
+</code></pre>
+<p><code>disable</code> as well as stop, or the reboot hands the port back to it.</p>
+<p><strong>3. Now start the real service and read what it says.</strong></p>
+<pre><code class="language-console">$ sudo systemctl start notes
+$ systemctl is-active notes
+failed
+$ sudo journalctl -u notes -b --no-pager | tail -3
+notes-app[981]: PermissionError: [Errno 13] Permission denied: '/etc/notes/notes.ini'
+systemd[1]: notes.service: Main process exited, code=exited, status=1/FAILURE
+systemd[1]: notes.service: Failed with result 'exit-code'.
+</code></pre>
+<p><code>start</code> itself printed nothing: for a simple service systemd reports success as soon as the process is
+running, and the failure arrives 34 ms later. A traceback, so the program ran and quit — this is not
+systemd failing to execute it. <strong>4. Reproduce
+it as the service user</strong>, which is the step that separates a real answer from a guess:</p>
+<pre><code class="language-console">$ systemctl show -p User --value notes
+notes
+$ ls -l /etc/notes/notes.ini
+-rw------- 1 root root 38 Sep 13 04:20 /etc/notes/notes.ini
+$ sudo -u notes cat /etc/notes/notes.ini
+cat: /etc/notes/notes.ini: Permission denied
+$ sudo chown root:notes /etc/notes/notes.ini &amp;&amp; sudo chmod 0640 /etc/notes/notes.ini
+$ sudo -u notes head -1 /etc/notes/notes.ini
+[notes]
+</code></pre>
+<p><strong>5. Start again. A different failure is progress.</strong></p>
+<pre><code class="language-console">$ sudo systemctl start notes &amp;&amp; systemctl is-active notes
+active
+$ curl -s localhost:8080/
+notes: cannot read /srv/notes: [Errno 13] Permission denied: '/srv/notes'
+</code></pre>
+<p>The service is up and answering; it cannot read its data. Check the ordinary permissions first, so
+you are not blaming the policy for a <code>chmod</code>:</p>
+<pre><code class="language-console">$ sudo ls -ld /srv/notes /srv/notes/welcome.txt
+drwxr-x--- 2 notes notes 4096 Sep 13 04:20 /srv/notes
+-rw-r----- 1 notes notes   50 Sep 13 04:20 /srv/notes/welcome.txt
+</code></pre>
+<p>(<code>sudo</code>, because the directory is <code>750 notes:notes</code> and you are not <code>notes</code> — without it <code>ls</code> cannot
+even see the file inside.)</p>
+<p><code>notes</code> owns both. Ownership says yes, the kernel says no. <strong>6. So read the denial:</strong></p>
+<pre><code class="language-console">$ sudo journalctl -k -b | grep -i apparmor | tail -1
+… apparmor=&quot;DENIED&quot; operation=&quot;open&quot; class=&quot;file&quot; profile=&quot;/usr/local/bin/notes-app&quot;
+  name=&quot;/srv/notes/&quot; pid=1034 comm=&quot;notes-app&quot; requested_mask=&quot;r&quot; denied_mask=&quot;r&quot; fsuid=995 ouid=995
+$ sudo aa-status | head -5
+apparmor module is loaded.
+107 profiles are loaded.
+8 profiles are in enforce mode.
+   /usr/bin/man
+   /usr/local/bin/notes-app
+</code></pre>
+<p>A profile is attached to this program and it is enforcing. <strong>7. Read the profile and find the
+mismatch:</strong></p>
+<pre><code class="language-console">$ sudo grep -n notes /etc/apparmor.d/usr.local.bin.notes-app
+4:/usr/local/bin/notes-app {
+12:  /usr/local/bin/notes-app r,
+16:  /etc/notes/ r,
+17:  /etc/notes/** r,
+19:  # notes data
+20:  /var/lib/notes/ r,
+21:  /var/lib/notes/** r,
+</code></pre>
+<p>The rule is the right shape for the wrong directory — the data moved to <code>/srv/notes</code> and the profile
+did not. Correct the path, keep both lines (the directory and its contents), and reload into the
+kernel:</p>
+<pre><code class="language-console">$ sudo sed -i 's#/var/lib/notes/#/srv/notes/#' /etc/apparmor.d/usr.local.bin.notes-app
+$ sudo apparmor_parser -r /etc/apparmor.d/usr.local.bin.notes-app
+$ sudo systemctl restart notes
+$ curl -s localhost:8080/
+notes:
+On call this week: apatel.
+Welcome to notes. If you can read this, it works.
+$ sudo cat /sys/kernel/security/apparmor/profiles | grep notes-app
+/usr/local/bin/notes-app (enforce)
+</code></pre>
+<p>Enforcing, and working. <strong>8. Deal with the part of the report nobody has addressed yet</strong> — “a few
+minutes later it is gone”. Wait for it, and watch:</p>
+<pre><code class="language-console">$ sudo journalctl -u notes -f
+notes-app[1600]: fatal: connection pool exhausted
+systemd[1]: notes.service: Main process exited, code=exited, status=1/FAILURE
+systemd[1]: notes.service: Failed with result 'exit-code'.
+</code></pre>
+<p>The app dies by design and nothing brings it back:</p>
+<pre><code class="language-console">$ systemctl show -p Restart --value notes
+no
+$ sudo mkdir -p /etc/systemd/system/notes.service.d
+$ printf '[Service]\nRestart=on-failure\nRestartSec=2s\n' | \
+    sudo tee /etc/systemd/system/notes.service.d/restart.conf
+$ sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart notes
+</code></pre>
+<p>Prove the policy rather than trusting it — kill the process and watch systemd put it back:</p>
+<pre><code class="language-console">$ pid=$(systemctl show -p MainPID --value notes)
+$ sudo kill -9 $pid ; sleep 4 ; systemctl is-active notes
+active
+$ sudo journalctl -u notes -n 3 --no-pager
+systemd[1]: notes.service: Scheduled restart job, restart counter is at 1.
+systemd[1]: Started notes.service - notes internal web app.
+notes-app[1142]: notes listening on :8080, data in /srv/notes
+</code></pre>
+<p><strong>9. Make the boot do all of it</strong>, and then test the boot:</p>
+<pre><code class="language-console">$ sudo systemctl enable notes
+$ sudo reboot
+$ systemctl is-active notes ; systemctl is-enabled notes
+$ curl -s localhost:8080/ | head -2
+$ sudo cat /sys/kernel/security/apparmor/profiles | grep notes-app
+$ sudo ss -lntp | grep :8080          # notes-app, not a legacy python
+</code></pre>
+<h2>Common wrong turns</h2>
+<p><strong><code>aa-complain</code>, <code>aa-disable</code>, or stopping AppArmor.</strong> All three make the 500 disappear, and all
+three are the finding rather than the fix — the lab has a check that passes on the broken machine
+purely to fail this. Complain mode is for <em>collecting</em> denials (<code>aa-logprof</code> turns them into rules);
+enforce is where you leave it.</p>
+<p><strong>Widening the profile to <code>/** r,</code>.</strong> The service works and the profile now documents nothing. A
+profile’s value is that it enumerates what the program legitimately needs; a wildcard at the root is
+an unconfined program with a configuration file.</p>
+<p><strong>Moving the data to <code>/var/lib/notes</code> so the existing rule matches.</strong> It works, and it silently
+relocates the service’s data to satisfy a stale rule. Fix the rule; that is why profiles are text.</p>
+<p><strong>Granting <code>/srv/notes/** r</code> and not <code>/srv/notes/ r</code>.</strong> AppArmor treats the directory itself and its
+contents as separate objects: without the trailing-slash rule the program cannot list the directory,
+so it never gets as far as the files it is allowed to read. The denial names <code>/srv/notes/</code> with the
+slash — read it literally.</p>
+<p><strong>Editing the profile and not reloading it.</strong> Profiles live in the kernel. Without <code>apparmor_parser -r</code>, you are looking at a corrected file and running the old rules — and concluding, wrongly, that
+the path was not the problem.</p>
+<p><strong>Testing file access as root.</strong> <code>sudo cat /etc/notes/notes.ini</code> succeeds on a file readable by root
+alone, which is how this fault survived several people looking at it. <code>sudo -u notes …</code> or
+<code>runuser -u notes -- …</code> asks the real question. (<code>su - notes</code> will not work at all: a system user
+with <code>nologin</code> has no shell, and the failure tells you nothing about permissions.)</p>
+<p><strong><code>chmod 644</code> on the config.</strong> It fixes the service and publishes whatever else that file ever comes
+to hold. <code>root:&lt;service&gt;</code> with <code>0640</code> gives the service read access and nobody else any — and keeps
+the service unable to rewrite its own configuration.</p>
+<p><strong>Stopping the legacy unit without disabling it.</strong> The port is free now and taken again after the
+reboot, and the loser of that race is whichever unit systemd starts second. <code>disable --now</code>, or
+<code>Conflicts=</code> if the two must genuinely never coexist.</p>
+<p><strong>Reading <code>EACCES</code> and <code>EADDRINUSE</code> as the same problem.</strong> Errno 13 on a bind is a policy question
+(SELinux port label, a privileged port); errno 98 is another process. <code>ss -lntp</code> distinguishes them
+in one line.</p>
+<p><strong><code>Restart=always</code> without thinking, or no restart policy at all.</strong> The default is <code>no</code>: a service
+that dies stays dead, which is exactly the reported symptom. <code>on-failure</code> matches the intent here;
+<code>always</code> also restarts after a clean, deliberate exit, which is occasionally what you want and
+should be a decision.</p>
+<p><strong>Fighting <code>start request repeated too quickly</code>.</strong> With a restart policy and a service that fails
+instantly, the rate limiter engages within seconds and systemd stops trying. It is a symptom of the
+real fault, not a new one: fix the cause, then <code>systemctl reset-failed notes</code>.</p>
+<p><strong>Believing the restart policy without testing it.</strong> <code>systemctl show -p Restart</code> proves the setting;
+<code>kill -9</code> on the main PID and a status check four seconds later proves the behaviour.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console"># which story is it?
+systemctl status UNIT              # Loaded: (enabled?), Active:, the exit code, Drop-In:
+sudo journalctl -u UNIT -b --no-pager   # this unit, this boot (without sudo/adm: nothing)
+sudo journalctl -u UNIT -f              # follow it and wait for the next death
+systemctl show -p User -p Restart -p MainPID --value UNIT
+# 2xx exit codes = systemd could not run it; status=1 + program output = it ran and quit
+
+# as the service user
+sudo -u notes cat /etc/notes/notes.ini      # a system user with nologin still works here
+runuser -u notes -- cat /etc/notes/notes.ini
+sudo -u notes -s /bin/bash                  # …if you really need a shell
+# config a service must read:  chown root:SERVICE + chmod 0640
+
+# who owns the port
+ss -lntp | grep :8080              # listening/numeric/tcp/process   (-u UDP, -x unix)
+lsof -i :8080
+systemctl status PID               # which UNIT a process belongs to
+systemctl disable --now other-unit # free it now and at the next boot
+# Conflicts=other.service          # …if the two must never run together
+
+# AppArmor
+aa-status                          # profiles loaded, and their modes
+sudo cat /sys/kernel/security/apparmor/profiles | grep prog     # (enforce) / (complain)
+sudo journalctl -k -b | grep -i apparmor   # the denials: profile=, name=, denied_mask=
+dmesg | grep -i apparmor
+apparmor_parser -r /etc/apparmor.d/PROFILE   # RELOAD after editing (-a add, -R remove)
+aa-complain PROG ; aa-logprof ; aa-enforce PROG   # collect denials → rules → back to enforce
+aa-genprof PROG                    # build a profile by exercising the program
+# rules:  /srv/notes/ r,           ← the directory itself (trailing slash!)
+#         /srv/notes/** r,         ← its contents (* stops at /, ** does not)
+#         r w a k l m  ix px ux    ← read write append lock link mmap / exec flavours
+#         include &lt;abstractions/python&gt;   ← prefer an abstraction to twenty guesses
+
+# restart policy
+# [Service] Restart=on-failure|always|on-abnormal|no ; RestartSec=2s
+# [Unit]    StartLimitIntervalSec=10s ; StartLimitBurst=5
+systemctl reset-failed UNIT         # after &quot;start request repeated too quickly&quot;
+kill -9 $(systemctl show -p MainPID --value UNIT) ; sleep 4 ; systemctl is-active UNIT
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>The log lines that were never written down</em> (topic journal <code>logging-journald</code>) — Asking precise questions</li>
+<li><em>Resolves here, listens there, routes until Tuesday</em> (topic journal <code>networking</code>) — Listening on loopback, or on everything</li>
+</ul>
+<p>Manual pages: <code>man 1 journalctl</code>, <code>man 5 systemd.service</code>, <code>man 8 ss</code>, <code>man 7 apparmor</code>, <code>man 8 aa-status</code>.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://ubuntu.com/server/docs/how-to/security/apparmor/</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p><code>systemctl status</code> shows <code>status=203/EXEC</code> for one service and <code>status=1/FAILURE</code> with a Python
+traceback for another. What does each tell you about where to look next?</p>
+<blockquote>
+<p>203/EXEC means systemd never ran the program — a missing path, a missing execute bit, a bad
+interpreter line — so the unit file is the place to look. <code>status=1</code> with program output means
+the program ran and chose to exit, so the program’s own message in <code>journalctl -u</code> is the
+diagnosis.</p>
+</blockquote>
+</li>
+<li>
+<p>A config file is <code>-rw------- root root</code> and the service fails with <code>PermissionError</code>. Why does
+<code>sudo cat</code> on that file mislead you, and what is the conventional fix?</p>
+<blockquote>
+<p>Root ignores the permission bits, so the test succeeds as root and fails as the service. Test
+with <code>sudo -u &lt;service&gt; …</code>. The conventional ownership for a config a service reads is
+<code>root:&lt;service&gt;</code> mode <code>0640</code> — readable by the service, writable by neither it nor anyone else.</p>
+</blockquote>
+</li>
+<li>
+<p>Something answers on your service’s port with an unfamiliar page. Which two commands identify it,
+and why is <code>systemctl stop</code> on the culprit not enough?</p>
+<blockquote>
+<p><code>ss -lntp</code> (or <code>lsof -i :8080</code>) names the process and PID; <code>systemctl status &lt;pid&gt;</code> maps that
+PID back to its unit. <code>stop</code> frees the port only until the reboot — the unit is still enabled,
+so after a reboot the two units race. Use <code>disable --now</code>, or declare <code>Conflicts=</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>How do AppArmor and SELinux differ in what a rule attaches to, and what practical difference does
+that make when data moves?</p>
+<blockquote>
+<p>AppArmor matches paths inside a profile attached to an executable; SELinux matches labels stored
+on inodes. So moving a file changes which AppArmor rules apply to it and carries its SELinux
+label with it. Debugging AppArmor means reading the profile’s paths; debugging SELinux means
+asking what label something has.</p>
+</blockquote>
+</li>
+<li>
+<p>A profile grants <code>/srv/notes/** r</code> and the program still cannot read the notes. What is missing?</p>
+<blockquote>
+<p><code>/srv/notes/ r</code> — the directory itself. AppArmor treats the directory and its contents as
+separate objects, so without the trailing-slash rule the program cannot list the directory and
+never reaches the files it is allowed to read. The denial names <code>/srv/notes/</code> exactly.</p>
+</blockquote>
+</li>
+<li>
+<p>You correct a path in <code>/etc/apparmor.d/…</code> and nothing changes. Why, and what did you skip?</p>
+<blockquote>
+<p>Profiles are loaded into the kernel; the file on disk is only the source. Reload it with
+<code>apparmor_parser -r /etc/apparmor.d/&lt;profile&gt;</code> (or <code>systemctl reload apparmor</code>), then restart
+the service.</p>
+</blockquote>
+</li>
+<li>
+<p>Complain mode makes the problem go away. Why is that not the fix, and what is complain mode
+actually for?</p>
+<blockquote>
+<p>It stops enforcing while still logging: the application works because the control was removed,
+which is an audit finding rather than a repair. Its purpose is to collect every denial in one
+pass — put the profile in complain, exercise the app, run <code>aa-logprof</code> to turn the denials into
+rules, then <code>aa-enforce</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>The default <code>Restart=</code> is <code>no</code>. Given a service that dies with a non-zero status every few
+minutes, which policy do you choose, and what will the start-rate limiter do while the underlying
+fault is still present?</p>
+<blockquote>
+<p><code>Restart=on-failure</code> — it covers non-zero exits, signals and timeouts without restarting a
+deliberate clean exit. While the real fault persists the service fails immediately, hits
+<code>StartLimitBurst</code> within its interval, and systemd refuses further attempts with <em>start request
+repeated too quickly</em>. Fix the cause, then <code>systemctl reset-failed</code>.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

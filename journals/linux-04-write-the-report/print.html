@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Counting things, and the specification is the test</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Counting things, and the specification is the test</h1>
+  <div class="meta">bash, linux-basics · 45 minutes · 3471 words</div>
+</header>
+<p>This lab does not break a machine. It hands you a specification — eleven lines of it — and grades
+your script against logs you have not seen. That is a different skill from repair, and it is the one
+most of the small tools on a server are made of: read text, count something, sort it, print it, and
+behave correctly when the input or the arguments are wrong.</p>
+<p>The counting part is a four-command pipeline that has been the same since the 1970s. The interesting
+parts are the details the specification is quietly testing: what “order by address as plain text”
+means when a locale is involved, which single space, what exit status, which stream the error goes
+to. Almost every way to get this wrong produces a script that looks right on the sample log in
+<code>/srv/logs/access.log</code> and fails on the fourth edge case.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Build a frequency count from a stream of text with <code>sort | uniq -c</code>, and explain why the first
+<code>sort</code> is mandatory.</li>
+<li>Order by one field numerically and break ties on another as bytes, with <code>sort</code>’s key syntax.</li>
+<li>Say what <code>LC_ALL=C</code> changes and why a byte-order requirement needs it.</li>
+<li>Parse options with <code>getopts</code>, validate them, and know what <code>shift $((OPTIND - 1))</code> is for.</li>
+<li>Pick exit statuses by convention — 0, 1 for a runtime failure, 2 for misuse — and put messages on
+stderr.</li>
+<li>Recognise the two ways <code>set -e</code>/<code>pipefail</code> sabotage a correct pipeline that ends in <code>head</code>, or
+greps a file with no matches.</li>
+<li>Read a specification as a list of test cases, and run all of them before believing the script.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Counting: <code>sort | uniq -c</code></h3>
+<p><code>uniq</code> collapses <strong>adjacent</strong> identical lines. It does not know anything about the rest of the file,
+which is why the input must be sorted first — and why <code>sort | uniq -c</code> is one idiom rather than two
+commands:</p>
+<pre><code class="language-console">$ awk '{print $1}' access.log | sort | uniq -c
+     16 198.51.100.2
+     79 203.0.113.10
+    136 203.0.113.4
+</code></pre>
+<p><code>uniq -c</code> prefixes each group with its count, <strong>right-aligned in a field of width 7</strong>. That padding
+is a formatting decision from 1973 and it will fail this lab’s “a single space between them”
+requirement, so it has to be normalised. Any of these does it:</p>
+<pre><code class="language-console">… | uniq -c | awk '{print $1, $2}'      # rebuild the line from its fields  ← clearest
+… | uniq -c | sed 's/^ *//'             # strip the leading padding only
+… | uniq -c | tr -s ' ' | sed 's/^ //'  # squeeze runs of spaces, then the leading one
+</code></pre>
+<p><code>awk '{print $1, $2}'</code> is the one to reach for, because awk splits on runs of whitespace and rebuilds
+the line with a single <code>OFS</code>, which is exactly the transformation asked for.</p>
+<p>For the extraction step, <code>awk '{print $1}'</code> beats <code>cut -d' ' -f1</code> in general: <code>cut</code> treats each
+delimiter as significant, so two consecutive spaces give you an empty field, while awk’s default
+splitting handles any run of spaces or tabs. Both work on a well-formed access log; only one keeps
+working on a scruffy one.</p>
+<p>There is also a one-command version, which is what you would write for a large file since it makes a
+single pass and needs no intermediate sort:</p>
+<pre><code class="language-console">$ awk '!/^#/ &amp;&amp; NF { c[$1]++ } END { for (ip in c) print c[ip], ip }' access.log
+</code></pre>
+<p>An awk associative array <em>is</em> a frequency table. The filter <code>!/^#/ &amp;&amp; NF</code> is the whole
+“ignore comments and blank lines” requirement: skip lines starting with <code>#</code>, and skip lines with no
+fields. Either route is legitimate here; the pipeline is easier to build incrementally at a prompt,
+and that matters more than the performance on a file this size.</p>
+<h3>Ordering: <code>sort</code> keys, and why one <code>-r</code> is wrong</h3>
+<p>The specification wants two different orderings at once: count descending, and — for equal counts —
+address ascending as bytes. <code>sort -rn</code> cannot express that, because a single <code>-r</code> reverses
+<em>everything</em>, putting <code>10.0.0.9</code> before <code>10.0.0.10</code> when the counts tie. Keys are how you say it:</p>
+<pre><code class="language-console">$ … | LC_ALL=C sort -k1,1nr -k2,2
+7 172.16.0.1
+4 10.0.0.10
+4 10.0.0.2
+4 10.0.0.9
+1 192.168.1.1
+</code></pre>
+<p>Read <code>-k1,1nr</code> as: <strong>start at field 1, end at field 1</strong> (that is what <code>1,1</code> means — without the
+second number the key runs to the end of the line), <strong>n</strong>umeric, <strong>r</strong>eversed. Then <code>-k2,2</code> is a
+second key: field 2, default ordering, ascending. Per-key modifiers are the point — <code>-n</code> after <code>-k</code>
+applies to that key only, whereas a global <code>-rn</code> applies to all of them.</p>
+<p>That is also the answer to a question people ask about ties: <code>sort</code> is not stable by default (<code>-s</code>
+makes it so, and the final comparison of whole lines is what breaks ties otherwise), so <em>specify</em> the
+tie-break rather than hoping input order survives.</p>
+<h3><code>LC_ALL=C</code>, and what “plain text” means</h3>
+<p>The specification says byte order, and gives the example <code>10.0.0.10</code> before <code>10.0.0.9</code>. That is what
+you get comparing bytes: <code>1</code> (0x31) is less than <code>9</code> (0x39) at the fourth position of
+<code>10.0.0.1…</code>. But <code>sort</code> obeys the locale, and locale collation has other ideas: glibc’s <code>en_US.UTF-8</code>
+ignores punctuation on its first pass and folds case, so it compares <code>10.2.0.1</code> as though it were
+<code>10201</code> and <code>101.0.0.1</code> as <code>101001</code> — and puts them in the opposite order from bytes. Measured on
+Ubuntu 26.04, whose <code>sort</code> is uutils 0.8.0, with the locale generated (GNU <code>sort</code> agrees):</p>
+<pre><code class="language-console">$ printf '10.2.0.1\n101.0.0.1\n' | LC_ALL=C sort             # 10.2.0.1 then 101.0.0.1  ('.' &lt; '1')
+$ printf '10.2.0.1\n101.0.0.1\n' | LC_ALL=en_US.UTF-8 sort   # 101.0.0.1 then 10.2.0.1  (dots ignored)
+$ printf 'a\nB\n' | LC_ALL=C sort                            # B then a  (uppercase bytes are smaller)
+$ printf 'a\nB\n' | LC_ALL=en_US.UTF-8 sort                  # a then B
+</code></pre>
+<p>Note that the specification’s own example, <code>10.0.0.10</code> before <code>10.0.0.9</code>, comes out the same in both —
+which is exactly why a locale bug survives testing against the example. The lab machine itself runs
+with <code>LANG=C.UTF-8</code>, which also compares code points, so you will not see the difference there at all;
+the script that forgot <code>LC_ALL=C</code> fails on the next machine, with the next log.</p>
+<p>So <code>LC_ALL=C</code> in front of <code>sort</code> is not superstition; it is the difference between a script that
+produces the specified output and one that produces whatever the machine’s locale feels like. The
+same applies to <code>grep</code>’s character ranges and to <code>awk</code>’s comparisons. Whenever a program’s output is
+being <em>compared</em> rather than read by a human, pin the locale.</p>
+<p>(<code>LC_ALL=C sort</code> sets it for that one command only, which is what you want — it does not affect the
+rest of the script, and it does not depend on the caller’s environment.)</p>
+<h3>Filtering out comments and blanks</h3>
+<pre><code class="language-console">$ grep -v -e '^#' -e '^[[:space:]]*$' -- &quot;$file&quot;
+</code></pre>
+<p>Three details in one short command. <code>-e</code> twice supplies two patterns to one <code>grep</code> (so does <code>grep -E '^#|^[[:space:]]*$'</code>). <code>^#</code> anchors at the start, which matters — plain <code>grep -v '#'</code> would drop
+any line <em>containing</em> a hash, and an access log is full of URLs with fragments. <code>^[[:space:]]*$</code>
+catches a line that is empty <em>or</em> only whitespace, which is what “empty line” means in practice.</p>
+<p>And <code>--</code> ends the option list, so a file named <code>-n</code> is treated as a filename rather than a flag. It
+costs two characters and it is the difference between a robust script and a surprise.</p>
+<h3>Options: <code>getopts</code></h3>
+<pre><code class="language-bash">n=5
+while getopts &quot;:n:&quot; opt; do
+    case $opt in
+        n) n=$OPTARG ;;
+        :) echo &quot;top-talkers: invalid count&quot; &gt;&amp;2; exit 2 ;;   # -n with no argument
+        *) echo &quot;top-talkers: unknown option -$OPTARG&quot; &gt;&amp;2; exit 2 ;;
+    esac
+done
+shift $((OPTIND - 1))
+</code></pre>
+<p>The optstring is a small language: a letter means a flag, <code>letter:</code> means it takes an argument, and a
+<strong>leading <code>:</code></strong> switches off getopts’ own error messages so you can print your own — which you want,
+because the specification dictates the wording. With the leading colon, a missing argument arrives as
+<code>opt=&quot;:&quot;</code> and an unknown option as <code>opt=&quot;?&quot;</code>, with the offending letter in <code>$OPTARG</code> either way.</p>
+<p><code>$OPTIND</code> is the index of the next unparsed argument, so <code>shift $((OPTIND - 1))</code> discards everything
+getopts consumed and leaves <code>&quot;$1&quot;</code> as the first real operand. Forgetting that line is the classic
+<code>getopts</code> bug: the script then treats <code>-n</code> as its filename.</p>
+<p>One behaviour to know rather than fight: <code>getopts</code> stops at the first non-option argument, so
+<code>top-talkers file -n 3</code> leaves <code>-n 3</code> as operands. That is POSIX behaviour (GNU tools permute
+arguments; the shell does not), and the specification’s <code>top-talkers [-n N] FILE</code> puts options first
+precisely because that is the portable order.</p>
+<h3>Validating, and the three exit statuses</h3>
+<p>Accepting <code>-n</code> is not the same as accepting a count. The specification says a positive whole number,
+and lists the rejections: <code>0</code>, <code>-3</code>, <code>abc</code>, <code>2.5</code>, and the empty string.</p>
+<pre><code class="language-bash">[[ $n =~ ^[1-9][0-9]*$ ]] || { echo &quot;top-talkers: invalid count&quot; &gt;&amp;2; exit 2; }
+</code></pre>
+<p><code>[[ … =~ … ]]</code> is bash’s regex match; the pattern is unquoted (quoting it would make it a literal
+string), <code>^[1-9]</code> excludes <code>0</code> and anything starting with a sign, <code>[0-9]*$</code> allows more digits and
+nothing else — so no decimal point, no letters, and the empty string fails because <code>[1-9]</code> must match
+once.</p>
+<p>Then the file, checked before use rather than by letting a later command fail:</p>
+<pre><code class="language-bash">file=${1:-}
+[[ -n $file &amp;&amp; -f $file &amp;&amp; -r $file ]] || { echo &quot;top-talkers: cannot read $file&quot; &gt;&amp;2; exit 1; }
+</code></pre>
+<p><code>-f</code> is “exists and is a regular file”, <code>-r</code> is “readable by me”. Both, because a directory is
+readable and is not a log, and because a file you cannot read exists.</p>
+<p>The statuses follow a convention that is worth using deliberately:</p>
+<table>
+<thead>
+<tr>
+<th>status</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>success — including a correct run that printed nothing</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>the job could not be done: a missing file, a failed write</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td><strong>misuse</strong>: bad options or arguments. What bash’s own builtins use</td>
+</tr>
+<tr>
+<td><code>126</code> / <code>127</code></td>
+<td>found but not executable / not found — the shell’s, not yours</td>
+</tr>
+<tr>
+<td><code>128+N</code></td>
+<td>killed by signal N (<code>130</code> = SIGINT, <code>141</code> = SIGPIPE)</td>
+</tr>
+</tbody>
+</table>
+<p>And the stream matters as much as the number. Errors go to stderr (<code>&gt;&amp;2</code>) so that
+<code>top-talkers big.log &gt; report.txt</code> puts the report in the file and the complaint on the terminal. A
+script that prints its errors to stdout corrupts its own output, which is why this lab checks that
+stdout is <em>empty</em> on the failure paths.</p>
+<h3>The two traps with <code>set -e</code> and <code>pipefail</code></h3>
+<p>The careful defaults from the previous journal — <code>set -euo pipefail</code> — can break <em>this</em> script in two
+ways. Both are worth understanding, because they are the most common reason a correct pipeline exits
+non-zero, and the first one is intermittent.</p>
+<p><strong><code>head</code> closes the pipe.</strong> <code>head -n 5</code> exits as soon as it has five lines, and if the writer upstream
+is still writing, its next write gets <code>SIGPIPE</code>. That is normal, cooperative behaviour — it is how
+<code>head</code> stops a long job early — but the upstream command’s status becomes <code>141</code>, and <code>pipefail</code>
+propagates it. With <code>-e</code> as well, the script exits 141 having printed exactly the right output.</p>
+<p>Whether it happens depends on how much the writer has left to write. On the sample log <code>sort</code> emits
+seven short lines, they fit in the pipe’s buffer (64 KiB on Linux), <code>sort</code> has finished before <code>head</code>
+exits, and nothing goes wrong. On a log with 200,000 distinct addresses it does — measured on the lab
+machine, the <code>set -e</code> version of the script printed <code>1 10.0.0.0</code> and exited 141. A bug that passes
+every test on small input and fails on the production log is the worst kind, which is why it is worth
+designing out rather than waiting for.</p>
+<p><strong><code>grep</code> reports “no matches” as failure.</strong> <code>grep -v</code> on a file containing only comments prints
+nothing and exits <code>1</code>, by design: grep’s status answers “did you match anything?”. The specification
+says an empty log must print nothing and <strong>exit 0</strong>, so a pipeline starting with <code>grep</code> plus
+<code>pipefail</code> gives you exit 1 on a case the spec calls success.</p>
+<p>Three ways out, and the choice is a real one:</p>
+<pre><code class="language-bash">set -uo pipefail        # keep -u, drop -e, and end the script with an explicit `exit 0`
+pipeline || true        # explicitly ignore the pipeline's status
+set +o pipefail         # inside the section with head, then back on
+</code></pre>
+<p>The first is what this script wants: <code>-u</code> still catches typos, the checks above are explicit <code>|| exit</code> lines rather than relying on <code>-e</code>, and a final <code>exit 0</code> states that a report with no rows is a
+success. The general lesson: <code>set -e</code> is a good default for a script whose commands should all
+succeed, and a bad one for a pipeline whose components signal information through their exit status.</p>
+<h2>A failure, walked through</h2>
+<p>There is no failure to diagnose here — there is a specification to satisfy. So the walkthrough is the
+method: <strong>build the pipeline at the prompt, one stage at a time, looking at the output after each
+addition.</strong> Never write ten lines and then debug them.</p>
+<p><strong>1. Look at the data before writing anything.</strong></p>
+<pre><code class="language-console">$ head -3 /srv/logs/access.log
+# access log, rotated daily
+203.0.113.4 - - [11/Sep/2026:10:00:00 +0000] &quot;GET /api/items/0 HTTP/1.1&quot; 200 2671
+
+$ grep -c '' /srv/logs/access.log ; grep -c '^#' /srv/logs/access.log
+406
+1
+$ grep -c '^[[:space:]]*$' /srv/logs/access.log
+5
+</code></pre>
+<p>A comment line and five blanks — the third line of the file is already one of them — both mentioned
+in the specification, and now confirmed present in the sample.</p>
+<p><strong>2. Extract the field.</strong></p>
+<pre><code class="language-console">$ awk '{print $1}' /srv/logs/access.log | head -3
+#
+203.0.113.4
+
+</code></pre>
+<p>The comment came through as <code>#</code>, and the blank line as an empty line — both would be counted as
+“clients”. Filter first:</p>
+<pre><code class="language-console">$ grep -v -e '^#' -e '^[[:space:]]*$' -- /srv/logs/access.log | awk '{print $1}' | head -3
+203.0.113.4
+203.0.113.9
+203.0.113.4
+</code></pre>
+<p><strong>3. Count.</strong></p>
+<pre><code class="language-console">$ grep -v -e '^#' -e '^[[:space:]]*$' -- /srv/logs/access.log \
+    | awk '{print $1}' | LC_ALL=C sort | uniq -c
+      8 192.0.2.77
+     16 198.51.100.2
+     79 203.0.113.10
+     30 203.0.113.23
+    136 203.0.113.4
+     28 203.0.113.57
+    103 203.0.113.9
+</code></pre>
+<p>The counts are right and the format is not: the padding is <code>uniq</code>’s, and the order is by address
+rather than by count. <strong>4. Normalise, then order.</strong></p>
+<pre><code class="language-console">$ … | uniq -c | awk '{print $1, $2}' | LC_ALL=C sort -k1,1nr -k2,2 | head -n 5
+136 203.0.113.4
+103 203.0.113.9
+79 203.0.113.10
+30 203.0.113.23
+28 203.0.113.57
+</code></pre>
+<p><strong>5. Check the tie-break deliberately</strong>, with input designed to tie, because the sample log has no
+ties and this is the requirement most likely to be silently wrong:</p>
+<pre><code class="language-console">$ printf '%s\n' '4 10.0.0.9' '4 10.0.0.10' '7 172.16.0.1' '4 10.0.0.2' \
+    | LC_ALL=C sort -k1,1nr -k2,2
+7 172.16.0.1
+4 10.0.0.10
+4 10.0.0.2
+4 10.0.0.9
+</code></pre>
+<p><code>10.0.0.10</code> before <code>10.0.0.2</code> before <code>10.0.0.9</code> — byte order, as specified. Compare with the wrong
+version, which is the whole reason to test this:</p>
+<pre><code class="language-console">$ printf '%s\n' '4 10.0.0.9' '4 10.0.0.10' '7 172.16.0.1' | sort -rn
+7 172.16.0.1
+4 10.0.0.9
+4 10.0.0.10
+</code></pre>
+<p><strong>6. Wrap it in the script</strong>, adding the option parsing, the validation and the statuses:</p>
+<pre><code class="language-bash">#!/bin/bash
+# top-talkers [-n N] FILE — the N busiest client addresses in an access log.
+set -uo pipefail
+
+n=5
+while getopts &quot;:n:&quot; opt; do
+    case $opt in
+        n) n=$OPTARG ;;
+        :) echo &quot;top-talkers: invalid count&quot; &gt;&amp;2; exit 2 ;;
+        *) echo &quot;top-talkers: unknown option -$OPTARG&quot; &gt;&amp;2; exit 2 ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+[[ $n =~ ^[1-9][0-9]*$ ]] || { echo &quot;top-talkers: invalid count&quot; &gt;&amp;2; exit 2; }
+file=${1:-}
+[[ -n $file &amp;&amp; -f $file &amp;&amp; -r $file ]] || { echo &quot;top-talkers: cannot read $file&quot; &gt;&amp;2; exit 1; }
+
+grep -v -e '^#' -e '^[[:space:]]*$' -- &quot;$file&quot; \
+    | awk '{print $1}' \
+    | LC_ALL=C sort | uniq -c \
+    | awk '{print $1, $2}' \
+    | LC_ALL=C sort -k1,1nr -k2,2 \
+    | head -n &quot;$n&quot;
+exit 0
+</code></pre>
+<p>The <code>exit 0</code> at the end is not decoration: it is what makes “an empty log prints nothing and exits 0”
+true, given that <code>grep</code> exits 1 when it filters everything away.</p>
+<p><strong>7. Run every case in the specification.</strong> There are seven, and the script is not finished until all
+seven have been seen:</p>
+<pre><code class="language-console">$ install -m 755 top-talkers /usr/local/bin/top-talkers
+
+$ top-talkers /srv/logs/access.log ; echo &quot;exit=$?&quot;          # default 5 rows
+$ top-talkers -n 3 /srv/logs/access.log | wc -l              # 3
+$ top-talkers -n 99 /srv/logs/access.log | wc -l             # 7 — fewer rows than asked for is fine
+
+$ printf '# only a comment\n\n' &gt; /tmp/empty.log
+$ top-talkers /tmp/empty.log ; echo &quot;exit=$?&quot;                # no output, exit 0
+exit=0
+
+$ top-talkers /nope.log ; echo &quot;exit=$?&quot;
+top-talkers: cannot read /nope.log
+exit=1
+
+$ for bad in 0 -3 abc 2.5 ''; do
+&gt;   top-talkers -n &quot;$bad&quot; /srv/logs/access.log &gt;/dev/null ; echo &quot;$bad -&gt; $?&quot;
+&gt; done
+top-talkers: invalid count
+0 -&gt; 2
+…
+'' -&gt; 2
+
+$ top-talkers /srv/logs/access.log | cat -A | head -2        # exactly one space, no trailing junk
+136 203.0.113.4$
+103 203.0.113.9$
+</code></pre>
+<p><code>cat -A</code> is the check nobody runs and everybody needs: it makes <code>$</code> the end of each line and shows
+tabs as <code>^I</code>, so a trailing space or a tab instead of a space becomes visible. A specification that
+says “a single space” is testing for exactly this.</p>
+<p><strong>8. Check the stream discipline</strong>, because the graders check that stdout is clean on failure:</p>
+<pre><code class="language-console">$ top-talkers -n 0 /srv/logs/access.log 2&gt;/dev/null ; echo &quot;stdout was empty: $?&quot;
+$ top-talkers -n 0 /srv/logs/access.log 2&gt;&amp;1 &gt;/dev/null     # only stderr
+top-talkers: invalid count
+</code></pre>
+<h2>Common wrong turns</h2>
+<p><strong><code>uniq -c</code> without sorting first.</strong> <code>uniq</code> only collapses <em>adjacent</em> duplicates, so unsorted input
+gives one group per run and counts that look plausible and are wrong. The bug hides in a log where
+requests from one address happen to arrive together.</p>
+<p><strong>Leaving <code>uniq -c</code>’s padding in the output.</strong> <code>      4 10.0.0.9</code> has seven leading spaces. The
+specification says “a single space between them”, and a grader comparing strings sees a different
+line. <code>awk '{print $1, $2}'</code> rebuilds it correctly.</p>
+<p><strong><code>sort -rn</code> instead of two keys.</strong> It reverses the tie-break as well as the count, so tied addresses
+come out in descending byte order — the opposite of what was asked. <code>-k1,1nr -k2,2</code> states the two
+orderings separately, which is the only way to have them differ.</p>
+<p><strong>Omitting <code>LC_ALL=C</code>.</strong> The script then produces different output on machines with different
+locales: under <code>en_US.UTF-8</code>, <code>101.0.0.1</code> sorts before <code>10.2.0.1</code>, while the specification’s own
+<code>10.0.0.10</code>/<code>10.0.0.9</code> example happens to agree in both, and the lab image’s <code>C.UTF-8</code> hides it
+entirely. Any time output is compared rather
+than read, pin the locale on the command that compares.</p>
+<p><strong><code>set -euo pipefail</code> with a pipeline ending in <code>head</code>.</strong> When the upstream output is larger than the
+pipe buffer, <code>head</code> exits early, upstream takes <code>SIGPIPE</code>, <code>pipefail</code> propagates 141 and <code>-e</code> exits —
+after printing exactly the right answer. It passes on small logs, which is what makes it dangerous. Drop
+<code>-e</code> for this script (keep <code>-u</code>), or append <code>|| true</code>, and end with an explicit <code>exit 0</code>.</p>
+<p><strong>Forgetting that <code>grep</code> exits 1 when it matches nothing.</strong> On a log of only comments the filter
+removes everything, <code>grep</code> reports failure, and with <code>pipefail</code> the script exits 1 on a case the
+specification calls success. The explicit <code>exit 0</code> is the fix.</p>
+<p><strong><code>grep -v '#'</code> without the anchor.</strong> That drops every line containing a hash anywhere, including
+ordinary requests for URLs with fragments. Anchor it: <code>^#</code>.</p>
+<p><strong>Treating “empty line” as strictly empty.</strong> A line with a single space is blank to a human and not to
+<code>^$</code>. <code>^[[:space:]]*$</code> is the pattern.</p>
+<p><strong>Forgetting <code>shift $((OPTIND - 1))</code>.</strong> <code>getopts</code> consumes <code>-n 3</code> and leaves <code>$1</code> pointing at it, so
+the script tries to read a file called <code>-n</code>. This produces the baffling “cannot read -n” and it is
+the single most common <code>getopts</code> mistake.</p>
+<p><strong>Accepting anything <code>getopts</code> hands you as a count.</strong> <code>-n abc</code> parses fine as an option argument;
+only your own validation rejects it. And the specification lists five rejections — including the empty
+string, which <code>[1-9]</code> handles only because it requires at least one digit.</p>
+<p><strong>Exiting 1 for a bad option, or 2 for a missing file.</strong> The specification assigns them the other way
+round (2 is misuse, 1 is a runtime failure), and this is a genuine convention rather than an
+arbitrary choice: bash’s own builtins use 2 for usage errors.</p>
+<p><strong>Printing the error to stdout.</strong> It corrupts the report, defeats <code>&gt;report.txt</code>, and fails a check
+that requires stdout to be empty on the failure paths. <code>&gt;&amp;2</code>.</p>
+<p><strong>Printing a header, a total, or a trailing blank line.</strong> The specification says the rows and nothing
+else. <code>cat -A</code> shows what you actually emitted.</p>
+<p><strong>Testing only against <code>/srv/logs/access.log</code>.</strong> The sample log has no ties, no unreadable-file case
+and no invalid option. The specification <em>is</em> the test list: seven cases, all of them run, before you
+call it done.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># counting
+awk '{print $1}' file | sort | uniq -c            # frequency table (sort FIRST — uniq is adjacent)
+uniq -c | awk '{print $1, $2}'                    # strip uniq's 7-wide padding
+uniq -d / -u                                      # only duplicated / only unique lines
+awk '!/^#/ &amp;&amp; NF { c[$1]++ } END { for (k in c) print c[k], k }' file    # one pass, no pre-sort
+grep -c ''  file                                  # count lines
+grep -v -e '^#' -e '^[[:space:]]*$' -- file       # drop comments and blank/whitespace lines
+
+# ordering
+LC_ALL=C sort -k1,1nr -k2,2      # field 1 numeric descending, then field 2 as bytes ascending
+#          │ │ ││    └─ second key: field 2 only, default (byte) order
+#          │ │ │└─ r: reverse this key      -n numeric, -h human sizes, -V versions
+#          │ └─┴─ from field 1 to field 1 (omit the end and the key runs to end of line)
+sort -s                          # stable: preserve input order for equal keys
+sort -t: -k3,3n /etc/passwd      # a different field separator
+LC_ALL=C                         # byte order, reproducible anywhere  ← whenever output is compared
+
+# options
+while getopts &quot;:n:v&quot; opt; do case $opt in
+    n) n=$OPTARG ;;                 # &quot;:n:&quot; — leading colon: handle errors yourself
+    v) verbose=1 ;;
+    :) echo &quot;$0: -$OPTARG needs an argument&quot; &gt;&amp;2; exit 2 ;;
+    *) echo &quot;$0: unknown option -$OPTARG&quot;     &gt;&amp;2; exit 2 ;;
+esac; done
+shift $((OPTIND - 1))            # ← forget this and $1 is still an option
+[[ $n =~ ^[1-9][0-9]*$ ]] || { echo &quot;…&quot; &gt;&amp;2; exit 2; }      # validate, unquoted pattern
+
+# tests and statuses
+[[ -f $f &amp;&amp; -r $f ]]             # -f regular file, -d dir, -r/-w/-x access, -s non-empty
+[[ -n $s ]] / [[ -z $s ]]        # non-empty / empty string
+exit 0                           # success (including a correct empty report)
+exit 1                           # could not do the job
+exit 2                           # misuse: bad options or arguments
+# 126 not executable, 127 not found, 128+N killed by signal N (141 = SIGPIPE)
+echo &quot;msg&quot; &gt;&amp;2                   # errors on stderr, always
+
+# set -e and pipelines
+set -uo pipefail                 # -u without -e: for scripts whose pipelines end in head/grep
+cmd | head -n 5 || true          # head closes the pipe → upstream gets SIGPIPE → 141
+# grep exits 1 when it matches nothing — that is information, not an error
+
+# checking your own output
+cmd | cat -A                     # line ends as $, tabs as ^I — finds stray spaces
+diff &lt;(cmd) expected             # compare against a known-good file
+cmd &gt;/dev/null ; echo $?         # the status alone
+cmd 2&gt;&amp;1 &gt;/dev/null              # only stderr
+bash -n script ; shellcheck script
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<p>Manual pages: <code>man 1 sort</code>, <code>man 1 uniq</code>, <code>man 7 locale</code>, <code>man 1 grep</code>, <code>man 1 bash</code>, <code>man 1 test</code>.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Why must <code>sort</code> come before <code>uniq -c</code>, and what does the output look like when it does not?</p>
+<blockquote>
+<p><code>uniq</code> only collapses <em>adjacent</em> identical lines, so unsorted input yields one group per run of
+repeats: the same address appears several times with partial counts. It looks like a plausible
+report, which is what makes it dangerous.</p>
+</blockquote>
+</li>
+<li>
+<p><code>sort -rn</code> and <code>sort -k1,1nr -k2,2</code> both put the biggest count first. What does the specification
+require that only the second one delivers?</p>
+<blockquote>
+<p>A tie-break in the <em>opposite</em> direction: counts descending but equal counts ordered by address
+ascending. A single global <code>-r</code> reverses every comparison, so tied addresses come out in
+descending byte order. Per-key modifiers are the only way to have two orderings in one sort.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>LC_ALL=C</code> change, and why does a requirement phrased as “plain text, byte order” need
+it?</p>
+<blockquote>
+<p>It selects the C locale, where comparison is byte-by-byte, instead of the locale’s collation
+rules — glibc’s <code>en_US.UTF-8</code> ignores punctuation on the first pass and folds case. Without it,
+<code>101.0.0.1</code> sorts before <code>10.2.0.1</code>, and the output differs between machines.</p>
+</blockquote>
+</li>
+<li>
+<p>A pipeline ending in <code>head -n 5</code> produces exactly the right output and the script exits 141 under
+<code>set -euo pipefail</code> — but only on large logs. Explain the mechanism and give two fixes.</p>
+<blockquote>
+<p><code>head</code> exits after five lines and closes the pipe; if the upstream process is still writing, its
+next write kills it with <code>SIGPIPE</code>, giving status 141 (128+13). Small output fits in the pipe
+buffer and is written before <code>head</code> exits, so the failure appears only with large input. <code>pipefail</code> propagates that and <code>-e</code> exits on it.
+Either drop <code>-e</code> (keeping <code>-u</code>) and end with an explicit <code>exit 0</code>, or append <code>|| true</code> to the
+pipeline.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does a log containing only comments make a <code>grep</code>-based pipeline exit 1, and what does the
+specification say should happen?</p>
+<blockquote>
+<p><code>grep</code> uses its exit status to report whether anything matched: filtering everything away is
+“no matches”, status 1. The specification calls an empty report a success, so the script must
+end with an explicit <code>exit 0</code> (or otherwise ignore that status).</p>
+</blockquote>
+</li>
+<li>
+<p>What is <code>shift $((OPTIND - 1))</code> for, and what is the symptom of omitting it?</p>
+<blockquote>
+<p><code>$OPTIND</code> is the index of the next unparsed argument, so the shift discards the options
+<code>getopts</code> consumed and leaves <code>&quot;$1&quot;</code> as the first operand. Omit it and <code>$1</code> is still <code>-n</code>, so
+the script reports that it cannot read a file called <code>-n</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>The specification assigns status 2 to a bad <code>-n</code> and status 1 to an unreadable file. What is the
+convention behind that, and why does the stream the message goes to matter just as much?</p>
+<blockquote>
+<p>2 is the conventional status for <em>misuse</em> — bad options or arguments, as bash’s own builtins
+use — while 1 means the job itself could not be done. The message belongs on stderr so that
+redirecting stdout to a file keeps the report clean and still shows the complaint; a script that
+writes errors to stdout corrupts its own output.</p>
+</blockquote>
+</li>
+<li>
+<p>Your script prints the right rows and a grader rejects the output. Which command shows you what a
+string comparison sees?</p>
+<blockquote>
+<p><code>cmd | cat -A</code>: it marks the end of each line with <code>$</code> and renders tabs as <code>^I</code>, exposing a
+trailing space, a tab used where a space was specified, or <code>uniq -c</code>’s leading padding — the
+invisible differences that a “single space between them” requirement is testing.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

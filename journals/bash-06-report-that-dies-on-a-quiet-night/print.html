@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nothing matched is an answer, not a failure</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Nothing matched is an answer, not a failure</h1>
+  <div class="meta">bash, logging-journald · 30 minutes · 1304 words</div>
+</header>
+<p><code>set -euo pipefail</code> is good advice, and the review that asked for it was right. What the review did
+not say is that <code>set -e</code> acts on a single signal — a non-zero exit status — and that several
+perfectly ordinary commands use a non-zero status to mean “I looked, and there was nothing”, not “I
+failed”. <code>grep</code> is the famous one. Add <code>pipefail</code>, and a night with no server errors becomes a failed
+unit and an emptied report.</p>
+<p>The second bug in the same one-line pipeline is quieter and older than the review: <code>uniq -c</code> counts
+runs of <em>adjacent</em> equal lines, so an endpoint that appears in three separate places in the log is
+reported three times with three small counts. Both come from the same habit — reading a pipeline as
+a sentence rather than as five programs with their own rules.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Name grep’s three exit statuses and say what each one means.</li>
+<li>Explain what <code>set -e</code> and <code>pipefail</code> do to a pipeline whose first command finds nothing.</li>
+<li>Tell an empty result from an error, and write a script that treats them differently.</li>
+<li>Count occurrences correctly with <code>sort | uniq -c</code>, and sort the result by count and then by name.</li>
+<li>Keep a report intact when a run fails, instead of truncating it before the work starts.</li>
+<li>Read a failed oneshot unit: <code>systemctl show</code>, <code>journalctl -u</code>.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Three exit statuses, not two</h3>
+<p><code>grep</code> exits 0 when at least one line matched, <strong>1 when no line matched</strong>, and 2 when something
+actually went wrong — a file it cannot open, a bad pattern. The distinction is deliberate and
+documented, and it is what makes <code>if grep -q …</code> work. <code>awk</code>, by contrast, exits 0 whether or not any
+line matched its pattern: “no matching lines” is not an error condition for it at all.</p>
+<p>Other commands share grep’s convention: <code>diff</code> (1 = differences found), <code>cmp</code>, <code>test</code>/<code>[</code>. None of
+them is broken; they answer a question, and the answer is in the status.</p>
+<h3>What <code>set -e</code> and <code>pipefail</code> make of that</h3>
+<p><code>set -e</code> ends the script when a command exits non-zero — outside the places where a status is being
+tested (<code>if</code>, <code>while</code>, <code>&amp;&amp;</code>, <code>||</code>, a <code>!</code> negation). A pipeline’s status is normally the status of its
+<strong>last</strong> command, so <code>grep … | awk … | sort</code> is 0 even when grep found nothing. <code>set -o pipefail</code>
+changes that: the pipeline’s status becomes the last non-zero status in it. Together, the two turn
+“nothing matched” into “stop the script”.</p>
+<p>The redirection has already happened by then. In <code>grep … | … &gt; &quot;$REPORT&quot;</code> the shell opens and
+truncates the report before the pipeline runs, so a quiet night leaves a zero-byte report <em>and</em> a
+failed unit.</p>
+<h3>Counting with <code>uniq</code></h3>
+<p><code>uniq</code> compares each line with the one before it only. It is a streaming tool with a one-line memory,
+which is why it is fast and why it needs sorted input: <code>sort | uniq -c</code> is the idiom, and <code>sort -u</code>
+is the shorthand when the counts are not needed.</p>
+<p>Sorting the counts afterwards needs care too. <code>sort -rn</code> on <code>&lt;count&gt; &lt;path&gt;</code> lines sorts by the whole
+line numerically, which is fine for the counts but leaves equal counts in whatever order they arrived.
+<code>sort -k1,1nr -k2,2</code> says exactly what is meant: first key numeric and reversed, second key the path,
+ascending — a stable, reproducible report.</p>
+<h3>Not a failure, and not silence either</h3>
+<p>The fix is not <code>|| true</code> on the end of the pipeline. That makes every failure invisible, including
+the log that has been rotated away or a disk that is full — and this lab’s third check exists to
+catch exactly that shortcut. Separate the two questions:</p>
+<ul>
+<li><em>Can I read the input?</em> Test it, and fail loudly if not.</li>
+<li><em>Did the input contain anything?</em> Let the tool answer; zero is a number.</li>
+</ul>
+<p>Using <code>awk</code> for the selection does both at once: it exits 0 on a quiet log, and non-zero when it
+cannot open the file, so the pipeline’s status keeps its meaning under <code>pipefail</code>.</p>
+<h2>A failure, walked through</h2>
+<p>Run on the lab’s own machine: <code>ubuntu-26.04-devops</code>, GNU bash 5.3.9, before any change.</p>
+<p>The unit’s run, on a night with no server errors in the log:</p>
+<pre><code class="language-console">$ sudo systemctl start errors-report.service; systemctl show errors-report.service -p Result -p ExecMainStatus; sudo journalctl -u errors-report.service -b --no-pager -o cat | tail -3
+Result=exit-code
+ExecMainStatus=1
+errors-report.service: Main process exited, code=exited, status=1/FAILURE
+errors-report.service: Failed with result 'exit-code'.
+Failed to start errors-report.service - Server errors per endpoint, for the morning stand-up.
+</code></pre>
+<p>The report it left is empty, although the log has six lines:</p>
+<pre><code class="language-console">$ wc -l /var/log/shop/access.log; cat /var/lib/shop/errors.txt; echo &quot;[end of report]&quot;
+6 /var/log/shop/access.log
+[end of report]
+</code></pre>
+<p>The status of the <code>grep</code> in that pipeline is the whole story:</p>
+<pre><code class="language-console">$ grep '&quot; 5[0-9][0-9] ' /var/log/shop/access.log; echo &quot;grep status: $?&quot;
+grep status: 1
+</code></pre>
+<p>And that status, under <code>set -e</code> with <code>pipefail</code>, ends the script — even though the rest of the
+pipeline ran happily:</p>
+<pre><code class="language-console">$ bash -c 'set -euo pipefail; grep missing /etc/hostname | wc -l; echo &quot;reached the next line&quot;'; echo &quot;script status: $?&quot;
+0
+script status: 1
+</code></pre>
+<p><code>wc -l</code> printed its <code>0</code>; the line after it never ran. The counting bug is easy to see beside its
+fix — the same five lines, with and without a <code>sort</code> in front of <code>uniq</code>:</p>
+<pre><code class="language-console">$ printf '/cart\n/pay\n/cart\n/cart\n/pay\n' | uniq -c
+      1 /cart
+      1 /pay
+      2 /cart
+      1 /pay
+$ printf '/cart\n/pay\n/cart\n/cart\n/pay\n' | sort | uniq -c | sort -k1,1nr -k2,2
+      3 /cart
+      2 /pay
+</code></pre>
+<p>After the fix — the log checked for readability, <code>awk</code> in place of <code>grep</code> for the selection, <code>sort</code>
+before <code>uniq -c</code>, a second <code>awk</code> for the total, and the report written to a temporary file and
+renamed — a bad night, a quiet night and a missing log all behave:</p>
+<pre><code class="language-console">$ sudo /usr/local/bin/errors-report; echo &quot;status: $?&quot;; cat /var/lib/shop/errors.txt
+status: 0
+1 /cart
+total 1
+$ sudo sh -c 'grep -v 502 /var/log/shop/access.log &gt; /tmp/quiet.log'; sudo env LOG=/tmp/quiet.log REPORT=/tmp/quiet.txt /usr/local/bin/errors-report; echo &quot;status: $?&quot;; cat /tmp/quiet.txt
+status: 0
+total 0
+$ sudo env LOG=/nonexistent REPORT=/tmp/quiet.txt /usr/local/bin/errors-report; echo &quot;status: $?&quot;; cat /tmp/quiet.txt
+errors-report: cannot read /nonexistent
+status: 1
+total 0
+</code></pre>
+<p>The quiet night is <code>total 0</code> with status 0; the missing log is a message on standard error, status 1,
+and the previous report untouched.</p>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong><code>grep … || true</code>.</strong> The quiet night passes, and so does every real failure: an unreadable log, a
+rotated log, a typo in the path. The lab’s third check fails anyone who does this.</li>
+<li><strong><code>set +e</code> around the pipeline.</strong> Same objection, with more lines.</li>
+<li><strong><code>grep -c</code> for the total.</strong> It also exits 1 when the count is zero, so the “total” line brings the
+problem back on the last line of the script.</li>
+<li><strong>Keeping <code>uniq -c</code> and sorting afterwards.</strong> Sorting the wrong counts does not make them right;
+the input to <code>uniq</code> is what has to be sorted.</li>
+<li><strong><code>sort -rn</code> alone.</strong> It works on the numbers but leaves equal counts in arbitrary order, so the
+report changes between runs for no reason.</li>
+<li><strong>Muting the alert.</strong> A unit that fails every quiet night trains everyone to ignore it, which is
+how the counting bug survived for weeks.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash">grep pattern file                  # 0 matched · 1 no match · 2 error
+awk '/pattern/ { … }' file         # 0 whether or not anything matched; non-zero if it cannot read
+set -o pipefail                    # a pipeline's status = its last non-zero status
+if grep -q pattern file; then …    # a status being tested does not trigger set -e
+
+sort | uniq -c | sort -k1,1nr -k2,2    # count occurrences, most frequent first, ties by name
+awk '{ print $1, $2; n += $1 } END { print &quot;total&quot;, n + 0 }'
+
+[ -r &quot;$LOG&quot; ] || { echo &quot;cannot read $LOG&quot; &gt;&amp;2; exit 1; }
+tmp=$(mktemp &quot;$REPORT.XXXXXX&quot;); trap 'rm -f -- &quot;$tmp&quot;' EXIT
+… &gt; &quot;$tmp&quot; &amp;&amp; mv -f -- &quot;$tmp&quot; &quot;$REPORT&quot;
+
+systemctl show unit -p Result -p ExecMainStatus
+journalctl -u unit -b -o cat
+</code></pre>
+<h2>Going deeper</h2>
+<ul>
+<li><code>man 1 grep</code>, <em>EXIT STATUS</em>, and <code>man 1 awk</code>.</li>
+<li><code>man 1 bash</code>, <em>SHELL BUILTIN COMMANDS: set</em>, for the exact rule <code>-e</code> follows and where it does not
+apply.</li>
+<li><code>man 1 sort</code> (<code>-k</code>, <code>-n</code>, <code>-r</code>, <code>-u</code>) and <code>man 1 uniq</code>.</li>
+<li>The logging journal, <a href="../../journals/logging-journald/">the log lines that were never written down</a>,
+for where an access log comes from in the first place.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>What do grep’s exit statuses 0, 1 and 2 mean?</p>
+<blockquote>
+<p>0: at least one line matched. 1: no line matched. 2: an error, such as a file it could not read.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did a quiet night fail the script even though <code>sort</code> at the end of the pipeline succeeded?</p>
+<blockquote>
+<p><code>pipefail</code> makes the pipeline’s status the last non-zero status in it — grep’s 1 — and <code>set -e</code>
+ends the script on a non-zero status.</p>
+</blockquote>
+</li>
+<li>
+<p>Why was the report empty rather than stale after the failure?</p>
+<blockquote>
+<p>The redirection truncates the report when the pipeline is set up, before any of it runs.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>uniq -c</code> report <code>/cart</code> several times?</p>
+<blockquote>
+<p><code>uniq</code> only compares adjacent lines, so each separate run of <code>/cart</code> is counted on its own; the
+input has to be sorted first.</p>
+</blockquote>
+</li>
+<li>
+<p>What is wrong with ending the pipeline in <code>|| true</code>?</p>
+<blockquote>
+<p>It hides every failure, not just the empty result: an unreadable or missing log then produces a
+successful run with an empty report.</p>
+</blockquote>
+</li>
+<li>
+<p>Which command would you use instead of grep to select lines when a pipeline runs under <code>pipefail</code>,
+and why?</p>
+<blockquote>
+<p><code>awk</code>: it exits 0 whether or not anything matched, and non-zero only when something really went
+wrong, so the pipeline’s status keeps its meaning.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

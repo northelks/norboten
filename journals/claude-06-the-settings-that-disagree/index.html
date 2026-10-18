@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Five settings levels, one winner per key, and a policy only if it can be read · Norboten</title>
+<meta name="description" content="Claude Code reads its configuration from up to five places, and on a shared machine each belongs to someone different: the security team owns the managed policy">
+<link rel="canonical" href="https://norboten.org/journals/claude-06-the-settings-that-disagree/"><meta property="og:title" content="Five settings levels, one winner per key, and a policy only if it can be read · Norboten">
+<meta property="og:description" content="Claude Code reads its configuration from up to five places, and on a shared machine each belongs to someone different: the security team owns the managed policy">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/claude-06-the-settings-that-disagree/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Five settings levels, one winner per key, and a policy only if it can be read · Norboten">
+<meta name="twitter:description" content="Claude Code reads its configuration from up to five places, and on a shared machine each belongs to someone different: the security team owns the managed policy">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Five settings levels, one winner per key, and a policy only if it can be read",
+  "description": "Claude Code reads its configuration from up to five places, and on a shared machine each belongs to someone different: the security team owns the managed policy",
+  "url": "https://norboten.org/journals/claude-06-the-settings-that-disagree/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1834,
+  "timeRequired": "PT40M",
+  "about": ["Claude Code", "Linux basics"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Settings That Disagree</div>
+    <h1>Five settings levels, one winner per key, and a policy only if it can be read</h1>
+    <p class="muted">
+      40 minutes' reading · 1834 words ·<span class="tag">Claude Code</span><span class="tag">Linux basics</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 76 words</title><rect x="0.0" y="0" width="26.3" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 711 words</title><rect x="29.3" y="0" width="245.8" height="30" rx="4" fill="#1d2a23"/><text x="37.3" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 544 words</title><rect x="278.1" y="0" width="188.1" height="30" rx="4" fill="#4ade80"/><text x="286.1" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 195 words</title><rect x="469.2" y="0" width="67.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 150 words</title><rect x="539.6" y="0" width="51.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 81 words</title><rect x="594.5" y="0" width="28.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 389 words</title><rect x="625.5" y="0" width="134.5" height="30" rx="4" fill="#1d2a23"/><text x="633.5" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/claude-06-the-settings-that-disagree/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Claude Code reads its configuration from up to five places, and on a shared machine each belongs to
+someone different: the security team owns the managed policy, whoever runs a session owns the command
+line, a developer owns their local project settings, the team owns the committed project settings,
+and each user owns their own. When they disagree, Claude Code does not ask; it applies fixed rules.
+Knowing those rules is the difference between &quot;we set that&quot; and &quot;that is in effect&quot;.</p>
+<p>This machine has three agreements, and each is defeated by a different rule. The security policy is
+in a directory Claude Code never reads, and even in the right one it would be unreadable to the users
+it governs. The team's model is overridden by a personal settings file somebody committed. And the
+coding conventions are imported by a name that differs from the file's in one letter's case.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>List the settings levels in order and say, for a given key, which one wins.</li>
+<li>Tell scalar keys, which override, from list keys such as permission rules, which merge.</li>
+<li>Install a managed policy on Linux where Claude Code reads it, with permissions that let it be read.</li>
+<li>Keep personal settings and personal memory files out of a repository.</li>
+<li>Predict what a <code>CLAUDE.md</code> import loads, and find out when it loads nothing.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="the-levels">The levels</h3>
+<p>Highest precedence first:</p>
+<table>
+<thead>
+<tr>
+<th>level</th>
+<th>where</th>
+<th>owned by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>managed</td>
+<td><code>/etc/claude-code/managed-settings.json</code> on Linux (macOS: <code>/Library/Application Support/ClaudeCode/</code>), or MDM / server-managed</td>
+<td>an administrator</td>
+</tr>
+<tr>
+<td>command line</td>
+<td><code>--model</code>, <code>--permission-mode</code>, <code>--allowedTools</code>, <code>--settings &lt;file&gt;</code></td>
+<td>whoever starts the session</td>
+</tr>
+<tr>
+<td>local project</td>
+<td><code>.claude/settings.local.json</code></td>
+<td>one developer, on one machine</td>
+</tr>
+<tr>
+<td>shared project</td>
+<td><code>.claude/settings.json</code></td>
+<td>the team, committed</td>
+</tr>
+<tr>
+<td>user</td>
+<td><code>~/.claude/settings.json</code></td>
+<td>the user, for every project</td>
+</tr>
+</tbody>
+</table>
+<p>Two rules decide the result:</p>
+<ul>
+<li><strong>Scalar keys</strong> — <code>model</code>, <code>permissions.defaultMode</code>, <code>outputStyle</code> — come from the highest level
+that sets them. Everything below is ignored for that key.</li>
+<li><strong>List keys merge.</strong> <code>permissions.allow</code>, <code>permissions.deny</code>, hooks and similar lists from every
+level are combined. For permissions, deny is evaluated first across all of them, so a deny at any
+level cannot be undone by an allow at another — including one on the command line.</li>
+</ul>
+<p>Verified in the lab image for <code>model</code>: user <code>sonnet</code>, project <code>haiku</code>, local <code>opus</code> requests Opus;
+without the local file, Haiku; with <code>--model haiku</code> on the command line, Haiku.</p>
+<p><code>--setting-sources user,project,local</code> chooses which of the file levels load at all; managed settings
+always load. Environment variables are not a level: the <code>env</code> block in a settings file is just a key,
+merged like the others.</p>
+<h3 id="managed-settings-are-read-by-the-user">Managed settings are read by the user</h3>
+<p>Claude Code is an ordinary process running as whoever started it. It reads the managed file with that
+user's permissions. A policy file owned by root with mode <code>0600</code> cannot be read by anyone else, and
+Claude Code 2.1.270 says so on stderr and carries on without it:</p>
+<pre><code>Managed settings failed to load; policies from the failed source are NOT in effect:
+  /etc/claude-code/managed-settings.json: Settings file could not be read: EACCES: permission denied
+</code></pre>
+<p>A policy is not a secret. The correct mode is <code>0644</code>, owned by root: everyone can read it, nobody but
+root can change it. A file in the wrong directory — <code>/etc/claude/</code>, <code>/etc/claude-code.d/</code> — is not an
+error at all: nothing reads it, and nothing says so.</p>
+<p>Managed settings can also restrict the other levels: <code>allowManagedPermissionRulesOnly</code> keeps
+everyone else's allow rules from merging in, <code>allowManagedHooksOnly</code> runs only the organisation's
+hooks. A machine that must not run <code>--dangerously-skip-permissions</code> sets
+<code>permissions.disableBypassPermissionsMode</code> to <code>&quot;disable&quot;</code> in its managed file. Besides
+<code>managed-settings.json</code>, the same directory may hold a <code>managed-settings.d/</code> of drop-ins and a
+<code>managed-mcp.json</code>.</p>
+<h3 id="a-deny-that-names-a-tool-removes-it">A deny that names a tool removes it</h3>
+<p><code>&quot;deny&quot;: [&quot;WebFetch&quot;]</code> — a tool name with no specifier — takes the tool out of the session. The model
+is not offered it, and a call fails as &quot;No such tool available: WebFetch&quot;, exactly as with <code>--tools</code>.
+<code>&quot;deny&quot;: [&quot;Read(~/.ssh/**)&quot;]</code> keeps the Read tool and refuses matching paths; it also refuses shell
+commands that name such a path (<code>cat ~/.ssh/id_ed25519</code>). <code>~/</code> in a rule means the home directory of
+the user running the session, so one managed rule protects every user's keys.</p>
+<h3 id="personal-files-and-git">Personal files and git</h3>
+<p>Two files in a project are personal by design: <code>.claude/settings.local.json</code> and <code>CLAUDE.local.md</code>.
+Claude Code adds the local settings file to git's global excludes only when Claude Code itself creates
+it (for example when you answer &quot;don't ask again&quot; to a prompt). A file created by hand, or copied from
+a colleague, is an ordinary file to git, and <code>git add -A</code> commits it. Once committed, the local level —
+which outranks the team's file — applies to everyone who pulls.</p>
+<h3 id="claudemd-and-imports">CLAUDE.md and imports</h3>
+<p>Memory files load broad to specific and are <strong>concatenated</strong>, not overridden: managed
+(<code>/etc/claude-code/CLAUDE.md</code>), user (<code>~/.claude/CLAUDE.md</code>), the project's <code>CLAUDE.md</code> or
+<code>.claude/CLAUDE.md</code> in the working directory and every parent, and <code>CLAUDE.local.md</code>. A line
+<code>@path/to/file</code> imports another file, resolved relative to the importing file, up to four hops deep.</p>
+<p>An import that names a file which does not exist adds nothing and warns about nothing. On Linux paths
+are case-sensitive, so <code>@docs/conventions.md</code> does not load <code>docs/CONVENTIONS.md</code> (on a default macOS
+filesystem it would — a way for this bug to pass on a laptop and fail on the build machine). An import
+inside backticks is text, not an import. All three were verified in the lab image.</p>
+<p>The transcript under <code>~/.claude/projects/&lt;project&gt;/</code> shows what was sent, <code>CLAUDE.md</code> included; the
+interactive <code>/memory</code> command lists the files that loaded.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed in the lab container (Claude Code 2.1.270, the scripted model). A session with every tool
+allowed on the command line, as a developer might start one:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"Get ready for the deploy"</span><span class="hl-w"> </span>--allowedTools<span class="hl-w"> </span><span class="hl-s2">"WebFetch,Read,Bash"</span><span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/tmp/err<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{num_turns, permission_denials, model: (.modelUsage|keys)}'</span>
+<span class="hl-go">{"num_turns":3,"permission_denials":[],"model":["claude-opus-5"]}</span>
+<span class="hl-gp">$ </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-err">'</span><span class="hl-k">select</span><span class="hl-o">(</span>.type<span class="hl-o">==</span><span class="hl-s2">"user"</span><span class="hl-o">)</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>.message.content<span class="hl-o">[]</span>?<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-k">select</span><span class="hl-o">(</span>.type<span class="hl-o">==</span><span class="hl-s2">"tool_result"</span><span class="hl-o">)</span>
+<span class="hl-go">         | .content | if type=="array" then .[0].text else . end' "$(ls -t ~/.claude/projects/-home-learner-platform/*.jsonl | head -1)"</span>
+<span class="hl-go">getaddrinfo ENOTFOUND docs.example.org</span>
+<span class="hl-go">-----BEGIN OPENSSH PRIVATE KEY-----</span>
+<span class="hl-go">73e5ec49b3b31f1e8f53d668adefc2f739fafe81d9150d92</span>
+<span class="hl-go">-----END OPENSSH PRIVATE KEY-----</span>
+</code></pre>
+
+<p>WebFetch was attempted (it failed only because the address does not resolve), the key was printed, and
+the session ran on Opus. The policy exists — in the wrong place, with a mode only root can read:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/etc/claude*/
+<span class="hl-go">-rw------- 1 root root 108 Sep 14 19:49 managed-settings.json</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/claude/managed-settings.json
+<span class="hl-go">{ "permissions": { "deny": ["WebFetch", "WebSearch", "Read(~/.ssh/**)"] } }</span>
+</code></pre>
+
+<p>Moving it to <code>/etc/claude-code/</code> turns silence into an error message, which is progress:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/etc/claude-code<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>mv<span class="hl-w"> </span>/etc/claude/managed-settings.json<span class="hl-w"> </span>/etc/claude-code/
+<span class="hl-gp">$ </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"Get ready"</span><span class="hl-w"> </span>--allowedTools<span class="hl-w"> </span><span class="hl-s2">"WebFetch,Read,Bash"</span><span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/tmp/err<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{permission_denials}'</span>
+<span class="hl-go">{"permission_denials":[]}</span>
+<span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/tmp/err
+<span class="hl-go">Managed settings failed to load; policies from the failed source are NOT in effect:</span>
+<span class="hl-go">  /etc/claude-code/managed-settings.json: Settings file could not be read: EACCES: permission denied, open '/etc/claude-code/managed-settings.json'</span>
+</code></pre>
+
+<p>With mode <code>0644</code>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>chmod<span class="hl-w"> </span><span class="hl-m">644</span><span class="hl-w"> </span>/etc/claude-code/managed-settings.json<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>rmdir<span class="hl-w"> </span>/etc/claude
+<span class="hl-gp">$ </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"Get ready"</span><span class="hl-w"> </span>--allowedTools<span class="hl-w"> </span><span class="hl-s2">"WebFetch,Read,Bash"</span><span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span><span class="hl-m">2</span>&gt;/tmp/err<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{denials: [.permission_denials[] | .tool_name]}'</span>
+<span class="hl-go">{"denials":["Bash"]}</span>
+<span class="hl-gp">$ </span>jq<span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s1">'… tool results …'</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-k">$(</span>ls<span class="hl-w"> </span>-t<span class="hl-w"> </span>~/.claude/projects/-home-learner-platform/*.jsonl<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-k">)</span><span class="hl-s2">"</span>
+<span class="hl-go">&lt;tool_use_error&gt;Error: No such tool available: WebFetch. WebFetch is disabled for this session, …</span>
+<span class="hl-go">Permission to use Bash with command cat ~/.ssh/id_ed25519 has been denied.</span>
+</code></pre>
+
+<p>WebFetch no longer exists in the session despite <code>--allowedTools</code>, and <code>cat</code> of the key is refused.
+Next, the model. Every level that sets it:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-k">for</span><span class="hl-w"> </span>f<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>~/.claude/settings.json<span class="hl-w"> </span>.claude/settings.json<span class="hl-w"> </span>.claude/settings.local.json<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'%s: '</span><span class="hl-w"> </span><span class="hl-nv">$f</span><span class="hl-p">;</span><span class="hl-w"> </span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span>.<span class="hl-w"> </span><span class="hl-nv">$f</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span>
+<span class="hl-go">/home/learner/.claude/settings.json: {"model":"sonnet"}</span>
+<span class="hl-go">.claude/settings.json: {"model":"haiku"}</span>
+<span class="hl-go">.claude/settings.local.json: {"model":"opus"}</span>
+<span class="hl-gp">$ </span>git<span class="hl-w"> </span>ls-files<span class="hl-w"> </span>.claude
+<span class="hl-go">.claude/settings.json</span>
+<span class="hl-go">.claude/settings.local.json</span>
+</code></pre>
+
+<p>The local file wins, and it is committed, so it wins for everyone. Remove it from the index and the
+disk, and ignore both personal files:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>git<span class="hl-w"> </span>rm<span class="hl-w"> </span>-q<span class="hl-w"> </span>--cached<span class="hl-w"> </span>.claude/settings.local.json<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>rm<span class="hl-w"> </span>.claude/settings.local.json
+<span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'.claude/settings.local.json\nCLAUDE.local.md\n'</span><span class="hl-w"> </span>&gt;&gt;<span class="hl-w"> </span>.gitignore
+<span class="hl-gp">$ </span>git<span class="hl-w"> </span>check-ignore<span class="hl-w"> </span>-v<span class="hl-w"> </span>.claude/settings.local.json
+<span class="hl-go">.gitignore:1:.claude/settings.local.json	.claude/settings.local.json</span>
+</code></pre>
+
+<p>Last, the conventions. The transcript contains <code>CLAUDE.md</code> word for word, including the import line —
+and nothing from the conventions file:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>grep<span class="hl-w"> </span>-o<span class="hl-w"> </span><span class="hl-s2">"Follow the team.s conventions:[^\"]*"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$s</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1
+<span class="hl-go">Follow the team's conventions:\n@docs/conventions.md</span>
+<span class="hl-gp">$ </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s2">"rev "</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$s</span><span class="hl-s2">"</span>
+<span class="hl-go">0</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>docs
+<span class="hl-go">CONVENTIONS.md</span>
+<span class="hl-gp">$ </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'s|^@docs/conventions.md$|@docs/CONVENTIONS.md|'</span><span class="hl-w"> </span>CLAUDE.md
+<span class="hl-gp">$ </span>claude<span class="hl-w"> </span>-p<span class="hl-w"> </span>hi<span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span>
+<span class="hl-gp">$ </span>grep<span class="hl-w"> </span>-o<span class="hl-w"> </span><span class="hl-s2">"# Conventions (rev [0-9a-f]*)"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-k">$(</span>ls<span class="hl-w"> </span>-t<span class="hl-w"> </span>~/.claude/projects/-home-learner-platform/*.jsonl<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-k">)</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1
+<span class="hl-gp"># </span>Conventions<span class="hl-w"> </span><span class="hl-o">(</span>rev<span class="hl-w"> </span>4dbedac7<span class="hl-o">)</span>
+</code></pre>
+
+<p>Commit the <code>.gitignore</code>, the removal and the import. The grader:</p>
+<pre><code>PASS 01_the_machine_policy_holds_everywhere: In both directories, with every tool allowed on the command line,
+     the web tools were refused and the key stayed private.
+PASS 02_the_team_model_is_used: A session in ~/platform runs on claude-haiku-4-5-20251001.
+PASS 03_personal_settings_stay_out_of_git: Personal settings are neither tracked nor able to be added by accident.
+PASS 04_the_conventions_reach_the_model: The conventions reach the model with CLAUDE.md.
+</code></pre>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Testing the policy with <code>sudo claude</code>.</strong> root can read a <code>0600</code> file, so the policy &quot;works&quot;. Test as
+the users it governs.</p>
+<p><strong>Making the policy file <code>0666</code> &quot;so it can be read&quot;.</strong> Now anyone can rewrite the policy — or empty it.
+<code>0644</code>, owned by root.</p>
+<p><strong>Putting the policy in the user's <code>~/.claude/settings.json</code>.</strong> The user can edit it, and it is the
+lowest level; any project can override its scalar keys. Company policy is managed settings.</p>
+<p><strong>Setting <code>&quot;model&quot;: &quot;haiku&quot;</code> in the user settings to beat the local file.</strong> User settings are the lowest
+level. The local file has to go.</p>
+<p><strong>Deleting the local file without ignoring it.</strong> The next &quot;don't ask again&quot; or copied snippet recreates
+it, and <code>git add -A</code> commits it again.</p>
+<p><strong>Renaming <code>docs/CONVENTIONS.md</code> to lower case on a Mac.</strong> On a case-insensitive filesystem <code>git mv</code>
+needs two steps, and a plain rename may not register as a change at all. Fixing the import line is the
+smaller change.</p>
+<p><strong>Expecting a warning for a broken import.</strong> There is none. Check the transcript, or <code>/memory</code> in an
+interactive session.</p>
+<p><strong>Denying <code>Read(/home/learner/.ssh/**)</code>.</strong> It protects one user. <code>Read(~/.ssh/**)</code> in managed settings
+protects whoever runs the session.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># every level, for one key</span>
+<span class="hl-k">for</span><span class="hl-w"> </span>f<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>/etc/claude-code/managed-settings.json<span class="hl-w"> </span>~/.claude/settings.json<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">         </span>.claude/settings.json<span class="hl-w"> </span>.claude/settings.local.json<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span>
+<span class="hl-w">  </span><span class="hl-o">[</span><span class="hl-w"> </span>-r<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$f</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'%s: %s\n'</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$f</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-k">$(</span>jq<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'{model, permissions}'</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$f</span><span class="hl-s2">"</span><span class="hl-k">)</span><span class="hl-s2">"</span>
+<span class="hl-k">done</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span>hi<span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w">    </span><span class="hl-c1"># "Managed settings failed to load…"</span>
+
+<span class="hl-c1"># managed policy on Linux: readable by all, writable by root</span>
+sudo<span class="hl-w"> </span>install<span class="hl-w"> </span>-d<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">755</span><span class="hl-w"> </span>/etc/claude-code
+sudo<span class="hl-w"> </span>install<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">644</span><span class="hl-w"> </span>-o<span class="hl-w"> </span>root<span class="hl-w"> </span>-g<span class="hl-w"> </span>root<span class="hl-w"> </span>policy.json<span class="hl-w"> </span>/etc/claude-code/managed-settings.json
+<span class="hl-o">{</span>
+<span class="hl-w">  </span><span class="hl-s2">"permissions"</span>:<span class="hl-w"> </span><span class="hl-o">{</span>
+<span class="hl-w">    </span><span class="hl-s2">"deny"</span>:<span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-s2">"WebFetch"</span>,<span class="hl-w"> </span><span class="hl-s2">"WebSearch"</span>,<span class="hl-w"> </span><span class="hl-s2">"Read(~/.ssh/**)"</span><span class="hl-o">]</span>,
+<span class="hl-w">    </span><span class="hl-s2">"disableBypassPermissionsMode"</span>:<span class="hl-w"> </span><span class="hl-s2">"disable"</span>
+<span class="hl-w">  </span><span class="hl-o">}</span>
+<span class="hl-o">}</span>
+
+<span class="hl-c1"># which model a session asks for</span>
+claude<span class="hl-w"> </span>-p<span class="hl-w"> </span>hi<span class="hl-w"> </span>--output-format<span class="hl-w"> </span>json<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>jq<span class="hl-w"> </span><span class="hl-s1">'.modelUsage | keys'</span>
+
+<span class="hl-c1"># personal files</span>
+git<span class="hl-w"> </span>ls-files<span class="hl-w"> </span>.claude<span class="hl-w"> </span>CLAUDE.local.md
+git<span class="hl-w"> </span>rm<span class="hl-w"> </span>--cached<span class="hl-w"> </span>.claude/settings.local.json
+<span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'.claude/settings.local.json\nCLAUDE.local.md\n'</span><span class="hl-w"> </span>&gt;&gt;<span class="hl-w"> </span>.gitignore
+git<span class="hl-w"> </span>check-ignore<span class="hl-w"> </span>-v<span class="hl-w"> </span>.claude/settings.local.json
+
+<span class="hl-c1"># memory and imports</span>
+grep<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s1">'^@'</span><span class="hl-w"> </span>CLAUDE.md<span class="hl-w">                      </span><span class="hl-c1"># imports: relative to this file, case-sensitive</span>
+<span class="hl-nv">s</span><span class="hl-o">=</span><span class="hl-k">$(</span>ls<span class="hl-w"> </span>-t<span class="hl-w"> </span>~/.claude/projects/&lt;project&gt;/*.jsonl<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-1<span class="hl-k">)</span><span class="hl-p">;</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'a phrase from the import'</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$s</span><span class="hl-s2">"</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>Claude Code in a job</em> (topic journal <code>claude-code</code>) — What a session loads</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://code.claude.com/docs/en/settings</li>
+<li>https://git-scm.com/docs/gitignore</li>
+<li>https://code.claude.com/docs/en/memory</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>Claude Code in a job</em> (<code>claude-code</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>List the five settings levels from highest to lowest precedence.</p>
+<blockquote>
+<p>Managed, command line, local project (<code>.claude/settings.local.json</code>), shared project
+(<code>.claude/settings.json</code>), user (<code>~/.claude/settings.json</code>).</p>
+</blockquote>
+</li>
+<li>
+<p>User settings say <code>sonnet</code>, the project file <code>haiku</code>, the local project file <code>opus</code>. Which model
+does a session in the project request, and what would make it Haiku without touching any file?</p>
+<blockquote>
+<p>Opus — the local file is the highest level that sets <code>model</code>. Starting the session with
+<code>--model haiku</code>, since the command line outranks all three files.</p>
+</blockquote>
+</li>
+<li>
+<p>A deny rule in the project file and an allow rule for the same tool on the command line: which
+applies, and why is that not a contradiction of question 2?</p>
+<blockquote>
+<p>The deny. Permission rules are lists that merge across levels, and deny is evaluated first; only
+scalar keys such as <code>model</code> are taken from the single highest level.</p>
+</blockquote>
+</li>
+<li>
+<p>The managed policy is <code>/etc/claude-code/managed-settings.json</code>, root-owned, mode <code>0600</code>. What does a
+user's session do, and what is the correct mode?</p>
+<blockquote>
+<p>It cannot read the file, reports &quot;Managed settings failed to load; policies … are NOT in effect&quot;,
+and runs without the policy. <code>0644</code>, owned by root.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>&quot;deny&quot;: [&quot;WebFetch&quot;]</code> do that <code>&quot;deny&quot;: [&quot;WebFetch(domain:example.org)&quot;]</code> does not?</p>
+<blockquote>
+<p>The bare name removes the tool from the session entirely (a call fails as &quot;No such tool
+available&quot;); a rule with a specifier leaves the tool and refuses only matching calls.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did a committed <code>.claude/settings.local.json</code> change the model for the whole team, and why did
+git not ignore it?</p>
+<blockquote>
+<p>The local level outranks the shared project file, and once committed everyone pulls it. Claude
+Code adds it to git's excludes only when Claude Code creates it; a hand-made copy is an ordinary
+file until <code>.gitignore</code> names it.</p>
+</blockquote>
+</li>
+<li>
+<p><code>CLAUDE.md</code> says <code>@docs/conventions.md</code> and the file is <code>docs/CONVENTIONS.md</code>. What happens on Linux,
+and why might it work on a developer's Mac?</p>
+<blockquote>
+<p>On Linux the import finds no file and silently adds nothing. A default macOS filesystem is
+case-insensitive, so the same path resolves there.</p>
+</blockquote>
+</li>
+<li>
+<p>How can you confirm, after a headless run, that an imported file reached the model?</p>
+<blockquote>
+<p>Search the session transcript in <code>~/.claude/projects/&lt;project&gt;/&lt;session&gt;.jsonl</code> for a phrase that
+only the imported file contains (or use <code>/memory</code> interactively to list loaded files).</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

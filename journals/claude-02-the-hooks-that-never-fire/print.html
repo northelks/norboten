@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A hook is a policy only if it fires, reads its input and exits 2</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A hook is a policy only if it fires, reads its input and exits 2</h1>
+  <div class="meta">claude-code, bash · 35 minutes · 2049 words</div>
+</header>
+<p>Hooks are the part of Claude Code that turns a team’s rules into code that runs every time: format
+what the agent writes, refuse a push, keep it out of files that must not change. They are also the
+part that fails most quietly. A hook that never fires looks exactly like a hook that found nothing
+to do. A hook that detects the forbidden command and exits with the wrong status prints a
+convincing “Blocked:” message and lets the command run. A hook that is not executable produces a
+non-blocking error that nobody reads.</p>
+<p>The billing repository in this lab has three hooks, and each fails in a different one of those
+ways. None of them is fixed by reading the settings file harder: each needs the hook to be <strong>run
+and observed</strong> — with a trace, by hand with the JSON it will receive, or through the agent — and
+the permission denials of a run to be read afterwards.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Write a hook matcher that matches the tools you mean, and explain why <code>edit|write</code> matches none.</li>
+<li>Read a command hook’s input from stdin with <code>jq</code>, and name the fields a tool hook receives.</li>
+<li>Say what exit status 0, 2 and anything else mean for a <code>PreToolUse</code> hook, where the reason must be
+printed, and the JSON alternative.</li>
+<li>Find a hook that cannot run, and test one by hand before trusting it.</li>
+<li>See a hook’s refusals in a headless run’s <code>permission_denials</code>.</li>
+<li>Undo a file an agent changed in a pushed commit without rewriting shared history.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>Where hooks live and when they run</h3>
+<p>Hooks are configured under <code>&quot;hooks&quot;</code> in any settings file — user, project, local, managed — and
+entries from every level are <strong>merged</strong>, not overridden. The shape is event → matcher groups →
+handlers:</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      { &quot;matcher&quot;: &quot;Bash&quot;, &quot;hooks&quot;: [{ &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;$CLAUDE_PROJECT_DIR/.claude/hooks/no-push.sh&quot; }] }
+    ]
+  }
+}
+</code></pre>
+<p>For tool calls the two events that matter are <code>PreToolUse</code>, which runs after Claude Code has the
+model’s tool call and before anything happens, and can refuse it; and <code>PostToolUse</code>, which runs
+after the tool succeeded and can only react — the file is already written. There are many more
+(<code>SessionStart</code>, <code>UserPromptSubmit</code>, <code>Stop</code>, <code>SubagentStop</code>, …); <code>/hooks</code> in an interactive session
+lists what loaded.</p>
+<p>A headless <code>claude -p</code> run loads the project’s hooks without a trust dialog — which is what makes
+them useful as guard rails for CI jobs, and why a repository’s <code>.claude/</code> must be reviewed like
+code.</p>
+<h3>Matchers are tool names, exactly</h3>
+<p>For tool events the matcher is compared with the tool name:</p>
+<ul>
+<li><code>*</code>, <code>&quot;&quot;</code> or no matcher: every tool;</li>
+<li>only letters, digits, <code>_</code>, <code>-</code>, <code>,</code>, <code>|</code> and spaces: a list of <strong>exact names</strong> — <code>Edit|Write</code>;</li>
+<li>anything else: an unanchored JavaScript regular expression — <code>Edit.*</code> also matches <code>NotebookEdit</code>,
+<code>mcp__github__.*</code> matches every tool of one MCP server.</li>
+</ul>
+<p>Tool names are case-sensitive: <code>Bash</code>, <code>Edit</code>, <code>Write</code>, <code>Read</code>. A matcher <code>bash</code> or <code>edit|write</code> is
+valid, loads without a warning, and matches nothing. Claude Code 2.1.270 does not flag it.</p>
+<h3>Input arrives as JSON on stdin</h3>
+<p>A command hook is started with <strong>no arguments</strong>. Claude Code writes one JSON object to its stdin and
+sets <code>$CLAUDE_PROJECT_DIR</code>. For a Write call the object carries, among others:</p>
+<pre><code class="language-json">{&quot;hook_event_name&quot;: &quot;PostToolUse&quot;, &quot;tool_name&quot;: &quot;Write&quot;,
+ &quot;tool_input&quot;: {&quot;file_path&quot;: &quot;/home/learner/billing/app/overdue.py&quot;, &quot;content&quot;: &quot;…&quot;},
+ &quot;session_id&quot;: &quot;…&quot;, &quot;cwd&quot;: &quot;/home/learner/billing&quot;, &quot;transcript_path&quot;: &quot;…&quot;}
+</code></pre>
+<p>File paths in <code>tool_input</code> are absolute. For Bash, <code>tool_input.command</code> is the command string. A
+script written as <code>file=&quot;$1&quot;</code> gets an empty string every time — and a <code>case</code> on an empty string
+simply matches nothing, so the hook “succeeds”.</p>
+<h3>Exit status decides whether a PreToolUse hook blocks</h3>
+<table>
+<thead>
+<tr>
+<th>the hook</th>
+<th>what happens to the tool call</th>
+<th>what the model sees</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>exits 0</td>
+<td>proceeds (stdout parsed as JSON if it is a JSON object)</td>
+<td>nothing</td>
+</tr>
+<tr>
+<td>exits <strong>2</strong></td>
+<td><strong>refused</strong></td>
+<td>stderr, as the hook’s error</td>
+</tr>
+<tr>
+<td>exits 2 with its message on stdout</td>
+<td>refused</td>
+<td>“No stderr output”</td>
+</tr>
+<tr>
+<td>exits 1 (or any other status)</td>
+<td><strong>proceeds</strong> — a non-blocking error</td>
+<td>the tool’s normal result</td>
+</tr>
+<tr>
+<td>cannot be executed (mode 0644 → status 126)</td>
+<td>proceeds</td>
+<td>the tool’s normal result</td>
+</tr>
+<tr>
+<td>exits 0 with <code>{&quot;hookSpecificOutput&quot;: {&quot;hookEventName&quot;: &quot;PreToolUse&quot;, &quot;permissionDecision&quot;: &quot;deny&quot;, &quot;permissionDecisionReason&quot;: &quot;…&quot;}}</code></td>
+<td>refused</td>
+<td>the reason</td>
+</tr>
+</tbody>
+</table>
+<p>Every row was run against Claude Code 2.1.270 in the lab image. The trap is the fourth row: exit 1
+is what every shell script uses for “something is wrong”, and for a hook it means “carry on”. A
+blocking hook must exit 2, or answer with JSON; a refused call is then listed in the run’s
+<code>permission_denials</code> just like a call a deny rule refused.</p>
+<p>A <code>PostToolUse</code> hook cannot undo anything. Exit 2 there feeds stderr back to the model as feedback,
+which is useful (“the formatter failed on line 3”) but not a guard.</p>
+<h3>Claude Code’s own edits</h3>
+<p>Two details matter when you test a formatting hook. The Write and Edit tools already remove trailing
+whitespace from the lines they write, so a hook that strips it has nothing to prove itself on. They
+do keep tabs. That is why this lab’s tidy hook re-indents tabs (<code>expand -i -t 4</code>), and why a check
+that a formatter ran must use a change the tool itself would not make.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed in the lab container (Claude Code 2.1.270, the scripted model). The agent’s commit is on
+<code>origin</code>, and the diff of the applied migration is small enough to have passed review:</p>
+<pre><code class="language-console">$ git log --oneline origin/main
+70a4239 Tidy up: overdue report, migration comment
+3c4ac24 Invoices with due dates (0002 applied)
+$ git show HEAD -- migrations | tail -3
+ ALTER TABLE invoices
+-    ADD COLUMN due date NOT NULL DEFAULT CURRENT_DATE;  -- when payment is due
++    ADD COLUMN due date NOT NULL DEFAULT CURRENT_DATE;  -- when the payment is due
+$ tail -n1 ~/nightly-cleanup.log | jq -c '{num_turns, permission_denials}'
+{&quot;num_turns&quot;:6,&quot;permission_denials&quot;:[]}
+</code></pre>
+<p>Six turns and no denials: nothing refused the edit or the push. The hooks, as configured, and the
+scripts they name:</p>
+<pre><code class="language-console">$ jq -c '.hooks | to_entries[] | {event: .key, matchers: [.value[].matcher]}' .claude/settings.json
+{&quot;event&quot;:&quot;PostToolUse&quot;,&quot;matchers&quot;:[&quot;edit|write&quot;]}
+{&quot;event&quot;:&quot;PreToolUse&quot;,&quot;matchers&quot;:[&quot;Bash&quot;,&quot;Edit|Write&quot;]}
+$ ls -l .claude/hooks
+-rwxr-xr-x 1 learner learner 343 Sep 14 19:21 no-push.sh
+-rw-r--r-- 1 learner learner 384 Sep 14 19:21 protect-migrations.sh
+-rwxr-xr-x 1 learner learner 177 Sep 14 19:21 tidy.sh
+</code></pre>
+<p>Start with the tidy hook and make it leave a trace: a <code>cat &gt; /tmp/tidy-input.json</code> line at its top.
+Run the job; no trace appears, so the hook never runs. Look at <code>origin</code> after that run, though:</p>
+<pre><code class="language-console">$ git log --oneline -3 origin/main
+44cb4f8 Tidy up: overdue report, migration comment
+70a4239 Tidy up: overdue report, migration comment
+3c4ac24 Invoices with due dates (0002 applied)
+$ git show --stat --format='%h %s' origin/main | tail -1
+ .claude/hooks/tidy.sh | 1 +
+</code></pre>
+<p>The replayed plan ends in <code>git add -A</code>, commit and push, so <strong>the trace line you were debugging with
+was committed and pushed by the agent</strong>. Debugging a job that can push, with the job itself, publishes
+your experiments. (In the replay above this was undone with <code>git reset --hard HEAD~1</code> and a force
+push, which is acceptable only because nobody else has fetched it yet.) Fix the push guard before
+running the job again.</p>
+<p>The guard, run by hand with the input Claude Code would give it:</p>
+<pre><code class="language-console">$ printf '%s' '{&quot;tool_input&quot;:{&quot;command&quot;:&quot;git push origin main&quot;}}' | .claude/hooks/no-push.sh; echo &quot;exit $?&quot;
+Blocked: agents do not push. Commit locally and leave the push to a person.
+exit 1
+$ printf '%s' &quot;{\&quot;tool_input\&quot;:{\&quot;file_path\&quot;:\&quot;$PWD/migrations/0001_create_invoices.sql\&quot;}}&quot; \
+    | CLAUDE_PROJECT_DIR=$PWD .claude/hooks/protect-migrations.sh; echo &quot;exit $?&quot;
+bash: line 1: .claude/hooks/protect-migrations.sh: Permission denied
+exit 126
+</code></pre>
+<p><code>no-push.sh</code> detects the push perfectly and exits 1, which lets it through; its message goes to
+stdout, where Claude Code does not look. <code>protect-migrations.sh</code> is correct and cannot run. With the
+matcher changed to <code>Edit|Write</code>, the trace shows what <code>tidy.sh</code> receives — and that the path is not an
+argument:</p>
+<pre><code class="language-console">$ jq -c '{hook_event_name, tool_name, tool_input: (.tool_input | keys)}' /tmp/tidy-input.json
+{&quot;hook_event_name&quot;:&quot;PostToolUse&quot;,&quot;tool_name&quot;:&quot;Write&quot;,&quot;tool_input&quot;:[&quot;content&quot;,&quot;file_path&quot;]}
+</code></pre>
+<p>Three fixes, then: <code>tidy.sh</code> reads <code>file=$(jq -r '.tool_input.file_path // &quot;&quot;')</code>; <code>no-push.sh</code>
+prints to stderr and exits 2; <code>protect-migrations.sh</code> gets its execute bit. The job again:</p>
+<pre><code class="language-console">$ ~/bin/nightly-cleanup
+$ tail -n1 ~/nightly-cleanup.log | jq -c '[.permission_denials[] | {tool_name, input: (.tool_input.command // .tool_input.file_path)}]'
+[{&quot;tool_name&quot;:&quot;Bash&quot;,&quot;input&quot;:&quot;git push origin main&quot;}]
+$ grep -P -c '\t' app/overdue.py
+0
+$ git log --oneline -2 origin/main
+70a4239 Tidy up: overdue report, migration comment
+3c4ac24 Invoices with due dates (0002 applied)
+</code></pre>
+<p>The push is refused and listed; the file is re-indented; the agent’s local commit (which now
+contains the hook fixes) stayed local. The edit of the migration does not appear as a denial only
+because the plan’s <code>old_string</code> no longer exists in the file; the grader tries fresh edits.</p>
+<p>What remains is the migration on <code>origin</code>. <code>git revert</code> of the agent’s commit conflicts — the commit
+also added <code>overdue.py</code>, which later commits changed — and reverting it would throw away the report
+nobody objected to. The precise undo is the one file, taken from the commit that added it:</p>
+<pre><code class="language-console">$ git revert --no-edit 70a4239
+CONFLICT (modify/delete): app/overdue.py deleted in parent of 70a4239 … and modified in HEAD.
+$ git revert --abort
+$ applied=$(git log --reverse --format=%h -- migrations/0002_add_due_date.sql | head -1)
+$ git restore --source=&quot;$applied&quot; --staged --worktree -- migrations/0002_add_due_date.sql
+$ git commit -qm &quot;Restore migration 0002 as applied in production&quot; &amp;&amp; git push -q origin main
+</code></pre>
+<p>A new commit on a shared branch, pushed by a person. The grader:</p>
+<pre><code>PASS 01_written_code_gets_tidied: What the agent wrote and edited came out indented with spaces.
+PASS 02_agents_cannot_push: git status ran; all 3 ways of pushing were stopped before reaching origin.
+     $ git push origin HEAD:refs/heads/norboten-probe-1
+     PreToolUse:Bash hook error: [$CLAUDE_PROJECT_DIR/.claude/hooks/no-push.sh]: Blocked: agents do not push. …
+PASS 03_applied_migrations_are_protected: Edits to existing migrations were blocked; a new migration was written.
+PASS 04_the_applied_migration_is_restored: migrations/0002_add_due_date.sql matches what production ran, locally and on origin.
+</code></pre>
+<h2>Common wrong turns</h2>
+<p><strong>Reading the settings and concluding the hooks are fine.</strong> <code>edit|write</code> looks right, the scripts
+look right. Every one of the three faults is invisible until a hook is run and observed.</p>
+<p><strong>Debugging through a job that can push.</strong> Each run commits and pushes whatever is in the working
+tree — your trace lines included. Test hooks by hand first, and fix the push guard before anything
+else.</p>
+<p><strong>Changing the push guard to exit 2 for every Bash call.</strong> Nothing pushes, and nothing else works
+either: <code>git status</code> is refused. A guard must refuse the forbidden thing and nothing more.</p>
+<p><strong>Blocking every write under <code>migrations/</code>.</strong> Applied migrations are safe, and the agent can no
+longer write the new migration that is the correct way to change a schema.</p>
+<p><strong>Leaving the reason on stdout with exit 2.</strong> The call is blocked, but the model is told “No stderr
+output” and has no idea why, so it tries again another way.</p>
+<p><strong>Making the scripts executable with <code>chmod 777</code>.</strong> Executable is <code>755</code>. A hook anyone on the
+machine can rewrite is a hook anyone can disable — or use to run code in every agent session.</p>
+<p><strong>Relying on a relative path in the hook command.</strong> <code>.claude/hooks/no-push.sh</code> works while the
+session’s working directory is the project root. <code>$CLAUDE_PROJECT_DIR/.claude/hooks/…</code> works from
+anywhere.</p>
+<p><strong><code>git push --force</code> to make the migration commit disappear.</strong> It works on <code>origin</code> and breaks every
+clone that already fetched it. On a shared branch, fix forward.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># what hooks are configured, per event and matcher
+jq -c '.hooks | to_entries[] | {event: .key, matchers: [.value[].matcher]}' .claude/settings.json
+ls -l .claude/hooks                      # executable?
+
+# see what a hook receives: a first line that saves its stdin
+cat &gt; /tmp/hook-input.json
+
+# test a hook by hand, exactly as Claude Code runs it
+printf '%s' '{&quot;tool_name&quot;:&quot;Bash&quot;,&quot;tool_input&quot;:{&quot;command&quot;:&quot;git push origin main&quot;}}' \
+  | CLAUDE_PROJECT_DIR=$PWD &quot;$PWD/.claude/hooks/no-push.sh&quot;; echo &quot;exit $?&quot;
+
+# reading input inside a hook
+cmd=$(jq -r '.tool_input.command // &quot;&quot;')
+file=$(jq -r '.tool_input.file_path // &quot;&quot;')
+
+# blocking a PreToolUse call: either
+echo &quot;Blocked: reason for the model&quot; &gt;&amp;2; exit 2
+# or
+printf '%s\n' '{&quot;hookSpecificOutput&quot;:{&quot;hookEventName&quot;:&quot;PreToolUse&quot;,&quot;permissionDecision&quot;:&quot;deny&quot;,&quot;permissionDecisionReason&quot;:&quot;reason&quot;}}'; exit 0
+
+# after a headless run: what the hooks (and rules) refused
+jq -c '.permission_denials[] | {tool_name, tool_input}' run.json
+
+# matchers: exact names are case-sensitive
+&quot;matcher&quot;: &quot;Edit|Write&quot;        # yes
+&quot;matcher&quot;: &quot;edit|write&quot;        # matches nothing
+&quot;matcher&quot;: &quot;mcp__github__.*&quot;   # regex: every tool of one MCP server
+
+# undo one file from a pushed commit, forward
+git log --oneline -- path/to/file
+git restore --source=&lt;good-commit&gt; --staged --worktree -- path/to/file
+git commit -m &quot;Restore …&quot; &amp;&amp; git push
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Claude Code in a job</em> (topic journal <code>claude-code</code>) — Guards, helpers and outside data</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://code.claude.com/docs/en/hooks</li>
+<li>https://git-scm.com/docs/git-revert</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>Claude Code in a job</em> (<code>claude-code</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A <code>PreToolUse</code> hook has <code>&quot;matcher&quot;: &quot;bash&quot;</code>. What does it match, and how would you notice?</p>
+<blockquote>
+<p>Nothing: a matcher of plain letters is a list of exact tool names and names are case-sensitive,
+so only <code>Bash</code> matches the Bash tool. Nothing warns; a first line in the script that writes its
+stdin to a file shows it never runs.</p>
+</blockquote>
+</li>
+<li>
+<p>What does a command hook receive, and where? Give the jq expression for the path of a file the
+Write tool wrote.</p>
+<blockquote>
+<p>No arguments; one JSON object on stdin with <code>hook_event_name</code>, <code>tool_name</code>, <code>tool_input</code> and
+session fields, and <code>$CLAUDE_PROJECT_DIR</code> in the environment. <code>jq -r .tool_input.file_path</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>A guard prints “Blocked” and exits 1. What happens to the tool call, and what are the two correct
+ways to block?</p>
+<blockquote>
+<p>The call proceeds: any status other than 0 and 2 is a non-blocking error. Exit 2 with the reason
+on stderr, or exit 0 printing JSON with <code>hookSpecificOutput.permissionDecision</code> set to <code>deny</code>
+and a <code>permissionDecisionReason</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>A hook script has mode <code>0644</code>. What does Claude Code do with the call it was meant to guard?</p>
+<blockquote>
+<p>The shell cannot execute it (status 126), which is a non-blocking error, so the call goes ahead.
+Make it executable, or run it through <code>sh</code> in the command.</p>
+</blockquote>
+</li>
+<li>
+<p>Why can a <code>PostToolUse</code> hook not serve as a guard against editing a file?</p>
+<blockquote>
+<p>It runs after the tool has succeeded: the edit is already on disk. Exit 2 there only sends
+stderr to the model as feedback. Guards belong in <code>PreToolUse</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Your formatting hook strips trailing whitespace, and a test Write with trailing spaces comes out
+clean even while the hook is broken. Why is that test worthless?</p>
+<blockquote>
+<p>Claude Code’s Write and Edit tools already remove trailing whitespace from what they write, so
+the file is clean whether or not the hook ran. Test with a change the tool does not make itself
+(here, tab indentation), or with a trace of the hook’s input.</p>
+</blockquote>
+</li>
+<li>
+<p>While debugging, you run the nightly job to see whether your hook works. What happened to your
+debugging edits in this lab, and what should the order of work have been?</p>
+<blockquote>
+<p>The agent’s plan ends in <code>git add -A</code>, commit and push, so the edits were committed and pushed
+to <code>origin</code>. Test hooks by hand with sample JSON first, and fix the push guard before running the
+job again.</p>
+</blockquote>
+</li>
+<li>
+<p>An agent’s pushed commit changed an applied migration and also added a file you want to keep. How
+do you restore the migration on the shared branch?</p>
+<blockquote>
+<p>Take that one file from the commit that last had it right — <code>git restore --source=&lt;commit&gt; --staged --worktree -- &lt;file&gt;</code> — commit, and push. Reverting the whole commit also removes the
+wanted file (and here conflicts); force-pushing rewrites history other clones already have.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

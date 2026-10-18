@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A folder is shared by its group, not by its permissions alone</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A folder is shared by its group, not by its permissions alone</h1>
+  <div class="meta">users-permissions, linux-basics · 30 minutes · 2312 words</div>
+</header>
+<p>Three people share a folder and none of them can work in it. It is tempting to see one fault — “the
+permissions are wrong” — and one fix, <code>chmod -R 777</code>. There are really four separate questions, and
+each has its own answer in a different place: <strong>who is in the group</strong> (<code>/etc/group</code>), <strong>what the files
+that already exist allow</strong> (their owner, group and mode bits), <strong>what files created tomorrow will
+allow</strong> (the directory’s setgid bit, the author’s umask, default ACLs), and <strong>what everyone else can
+reach</strong> (the “other” bits — on the directory as much as on the files).</p>
+<p>The lab’s folder gets every one of them wrong, and a previous admin’s hardening makes the third worse:
+every login runs <code>umask 077</code>, so anything anyone writes is private to its author the moment it is
+saved. Fixing today’s files with <code>chmod</code> without touching the third question gives a folder that
+works this afternoon and is broken again tomorrow morning.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Say how the kernel picks <em>one</em> of owner, group or other for a given user and file, and why the
+choice is not cumulative.</li>
+<li>Explain what read, write and execute mean on a directory, and why a file can be unreachable even
+when its own bits allow reading.</li>
+<li>Add a user to a supplementary group without removing their other groups, and know when the change
+takes effect.</li>
+<li>Give a group access to an existing tree with <code>chgrp -R</code> and <code>chmod -R g+rwX,o-rwx</code>, and say what the
+capital <code>X</code> is for.</li>
+<li>Use the setgid bit on a directory so new files inherit its group.</li>
+<li>Read a umask and predict the mode of a file created under it; find where a login sets it.</li>
+<li>Use default ACLs to keep group access on new files regardless of the author’s umask, and read the
+<code>mask</code> and <code>#effective</code> lines <code>getfacl</code> prints.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>One class, chosen once</h3>
+<p>Every file has an owner, a group and nine mode bits: <code>rwx</code> for the owner, <code>rwx</code> for the group, <code>rwx</code>
+for everyone else. When a process opens the file, the kernel does not add these up. It picks exactly
+one class and uses only its bits:</p>
+<ol>
+<li>If the process’s user <strong>is the owner</strong>, the owner bits decide — even if they allow less than the
+group bits would.</li>
+<li>Otherwise, if the owning group is the process’s primary group <strong>or any of its supplementary
+groups</strong>, the group bits decide.</li>
+<li>Otherwise the other bits decide.</li>
+</ol>
+<p>root skips the check for reading and writing. That is why the grader, and you with <code>sudo</code>, see
+everything, and why you must look at the folder through the users’ own eyes — <code>su - bob</code> — to see
+what bob sees.</p>
+<p>In the broken folder, <code>budget.csv</code> is <code>-rw-r--r-- bob bob</code>. bob is its owner and may write. alice is
+not bob and not in the group <code>bob</code>, so the other bits apply: read only. dave is in the same position
+as alice — which is exactly the problem, because dave is not on the team.</p>
+<h3>Directories: read lists, write changes, execute enters</h3>
+<p>On a directory the same bits mean different things:</p>
+<table>
+<thead>
+<tr>
+<th>bit</th>
+<th>on a file</th>
+<th>on a directory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>r</code></td>
+<td>read the contents</td>
+<td>list the names in it</td>
+</tr>
+<tr>
+<td><code>w</code></td>
+<td>change the contents</td>
+<td>create, rename and delete entries in it (with <code>x</code>)</td>
+</tr>
+<tr>
+<td><code>x</code></td>
+<td>run it</td>
+<td>enter it: reach anything inside by name</td>
+</tr>
+</tbody>
+</table>
+<p>Two consequences matter here. A file is reachable only if you have <code>x</code> on <strong>every directory on the
+path</strong> to it, so taking <code>x</code> away from others on <code>/srv/reports</code> locks dave out of every file inside,
+whatever those files’ own bits say. And deleting a file needs write on the <em>directory</em>, not on the
+file: anyone with <code>w</code> and <code>x</code> on a shared folder can delete anyone else’s report. (The sticky bit,
+<code>chmod +t</code>, restricts deletion to the file’s owner; <code>/tmp</code> uses it. A team that edits each other’s
+files usually does not want it, but it is the answer when they should only add.)</p>
+<h3>Groups: membership is read at login</h3>
+<p>A user’s groups are listed in <code>/etc/group</code>. <code>usermod -aG reports carol</code> appends <code>reports</code> to carol’s
+supplementary groups; without <code>-a</code>, <code>-G</code> <em>replaces</em> them and silently removes every other group she
+had. The change is recorded at once, but a process’s groups are fixed when it is created, so a
+session that was already open keeps its old list. <code>su - carol</code>, a new SSH login or <code>newgrp reports</code>
+picks up the new one. This is the most common reason a correct fix “does not work” until someone logs
+out.</p>
+<h3>What decides a new file’s mode</h3>
+<p>A program that creates a file asks for a mode — usually <code>0666</code> for files and <code>0777</code> for directories —
+and the kernel removes the bits set in the process’s <strong>umask</strong>. With the usual <code>022</code>, files come out
+<code>0644</code> and directories <code>0755</code>. With <code>002</code> — Ubuntu’s default for users who have their own private
+group, applied by <code>pam_umask</code> — they come out <code>0664</code> and <code>0775</code>. With the hardening in this lab,
+<code>077</code>, they come out <code>0600</code> and <code>0700</code>: nobody but the author can do anything.</p>
+<p>A umask is inherited by child processes, and it is set in more than one place: <code>/etc/login.defs</code>
+(<code>UMASK</code>, read by <code>pam_umask</code>), <code>/etc/profile</code> and <code>/etc/profile.d/*.sh</code> for login shells, and a
+user’s own <code>~/.profile</code> or <code>~/.bashrc</code>. The last one to run wins. Here it is
+<code>/etc/profile.d/00-hardening.sh</code>.</p>
+<p>The new file’s <strong>group</strong> is decided separately. Normally it is the creator’s primary group — alice’s
+files get the group <code>alice</code>. If the directory has the <strong>setgid</strong> bit (<code>chmod g+s</code>, shown as <code>s</code> in the
+group execute position), new entries get the directory’s group instead, and new subdirectories inherit
+the setgid bit, so the rule propagates down the tree.</p>
+<h3>Default ACLs: group access the umask cannot remove</h3>
+<p>POSIX ACLs add entries beyond the three classes: <code>group:reports:rwx</code> grants that named group access
+whether or not it owns the file. An ACL on a directory can also carry <strong>default</strong> entries, which are
+copied onto every file and directory created inside it.</p>
+<p>Default ACLs change how the umask applies: when the parent directory has a default ACL, the umask is
+not used at all. The new file’s ACL comes from the defaults, limited only by the mode the program
+asked for. So a default <code>group:reports:rwx</code> gives every new file group read and write even under
+<code>umask 077</code> — which is why the reference solution uses it.</p>
+<p>One more entry appears whenever named entries exist: the <strong>mask</strong>. It is the maximum any named user,
+named group or the owning group can get, and it is what <code>ls -l</code> shows in the group position. A file
+created with mode <code>0666</code> gets a mask of <code>rw-</code>, so <code>getfacl</code> prints <code>group:reports:rwx #effective:rw-</code>:
+the entry says <code>rwx</code>, the mask cuts it to <code>rw-</code>. A later <code>chmod g-w</code> lowers the mask, and with it every
+named entry at once — a frequent surprise.</p>
+<h2>A failure, walked through</h2>
+<p>The roster names three people. The group has two:</p>
+<pre><code class="language-console">$ cat /srv/reports/TEAM.txt
+reports team: alice bob carol
+$ getent group reports
+reports:x:1001:alice,bob
+$ id carol ; id dave
+uid=1003(carol) gid=1004(carol) groups=1004(carol)
+uid=1004(dave) gid=1005(dave) groups=1005(dave)
+</code></pre>
+<p><strong>1. Look at the folder as a listing, then as the people who use it.</strong></p>
+<pre><code class="language-console">$ ls -la /srv/reports /srv/reports/drafts
+/srv/reports:
+drwxr-xr-x 3 alice alice 4096 Sep 14 09:57 .
+-rw------- 1 alice alice   31 Sep 14 09:57 2026-q3-summary.txt
+-rw-r--r-- 1 alice root    30 Sep 14 09:57 TEAM.txt
+-rw-r--r-- 1 bob   bob     38 Sep 14 09:57 budget.csv
+drwxr-xr-x 2 bob   bob   4096 Sep 14 09:57 drafts
+
+/srv/reports/drafts:
+-rw------- 1 bob   bob     21 Sep 14 09:57 q4-outline.txt
+$ sudo su - bob -c 'cat /srv/reports/2026-q3-summary.txt'
+cat: /srv/reports/2026-q3-summary.txt: Permission denied
+$ sudo su - dave -c 'cat /srv/reports/budget.csv'
+item,amount
+servers,1200
+licences,300
+</code></pre>
+<p>Every file belongs to its author’s private group, so the group bits never apply to a teammate, and the
+folder is <code>755</code> — open to everyone for reading.</p>
+<p><strong>2. Find out what tomorrow’s files will look like.</strong></p>
+<pre><code class="language-console">$ sudo su - alice -c 'umask; touch /srv/reports/scratch.txt; ls -l /srv/reports/scratch.txt'
+0077
+-rw------- 1 alice alice 0 Sep 14 09:57 /srv/reports/scratch.txt
+$ grep -rn umask /etc/profile /etc/profile.d/ /etc/login.defs /etc/pam.d/common-session | grep -v ':#'
+/etc/profile.d/00-hardening.sh:2:umask 077
+/etc/pam.d/common-session:23:session optional			pam_umask.so
+</code></pre>
+<p><code>pam_umask</code> would give <code>002</code>; the profile snippet runs later and wins.</p>
+<p><strong>3. Fix the group, then the existing tree.</strong></p>
+<pre><code class="language-console">$ sudo usermod -aG reports carol
+$ id carol
+uid=1003(carol) gid=1004(carol) groups=1004(carol),1001(reports)
+$ sudo chgrp -R reports /srv/reports
+$ sudo chmod -R g+rwX,o-rwx /srv/reports
+$ sudo find /srv/reports -type d -exec chmod g+s {} +
+$ ls -ld /srv/reports ; sudo ls -la /srv/reports
+drwxrws--- 3 alice reports 4096 Sep 14 09:57 /srv/reports
+drwxrws--- 3 alice reports 4096 Sep 14 09:57 .
+-rw-rw---- 1 alice reports   31 Sep 14 09:57 2026-q3-summary.txt
+-rw-rw---- 1 alice reports   30 Sep 14 09:57 TEAM.txt
+-rw-rw---- 1 bob   reports   38 Sep 14 09:57 budget.csv
+drwxrws--- 2 bob   reports 4096 Sep 14 09:57 drafts
+</code></pre>
+<p><code>g+rwX</code> gives the group read and write, and execute only where it makes sense: on directories, and on
+files that were already executable for someone. A lowercase <code>x</code> would have marked every report as a
+program. Note that the plain <code>ls</code> of the folder, as <code>learner</code>, would now be refused: you are not on the
+team either.</p>
+<p><strong>4. Check tomorrow, not just today.</strong> The setgid bit got the group right; the umask still wins:</p>
+<pre><code class="language-console">$ sudo su - alice -c 'echo &quot;first draft&quot; &gt; /srv/reports/q4-plan.txt'
+$ sudo ls -l /srv/reports/q4-plan.txt
+-rw------- 1 alice reports 12 Sep 14 09:57 /srv/reports/q4-plan.txt
+$ sudo su - bob -c 'echo &quot;bob was here&quot; &gt;&gt; /srv/reports/q4-plan.txt'
+-bash: line 1: /srv/reports/q4-plan.txt: Permission denied
+</code></pre>
+<p><strong>5. Give the group a default ACL.</strong> <code>-m</code> sets the entry on what exists; <code>-d -m</code> sets the default for
+what will be created:</p>
+<pre><code class="language-console">$ sudo setfacl -R -m g:reports:rwX /srv/reports
+$ sudo setfacl -R -d -m g:reports:rwX /srv/reports
+$ getfacl -p /srv/reports
+# file: /srv/reports
+# owner: alice
+# group: reports
+# flags: -s-
+user::rwx
+group::rwx
+group:reports:rwx
+mask::rwx
+other::---
+default:user::rwx
+default:group::rwx
+default:group:reports:rwx
+default:mask::rwx
+default:other::---
+$ sudo su - alice -c 'echo &quot;second draft&quot; &gt; /srv/reports/q4-plan-v2.txt'
+$ sudo getfacl -p /srv/reports/q4-plan-v2.txt
+# file: /srv/reports/q4-plan-v2.txt
+# owner: alice
+# group: reports
+user::rw-
+group::rwx	#effective:rw-
+group:reports:rwx	#effective:rw-
+mask::rw-
+other::---
+$ sudo su - bob -c 'echo &quot;bob was here&quot; &gt;&gt; /srv/reports/q4-plan-v2.txt &amp;&amp; tail -1 /srv/reports/q4-plan-v2.txt'
+bob was here
+$ sudo su - carol -c 'mkdir /srv/reports/carol-notes &amp;&amp; ls -ld /srv/reports/carol-notes'
+drwxrws---+ 2 carol reports 4096 Sep 14 09:57 /srv/reports/carol-notes
+$ sudo su - dave -c 'ls /srv/reports'
+ls: cannot open directory '/srv/reports': Permission denied
+</code></pre>
+<p>The <code>+</code> after the mode is <code>ls</code> saying “there is an ACL; the nine bits are not the whole story”.
+carol’s new directory is group <code>reports</code>, setgid, and carries the defaults on. With the test files
+removed, the grader passed all four checks.</p>
+<p>The same result is available without ACLs: keep the setgid directories and give the team a umask that
+keeps group write (<code>umask 007</code>) where their logins set it. That depends on every program the team uses
+honouring a login umask — an editor started from a desktop session or a file copied in by a service
+may not — which is the argument for the ACL.</p>
+<h2>Common wrong turns</h2>
+<p><strong><code>chmod -R 777</code>.</strong> Everyone can do everything, including dave, including deleting the whole folder.
+It also stops working tomorrow: new files are still created under <code>umask 077</code>.</p>
+<p><strong><code>usermod -G reports carol</code>.</strong> Without <code>-a</code>, carol loses every other supplementary group she had —
+<code>sudo</code>, perhaps. Always <code>-aG</code>, or <code>gpasswd -a carol reports</code>.</p>
+<p><strong>Testing as yourself with <code>sudo</code>.</strong> root is not subject to the permission check for reading and
+writing, so everything “works”. Test as the people concerned: <code>su - bob -c '…'</code>.</p>
+<p><strong>Testing in a session that was already open.</strong> Group membership is read when a process starts. A
+shell opened before <code>usermod</code> still does not have the group; log in again, or use <code>su -</code>.</p>
+<p><strong>Fixing the files and not the directories.</strong> Without <code>x</code> on <code>drafts</code>, nobody reaches the files in
+it however open they are. And without <code>w</code> on a directory, nobody can create or rename anything in it.</p>
+<p><strong><code>chmod -R g+x</code></strong> instead of <code>g+X</code>. Every report becomes executable. Harmless until someone runs one.</p>
+<p><strong>Removing the hardening snippet.</strong> It works in this folder, and it also makes every file every user
+creates anywhere group-readable. The hardening had a purpose; the team folder needed an exception, not
+the removal of the rule.</p>
+<p><strong>Setting only access ACLs (<code>setfacl -m</code>) without defaults (<code>-d -m</code>).</strong> Today’s files work, tomorrow’s
+do not — the same trap as <code>chmod</code>, with more typing.</p>
+<p><strong><code>chmod g-w</code> on an ACL’d file to “tidy up”.</strong> It lowers the mask, and every named entry loses write
+with it; <code>getfacl</code> shows <code>#effective:r--</code> and bob is locked out again.</p>
+<p><strong>Copying files in with <code>cp -p</code> or <code>rsync -a</code> from elsewhere.</strong> Preserving modes and groups preserves
+the old private ones. Copy without preserving, or fix the group afterwards.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># who, and in which groups
+id alice ; id -nG alice              # groups by name
+getent group reports                 # the group's members
+sudo usermod -aG reports carol       # append (-a!) a supplementary group
+sudo gpasswd -a carol reports        # the same; gpasswd -d removes
+newgrp reports                       # a shell with the new group, without logging out
+
+# what is there
+ls -la /srv/reports ; stat -c '%A %U:%G %n' /srv/reports/*
+namei -l /srv/reports/drafts/q4-outline.txt   # every directory on the path, with its bits
+sudo su - bob -c 'test -w /srv/reports/budget.csv &amp;&amp; echo writable'
+
+# existing files
+sudo chgrp -R reports /srv/reports
+sudo chmod -R g+rwX,o-rwx /srv/reports        # X: execute only for dirs (and already-executables)
+sudo find /srv/reports -type d -exec chmod g+s {} +   # setgid: new entries get the dir's group
+chmod +t /srv/drop                            # sticky: only the owner may delete their file
+
+# new files
+umask                                # 0022 → 644/755, 0002 → 664/775, 0077 → 600/700
+grep -rn umask /etc/profile /etc/profile.d /etc/login.defs ~/.profile ~/.bashrc
+# default ACLs ignore the umask:
+sudo setfacl -R  -m g:reports:rwX /srv/reports   # what exists
+sudo setfacl -R -d -m g:reports:rwX /srv/reports # what will be created
+getfacl -p /srv/reports              # mask:: caps named entries; #effective: shows the result
+sudo setfacl -R -b /srv/reports      # remove all ACL entries
+# ls -l shows '+' when a file has an ACL; the group bits it shows are the mask
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Nine letters and a refusal</em> (lab journal <code>hello</code>) — How the kernel picks a triad</li>
+</ul>
+<p>Manual pages: <code>man 1 id</code>, <code>man 1 getent</code>, <code>man 1 chmod</code>, <code>man 5 login.defs</code>, <code>man 5 acl</code>.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>alice owns <code>plan.txt</code>, mode <code>0460</code> (<code>r--rw----</code>), group <code>reports</code>, and alice is in <code>reports</code>. Can
+alice write to it?</p>
+<blockquote>
+<p>No. The owner class is chosen first and only its bits count: <code>r--</code>. Being in the group does not
+add the group’s <code>rw-</code>. The kernel picks one class, it does not combine them.</p>
+</blockquote>
+</li>
+<li>
+<p><code>budget.csv</code> is <code>-rw-rw-rw-</code> but dave cannot read it. What could stop him?</p>
+<blockquote>
+<p>A directory on the path. Reaching a file needs execute on every directory leading to it; with
+<code>/srv/reports</code> at <code>drwxrws---</code>, dave, as “other”, cannot enter it, so the file’s own bits are
+never consulted.</p>
+</blockquote>
+</li>
+<li>
+<p>After <code>sudo usermod -aG reports carol</code>, carol’s already-open terminal still cannot write to the
+folder. Why, and what are two ways to get the group without a reboot?</p>
+<blockquote>
+<p>A process’s groups are set when it starts; the shell that was open before the change keeps its
+old list. A new login (<code>su - carol</code>, a new SSH session) reads the new membership; <code>newgrp reports</code>
+starts a shell with it.</p>
+</blockquote>
+</li>
+<li>
+<p>With <code>umask 077</code>, a program creates a file asking for mode <code>0666</code> in a directory that has no ACL.
+What mode does the file get, and which group?</p>
+<blockquote>
+<p><code>0600</code>: the umask removes group and other bits. The group is the creator’s primary group — unless
+the directory is setgid, in which case it is the directory’s group.</p>
+</blockquote>
+</li>
+<li>
+<p>What does the setgid bit do on a directory, and what does it not do?</p>
+<blockquote>
+<p>New files and subdirectories get the directory’s group instead of the creator’s primary group,
+and new subdirectories inherit setgid. It does not change any permission bits: under a <code>077</code>
+umask the file has the right group and still no group access.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does a default ACL entry <code>group:reports:rwx</code> give group write to new files even under
+<code>umask 077</code>?</p>
+<blockquote>
+<p>When the parent directory has a default ACL, the umask is not applied. The new file’s ACL is
+copied from the defaults and limited only by the mode the program requested (<code>0666</code> for a file),
+so the named group gets <code>rw-</code>.</p>
+</blockquote>
+</li>
+<li>
+<p><code>getfacl</code> shows <code>group:reports:rwx #effective:r--</code>. What is limiting the group, and what command
+typically causes it?</p>
+<blockquote>
+<p>The mask entry, which caps named users, named groups and the owning group; here it is <code>r--</code>.
+A <code>chmod g-w</code> (or any chmod of the group bits) on a file with an ACL sets the mask.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>chmod -R g+rwX</code> better than <code>chmod -R g+rwx</code> for a folder of documents?</p>
+<blockquote>
+<p>Capital <code>X</code> adds execute only to directories, which need it to be entered, and to files that are
+already executable for someone. Lowercase <code>x</code> marks every document as a program.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

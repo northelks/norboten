@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A deploy script is a transaction, or it is a hazard · Norboten</title>
+<meta name="description" content="deploy-site is eight lines long and does what every deploy script does: make a directory, unpack a release into it, point the live link at it, say so. On a good">
+<link rel="canonical" href="https://norboten.org/journals/bash-01-deploy-took-the-site-down/"><meta property="og:title" content="A deploy script is a transaction, or it is a hazard · Norboten">
+<meta property="og:description" content="deploy-site is eight lines long and does what every deploy script does: make a directory, unpack a release into it, point the live link at it, say so. On a good">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/bash-01-deploy-took-the-site-down/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A deploy script is a transaction, or it is a hazard · Norboten">
+<meta name="twitter:description" content="deploy-site is eight lines long and does what every deploy script does: make a directory, unpack a release into it, point the live link at it, say so. On a good">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A deploy script is a transaction, or it is a hazard",
+  "description": "deploy-site is eight lines long and does what every deploy script does: make a directory, unpack a release into it, point the live link at it, say so. On a good",
+  "url": "https://norboten.org/journals/bash-01-deploy-took-the-site-down/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 2714,
+  "timeRequired": "PT35M",
+  "about": ["Bash", "Linux basics"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Deploy That Took the Site Down</div>
+    <h1>A deploy script is a transaction, or it is a hazard</h1>
+    <p class="muted">
+      35 minutes' reading · 2714 words ·<span class="tag">Bash</span><span class="tag">Linux basics</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 133 words</title><rect x="0.0" y="0" width="27.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 1329 words</title><rect x="30.8" y="0" width="277.4" height="30" rx="4" fill="#1d2a23"/><text x="38.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 1039 words</title><rect x="311.1" y="0" width="216.9" height="30" rx="4" fill="#4ade80"/><text x="319.1" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 328 words</title><rect x="531.0" y="0" width="68.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 238 words</title><rect x="602.5" y="0" width="49.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 80 words</title><rect x="655.1" y="0" width="16.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 408 words</title><rect x="674.8" y="0" width="85.2" height="30" rx="4" fill="#1d2a23"/><text x="682.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/bash-01-deploy-took-the-site-down/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p><code>deploy-site</code> is eight lines long and does what every deploy script does: make a directory, unpack a
+release into it, point the live link at it, say so. On a good day it works, and it worked on every
+good day for months. The incident did not happen on a good day. A release archive arrived cut short;
+tar complained, the script paid no attention, replaced the live link with a directory holding one
+empty file, and printed <code>deployed</code>. The site served nothing until someone looked.</p>
+<p>It is tempting to call that a quoting bug, or an error-handling bug, and fix the one line. The better
+reading is that the script was written as a <strong>list of steps</strong>, and a deploy is not a list of steps. It
+is a <strong>transaction</strong>: either the new release is fully in place and live, or nothing visible has
+changed. Everything in this lab — stopping at the first failure, checking the argument, quoting paths,
+unique release directories, the atomic switch — is one of the things a shell script has to do by hand
+to behave like a transaction, because the shell will not do any of it for you.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Read a shell script and say, for each command, what happens to the rest of the script when that
+command fails.</li>
+<li>Use <code>set -euo pipefail</code> and explicit checks together, and know which failures each one catches.</li>
+<li>Validate arguments before touching anything, and report misuse with a usage message on stderr and a
+distinct exit status.</li>
+<li>Quote every expansion of a path, and explain what an unquoted one does in a directory whose name
+contains a space.</li>
+<li>Give every release its own directory, and replace a live symlink atomically with <code>ln -sfn</code> and
+<code>mv -T</code>.</li>
+<li>Clean up what a failed run created, so a failure leaves the system as it found it.</li>
+<li>Test the failure paths of a script against throwaway directories instead of the live site.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="the-script-line-by-line">The script, line by line</h3>
+<pre class="hl"><code class="language-bash"><span class="hl-nv">SITE_ROOT</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">SITE_ROOT</span><span class="hl-k">:-</span><span class="hl-p">/srv/www</span><span class="hl-si">}</span>
+<span class="hl-nv">tarball</span><span class="hl-o">=</span><span class="hl-nv">$1</span>
+<span class="hl-nv">stamp</span><span class="hl-o">=</span><span class="hl-k">$(</span>date<span class="hl-w"> </span>+%Y%m%d%H%M%S<span class="hl-k">)</span>
+<span class="hl-nv">release</span><span class="hl-o">=</span><span class="hl-nv">$SITE_ROOT</span>/releases/<span class="hl-nv">$stamp</span>
+
+mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-nv">$release</span>
+tar<span class="hl-w"> </span>-xzf<span class="hl-w"> </span><span class="hl-nv">$tarball</span><span class="hl-w"> </span>-C<span class="hl-w"> </span><span class="hl-nv">$release</span>
+rm<span class="hl-w"> </span>-f<span class="hl-w"> </span><span class="hl-nv">$SITE_ROOT</span>/current
+ln<span class="hl-w"> </span>-s<span class="hl-w"> </span><span class="hl-nv">$release</span><span class="hl-w"> </span><span class="hl-nv">$SITE_ROOT</span>/current
+<span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"deployed </span><span class="hl-nv">$stamp</span><span class="hl-s2">"</span>
+</code></pre>
+
+<p>Take each line and ask &quot;and if this fails?&quot;:</p>
+<ol>
+<li><code>tarball=$1</code> — if no argument was given, <code>tarball</code> is empty and nothing complains.</li>
+<li><code>mkdir -p $release</code> — <code>-p</code> also means &quot;and do not complain if it already exists&quot;, so a second
+deploy in the same second silently reuses the first one's directory.</li>
+<li><code>tar -xzf $tarball -C $release</code> — tar prints an error and exits non-zero. The script does not look.</li>
+<li><code>rm -f $SITE_ROOT/current</code> — the live link is gone. From here until the next line, the site has no
+content at all.</li>
+<li><code>ln -s $release $SITE_ROOT/current</code> — the link now points at whatever step 3 left behind.</li>
+<li><code>echo &quot;deployed $stamp&quot;</code> — always succeeds, so the script's exit status is always 0.</li>
+</ol>
+<p>Every one of those is ordinary shell behaviour. A shell script does not stop when a command fails;
+the exit status of a script is the exit status of its <strong>last</strong> command; and nothing is undone. That is
+the whole story of the incident.</p>
+<h3 id="exit-status-is-the-only-channel-a-caller-has">Exit status is the only channel a caller has</h3>
+<p>Whoever runs a deploy — a person, a CI job, a configuration tool — learns whether it worked from the
+exit status. <code>0</code> means success, anything else means failure, and by convention <code>2</code> means &quot;you called
+me wrong&quot;. Standard output is for data; diagnostics go to <strong>standard error</strong>, so that
+<code>deploy-site x.tar.gz &gt; /dev/null</code> can stay quiet on success and still show a failure.</p>
+<p>The last-command rule is what makes a script lie. A script that ends with <code>echo</code> returns <code>echo</code>'s
+status, and <code>echo</code> does not fail. The fix is not &quot;exit 1 at the end&quot;; it is making sure that no
+failing command is followed by more steps.</p>
+<h3 id="set--euo-pipefail-a-net-with-holes"><code>set -euo pipefail</code>: a net with holes</h3>
+<pre class="hl"><code class="language-bash"><span class="hl-nb">set</span><span class="hl-w"> </span>-euo<span class="hl-w"> </span>pipefail
+</code></pre>
+
+<ul>
+<li><code>-e</code> exits when a command returns non-zero.</li>
+<li><code>-u</code> treats an unset variable as an error, so <code>$1</code> without an argument stops the script instead of
+expanding to nothing.</li>
+<li><code>-o pipefail</code> makes a pipeline fail if any stage fails, not only the last.</li>
+</ul>
+<p><code>-e</code> has well-known exemptions, and they matter in deploy scripts because deploy scripts are full of
+conditions:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-k">if</span><span class="hl-w"> </span>tar<span class="hl-w"> </span>-xzf<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$tarball</span><span class="hl-s2">"</span><span class="hl-w"> </span>-C<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$release</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span><span class="hl-w"> </span>…<span class="hl-w">   </span><span class="hl-c1"># a condition: -e does not fire, by design</span>
+tar<span class="hl-w"> </span>…<span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"warning"</span><span class="hl-w">                         </span><span class="hl-c1"># the || handled it: no exit</span>
+f<span class="hl-o">()</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span>tar<span class="hl-w"> </span>…<span class="hl-p">;</span><span class="hl-w"> </span>ln<span class="hl-w"> </span>…<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span><span class="hl-p">;</span><span class="hl-w"> </span>f<span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span>rollback<span class="hl-w">            </span><span class="hl-c1"># -e is off inside f for the whole call</span>
+<span class="hl-nv">count</span><span class="hl-o">=</span><span class="hl-k">$(</span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span>x<span class="hl-w"> </span>file<span class="hl-k">)</span><span class="hl-w">                         </span><span class="hl-c1"># -e does fire: the assignment has cmd's status</span>
+<span class="hl-nb">local</span><span class="hl-w"> </span><span class="hl-nv">out</span><span class="hl-o">=</span><span class="hl-k">$(</span>cmd<span class="hl-k">)</span><span class="hl-w">                                </span><span class="hl-c1"># but not here: the status is local's, which is 0</span>
+</code></pre>
+
+<p>So <code>set -e</code> catches the commands you forgot to check, and explicit checks handle the commands whose
+failure needs a specific response. In this script, tar's failure needs one — delete the half-unpacked
+directory and leave the live link alone — so tar gets an explicit <code>if !</code>, and <code>-e</code> guards the rest.</p>
+<h3 id="arguments-first">Arguments first</h3>
+<p>Validating input before doing anything is the cheapest transaction logic there is: nothing has
+changed yet, so there is nothing to undo.</p>
+<pre class="hl"><code class="language-bash"><span class="hl-k">if</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$#</span><span class="hl-s2">"</span><span class="hl-w"> </span>-ne<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span>
+<span class="hl-w">    </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"usage: deploy-site &lt;release.tar.gz&gt;"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span>
+<span class="hl-w">    </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span>
+<span class="hl-k">fi</span>
+<span class="hl-nv">tarball</span><span class="hl-o">=</span><span class="hl-nv">$1</span>
+<span class="hl-k">if</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span>!<span class="hl-w"> </span>-f<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$tarball</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span>
+<span class="hl-w">    </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"deploy-site: </span><span class="hl-nv">$tarball</span><span class="hl-s2">: no such file"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span>
+<span class="hl-w">    </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span>
+<span class="hl-k">fi</span>
+</code></pre>
+
+<p><code>$#</code> is the number of positional parameters. Note what the broken script did without this: with no
+argument, <code>tar -xzf $tarball -C $release</code> became <code>tar -xzf -C /srv/www/releases/…</code>, and <code>-f</code> took
+<code>-C</code> as the name of the archive. The error message — <code>-C: Cannot open</code> — is baffling unless you
+know that the argument vanished.</p>
+<h3 id="word-splitting-again-because-paths-have-spaces">Word splitting, again, because paths have spaces</h3>
+<p>An unquoted <code>$release</code> is split at spaces, tabs and newlines, and each piece is then glob-expanded.
+With <code>SITE_ROOT=&quot;/srv/web root&quot;</code>:</p>
+<pre><code>mkdir -p $release   →   mkdir -p /srv/web root/releases/20260913…
+                         two arguments: &quot;/srv/web&quot; and &quot;root/releases/20260913…&quot;
+</code></pre>
+<p>The second argument is a <strong>relative</strong> path, so it is created in the current directory — wherever the
+script was started from. The same happens to <code>rm</code> and <code>ln</code>. A deploy script that splits paths does
+not merely fail; it scatters directories and links across the filesystem. The rule is simple: quote
+every expansion (<code>&quot;$release&quot;</code>, <code>&quot;$SITE_ROOT/current&quot;</code>), always.</p>
+<p><code>shellcheck</code> catches this class of bug mechanically, and every shell script worth keeping should pass
+it. It does <strong>not</strong> catch missing error handling: the original script produces only quoting warnings,
+and a script with perfect quoting can still end in <code>echo</code> and lie.</p>
+<h3 id="unique-release-directories">Unique release directories</h3>
+<p>A timestamp with one-second resolution is not an identifier. Two deploys in the same second — a
+retry, a pipeline that runs twice — get the same name, and <code>mkdir -p</code> happily reuses the directory, so
+the second release is unpacked over the first. Files that exist only in the first release remain.</p>
+<p><code>mktemp -d</code> creates a directory that did not exist before, atomically, with a unique suffix:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-nv">release</span><span class="hl-o">=</span><span class="hl-k">$(</span>mktemp<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SITE_ROOT</span><span class="hl-s2">/releases/</span><span class="hl-k">$(</span>date<span class="hl-w"> </span>+%Y%m%d%H%M%S<span class="hl-k">)</span><span class="hl-s2">.XXXXXX"</span><span class="hl-k">)</span>
+chmod<span class="hl-w"> </span><span class="hl-m">755</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$release</span><span class="hl-s2">"</span><span class="hl-w">     </span><span class="hl-c1"># mktemp creates it 0700</span>
+</code></pre>
+
+<p>The timestamp prefix keeps the names roughly chronological; the random suffix makes them unique. The
+suffix is random, so two releases from the same second do not sort in creation order — something to
+remember if another tool picks &quot;the newest&quot; release by name. When that matters, use nanoseconds
+(<code>date +%Y%m%d%H%M%S%N</code>) or a counter.</p>
+<h3 id="replacing-a-symlink-atomically">Replacing a symlink atomically</h3>
+<p>The live link has to go from the old release to the new one with <strong>no moment in between</strong> when it is
+missing or wrong. <code>rm</code> then <code>ln</code> has such a moment. <code>ln -sf new current</code> looks like it replaces the
+link, but when <code>current</code> is a symlink to a directory, <code>ln</code> dereferences it and creates the new link
+<strong>inside</strong> the old release directory instead. <code>-n</code> (<code>--no-dereference</code>) stops that:</p>
+<pre class="hl"><code class="language-bash">ln<span class="hl-w"> </span>-sfn<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$release</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SITE_ROOT</span><span class="hl-s2">/current"</span>
+</code></pre>
+
+<p><code>ln -sfn</code> still works by unlinking and re-creating, which is a very short gap but a gap. The
+fully atomic way is to create the new link under a temporary name and rename it over the old one,
+because <code>rename(2)</code> on the same filesystem replaces the destination in a single step:</p>
+<pre class="hl"><code class="language-bash">ln<span class="hl-w"> </span>-sfn<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$release</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SITE_ROOT</span><span class="hl-s2">/.current.new"</span>
+mv<span class="hl-w"> </span>-Tf<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SITE_ROOT</span><span class="hl-s2">/.current.new"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SITE_ROOT</span><span class="hl-s2">/current"</span>
+</code></pre>
+
+<p><code>mv -T</code> (<code>--no-target-directory</code>) matters for the same reason as <code>ln -n</code>: without it, <code>mv</code> would move
+the new link <em>into</em> the directory <code>current</code> points to. Both flags are GNU extensions; on BSD and macOS
+the equivalents are <code>ln -sfh</code> and <code>mv -h</code>.</p>
+<h3 id="cleaning-up-after-a-failure">Cleaning up after a failure</h3>
+<p>A failed extraction leaves a directory that looks like a release. Leave it there and the next
+&quot;keep the five newest releases&quot; job will count it, or someone will point <code>current</code> at it by hand. The
+failure branch removes what the run created:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-k">if</span><span class="hl-w"> </span>!<span class="hl-w"> </span>tar<span class="hl-w"> </span>-xzf<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$tarball</span><span class="hl-s2">"</span><span class="hl-w"> </span>-C<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$release</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span>
+<span class="hl-w">    </span>rm<span class="hl-w"> </span>-rf<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$release</span><span class="hl-s2">"</span>
+<span class="hl-w">    </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"deploy-site: cannot unpack </span><span class="hl-nv">$tarball</span><span class="hl-s2">; the live release is unchanged"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span>
+<span class="hl-w">    </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span>
+<span class="hl-k">fi</span>
+</code></pre>
+
+<p><code>--</code> ends option parsing, so a path that starts with <code>-</code> cannot be taken as an option. For scripts
+with several resources to clean, a <code>trap</code> on <code>EXIT</code> (or <code>ERR</code>) does the same job in one place:</p>
+<pre class="hl"><code class="language-bash">cleanup<span class="hl-o">()</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">release</span><span class="hl-k">:-</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">done</span><span class="hl-k">:-</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-w"> </span>!<span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>rm<span class="hl-w"> </span>-rf<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$release</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+<span class="hl-nb">trap</span><span class="hl-w"> </span>cleanup<span class="hl-w"> </span>EXIT
+</code></pre>
+
+<h3 id="testing-failure-paths-without-touching-the-site">Testing failure paths without touching the site</h3>
+<p><code>deploy-site</code> already reads <code>SITE_ROOT</code>, which makes it testable: point it at <code>/tmp</code>, build a fake
+current release there, and try every outcome — a good archive, a truncated one, a missing one, no
+argument, a root with spaces, two deploys in a row. <code>bash -x</code> prints every command after expansion,
+which is where splitting and empty variables become visible. That is exactly how the grader tests
+the script, and exactly how you should test it before you trust it.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the track's lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. See what is live, then read the script.</strong> Before anything runs, know what a good state looks like.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/srv/www<span class="hl-w"> </span>/srv/www/releases
+<span class="hl-go">/srv/www:</span>
+<span class="hl-go">total 4</span>
+<span class="hl-go">lrwxrwxrwx 1 root root   32 Sep 14 03:24 current -&gt; /srv/www/releases/20260912083000</span>
+<span class="hl-go">drwxr-xr-x 3 root root 4096 Sep 14 03:24 releases</span>
+
+<span class="hl-go">/srv/www/releases:</span>
+<span class="hl-go">total 4</span>
+<span class="hl-go">drwxr-xr-x 2 root root 4096 Sep 14 03:24 20260912083000</span>
+<span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/usr/local/bin/deploy-site
+<span class="hl-gp">#</span>!/bin/bash
+<span class="hl-gp"># </span>deploy-site<span class="hl-w"> </span>&lt;release.tar.gz&gt;<span class="hl-w"> </span>—<span class="hl-w"> </span>unpack<span class="hl-w"> </span>a<span class="hl-w"> </span>release<span class="hl-w"> </span>and<span class="hl-w"> </span>make<span class="hl-w"> </span>it<span class="hl-w"> </span>the<span class="hl-w"> </span>live<span class="hl-w"> </span>site
+
+<span class="hl-go">SITE_ROOT=${SITE_ROOT:-/srv/www}</span>
+<span class="hl-go">tarball=$1</span>
+<span class="hl-go">stamp=$(date +%Y%m%d%H%M%S)</span>
+<span class="hl-go">release=$SITE_ROOT/releases/$stamp</span>
+
+<span class="hl-go">mkdir -p $release</span>
+<span class="hl-go">tar -xzf $tarball -C $release</span>
+<span class="hl-go">rm -f $SITE_ROOT/current</span>
+<span class="hl-go">ln -s $release $SITE_ROOT/current</span>
+<span class="hl-go">echo "deployed $stamp"</span>
+</code></pre>
+
+<p>No <code>set -e</code>, no check after tar, no argument check, and <code>echo</code> last. The incident is already
+explained; the rest is confirmation.</p>
+<p><strong>2. Reproduce the truncated archive in a sandbox</strong>, never on the live site. A fake web root in <code>/tmp</code>,
+and the first 200 bytes of a real release:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/tmp/t/www/releases/old<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span>old<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/t/www/releases/old/index.html<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>ln<span class="hl-w"> </span>-sfn<span class="hl-w"> </span>/tmp/t/www/releases/old<span class="hl-w"> </span>/tmp/t/www/current
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>head<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-m">200</span><span class="hl-w"> </span>/root/release-2026-09-13.tar.gz<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/t/truncated.tar.gz<span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/tmp/t/truncated.tar.gz
+<span class="hl-go">-rw-rw-r-- 1 northelks northelks 200 Sep 14 03:25 /tmp/t/truncated.tar.gz</span>
+<span class="hl-gp">$ </span><span class="hl-nv">SITE_ROOT</span><span class="hl-o">=</span>/tmp/t/www<span class="hl-w"> </span>bash<span class="hl-w"> </span>-x<span class="hl-w"> </span>/usr/local/bin/deploy-site<span class="hl-w"> </span>/tmp/t/truncated.tar.gz<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">+ SITE_ROOT=/tmp/t/www</span>
+<span class="hl-go">+ tarball=/tmp/t/truncated.tar.gz</span>
+<span class="hl-go">++ date +%Y%m%d%H%M%S</span>
+<span class="hl-go">+ stamp=20260914032509</span>
+<span class="hl-go">+ release=/tmp/t/www/releases/20260914032509</span>
+<span class="hl-go">+ mkdir -p /tmp/t/www/releases/20260914032509</span>
+<span class="hl-go">+ tar -xzf /tmp/t/truncated.tar.gz -C /tmp/t/www/releases/20260914032509</span>
+
+<span class="hl-go">gzip: stdin: unexpected end of file</span>
+<span class="hl-go">tar: Unexpected EOF in archive</span>
+<span class="hl-go">tar: Unexpected EOF in archive</span>
+<span class="hl-go">tar: Error is not recoverable: exiting now</span>
+<span class="hl-go">+ rm -f /tmp/t/www/current</span>
+<span class="hl-go">+ ln -s /tmp/t/www/releases/20260914032509 /tmp/t/www/current</span>
+<span class="hl-go">+ echo 'deployed 20260914032509'</span>
+<span class="hl-go">deployed 20260914032509</span>
+<span class="hl-go">exit=0</span>
+<span class="hl-gp">$ </span>readlink<span class="hl-w"> </span>/tmp/t/www/current<span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-la<span class="hl-w"> </span>/tmp/t/www/current/
+<span class="hl-go">/tmp/t/www/releases/20260914032509</span>
+<span class="hl-go">total 0</span>
+<span class="hl-go">drwxrwxr-x 2 northelks northelks 60 Sep 14 03:25 .</span>
+<span class="hl-go">drwxrwxr-x 4 northelks northelks 80 Sep 14 03:25 ..</span>
+<span class="hl-go">-rw-r--r-- 1 northelks northelks  0 Sep 14 03:25 index.html</span>
+</code></pre>
+
+<p>That is the incident, exactly: tar failed loudly, the script carried on, and <code>current</code> now points at
+a release whose <code>index.html</code> is zero bytes — the part of the file tar managed to create before the
+archive ran out.</p>
+<p><strong>3. Call it with no argument.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">SITE_ROOT</span><span class="hl-o">=</span>/tmp/t/www<span class="hl-w"> </span>deploy-site<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>readlink<span class="hl-w"> </span>/tmp/t/www/current
+<span class="hl-go">tar (child): -C: Cannot open: No such file or directory</span>
+<span class="hl-go">tar (child): Error is not recoverable: exiting now</span>
+<span class="hl-go">tar: Child returned status 2</span>
+<span class="hl-go">tar: Error is not recoverable: exiting now</span>
+<span class="hl-go">deployed 20260914032509</span>
+<span class="hl-go">exit=0</span>
+<span class="hl-go">/tmp/t/www/releases/20260914032509</span>
+</code></pre>
+
+<p><code>-C: Cannot open</code> is tar trying to open an archive called <code>-C</code>: the empty <code>$tarball</code> disappeared and
+<code>-f</code> took the next word. The script reported success anyway.</p>
+<p><strong>4. A web root with a space.</strong> Started from <code>/tmp/t</code>, so any stray relative path lands somewhere
+visible:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"/tmp/t/web root/releases/old"</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span>old<span class="hl-w"> </span>&gt;<span class="hl-w"> </span><span class="hl-s2">"/tmp/t/web root/releases/old/index.html"</span><span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>ln<span class="hl-w"> </span>-sfn<span class="hl-w"> </span><span class="hl-s2">"/tmp/t/web root/releases/old"</span><span class="hl-w"> </span><span class="hl-s2">"/tmp/t/web root/current"</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>cp<span class="hl-w"> </span>/root/release-2026-09-13.tar.gz<span class="hl-w"> </span>/tmp/t/good.tar.gz<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>chown<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-k">$(</span>id<span class="hl-w"> </span>-un<span class="hl-k">)</span><span class="hl-s2">"</span><span class="hl-w"> </span>/tmp/t/good.tar.gz
+<span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/tmp/t<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nv">SITE_ROOT</span><span class="hl-o">=</span><span class="hl-s2">"/tmp/t/web root"</span><span class="hl-w"> </span>deploy-site<span class="hl-w"> </span>/tmp/t/good.tar.gz<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>/tmp/t
+<span class="hl-go">tar: root/releases/20260914032509: Not found in archive</span>
+<span class="hl-go">tar: Exiting with failure status due to previous errors</span>
+<span class="hl-go">rm: cannot remove '/tmp/t/web': Is a directory</span>
+<span class="hl-go">ln: target 'root/current': No such file or directory</span>
+<span class="hl-go">deployed 20260914032509</span>
+<span class="hl-go">exit=0</span>
+<span class="hl-go">good.tar.gz</span>
+<span class="hl-go">root</span>
+<span class="hl-go">truncated.tar.gz</span>
+<span class="hl-go">web</span>
+<span class="hl-go">web root</span>
+<span class="hl-go">www</span>
+</code></pre>
+
+<p>Read the listing: <code>mkdir -p</code> made two directories, <code>/tmp/t/web</code> and a relative <code>root/…</code> in the
+current directory. tar took <code>root/releases/…</code> as a member name to extract; <code>rm</code> tried to delete
+<code>/tmp/t/web</code>; <code>ln</code> looked for a directory called <code>root/current</code>. Four commands, four different
+misreadings of one path — and <code>deployed</code>, exit 0.</p>
+<p><strong>5. Two deploys in the same second.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">SITE_ROOT</span><span class="hl-o">=</span>/tmp/t/www<span class="hl-w"> </span>deploy-site<span class="hl-w"> </span>/tmp/t/good.tar.gz<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nv">SITE_ROOT</span><span class="hl-o">=</span>/tmp/t/www<span class="hl-w"> </span>deploy-site<span class="hl-w"> </span>/tmp/t/good.tar.gz<span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>/tmp/t/www/releases
+<span class="hl-go">deployed 20260914032509</span>
+<span class="hl-go">deployed 20260914032509</span>
+<span class="hl-go">20260914032509</span>
+<span class="hl-go">old</span>
+</code></pre>
+
+<p>Two &quot;deployed&quot; lines, one directory. With two different archives, the second would have been unpacked
+on top of the first.</p>
+<p><strong>6. Learn how <code>ln</code> treats a link to a directory</strong>, before writing the switch:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/tmp/t/ln/a<span class="hl-w"> </span>/tmp/t/ln/b<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>ln<span class="hl-w"> </span>-s<span class="hl-w"> </span>/tmp/t/ln/a<span class="hl-w"> </span>/tmp/t/ln/current<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>ln<span class="hl-w"> </span>-sf<span class="hl-w"> </span>/tmp/t/ln/b<span class="hl-w"> </span>/tmp/t/ln/current<span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/tmp/t/ln/current<span class="hl-w"> </span>/tmp/t/ln/a
+<span class="hl-go">lrwxrwxrwx 1 northelks northelks 11 Sep 14 03:25 /tmp/t/ln/current -&gt; /tmp/t/ln/a</span>
+
+<span class="hl-go">/tmp/t/ln/a:</span>
+<span class="hl-go">total 0</span>
+<span class="hl-go">lrwxrwxrwx 1 northelks northelks 11 Sep 14 03:25 b -&gt; /tmp/t/ln/b</span>
+<span class="hl-gp">$ </span>ln<span class="hl-w"> </span>-sfn<span class="hl-w"> </span>/tmp/t/ln/b<span class="hl-w"> </span>/tmp/t/ln/current<span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>-l<span class="hl-w"> </span>/tmp/t/ln/current
+<span class="hl-go">lrwxrwxrwx 1 northelks northelks 11 Sep 14 03:25 /tmp/t/ln/current -&gt; /tmp/t/ln/b</span>
+</code></pre>
+
+<p><code>ln -sf</code> left <code>current</code> pointing at <code>a</code> and quietly created <code>a/b</code>. <code>ln -sfn</code> replaced the link itself.</p>
+<p><strong>7. Rewrite the script.</strong> Each change answers one of the failures above:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-ch">#!/bin/bash</span>
+<span class="hl-c1"># deploy-site &lt;release.tar.gz&gt; — unpack a release and make it the live site</span>
+<span class="hl-nb">set</span><span class="hl-w"> </span>-euo<span class="hl-w"> </span>pipefail
+
+<span class="hl-k">if</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$#</span><span class="hl-s2">"</span><span class="hl-w"> </span>-ne<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span>
+<span class="hl-w">    </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"usage: deploy-site &lt;release.tar.gz&gt;"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span>
+<span class="hl-w">    </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span>
+<span class="hl-k">fi</span>
+<span class="hl-nv">tarball</span><span class="hl-o">=</span><span class="hl-nv">$1</span>
+<span class="hl-nv">SITE_ROOT</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">SITE_ROOT</span><span class="hl-k">:-</span><span class="hl-p">/srv/www</span><span class="hl-si">}</span>
+<span class="hl-k">if</span><span class="hl-w"> </span><span class="hl-o">[</span><span class="hl-w"> </span>!<span class="hl-w"> </span>-f<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$tarball</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span>
+<span class="hl-w">    </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"deploy-site: </span><span class="hl-nv">$tarball</span><span class="hl-s2">: no such file"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span>
+<span class="hl-w">    </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span>
+<span class="hl-k">fi</span>
+
+mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SITE_ROOT</span><span class="hl-s2">/releases"</span>
+<span class="hl-nv">release</span><span class="hl-o">=</span><span class="hl-k">$(</span>mktemp<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SITE_ROOT</span><span class="hl-s2">/releases/</span><span class="hl-k">$(</span>date<span class="hl-w"> </span>+%Y%m%d%H%M%S<span class="hl-k">)</span><span class="hl-s2">.XXXXXX"</span><span class="hl-k">)</span>
+<span class="hl-k">if</span><span class="hl-w"> </span>!<span class="hl-w"> </span>tar<span class="hl-w"> </span>-xzf<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$tarball</span><span class="hl-s2">"</span><span class="hl-w"> </span>-C<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$release</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span>
+<span class="hl-w">    </span>rm<span class="hl-w"> </span>-rf<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$release</span><span class="hl-s2">"</span>
+<span class="hl-w">    </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"deploy-site: cannot unpack </span><span class="hl-nv">$tarball</span><span class="hl-s2">; the live release is unchanged"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span>
+<span class="hl-w">    </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span>
+<span class="hl-k">fi</span>
+chmod<span class="hl-w"> </span><span class="hl-m">755</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$release</span><span class="hl-s2">"</span>
+
+ln<span class="hl-w"> </span>-sfn<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$release</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SITE_ROOT</span><span class="hl-s2">/.current.new"</span>
+mv<span class="hl-w"> </span>-Tf<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SITE_ROOT</span><span class="hl-s2">/.current.new"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SITE_ROOT</span><span class="hl-s2">/current"</span>
+<span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"deployed </span><span class="hl-si">${</span><span class="hl-nv">release</span><span class="hl-p">##*/</span><span class="hl-si">}</span><span class="hl-s2">"</span>
+</code></pre>
+
+<p>It was written with <code>sudo tee /usr/local/bin/deploy-site &gt; /dev/null &lt;&lt;'SCRIPT' … SCRIPT</code>; the quoted
+delimiter keeps <code>$1</code> and <code>$#</code> from being expanded while the file is written.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>shellcheck<span class="hl-w"> </span>/usr/local/bin/deploy-site<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"shellcheck: clean"</span>
+<span class="hl-go">shellcheck: clean</span>
+</code></pre>
+
+<p><strong>8. Test every outcome again</strong>, on a fresh sandbox:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">SITE_ROOT</span><span class="hl-o">=</span>/tmp/t/www<span class="hl-w"> </span>deploy-site<span class="hl-w"> </span>/tmp/t/truncated.tar.gz<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span>readlink<span class="hl-w"> </span>/tmp/t/www/current<span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>/tmp/t/www/releases
+
+<span class="hl-go">gzip: stdin: unexpected end of file</span>
+<span class="hl-go">tar: Unexpected EOF in archive</span>
+<span class="hl-go">tar: Unexpected EOF in archive</span>
+<span class="hl-go">tar: Error is not recoverable: exiting now</span>
+<span class="hl-go">deploy-site: cannot unpack /tmp/t/truncated.tar.gz; the live release is unchanged</span>
+<span class="hl-go">exit=1</span>
+<span class="hl-go">/tmp/t/www/releases/old</span>
+<span class="hl-go">old</span>
+<span class="hl-gp">$ </span><span class="hl-nv">SITE_ROOT</span><span class="hl-o">=</span>/tmp/t/www<span class="hl-w"> </span>deploy-site<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">usage: deploy-site &lt;release.tar.gz&gt;</span>
+<span class="hl-go">exit=2</span>
+<span class="hl-gp">$ </span><span class="hl-nv">SITE_ROOT</span><span class="hl-o">=</span>/tmp/t/www<span class="hl-w"> </span>deploy-site<span class="hl-w"> </span>/tmp/t/good.tar.gz<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span><span class="hl-nv">SITE_ROOT</span><span class="hl-o">=</span>/tmp/t/www<span class="hl-w"> </span>deploy-site<span class="hl-w"> </span>/tmp/t/good.tar.gz<span class="hl-p">;</span><span class="hl-w"> </span>ls<span class="hl-w"> </span>/tmp/t/www/releases<span class="hl-p">;</span><span class="hl-w"> </span>readlink<span class="hl-w"> </span>/tmp/t/www/current
+<span class="hl-go">deployed 20260914032510.KBlxi3</span>
+<span class="hl-go">deployed 20260914032510.Ir3FNO</span>
+<span class="hl-go">20260914032510.Ir3FNO</span>
+<span class="hl-go">20260914032510.KBlxi3</span>
+<span class="hl-go">old</span>
+<span class="hl-go">/tmp/t/www/releases/20260914032510.Ir3FNO</span>
+<span class="hl-gp">$ </span><span class="hl-nv">SITE_ROOT</span><span class="hl-o">=</span><span class="hl-s2">"/tmp/t/web root"</span><span class="hl-w"> </span>deploy-site<span class="hl-w"> </span>/tmp/t/good.tar.gz<span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-s2">"/tmp/t/web root/current/index.html"</span>
+<span class="hl-go">deployed 20260914032510.RNFOkK</span>
+<span class="hl-go">&lt;h1&gt;Shop&lt;/h1&gt;</span>
+<span class="hl-go">&lt;p&gt;Release 2026-09-13&lt;/p&gt;</span>
+</code></pre>
+
+<p>The truncated archive changes nothing and exits 1; no argument exits 2 with a usage line; two quick
+deploys make two directories, and <code>current</code> is the second. Notice the ordering in <code>ls</code>: <code>Ir3FNO</code> was created
+second but sorts first, because the random suffix decides the order within a second.</p>
+<p><strong>9. Grade.</strong> <code>c</code> on the lab's screen ran the checks, rebooted, and ran them again: all four passed in
+both passes, 100%.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Adding <code>exit 1</code> at the end, or <code>|| exit 1</code> after <code>echo</code>.</strong> The script then fails every time, or never
+— the problem is not the last line, it is the lines that run after a failure.</p>
+<p><strong><code>set -e</code> alone.</strong> It does stop at a failing tar, but it leaves the half-unpacked release behind,
+and it gives the user tar's message with no statement of what state the site is in. Worse, the moment
+someone wraps the extraction in an <code>if</code> or a function called with <code>||</code>, <code>-e</code> stops applying. Use it as
+a net under explicit checks, not instead of them.</p>
+<p><strong>Checking tar with <code>$?</code> on the next line, after something else ran.</strong> <code>tar …; echo &quot;extracted&quot;; if [ $? -ne 0 ]</code> tests <code>echo</code>. Test the command directly: <code>if ! tar …; then</code>.</p>
+<p><strong>Quoting only the variables that &quot;might&quot; contain spaces.</strong> Paths come from environment variables,
+configuration files and other people's machines. Quote all of them; it costs nothing, and
+<code>shellcheck</code> will stop reminding you.</p>
+<p><strong><code>ln -sf</code> to replace the link.</strong> On a link to a directory it creates a link inside the old release
+and leaves <code>current</code> unchanged, which looks like a deploy that &quot;did not take&quot;.</p>
+<p><strong><code>rm -rf &quot;$SITE_ROOT/releases/$stamp&quot;</code> in the failure branch with the timestamp recomputed.</strong> A
+second call to <code>date</code> can return a different second. Remember the exact path the run created and delete
+that — which is what keeping <code>$release</code> from <code>mktemp</code> gives you.</p>
+<p><strong>Testing on <code>/srv/www</code>.</strong> Every experiment in the walkthrough ran against <code>/tmp</code>. A deploy script
+that has not been seen failing has not been tested, and the live site is the wrong place to watch it
+fail.</p>
+<p><strong>Making names unique and then sorting them by name.</strong> A random suffix fixes collisions but breaks
+strict chronological order within a second. If a cleanup job keeps &quot;the newest N by name&quot;, either use
+a sortable unique name (nanoseconds, a counter) or have that job sort by the timestamp prefix only.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-nb">set</span><span class="hl-w"> </span>-euo<span class="hl-w"> </span>pipefail<span class="hl-w">                        </span><span class="hl-c1"># stop on errors, unset variables, failed pipeline stages</span>
+<span class="hl-o">[</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$#</span><span class="hl-s2">"</span><span class="hl-w"> </span>-eq<span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"usage: …"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span><span class="hl-w">      </span><span class="hl-c1"># argument count, usage on stderr</span>
+<span class="hl-o">[</span><span class="hl-w"> </span>-f<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$file</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"…: no such file"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+<span class="hl-k">if</span><span class="hl-w"> </span>!<span class="hl-w"> </span>cmd<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span><span class="hl-w"> </span>cleanup<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">fi</span><span class="hl-w">       </span><span class="hl-c1"># a failure that needs its own response</span>
+<span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"message"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-w">                       </span><span class="hl-c1"># diagnostics to stderr</span>
+<span class="hl-s2">"</span><span class="hl-nv">$var</span><span class="hl-s2">"</span><span class="hl-w">  </span><span class="hl-s2">"</span><span class="hl-nv">$dir</span><span class="hl-s2">/</span><span class="hl-nv">$name</span><span class="hl-s2">"</span><span class="hl-w">  </span><span class="hl-s2">"</span><span class="hl-k">$(</span>cmd<span class="hl-k">)</span><span class="hl-s2">"</span><span class="hl-w">  </span><span class="hl-s2">"</span><span class="hl-nv">$@</span><span class="hl-s2">"</span><span class="hl-w">    </span><span class="hl-c1"># quote every expansion</span>
+<span class="hl-nv">dir</span><span class="hl-o">=</span><span class="hl-k">$(</span>mktemp<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s2">"/path/prefix.XXXXXX"</span><span class="hl-k">)</span><span class="hl-w">  </span><span class="hl-c1"># a new, unique directory (mode 0700)</span>
+rm<span class="hl-w"> </span>-rf<span class="hl-w"> </span>--<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$dir</span><span class="hl-s2">"</span><span class="hl-w">                         </span><span class="hl-c1"># -- : no option parsing after this</span>
+ln<span class="hl-w"> </span>-sfn<span class="hl-w"> </span>target<span class="hl-w"> </span>link<span class="hl-w">                      </span><span class="hl-c1"># replace a link, do not follow a link to a directory</span>
+ln<span class="hl-w"> </span>-sfn<span class="hl-w"> </span>target<span class="hl-w"> </span>.link.new<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>mv<span class="hl-w"> </span>-Tf<span class="hl-w"> </span>.link.new<span class="hl-w"> </span>link<span class="hl-w">   </span><span class="hl-c1"># atomic switch (same filesystem)</span>
+readlink<span class="hl-w"> </span>-f<span class="hl-w"> </span>link<span class="hl-w">                         </span><span class="hl-c1"># where a link finally points</span>
+<span class="hl-nb">trap</span><span class="hl-w"> </span><span class="hl-s1">'cleanup'</span><span class="hl-w"> </span>EXIT<span class="hl-w">                      </span><span class="hl-c1"># run cleanup whenever the script exits</span>
+bash<span class="hl-w"> </span>-x<span class="hl-w"> </span>script<span class="hl-w"> </span>args<span class="hl-w">                      </span><span class="hl-c1"># trace each command after expansion</span>
+shellcheck<span class="hl-w"> </span>script<span class="hl-w">                        </span><span class="hl-c1"># static analysis: quoting, common traps</span>
+<span class="hl-nv">VAR</span><span class="hl-o">=</span>/tmp/sandbox<span class="hl-w"> </span>script<span class="hl-w"> </span>args<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-w">   </span><span class="hl-c1"># test against a throwaway root</span>
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>Exit status</th>
+<th>Conventional meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>success</td>
+</tr>
+<tr>
+<td>1</td>
+<td>general failure</td>
+</tr>
+<tr>
+<td>2</td>
+<td>misuse: wrong arguments, usage error</td>
+</tr>
+<tr>
+<td>126 / 127</td>
+<td>found but not executable / command not found</td>
+</tr>
+<tr>
+<td>128 + n</td>
+<td>killed by signal n (130 = Ctrl-C, 137 = SIGKILL)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>Active, green, and not working</em> (topic journal <code>monitoring</code>) — A check is an exit status</li>
+<li><em>Counting things, and the specification is the test</em> (lab journal <code>linux-04-write-the-report</code>) — Validating, and the three exit statuses</li>
+</ul>
+<p>Manual pages: <code>man 1 bash</code>, <code>man 1 ln</code>, <code>man 1 mktemp</code>.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>A script's last command is <code>echo &quot;done&quot;</code>. What is its exit status when the command before it failed?</p>
+<blockquote>
+<p>0 — a script's exit status is that of its last command, and <code>echo</code> succeeds. The earlier failure is lost unless something stopped the script or checked it.</p>
+</blockquote>
+</li>
+<li>
+<p>Why did calling the old <code>deploy-site</code> with no argument produce the error <code>-C: Cannot open</code>?</p>
+<blockquote>
+<p>The unquoted, empty <code>$tarball</code> vanished from the command line, so <code>tar -xzf $tarball -C dir</code> became <code>tar -xzf -C dir</code> and <code>-f</code> took <code>-C</code> as the archive's name.</p>
+</blockquote>
+</li>
+<li>
+<p>Name two situations in which <code>set -e</code> does not stop a script after a failing command.</p>
+<blockquote>
+<p>When the command is part of a condition (<code>if cmd</code>, <code>while cmd</code>, <code>cmd || …</code>, <code>cmd &amp;&amp; …</code> except the last), and inside a function called in such a context; also the status of <code>local x=$(cmd)</code> is <code>local</code>'s, not the substitution's.</p>
+</blockquote>
+</li>
+<li>
+<p>With <code>SITE_ROOT=&quot;/srv/web root&quot;</code>, what does <code>mkdir -p $SITE_ROOT/releases/x</code> create?</p>
+<blockquote>
+<p>Two paths: <code>/srv/web</code> and the relative <code>root/releases/x</code> inside the current directory, because the unquoted expansion is split at the space.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>ln -sf new current</code> do when <code>current</code> is already a symlink to a directory, and which flag fixes it?</p>
+<blockquote>
+<p>It follows the link and creates <code>new</code>'s link inside the directory <code>current</code> points to, leaving <code>current</code> unchanged. <code>-n</code> (<code>--no-dereference</code>) makes <code>ln</code> replace the link itself.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>ln -sfn new .current.new &amp;&amp; mv -Tf .current.new current</code> better than <code>rm current &amp;&amp; ln -s new current</code>?</p>
+<blockquote>
+<p><code>rename(2)</code> replaces <code>current</code> in a single step, so there is never a moment without a live link; <code>rm</code> then <code>ln</code> leaves a gap, and if <code>ln</code> fails the site has no link at all. <code>-T</code> keeps <code>mv</code> from moving the new link into the old directory.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>mktemp -d</code> solve the two-deploys-in-one-second problem, and what new property must you keep in mind?</p>
+<blockquote>
+<p>It creates a directory that did not exist before, with a unique random suffix, atomically — so concurrent or rapid runs never share a directory. The random suffix means names created in the same second no longer sort in creation order.</p>
+</blockquote>
+</li>
+<li>
+<p>What should a failed extraction leave behind, and why does it matter to other tools?</p>
+<blockquote>
+<p>Nothing: the half-unpacked directory should be removed. Otherwise it looks like a release — a cleanup job may count it as one of the newest, or someone may point <code>current</code> at it.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

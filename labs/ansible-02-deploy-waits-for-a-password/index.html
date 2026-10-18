@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Deploy That Waits for a Password · Norboten</title>
+<meta name="description" content="Run a playbook that uses Ansible Vault without a person at the keyboard">
+<link rel="canonical" href="https://norboten.org/labs/ansible-02-deploy-waits-for-a-password/"><meta property="og:title" content="The Deploy That Waits for a Password · Norboten">
+<meta property="og:description" content="Run a playbook that uses Ansible Vault without a person at the keyboard">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/labs/ansible-02-deploy-waits-for-a-password/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Deploy That Waits for a Password · Norboten">
+<meta name="twitter:description" content="Run a playbook that uses Ansible Vault without a person at the keyboard">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "The Deploy That Waits for a Password",
+  "description": "Run a playbook that uses Ansible Vault without a person at the keyboard",
+  "url": "https://norboten.org/labs/ansible-02-deploy-waits-for-a-password/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "teaches": ["Run a playbook that uses Ansible Vault without a person at the keyboard", "Keep secrets encrypted at rest and the vault password readable only by the account that needs it", "Keep secrets out of logs"],
+  "timeRequired": "PT40M",
+  "provider": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"},
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "online",
+    "courseWorkload": "PT40M"
+  }
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="ansible-02-deploy-waits-for-a-password">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" aria-current="page">Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">ansible · lab ansible-02</div>
+    <h1>The Deploy That Waits for a Password</h1>
+    <p class="muted">
+      <span class="diff"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 20" class="difficulty" role="img" aria-label="difficulty 3 of 5"><line x1="0" y1="17.5" x2="52" y2="17.5" stroke="#1c2620"/><rect x="0.0" y="11.5" width="7" height="6.0" rx="1.6" fill="#4ade80"/><rect x="11.0" y="8.9" width="7" height="8.6" rx="1.6" fill="#4ade80"/><rect x="22.0" y="6.3" width="7" height="11.2" rx="1.6" fill="#4ade80"/><rect x="33.0" y="3.7" width="7" height="13.8" rx="1.6" fill="#121a16" stroke="#2c463a"/><rect x="44.0" y="1.1" width="7" height="16.4" rx="1.6" fill="#121a16" stroke="#2c463a"/></svg></span> ·
+      about 40 minutes ·
+      runs on <span class="mono">ubuntu-26.04-devops</span>
+      · <span class="tag">unrated</span>    </p>
+    <div class="cta">
+      <a class="btn solid" href="../../journals/ansible-02-deploy-waits-for-a-password/">Read the journal</a>
+      <a class="btn" href="https://github.com/northelks/norboten/tree/main/labs/ansible/ansible-02-deploy-waits-for-a-password" rel="noopener">Read its source</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="note prose">
+      <strong>An unrated lab.</strong> It runs on your machine with no account and no network, and
+      everything about it — the faults, the checks, the hints and the reference solution — is in
+      the repository. An attempt on it is recorded on your profile and never moves a rating: only
+      rated labs do.
+      <a href="../../docs/rated-labs/">Rated and unrated labs</a>.
+    </p>
+    <div class="grid two" style="gap:2.5rem; align-items:start">
+      <div>
+        <h2>The briefing</h2>
+        <div class="prose">
+<p><code>deploy.service</code> runs the playbook in <code>/srv/deploy</code> at every boot, as the <code>deploy</code> account. It
+renders the application's database settings into <code>/srv/app/config/db.conf</code>. The database password
+lives in the Ansible Vault file <code>group_vars/app/vault.yml</code>.</p>
+<p>Since last week, the application starts with no database settings: the service fails at every boot.
+Someone &quot;fixed&quot; it by hand on another machine and ran the playbook from their own terminal, where
+Ansible asked them for the vault password. While debugging they also saved a decrypted copy of the
+vault file next to it, to read it.</p>
+<p>The vault password is in <code>/root/vault-password.txt</code>. Keep using it.</p>
+<p>What is expected, and graded:</p>
+<ol>
+<li><code>deploy.service</code> succeeds at boot, with nobody logged in, and <code>/srv/app/config/db.conf</code> holds the
+password from the vault.</li>
+<li>Nothing under <code>/srv/deploy</code> contains the database password in plain text.</li>
+<li>The deploy reads the vault password from a file that only the <code>deploy</code> account can read.</li>
+<li>The deploy's own log does not contain the password.</li>
+</ol>
+<p>You have root through <code>sudo</code>. Everything must still hold after a reboot.</p>
+</div>
+      </div>
+      <div>
+        <h2>What is graded</h2>
+        <p class="muted">The machine is checked, rebooted, and checked again. A check passes only
+          if it passes both times.</p>
+        <table>
+          <tr><th>Check</th><th>Objective</th></tr>
+          <tr><td class="mono">01_deploy_runs_unattended</td><td class="muted">Run a playbook that uses Ansible Vault without a person at the keyboard</td></tr>
+          <tr><td class="mono">02_secrets_encrypted_at_rest</td><td class="muted">Keep secrets encrypted at rest and the vault password readable only by the account that needs it</td></tr>
+          <tr><td class="mono">03_vault_password_file_protected</td><td class="muted">Keep secrets encrypted at rest and the vault password readable only by the account that needs it</td></tr>
+          <tr><td class="mono">04_no_secret_in_the_log</td><td class="muted">Keep secrets out of logs</td></tr>
+        </table>
+        <h3>Start it</h3>
+        <ol class="keysteps">
+          <li><kbd>2</kbd><span>Labs</span></li>
+          <li><span class="mono pick">ansible-02</span><span>select this one</span></li>
+          <li><kbd>u</kbd><span>download it</span></li>
+          <li><kbd>s</kbd><span>start the machine</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>Reading</h2>
+    <p class="muted">Where the lab's hints send you, level by level, as you ask for them
+      (<kbd>h</kbd>, then <kbd>l</kbd> opens a journal section in the TUI).</p>
+    <ul class="prose">
+<li><a href="https://docs.ansible.com/ansible/latest/vault_guide/vault_managing_passwords.html" rel="noopener">https://docs.ansible.com/ansible/latest/vault_guide/vault_managing_passwords.html</a></li>
+<li><a href="https://docs.ansible.com/ansible/latest/vault_guide/index.html" rel="noopener">https://docs.ansible.com/ansible/latest/vault_guide/index.html</a></li>
+<li><a href="../../journals/hello/#how-the-kernel-picks-a-triad">Nine letters and a refusal › How the kernel picks a triad</a></li>
+<li><a href="../../journals/logging-journald/#everything-a-service-prints-becomes-a-journal-entry">The log lines that were never written down › Everything a service prints becomes a journal entry</a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section no-line">
+  <div class="wrap">
+    <h2>Theory for this lab</h2>
+    <p class="prose muted">4 questions on the same topic, in the lab's Theory
+      tab. They never affect the lab's grade.
+Three of them, to answer here:
+</p>
+    <div class="quiz-grid">
+      <div class="quiz" data-answer="c" data-type="single">
+<div class="kicker">Question 1</div>  <p class="prompt">A playbook run from a systemd service fails with `EOFError (ctrl-d) on prompt`. Which `ansible.cfg` setting is the likely cause?</p>
+  <div class="choices">
+    <button type="button" class="choice" data-choice="a">
+      <span class="mark mono">a</span><span class="text">retry_files_enabled = false</span>
+    </button>
+    <button type="button" class="choice" data-choice="b">
+      <span class="mark mono">b</span><span class="text">interpreter_python = /usr/bin/python3</span>
+    </button>
+    <button type="button" class="choice" data-choice="c">
+      <span class="mark mono">c</span><span class="text">ask_vault_pass = true</span>
+    </button>
+    <button type="button" class="choice" data-choice="d">
+      <span class="mark mono">d</span><span class="text">vault_password_file = /var/lib/deploy/.vault-password</span>
+    </button>
+  </div>
+  <div class="verdict" hidden>
+    <p class="answer"><strong>ask_vault_pass = true</strong>
+</p>
+    <p class="muted">ask_vault_pass makes every run prompt for the vault password. A service has no terminal, so the prompt reads end-of-file. vault_password_file is the unattended alternative.</p>
+    <p class="mono muted refs">https://docs.ansible.com/ansible/latest/vault_guide/vault_using_encrypted_content.html</p>
+  </div>
+</div>
+
+      <div class="quiz" data-answer="d" data-type="single">
+<div class="kicker">Question 2</div>  <p class="prompt">A file named by `vault_password_file` has mode 0755. What does Ansible do with it?</p>
+  <div class="choices">
+    <button type="button" class="choice" data-choice="a">
+      <span class="mark mono">a</span><span class="text">Reads its first line as the password, ignoring the mode</span>
+    </button>
+    <button type="button" class="choice" data-choice="b">
+      <span class="mark mono">b</span><span class="text">Encrypts it</span>
+    </button>
+    <button type="button" class="choice" data-choice="c">
+      <span class="mark mono">c</span><span class="text">Refuses to use it because it is world-readable</span>
+    </button>
+    <button type="button" class="choice" data-choice="d">
+      <span class="mark mono">d</span><span class="text">Runs it as a program and uses its output as the vault password</span>
+    </button>
+  </div>
+  <div class="verdict" hidden>
+    <p class="answer"><strong>Runs it as a program and uses its output as the vault password</strong>
+</p>
+    <p class="muted">An executable password file is treated as a script — the hook for password managers and secret stores. A plain password file should be mode 0400 or 0600, owned by the account that runs Ansible.</p>
+    <p class="mono muted refs">https://docs.ansible.com/ansible/latest/vault_guide/vault_managing_passwords.html</p>
+  </div>
+</div>
+
+      <div class="quiz" data-answer="d" data-type="single">
+<div class="kicker">Question 3</div>  <p class="prompt">Which files in `group_vars/app/` does Ansible load as variables?</p>
+  <div class="choices">
+    <button type="button" class="choice" data-choice="a">
+      <span class="mark mono">a</span><span class="text">Every file in the directory</span>
+    </button>
+    <button type="button" class="choice" data-choice="b">
+      <span class="mark mono">b</span><span class="text">Only encrypted files</span>
+    </button>
+    <button type="button" class="choice" data-choice="c">
+      <span class="mark mono">c</span><span class="text">Only files named vars.yml and vault.yml</span>
+    </button>
+    <button type="button" class="choice" data-choice="d">
+      <span class="mark mono">d</span><span class="text">Files ending in .yml, .yaml or .json, or with no extension</span>
+    </button>
+  </div>
+  <div class="verdict" hidden>
+    <p class="answer"><strong>Files ending in .yml, .yaml or .json, or with no extension</strong>
+</p>
+    <p class="muted">Files with other extensions, such as vault.yml.plain or vault.yml.bak, are ignored by Ansible — and are still ordinary files that anyone with read permission can open, which is why a decrypted copy left there is a leak even though no playbook uses it.</p>
+    <p class="mono muted refs">https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html#organizing-host-and-group-variables · https://docs.ansible.com/ansible/latest/reference_appendices/config.html#yaml-filename-extensions</p>
+  </div>
+</div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script src="../../quiz.js"></script></body>
+</html>

@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A script that cannot fail is not a backup · Norboten</title>
+<meta name="description" content="The script has written &amp;quot;backup OK&amp;quot; every night for a year. It is not lying on purpose: it ends with echo &amp;quot;backup OK&amp;quot; and exit 0, uncondition">
+<link rel="canonical" href="https://norboten.org/journals/linux-03-backup-script-lies/"><meta property="og:title" content="A script that cannot fail is not a backup · Norboten">
+<meta property="og:description" content="The script has written &amp;quot;backup OK&amp;quot; every night for a year. It is not lying on purpose: it ends with echo &amp;quot;backup OK&amp;quot; and exit 0, uncondition">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/linux-03-backup-script-lies/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A script that cannot fail is not a backup · Norboten">
+<meta name="twitter:description" content="The script has written &amp;quot;backup OK&amp;quot; every night for a year. It is not lying on purpose: it ends with echo &amp;quot;backup OK&amp;quot; and exit 0, uncondition">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A script that cannot fail is not a backup",
+  "description": "The script has written \u0026quot;backup OK\u0026quot; every night for a year. It is not lying on purpose: it ends with echo \u0026quot;backup OK\u0026quot; and exit 0, uncondition",
+  "url": "https://norboten.org/journals/linux-03-backup-script-lies/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 3292,
+  "timeRequired": "PT35M",
+  "about": ["Bash", "Linux basics"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Backup Script That Lies</div>
+    <h1>A script that cannot fail is not a backup</h1>
+    <p class="muted">
+      35 minutes' reading · 3292 words ·<span class="tag">Bash</span><span class="tag">Linux basics</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 126 words</title><rect x="0.0" y="0" width="21.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 1766 words</title><rect x="24.0" y="0" width="294.2" height="30" rx="4" fill="#1d2a23"/><text x="32.0" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 959 words</title><rect x="321.2" y="0" width="159.8" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 497 words</title><rect x="484.0" y="0" width="82.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 407 words</title><rect x="569.7" y="0" width="67.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 58 words</title><rect x="640.6" y="0" width="9.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 641 words</title><rect x="653.2" y="0" width="106.8" height="30" rx="4" fill="#1d2a23"/><text x="661.2" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/linux-03-backup-script-lies/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>The script has written &quot;backup OK&quot; every night for a year. It is not lying on purpose: it ends with
+<code>echo &quot;backup OK&quot;</code> and <code>exit 0</code>, unconditionally, so there is no state of the world in which it says
+anything else. The restore that failed did not reveal a new bug — it revealed that nobody had ever
+had any information about whether the backup worked.</p>
+<p>Underneath that there are two genuine defects, both classics. Unquoted variables, so a filename with
+a space in it becomes two filenames, neither of which exists. And a <code>cron</code> entry that works when you
+test it by hand and not when cron runs it, because cron's environment is almost nothing like yours.</p>
+<p>Each of the three is worth knowing on its own. Together they make the lesson of the lab, which is
+that <strong>a script's job is not to do the work; it is to tell you the truth about whether the work
+happened.</strong></p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Quote variables and command substitutions so that filenames with spaces, tabs and newlines survive.</li>
+<li>Explain what word splitting and globbing do to an unquoted expansion, and name the two safe ways to
+hand a list of files to another program.</li>
+<li>Make a script fail loudly: non-zero exit, a message on stderr, and no success written to a log.</li>
+<li>Say what <code>set -e</code>, <code>set -u</code> and <code>set -o pipefail</code> each do, and where <code>set -e</code> does not save you.</li>
+<li>Diagnose a job that works in your shell and fails under cron, and fix it in the crontab rather than
+by guessing.</li>
+<li>Write a log line that will let someone a year from now tell a good night from a bad one.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="the-lie-itself">The lie itself</h3>
+<pre class="hl"><code class="language-bash"><span class="hl-nb">cd</span><span class="hl-w"> </span><span class="hl-nv">$SRC</span>
+<span class="hl-nv">FILES</span><span class="hl-o">=</span><span class="hl-k">$(</span>find<span class="hl-w"> </span>.<span class="hl-w"> </span>-type<span class="hl-w"> </span>f<span class="hl-k">)</span>
+tar<span class="hl-w"> </span>-czf<span class="hl-w"> </span><span class="hl-nv">$ARCHIVE</span><span class="hl-w"> </span><span class="hl-nv">$FILES</span><span class="hl-w"> </span><span class="hl-m">2</span>&gt;/dev/null
+<span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-k">$(</span>date<span class="hl-w"> </span>-Is<span class="hl-k">)</span><span class="hl-s2"> backup OK: </span><span class="hl-nv">$ARCHIVE</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;&gt;<span class="hl-w"> </span><span class="hl-nv">$LOG</span>
+<span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">0</span>
+</code></pre>
+
+<p>Four lines, four independent failures of honesty:</p>
+<ol>
+<li><code>cd $SRC</code> is not checked. If the directory does not exist, <code>cd</code> fails, prints to stderr, and the
+script carries on <strong>in whatever directory it was already in</strong> — which for cron is <code>/root</code> or the
+user's home. <code>find .</code> then archives that.</li>
+<li><code>2&gt;/dev/null</code> throws away tar's complaints. Every &quot;file not found&quot; caused by the quoting bug goes
+to the same place.</li>
+<li>tar's exit status is never examined. Neither is <code>find</code>'s, nor <code>cd</code>'s.</li>
+<li><code>echo … backup OK</code> and <code>exit 0</code> are unconditional. The script has no code path that reports
+failure, so the log is a record of the script having run, not of a backup having happened.</li>
+</ol>
+<p>That last point is the one to carry away. A log line that is always the same carries no information.
+The information content of &quot;backup OK&quot; is exactly zero if there is no &quot;backup FAILED&quot; to compare it
+with.</p>
+<h3 id="word-splitting-in-the-order-it-happens">Word splitting, in the order it happens</h3>
+<p>When bash expands <code>$FILES</code>, the result is not a string handed to tar. It goes through two more steps:</p>
+<pre><code>   $FILES          →  the variable's value
+   word splitting  →  cut into words at every character in IFS (space, tab, newline by default)
+   globbing        →  any word containing * ? [ ] is expanded against the filesystem
+</code></pre>
+<p>So with <code>FILES</code> containing <code>./invoices/2026 Q3 summary.csv</code>, tar receives <strong>four</strong> arguments:
+<code>./invoices/2026</code>, <code>Q3</code>, <code>summary.csv</code> — and none of those files exists. Add a file called <code>report*</code>
+and the glob step will match things you never named. This is why the archive held &quot;a fraction of the
+files&quot;: exactly the files whose names had no spaces.</p>
+<p>Quoting stops both steps:</p>
+<pre class="hl"><code class="language-bash">tar<span class="hl-w"> </span>-czf<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$ARCHIVE</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$FILE</span><span class="hl-s2">"</span><span class="hl-w">        </span><span class="hl-c1"># one argument, whatever is in it</span>
+</code></pre>
+
+<p>The rules worth internalising, because they are the whole subject:</p>
+<table>
+<thead>
+<tr>
+<th>written</th>
+<th>you get</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$var</code></td>
+<td>split into words, then globbed — almost never what you want</td>
+</tr>
+<tr>
+<td><code>&quot;$var&quot;</code></td>
+<td>exactly one argument, byte for byte</td>
+</tr>
+<tr>
+<td><code>$(cmd)</code></td>
+<td>the output, split and globbed</td>
+</tr>
+<tr>
+<td><code>&quot;$(cmd)&quot;</code></td>
+<td>the output as one argument, with trailing newlines stripped</td>
+</tr>
+<tr>
+<td><code>$@</code></td>
+<td>split again — a bug</td>
+</tr>
+<tr>
+<td><code>&quot;$@&quot;</code></td>
+<td>each argument preserved separately — <strong>the only correct way to pass arguments on</strong></td>
+</tr>
+<tr>
+<td><code>&quot;$*&quot;</code></td>
+<td>all arguments joined into one string with spaces</td>
+</tr>
+</tbody>
+</table>
+<p>Two places where quoting is <em>not</em> needed, so you can recognise them rather than fearing them: inside
+<code>[[ ]]</code> (bash's test keyword does not split), and on the right-hand side of a plain assignment
+(<code>x=$y</code> is safe). Everywhere else, quote. A useful rule of thumb: if you are not certain, quote —
+there is no case where correct quoting breaks a correct script.</p>
+<h3 id="handing-a-list-of-files-to-a-program">Handing a list of files to a program</h3>
+<p><code>FILES=$(find …)</code> is broken in principle, not just in this script: a newline-separated string in a
+variable cannot represent a filename containing a newline, and filenames may contain newlines. Three
+robust patterns replace it:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># 1. Let the other program do the walking — best when it can</span>
+tar<span class="hl-w"> </span>-czf<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$ARCHIVE</span><span class="hl-s2">"</span><span class="hl-w"> </span>-C<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span>.
+
+<span class="hl-c1"># 2. find … -exec, with + to batch arguments</span>
+find<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span>-type<span class="hl-w"> </span>f<span class="hl-w"> </span>-exec<span class="hl-w"> </span>tar<span class="hl-w"> </span>-rf<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$TAR</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">{}</span><span class="hl-w"> </span>+
+
+<span class="hl-c1"># 3. NUL-separated, for anything that supports it — the only fully safe separator,</span>
+<span class="hl-c1">#    because NUL is the one byte a filename cannot contain</span>
+find<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span>-type<span class="hl-w"> </span>f<span class="hl-w"> </span>-print0<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span>-0<span class="hl-w"> </span>tar<span class="hl-w"> </span>-czf<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$ARCHIVE</span><span class="hl-s2">"</span>
+find<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span>-type<span class="hl-w"> </span>f<span class="hl-w"> </span>-print0<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-k">while</span><span class="hl-w"> </span><span class="hl-nv">IFS</span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nb">read</span><span class="hl-w"> </span>-r<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">''</span><span class="hl-w"> </span>f<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span>process<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$f</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span>
+</code></pre>
+
+<p>The first is the right answer here, and it is worth seeing why it is better than merely safe. <code>tar -C &quot;$SRC&quot; .</code> changes directory inside tar, so the archive holds <code>./invoices/march.csv</code> rather than
+<code>/srv/data/invoices/march.csv</code> — relative paths, which is what you want at restore time (you can
+unpack them anywhere, and tar will not refuse to overwrite from an absolute path). It also archives
+empty directories, symlinks and permissions, which a <code>find -type f</code> list silently drops.</p>
+<p>That <code>while IFS= read -r</code> incantation in pattern 3 is worth decoding once, since it appears in every
+careful shell script: <code>IFS=</code> stops leading and trailing whitespace being trimmed, <code>-r</code> stops
+backslashes being interpreted, and <code>-d ''</code> reads up to a NUL instead of a newline.</p>
+<h3 id="failing-loudly">Failing loudly</h3>
+<p>Three mechanisms, and you want all three.</p>
+<p><strong>Exit status.</strong> The caller — cron, a systemd timer, a monitoring check, a human — learns success or
+failure from <code>$?</code> and nothing else. <code>0</code> is success; anything else is failure. Check the commands that
+matter:</p>
+<pre class="hl"><code class="language-bash">tar<span class="hl-w"> </span>-czf<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$ARCHIVE</span><span class="hl-s2">"</span><span class="hl-w"> </span>-C<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span>.<span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span>fail<span class="hl-w"> </span><span class="hl-s2">"could not write </span><span class="hl-nv">$ARCHIVE</span><span class="hl-s2">"</span>
+</code></pre>
+
+<p><strong>stderr.</strong> Diagnostics go to file descriptor 2, and data goes to 1. This is not a stylistic
+preference: it is what lets <code>backup-data &gt; /dev/null</code> stay quiet on success and still shout on
+failure, and it is why cron mails you stderr.</p>
+<pre class="hl"><code class="language-bash"><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"backup-data: </span><span class="hl-nv">$*</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span>
+</code></pre>
+
+<p><strong>The log.</strong> Write a line for both outcomes, with a timestamp, so the log answers questions:</p>
+<pre class="hl"><code class="language-bash">log<span class="hl-o">()</span><span class="hl-w">  </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-k">$(</span>date<span class="hl-w"> </span>-Is<span class="hl-k">)</span><span class="hl-s2"> </span><span class="hl-nv">$*</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;&gt;<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$LOG</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+fail<span class="hl-o">()</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"backup-data: </span><span class="hl-nv">$*</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span>log<span class="hl-w"> </span><span class="hl-s2">"backup FAILED: </span><span class="hl-nv">$*</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+</code></pre>
+
+<p>A small function pair like that is the difference between a script that can be trusted and one that
+cannot, and it costs two lines. Note the order inside <code>fail</code>: message to stderr, record to the log,
+then a non-zero exit — and note that <code>fail</code> exits, so callers read as assertions:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-o">[</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span>fail<span class="hl-w"> </span><span class="hl-s2">"source </span><span class="hl-nv">$SRC</span><span class="hl-s2"> does not exist"</span>
+<span class="hl-o">[</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$DEST</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span>fail<span class="hl-w"> </span><span class="hl-s2">"destination </span><span class="hl-nv">$DEST</span><span class="hl-s2"> is not a directory"</span>
+</code></pre>
+
+<p>Check preconditions <em>before</em> doing work, and check the work afterwards. <code>[ -d ]</code> for a directory,
+<code>[ -f ]</code> for a regular file, <code>[ -r ]</code>/<code>[ -w ]</code>/<code>[ -x ]</code> for access, <code>[ -n ]</code>/<code>[ -z ]</code> for a non-empty
+or empty string.</p>
+<h3 id="set--euo-pipefail-and-what-it-does-not-do"><code>set -euo pipefail</code>, and what it does not do</h3>
+<pre class="hl"><code class="language-bash"><span class="hl-nb">set</span><span class="hl-w"> </span>-euo<span class="hl-w"> </span>pipefail
+</code></pre>
+
+<ul>
+<li><strong><code>-e</code></strong> exit as soon as any command returns non-zero. Turns a silent failure into a stopped script.</li>
+<li><strong><code>-u</code></strong> treat an unset variable as an error. Catches <code>$BACKUP_DEST</code> when you typed <code>$BACKUP_DST</code> —
+which without <code>-u</code> expands to nothing, and <code>tar -czf /data-…tar.gz</code> writes to the root directory.</li>
+<li><strong><code>-o pipefail</code></strong> make a pipeline fail if <em>any</em> stage fails. Without it, <code>find … | xargs tar …</code>
+reports only <code>xargs</code>'s status, so a failing <code>find</code> is invisible.</li>
+</ul>
+<p><code>set -e</code> is a safety net, not a strategy, and its exceptions are worth knowing because they surprise
+people:</p>
+<pre class="hl"><code class="language-bash">cmd<span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span><span class="hl-nb">true</span><span class="hl-w">                  </span><span class="hl-c1"># explicitly ignored — and now -e does not fire (this is the point)</span>
+<span class="hl-k">if</span><span class="hl-w"> </span>cmd<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span><span class="hl-w"> </span>…<span class="hl-w">                </span><span class="hl-c1"># a command in a condition is exempt: no exit</span>
+cmd1<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>cmd2<span class="hl-w">                 </span><span class="hl-c1"># only the last command's status counts</span>
+f<span class="hl-o">()</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span>false<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span>reached<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span><span class="hl-w">  </span><span class="hl-c1"># -e inside a function called in a condition does not fire</span>
+<span class="hl-nv">count</span><span class="hl-o">=</span><span class="hl-k">$(</span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span>x<span class="hl-w"> </span>file<span class="hl-k">)</span><span class="hl-w">      </span><span class="hl-c1"># assignment from a substitution: the status is the assignment's</span>
+</code></pre>
+
+<p>Which is why explicit <code>|| fail &quot;…&quot;</code> on the commands that matter is better than relying on <code>-e</code> to
+catch everything. Use both: <code>-e</code> for the things you forgot, explicit checks for the things you care
+about. And <code>${BACKUP_SRC:-/srv/data}</code> — &quot;this variable, or this default&quot; — coexists happily with
+<code>-u</code>, since the default makes it defined.</p>
+<h3 id="crons-environment-is-not-yours">cron's environment is not yours</h3>
+<p>The nightly job is:</p>
+<pre><code>15 2 * * * root backup-data
+</code></pre>
+<p>Test it in your shell and it works. Under cron it does not, because cron runs jobs with a minimal
+environment — typically <code>PATH=/usr/bin:/bin</code> and nothing else. <code>/usr/local/bin</code>, where the script
+lives, is not in it. Your interactive shell has it because <code>/etc/profile</code> put it there, and cron does
+not read <code>/etc/profile</code>, <code>~/.bashrc</code>, or any of your shell's configuration.</p>
+<p>Three fixes, best first:</p>
+<pre><code>15 2 * * * root /usr/local/bin/backup-data      # 1. an absolute path — always correct
+
+PATH=/usr/local/bin:/usr/bin:/bin               # 2. set PATH in the crontab itself
+15 2 * * * root backup-data
+
+15 2 * * * root . /etc/profile; backup-data     # 3. source a profile — fragile, avoid
+</code></pre>
+<p>The rest of the crontab's own rules, which cost people a night each:</p>
+<ul>
+<li><strong>Five time fields</strong>: minute, hour, day-of-month, month, day-of-week. <code>15 2 * * *</code> is 02:15 daily.</li>
+<li><strong><code>/etc/cron.d/*</code> and <code>/etc/crontab</code> have a user field</strong>; a user's own crontab (<code>crontab -e</code>) does
+not. Putting <code>root</code> in the wrong one makes cron try to run a program called <code>root</code>.</li>
+<li><strong><code>%</code> is special</strong> in a crontab command — it means a newline and starts the stdin section. In a
+<code>date +%Y%m%d</code> inside a crontab line it must be <code>\%</code>. This is the single most common &quot;works by hand,
+not in cron&quot; cause after <code>PATH</code>.</li>
+<li><strong>Anything printed is mailed</strong> to the job's user. On a machine with no mail transport that output
+is simply lost, which is why a job should write its own log rather than rely on stdout.</li>
+<li><strong>A file in <code>/etc/cron.d</code> must be owned by root, not writable by others, and must have no dot in
+its name</strong> — otherwise cron ignores it, silently.</li>
+<li><strong>The last line needs a newline.</strong> A crontab file that does not end with one has historically been
+ignored by some cron implementations.</li>
+</ul>
+<p>And the daemon has to be running and enabled, which differs by system — <code>cron</code> on Ubuntu,
+<code>crond</code> on Alpine and RHEL:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-enabled<span class="hl-w"> </span>cron<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w"> </span>cron<span class="hl-w">      </span><span class="hl-c1"># Ubuntu</span>
+<span class="hl-gp">$ </span>rc-update<span class="hl-w"> </span>show<span class="hl-w"> </span>default<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>crond<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>rc-service<span class="hl-w"> </span>crond<span class="hl-w"> </span>status<span class="hl-w">   </span><span class="hl-c1"># Alpine</span>
+</code></pre>
+
+<p>The honest way to test a cron job is to reproduce cron's environment rather than to wait for 02:15:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-nv">PATH</span><span class="hl-o">=</span>/usr/bin:/bin<span class="hl-w"> </span>/usr/local/bin/backup-data<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+</code></pre>
+
+<p><code>env -i</code> starts with an empty environment and adds only what you name. If it works under that, it
+will work under cron. It is also how you discover that your script depended on <code>$HOME</code>, or on a
+<code>umask</code> your shell set, or on a locale that changes how <code>date</code> formats.</p>
+<p>For completeness: a systemd timer (see the rhcsa-05 journal) is the modern alternative, and it
+sidesteps most of this — the service unit states its own <code>Environment=</code>, output goes to the journal
+rather than to mail, and <code>systemd-analyze calendar</code> checks the schedule. cron remains everywhere,
+which is why its traps are worth knowing.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>The log says &quot;backup OK&quot;. <code>/var/backups</code> has nothing recent in it.</p>
+<p><strong>1. Read the script before running anything.</strong> Four lines in, the verdict is already available:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/usr/local/bin/backup-data
+<span class="hl-go">cd $SRC</span>
+<span class="hl-go">FILES=$(find . -type f)</span>
+<span class="hl-go">tar -czf $ARCHIVE $FILES 2&gt;/dev/null</span>
+<span class="hl-go">echo "$(date -Is) backup OK: $ARCHIVE" &gt;&gt; $LOG</span>
+<span class="hl-go">exit 0</span>
+</code></pre>
+
+<p><code>exit 0</code> with no conditional above it means the log line tells you nothing at all. Everything else is
+now a question about <em>what</em> is broken, not <em>whether</em>.</p>
+<p><strong>2. Run it with the stderr it was hiding.</strong> The variables exist so this can be done safely, in a
+sandbox, with test data:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>mkdir<span class="hl-w"> </span>-p<span class="hl-w"> </span>/tmp/t/src/<span class="hl-s2">"a dir"</span><span class="hl-w"> </span>/tmp/t/dest
+<span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'x\n'</span><span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/t/src/plain.txt
+<span class="hl-gp">$ </span><span class="hl-nb">printf</span><span class="hl-w"> </span><span class="hl-s1">'y\n'</span><span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/t/src/<span class="hl-s2">"a dir"</span>/<span class="hl-s2">"inner file.log"</span>
+<span class="hl-gp">$ </span><span class="hl-nv">BACKUP_SRC</span><span class="hl-o">=</span>/tmp/t/src<span class="hl-w"> </span><span class="hl-nv">BACKUP_DEST</span><span class="hl-o">=</span>/tmp/t/dest<span class="hl-w"> </span><span class="hl-nv">BACKUP_LOG</span><span class="hl-o">=</span>/tmp/t/log<span class="hl-w"> </span><span class="hl-se">\</span>
+<span class="hl-w">    </span>bash<span class="hl-w"> </span>-x<span class="hl-w"> </span>/usr/local/bin/backup-data
+<span class="hl-go">+ SRC=/tmp/t/src</span>
+<span class="hl-go">+ DEST=/tmp/t/dest</span>
+<span class="hl-go">+ LOG=/tmp/t/log</span>
+<span class="hl-go">++ date +%Y%m%d-%H%M%S</span>
+<span class="hl-go">+ STAMP=20260913-042411</span>
+<span class="hl-go">+ ARCHIVE=/tmp/t/dest/data-20260913-042411.tar.gz</span>
+<span class="hl-go">+ cd /tmp/t/src</span>
+<span class="hl-go">++ find . -type f</span>
+<span class="hl-go">+ FILES='./plain.txt</span>
+<span class="hl-go">./a dir/inner file.log'</span>
+<span class="hl-go">+ tar -czf /tmp/t/dest/data-20260913-042411.tar.gz ./plain.txt ./a dir/inner file.log</span>
+<span class="hl-go">++ date -Is</span>
+<span class="hl-go">+ echo '2026-09-13T04:24:11+00:00 backup OK: /tmp/t/dest/data-20260913-042411.tar.gz'</span>
+<span class="hl-go">+ exit 0</span>
+</code></pre>
+
+<p><code>bash -x</code> prints each command after expansion, and the expansion <em>is</em> the bug: one filename became
+three arguments. What the trace does not show is tar's reaction, because <code>2&gt;/dev/null</code> swallowed it.
+Run the same command by hand without the redirection:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/tmp/t/src<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>tar<span class="hl-w"> </span>-czf<span class="hl-w"> </span>/tmp/t/x.tgz<span class="hl-w"> </span><span class="hl-k">$(</span>find<span class="hl-w"> </span>.<span class="hl-w"> </span>-type<span class="hl-w"> </span>f<span class="hl-k">)</span><span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"tar exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">tar: ./a: Cannot stat: No such file or directory</span>
+<span class="hl-go">tar: dir/inner: Cannot stat: No such file or directory</span>
+<span class="hl-go">tar: file.log: Cannot stat: No such file or directory</span>
+<span class="hl-go">tar: Exiting with failure status due to previous errors</span>
+<span class="hl-go">tar exit=2</span>
+</code></pre>
+
+<p>tar knew, said so, and exited 2. The script threw the message away, ignored the status, and wrote
+&quot;backup OK&quot;.</p>
+<p><strong>3. Confirm what the archive actually holds</strong>, because that is the claim that failed for the restore:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>tar<span class="hl-w"> </span>-tzf<span class="hl-w"> </span>/tmp/t/dest/data-*.tar.gz
+<span class="hl-go">./plain.txt</span>
+</code></pre>
+
+<p>One file of two. Exactly the file with no space in its name.</p>
+<p><strong>4. Rewrite it.</strong> The changes are small and each one maps to a fault:</p>
+<pre class="hl"><code class="language-bash"><span class="hl-ch">#!/bin/bash</span>
+<span class="hl-c1"># backup-data — nightly archive of the data directory.</span>
+<span class="hl-c1"># BACKUP_SRC, BACKUP_DEST and BACKUP_LOG override the defaults.</span>
+<span class="hl-nb">set</span><span class="hl-w"> </span>-euo<span class="hl-w"> </span>pipefail
+
+<span class="hl-nv">SRC</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">BACKUP_SRC</span><span class="hl-k">:-</span><span class="hl-p">/srv/data</span><span class="hl-si">}</span>
+<span class="hl-nv">DEST</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">BACKUP_DEST</span><span class="hl-k">:-</span><span class="hl-p">/var/backups</span><span class="hl-si">}</span>
+<span class="hl-nv">LOG</span><span class="hl-o">=</span><span class="hl-si">${</span><span class="hl-nv">BACKUP_LOG</span><span class="hl-k">:-</span><span class="hl-p">/var/log/backup-data.log</span><span class="hl-si">}</span>
+<span class="hl-nv">ARCHIVE</span><span class="hl-o">=</span><span class="hl-s2">"</span><span class="hl-nv">$DEST</span><span class="hl-s2">/data-</span><span class="hl-k">$(</span>date<span class="hl-w"> </span>+%Y%m%d-%H%M%S<span class="hl-k">)</span><span class="hl-s2">.tar.gz"</span>
+
+log<span class="hl-o">()</span><span class="hl-w">  </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-k">$(</span>date<span class="hl-w"> </span>-Is<span class="hl-k">)</span><span class="hl-s2"> </span><span class="hl-nv">$*</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;&gt;<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$LOG</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+fail<span class="hl-o">()</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"backup-data: </span><span class="hl-nv">$*</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span>log<span class="hl-w"> </span><span class="hl-s2">"backup FAILED: </span><span class="hl-nv">$*</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+
+<span class="hl-o">[</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span>fail<span class="hl-w"> </span><span class="hl-s2">"source </span><span class="hl-nv">$SRC</span><span class="hl-s2"> does not exist"</span>
+tar<span class="hl-w"> </span>-czf<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$ARCHIVE</span><span class="hl-s2">"</span><span class="hl-w"> </span>-C<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span>.<span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span>fail<span class="hl-w"> </span><span class="hl-s2">"could not write </span><span class="hl-nv">$ARCHIVE</span><span class="hl-s2">"</span>
+log<span class="hl-w"> </span><span class="hl-s2">"backup OK: </span><span class="hl-nv">$ARCHIVE</span><span class="hl-s2">"</span>
+</code></pre>
+
+<p>What changed, and why:</p>
+<ul>
+<li><code>set -euo pipefail</code> — the net.</li>
+<li><code>-C &quot;$SRC&quot; .</code> instead of <code>cd $SRC</code> and a file list — tar walks the tree itself, so there is no list
+to split, and the archive holds relative paths.</li>
+<li>every expansion quoted, including <code>&quot;$ARCHIVE&quot;</code> and inside <code>log</code>/<code>fail</code>.</li>
+<li><code>2&gt;/dev/null</code> gone: tar's complaints are the most valuable output the script produces.</li>
+<li>a <code>fail</code> function, so every failure exits non-zero, says why on stderr, and leaves a &quot;backup
+FAILED&quot; line rather than a lie.</li>
+<li><code>&quot;backup OK&quot;</code> reached only if tar succeeded.</li>
+</ul>
+<p><strong>5. Test all three outcomes, because two of them are what the lab actually grades.</strong> A script is
+only trustworthy if you have seen it fail:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>install<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-m">755</span><span class="hl-w"> </span>/tmp/backup-data<span class="hl-w"> </span>/usr/local/bin/backup-data
+<span class="hl-gp">$ </span>rm<span class="hl-w"> </span>-f<span class="hl-w"> </span>/tmp/t/log<span class="hl-w"> </span>/tmp/t/dest/*<span class="hl-w">          </span><span class="hl-c1"># start the log fresh, so the count below means something</span>
+
+<span class="hl-gp"># </span>the<span class="hl-w"> </span>happy<span class="hl-w"> </span>path,<span class="hl-w"> </span>with<span class="hl-w"> </span>awkward<span class="hl-w"> </span>names
+<span class="hl-gp">$ </span><span class="hl-nv">BACKUP_SRC</span><span class="hl-o">=</span>/tmp/t/src<span class="hl-w"> </span><span class="hl-nv">BACKUP_DEST</span><span class="hl-o">=</span>/tmp/t/dest<span class="hl-w"> </span><span class="hl-nv">BACKUP_LOG</span><span class="hl-o">=</span>/tmp/t/log<span class="hl-w"> </span>backup-data
+<span class="hl-gp">$ </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>tar<span class="hl-w"> </span>-tzf<span class="hl-w"> </span>/tmp/t/dest/data-*.tar.gz
+<span class="hl-go">exit=0</span>
+<span class="hl-go">./</span>
+<span class="hl-go">./plain.txt</span>
+<span class="hl-go">./a dir/</span>
+<span class="hl-go">./a dir/inner file.log</span>
+
+<span class="hl-gp"># </span>a<span class="hl-w"> </span>missing<span class="hl-w"> </span><span class="hl-nb">source</span>
+<span class="hl-gp">$ </span><span class="hl-nv">BACKUP_SRC</span><span class="hl-o">=</span>/tmp/t/nope<span class="hl-w"> </span><span class="hl-nv">BACKUP_DEST</span><span class="hl-o">=</span>/tmp/t/dest<span class="hl-w"> </span><span class="hl-nv">BACKUP_LOG</span><span class="hl-o">=</span>/tmp/t/log<span class="hl-w"> </span>backup-data
+<span class="hl-go">backup-data: source /tmp/t/nope does not exist</span>
+<span class="hl-gp">$ </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">exit=1</span>
+
+<span class="hl-gp"># </span>a<span class="hl-w"> </span>destination<span class="hl-w"> </span>that<span class="hl-w"> </span>cannot<span class="hl-w"> </span>be<span class="hl-w"> </span>written<span class="hl-w"> </span><span class="hl-o">(</span>a<span class="hl-w"> </span>file<span class="hl-w"> </span>where<span class="hl-w"> </span>the<span class="hl-w"> </span>directory<span class="hl-w"> </span>should<span class="hl-w"> </span>be<span class="hl-o">)</span>
+<span class="hl-gp">$ </span>:<span class="hl-w"> </span>&gt;<span class="hl-w"> </span>/tmp/t/notadir
+<span class="hl-gp">$ </span><span class="hl-nv">BACKUP_SRC</span><span class="hl-o">=</span>/tmp/t/src<span class="hl-w"> </span><span class="hl-nv">BACKUP_DEST</span><span class="hl-o">=</span>/tmp/t/notadir<span class="hl-w"> </span><span class="hl-nv">BACKUP_LOG</span><span class="hl-o">=</span>/tmp/t/log<span class="hl-w"> </span>backup-data
+<span class="hl-go">tar (child): /tmp/t/notadir/data-20260913-042427.tar.gz: Cannot open: Not a directory</span>
+<span class="hl-go">tar (child): Error is not recoverable: exiting now</span>
+<span class="hl-go">tar: Child returned status 2</span>
+<span class="hl-go">tar: Error is not recoverable: exiting now</span>
+<span class="hl-go">backup-data: could not write /tmp/t/notadir/data-20260913-042427.tar.gz</span>
+<span class="hl-gp">$ </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'backup OK'</span><span class="hl-w"> </span>/tmp/t/log
+<span class="hl-go">exit=1</span>
+<span class="hl-go">1</span>
+<span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/tmp/t/log
+<span class="hl-go">2026-09-13T04:24:27+00:00 backup OK: /tmp/t/dest/data-20260913-042427.tar.gz</span>
+<span class="hl-go">2026-09-13T04:24:27+00:00 backup FAILED: source /tmp/t/nope does not exist</span>
+<span class="hl-go">2026-09-13T04:24:27+00:00 backup FAILED: could not write /tmp/t/notadir/data-20260913-042427.tar.gz</span>
+</code></pre>
+
+<p>(<code>tar (child)</code> is gzip's half of <code>tar -z</code>: tar runs the compressor as a child process, and it is the
+child that failed to open the output.)</p>
+<p>One &quot;backup OK&quot; in the log — from the successful run — and two &quot;backup FAILED&quot; lines. The log now
+distinguishes nights.</p>
+<p><strong>6. Fix cron.</strong> The entry names a bare command, and cron's <code>PATH</code> does not include
+<code>/usr/local/bin</code>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/etc/cron.d/backup-data
+<span class="hl-gp"># </span>nightly<span class="hl-w"> </span>backup
+<span class="hl-go">15 2 * * * root backup-data</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-nv">PATH</span><span class="hl-o">=</span>/usr/bin:/bin<span class="hl-w"> </span>backup-data<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">env: ‘backup-data’: No such file or directory</span>
+<span class="hl-go">exit=127</span>
+</code></pre>
+
+<p>Exit 127 is &quot;command not found&quot; — the shell's way of saying <code>PATH</code>. Use an absolute path:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>sed<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-s1">'s#root backup-data#root /usr/local/bin/backup-data#'</span><span class="hl-w"> </span>/etc/cron.d/backup-data
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>env<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-nv">PATH</span><span class="hl-o">=</span>/usr/bin:/bin<span class="hl-w"> </span>/usr/local/bin/backup-data<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit=</span><span class="hl-nv">$?</span><span class="hl-s2">"</span>
+<span class="hl-go">exit=0</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w"> </span>cron<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>is-enabled<span class="hl-w"> </span>cron
+<span class="hl-go">active</span>
+<span class="hl-go">enabled</span>
+</code></pre>
+
+<p>(On Alpine the same job lives in <code>/etc/crontabs/root</code> — readable only with <code>sudo</code> — with no user
+field, next to the <code>run-parts /etc/periodic/…</code> lines, and the daemon is <code>crond</code> under OpenRC:
+<code>rc-update add crond default</code>. BusyBox's <code>tar</code> words its failure differently, <em>tar: can't open
+'…': Not a directory</em>, and the script's own <code>fail</code> line is the same on both.)</p>
+<p><strong>7. Reboot and check the whole chain again</strong>, because a cron daemon that is running and not enabled
+is the next version of this bug:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>reboot
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>is-enabled<span class="hl-w"> </span>cron<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w"> </span>cron
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>run-parts<span class="hl-w"> </span>--test<span class="hl-w"> </span>/etc/cron.daily<span class="hl-w"> </span>&gt;/dev/null<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/cron.d/backup-data
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>/usr/local/bin/backup-data<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-2<span class="hl-w"> </span>/var/log/backup-data.log
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Quoting <code>$FILES</code> and stopping there.</strong> <code>tar -czf &quot;$ARCHIVE&quot; &quot;$FILES&quot;</code> hands tar a <em>single</em>
+argument containing every filename and a few newlines, so now nothing is archived instead of some
+things. The list-in-a-variable shape is the problem; quoting it does not fix it. Let tar walk the tree
+(<code>-C &quot;$SRC&quot; .</code>), or use <code>-print0 | xargs -0</code>.</p>
+<p><strong>Setting <code>IFS=$'\n'</code> to make the loop work.</strong> It makes spaces safe and leaves newlines in filenames
+broken, and it changes the behaviour of every later command in the script. NUL separation is the
+mechanism that actually holds: it is the one byte a filename cannot contain.</p>
+<p><strong>Leaving <code>2&gt;/dev/null</code> in place because the errors are noisy.</strong> The noise was tar telling you the
+script was broken, for a year. If output is genuinely uninteresting, send it to the log, not to
+<code>/dev/null</code>.</p>
+<p><strong>Adding <code>set -e</code> and believing the script now fails loudly.</strong> <code>set -e</code> makes it <em>stop</em>; it does not
+make it <em>say</em> anything, and it does not stop a previously-written &quot;backup OK&quot; from being the last
+thing in the log. It is also exempt inside conditions, in <code>&amp;&amp;</code>/<code>||</code> chains, and for commands whose
+status is consumed by an assignment. Explicit <code>|| fail &quot;…&quot;</code> on the commands you care about is what
+makes a failure legible.</p>
+<p><strong>Checking <code>$?</code> in a separate <code>if</code> several lines later.</strong> <code>$?</code> is the status of the <em>last</em> command,
+and the <code>echo</code> you inserted while debugging has already overwritten it. Test the command directly
+(<code>if tar …; then</code>) or use <code>|| fail</code>.</p>
+<p><strong>Writing the error to stdout.</strong> <code>echo &quot;backup failed&quot;</code> on stdout means a caller redirecting stdout
+to <code>/dev/null</code> sees silence, and cron mails nothing. Errors belong on <code>&gt;&amp;2</code>.</p>
+<p><strong>Exiting 0 after reporting a failure.</strong> The message is for humans; the exit status is for machines,
+and the machine is what runs it nightly. A monitoring check reads <code>$?</code>.</p>
+<p><strong>Using <code>date +%Y%m%d</code> directly in a crontab line.</strong> In a crontab, <code>%</code> starts the stdin section and
+must be written <code>\%</code>. It works perfectly when you paste the command into a shell to test it, which
+is what makes it so hard to find.</p>
+<p><strong>Adding <code>/usr/local/bin</code> to your own <code>.bashrc</code> and re-testing.</strong> That changes your shell, not
+cron's. <code>sudo env -i PATH=/usr/bin:/bin &lt;cmd&gt;</code> is the test; an absolute path in the crontab is the
+fix.</p>
+<p><strong>Using a bare command name in <code>/etc/cron.d</code> and putting the user field in a user crontab (or the
+reverse).</strong> <code>/etc/crontab</code> and <code>/etc/cron.d/*</code> take a user field; <code>crontab -e</code> files do not. Get it
+wrong and cron either runs the wrong thing or reports that it cannot find a command called <code>root</code>.</p>
+<p><strong>Naming a file in <code>/etc/cron.d</code> with a dot in it</strong>, or making it group-writable. cron ignores it
+without explanation.</p>
+<p><strong>Testing only the happy path.</strong> The two graded failure cases are the whole point: a backup script is
+a claim about failure handling, and you have not verified it until you have watched it fail on a
+missing source and on an unwritable destination.</p>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-bash"><span class="hl-c1"># quoting</span>
+<span class="hl-s2">"</span><span class="hl-nv">$var</span><span class="hl-s2">"</span><span class="hl-w">          </span><span class="hl-c1"># one argument, exactly</span>
+<span class="hl-s2">"</span><span class="hl-k">$(</span>cmd<span class="hl-k">)</span><span class="hl-s2">"</span><span class="hl-w">        </span><span class="hl-c1"># the output as one argument (trailing newlines stripped)</span>
+<span class="hl-s2">"</span><span class="hl-nv">$@</span><span class="hl-s2">"</span><span class="hl-w">            </span><span class="hl-c1"># each positional argument preserved   ← always this, never $@</span>
+<span class="hl-s2">"</span><span class="hl-si">${</span><span class="hl-nv">arr</span><span class="hl-p">[@]</span><span class="hl-si">}</span><span class="hl-s2">"</span><span class="hl-w">     </span><span class="hl-c1"># each array element preserved</span>
+<span class="hl-si">${</span><span class="hl-nv">var</span><span class="hl-k">:-</span><span class="hl-nv">default</span><span class="hl-si">}</span><span class="hl-w"> </span><span class="hl-c1"># this, or a default (works with set -u)</span>
+<span class="hl-si">${</span><span class="hl-nv">var</span><span class="hl-p">:?message</span><span class="hl-si">}</span><span class="hl-w"> </span><span class="hl-c1"># …or die with a message if unset</span>
+<span class="hl-c1"># no quoting needed: inside [[ ]], and on the right of a plain x=$y assignment</span>
+
+<span class="hl-c1"># file lists, safely</span>
+tar<span class="hl-w"> </span>-czf<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$ARCHIVE</span><span class="hl-s2">"</span><span class="hl-w"> </span>-C<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span>.<span class="hl-w">                 </span><span class="hl-c1"># let the tool walk the tree  ← preferred</span>
+find<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span>-type<span class="hl-w"> </span>f<span class="hl-w"> </span>-exec<span class="hl-w"> </span>cmd<span class="hl-w"> </span><span class="hl-o">{}</span><span class="hl-w"> </span>+<span class="hl-w">              </span><span class="hl-c1"># batched, no shell in between</span>
+find<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span>-print0<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>xargs<span class="hl-w"> </span>-0<span class="hl-w"> </span>cmd<span class="hl-w">              </span><span class="hl-c1"># NUL-separated</span>
+find<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span>-print0<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span><span class="hl-k">while</span><span class="hl-w"> </span><span class="hl-nv">IFS</span><span class="hl-o">=</span><span class="hl-w"> </span><span class="hl-nb">read</span><span class="hl-w"> </span>-r<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">''</span><span class="hl-w"> </span>f<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span>cmd<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$f</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">done</span>
+mapfile<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s1">''</span><span class="hl-w"> </span>files<span class="hl-w"> </span>&lt;<span class="hl-w"> </span>&lt;<span class="hl-o">(</span>find<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span>-print0<span class="hl-o">)</span><span class="hl-w">    </span><span class="hl-c1"># into an array (bash 4.4+)</span>
+
+<span class="hl-c1"># failing loudly</span>
+<span class="hl-nb">set</span><span class="hl-w"> </span>-euo<span class="hl-w"> </span>pipefail<span class="hl-w">                  </span><span class="hl-c1"># -e stop on error, -u unset is an error, pipefail</span>
+log<span class="hl-o">()</span><span class="hl-w">  </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-k">$(</span>date<span class="hl-w"> </span>-Is<span class="hl-k">)</span><span class="hl-s2"> </span><span class="hl-nv">$*</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;&gt;<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$LOG</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+fail<span class="hl-o">()</span><span class="hl-w"> </span><span class="hl-o">{</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$0</span><span class="hl-s2">: </span><span class="hl-nv">$*</span><span class="hl-s2">"</span><span class="hl-w"> </span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">2</span><span class="hl-p">;</span><span class="hl-w"> </span>log<span class="hl-w"> </span><span class="hl-s2">"FAILED: </span><span class="hl-nv">$*</span><span class="hl-s2">"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">exit</span><span class="hl-w"> </span><span class="hl-m">1</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-o">}</span>
+<span class="hl-o">[</span><span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w">  </span><span class="hl-o">||</span><span class="hl-w"> </span>fail<span class="hl-w"> </span><span class="hl-s2">"no source </span><span class="hl-nv">$SRC</span><span class="hl-s2">"</span><span class="hl-w">         </span><span class="hl-c1"># -f file, -d dir, -r/-w/-x access</span>
+<span class="hl-o">[</span><span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-s2">"</span><span class="hl-nv">$var</span><span class="hl-s2">"</span><span class="hl-w"> </span><span class="hl-o">]</span><span class="hl-w">  </span><span class="hl-o">||</span><span class="hl-w"> </span>fail<span class="hl-w"> </span><span class="hl-s2">"empty var"</span><span class="hl-w">              </span><span class="hl-c1"># -z empty, -n non-empty</span>
+cmd<span class="hl-w"> </span><span class="hl-o">||</span><span class="hl-w"> </span>fail<span class="hl-w"> </span><span class="hl-s2">"cmd failed"</span>
+<span class="hl-k">if</span><span class="hl-w"> </span>!<span class="hl-w"> </span>cmd<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">then</span><span class="hl-w"> </span>fail<span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-k">fi</span>
+<span class="hl-nb">trap</span><span class="hl-w"> </span><span class="hl-s1">'rm -rf "$tmp"'</span><span class="hl-w"> </span>EXIT<span class="hl-w">                       </span><span class="hl-c1"># clean up on any exit path</span>
+
+<span class="hl-c1"># debugging</span>
+bash<span class="hl-w"> </span>-n<span class="hl-w"> </span>script<span class="hl-w">            </span><span class="hl-c1"># syntax only, run nothing</span>
+bash<span class="hl-w"> </span>-x<span class="hl-w"> </span>script<span class="hl-w">            </span><span class="hl-c1"># print each command after expansion  ← finds quoting bugs</span>
+<span class="hl-nb">set</span><span class="hl-w"> </span>-x<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>…<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">set</span><span class="hl-w"> </span>+x<span class="hl-w">       </span><span class="hl-c1"># trace one section</span>
+shellcheck<span class="hl-w"> </span>script<span class="hl-w">         </span><span class="hl-c1"># static analysis; finds every unquoted expansion (not on the lab image: apt install shellcheck)</span>
+
+<span class="hl-c1"># cron</span>
+<span class="hl-c1"># min hour dom mon dow [user]  command       (user field: /etc/crontab, /etc/cron.d/* only)</span>
+<span class="hl-m">15</span><span class="hl-w"> </span><span class="hl-m">2</span><span class="hl-w"> </span>*<span class="hl-w"> </span>*<span class="hl-w"> </span>*<span class="hl-w"> </span>root<span class="hl-w"> </span>/usr/local/bin/backup-data<span class="hl-w">   </span><span class="hl-c1"># absolute path — cron's PATH is /usr/bin:/bin</span>
+<span class="hl-nv">PATH</span><span class="hl-o">=</span>/usr/local/bin:/usr/bin:/bin<span class="hl-w">            </span><span class="hl-c1"># …or set it at the top of the crontab</span>
+<span class="hl-c1"># \% : a literal percent (unescaped % starts the stdin section)</span>
+crontab<span class="hl-w"> </span>-l<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>crontab<span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>crontab<span class="hl-w"> </span>-u<span class="hl-w"> </span>user<span class="hl-w"> </span>-l
+systemctl<span class="hl-w"> </span>is-enabled<span class="hl-w"> </span>cron<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>systemctl<span class="hl-w"> </span>is-active<span class="hl-w"> </span>cron<span class="hl-w">        </span><span class="hl-c1"># Ubuntu</span>
+rc-update<span class="hl-w"> </span>show<span class="hl-w"> </span>default<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>crond<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span>rc-service<span class="hl-w"> </span>crond<span class="hl-w"> </span>status<span class="hl-w">   </span><span class="hl-c1"># Alpine</span>
+sudo<span class="hl-w"> </span>env<span class="hl-w"> </span>-i<span class="hl-w"> </span><span class="hl-nv">PATH</span><span class="hl-o">=</span>/usr/bin:/bin<span class="hl-w"> </span>/usr/local/bin/job<span class="hl-w"> </span><span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-nv">$?</span><span class="hl-w">   </span><span class="hl-c1"># reproduce cron's environment</span>
+journalctl<span class="hl-w"> </span>-t<span class="hl-w"> </span>CRON<span class="hl-w"> </span>-b<span class="hl-w">                        </span><span class="hl-c1"># what cron says it ran (systemd systems)</span>
+<span class="hl-c1"># exit 127 = command not found → PATH.  exit 126 = found, not executable.</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>Active, green, and not working</em> (topic journal <code>monitoring</code>) — A check is an exit status</li>
+</ul>
+<p>Manual pages: <code>man 1 bash</code>, <code>man 5 crontab</code>.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p><code>FILES=$(find . -type f)</code> then <code>tar -czf $ARCHIVE $FILES</code>. Exactly what happens to a file called
+<code>2026 Q3 summary.csv</code>, and what do the archive and the log say afterwards?</p>
+<blockquote>
+<p>Word splitting cuts the unquoted <code>$FILES</code> at every space, so tar receives <code>./invoices/2026</code>,
+<code>Q3</code> and <code>summary.csv</code> as three separate arguments, none of which exists. tar reports three
+errors and exits non-zero; the archive contains only the files whose names had no spaces; and
+because the script discards stderr and ends in <code>exit 0</code>, the log still says &quot;backup OK&quot;.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is quoting <code>$FILES</code> not the fix, and what are the two robust ways to hand a list of files to
+another program?</p>
+<blockquote>
+<p><code>&quot;$FILES&quot;</code> becomes one argument containing every name and some newlines, so nothing is archived
+instead of some things — a list cannot live in a string, because a filename may contain a
+newline. Either let the tool walk the tree itself (<code>tar -C &quot;$SRC&quot; .</code>), or use NUL separation
+(<code>find -print0 | xargs -0</code>, or <code>while IFS= read -r -d ''</code>).</p>
+</blockquote>
+</li>
+<li>
+<p>What do <code>set -e</code>, <code>set -u</code> and <code>set -o pipefail</code> each catch, and name two situations where
+<code>set -e</code> does not fire?</p>
+<blockquote>
+<p><code>-e</code> exits on the first non-zero status; <code>-u</code> makes an unset variable an error (catching a typo
+that would otherwise expand to nothing); <code>pipefail</code> makes a pipeline fail if any stage fails,
+not just the last. It does not fire for a command used as a condition (<code>if cmd</code>, <code>cmd || true</code>,
+<code>a &amp;&amp; b</code> except the last), nor when the status is consumed by an assignment
+(<code>x=$(failing-cmd)</code>).</p>
+</blockquote>
+</li>
+<li>
+<p>A script prints &quot;backup failed&quot; and exits 0. Name both defects and who is harmed by each.</p>
+<blockquote>
+<p>The message is on stdout rather than stderr, so a caller that redirects stdout — cron included —
+sees nothing at all. And exit 0 tells every machine consumer, from cron's mail to a monitoring
+check, that the run succeeded. Humans lose the message; automation loses the truth.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the minimum a log line needs for someone to distinguish a good night from a bad one a year
+later?</p>
+<blockquote>
+<p>A timestamp, an explicit outcome written on <em>both</em> paths (OK and FAILED), and the reason plus the
+artifact on failure. A log that only ever contains one sentence carries no information — there
+must be a line that could have been different.</p>
+</blockquote>
+</li>
+<li>
+<p>A job works when you run it in your shell and does nothing under cron. What is the first thing to
+suspect, and what single command reproduces cron's conditions?</p>
+<blockquote>
+<p><code>PATH</code>: cron gives a job roughly <code>/usr/bin:/bin</code> and reads none of your shell's startup files,
+so anything in <code>/usr/local/bin</code> is not found — exit 127. Reproduce it with
+<code>env -i PATH=/usr/bin:/bin /path/to/job</code>. Fix it with an absolute path in the crontab, or a
+<code>PATH=</code> line at the top of the crontab.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does <code>date +%Y%m%d</code> behave differently in a crontab line than in a shell?</p>
+<blockquote>
+<p>In a crontab, <code>%</code> is special: it terminates the command and starts the data fed to it on stdin.
+It must be escaped as <code>\%</code>. The command tests perfectly when pasted into a shell, which is what
+makes this failure so persistent.</p>
+</blockquote>
+</li>
+<li>
+<p><code>bash -n</code>, <code>bash -x</code> and <code>shellcheck</code> — what does each one tell you, and which finds a quoting bug
+fastest?</p>
+<blockquote>
+<p><code>bash -n</code> parses without running, catching syntax errors only. <code>bash -x</code> prints every command
+<em>after</em> expansion, so an unquoted variable that became three arguments is visible on the trace —
+the fastest way to see this class of bug in action. <code>shellcheck</code> finds unquoted expansions
+statically, before you run anything, and should be in the habit.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Architecture · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/docs/architecture/"><meta property="og:title" content="Architecture · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/docs/architecture/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Architecture · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" aria-current="page">Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      <div class="group">Getting started</div>
+      <a href="../../docs/getting-started/"
+>Install and first lab</a>
+      <a href="../../docs/tui-reference/"
+>TUI reference</a>
+      <a href="../../docs/faq/"
+>FAQ</a>
+      <div class="group">Contributing labs</div>
+      <a href="../../docs/writing-a-lab/"
+>Writing a lab</a>
+      <a href="../../docs/lab-spec/"
+>Lab specification</a>
+      <a href="../../docs/quiz-spec/"
+>Theory question spec</a>
+      <a href="../../docs/claude-code-plugin/"
+>The Claude Code plugin</a>
+      <div class="group">How it is built</div>
+      <a href="../../docs/architecture/"
+aria-current="page">Architecture</a>
+      <a href="../../docs/rated-labs/"
+>Rated and unrated labs</a>
+      <a href="../../docs/claude-code-in-norboten/"
+>How Norboten uses Claude</a>
+      <a href="../../docs/mcp/"
+>The MCP server</a>
+      <a href="../../docs/data-model/"
+>Data model</a>
+      <a href="../../docs/api-reference/"
+>API reference</a>
+      <a href="../../docs/pipelines/"
+>Pipelines</a>
+      <a href="../../docs/open-questions/"
+>Open questions</a>
+      <div class="group">Running it yourself</div>
+      <a href="../../docs/self-hosting/"
+>Self-hosting and configuration</a>
+      <a href="../../docs/deploy/"
+>Deploying the server</a>
+      <a href="../../docs/ci-cd/"
+>CI/CD</a>
+      <a href="../../docs/releasing/"
+>Releasing</a>
+    </nav>
+    <article class="prose">
+      <h1 id="architecture">Architecture</h1>
+<p>Two halves, joined by HTTPS and nothing else.</p>
+<ul>
+<li><strong>The learner's machine</strong> runs the product: a terminal interface that drives real virtual
+machines, a standard-library runner inside each VM that breaks it and grades it, and everything
+needed to do that offline once an image and a lab are cached. The tutor and the review of a
+finished attempt run here too, on the learner's own Claude Code, key or Ollama.</li>
+<li><strong>One server</strong> runs what cannot live on a learner's machine: accounts and ratings, the
+consultant on its own Ollama (no hosted model is called from it), live and recorded
+sessions, analytics, and the site. Theory questions are not generated there: they are drafted on
+a maintainer's or learner's machine (<code>cli/src/norboten/questions/</code>). It is one Docker Compose project on one machine.</li>
+</ul>
+<pre><code>the learner's machine                                   one server (Docker Compose)
+┌─────────────────────────────────────┐                ┌──────────────────────────────────────────────┐
+│ norboten  (Textual TUI)             │     HTTPS      │ caddy ── TLS · the site · reverse proxy      │
+│   sections · lab screen · doctor    │ ─────────────► │   │                                          │
+│   engine ─ lima (pinned) ─ QEMU     │                │   ├─ api (FastAPI, 2 workers)                │
+│   │                                 │                │   │    auth · labs · quiz · profile · mcp     │
+│   ▼                                 │                │   │    play · chat · telemetry · metrics      │
+│ ┌─────────────────────────────┐     │                │   │      │        │         │                 │
+│ │ lab VM (Rocky · Ubuntu ·    │     │                │   │  postgres   redis    ollama              │
+│ │  Alpine), golden image      │     │                │   └─ grafana ── prometheus ── exporters      │
+│ │  norboten-runner            │     │                │                                              │
+│ │  break/ check/  grader      │     │                └──────────────────────────────────────────────┘
+│ └─────────────────────────────┘     │                ┌──────────────────────────────────────────────┐
+└─────────────────────────────────────┘  pull images   │ GitHub: Actions (tests · gate · deploy)      │
+                                        ◄───────────── │   GHCR (API image · golden images · labs)    │
+                                                       └──────────────────────────────────────────────┘
+</code></pre>
+<h2 id="the-client">The client</h2>
+<p><code>cli/src/norboten</code>. <code>norboten</code> with no arguments opens the TUI; see the
+<a href="../tui-reference/">TUI reference</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tui/</code></td>
+<td>the interface: <code>app.py</code> (main screen, the sections along the top on 1–8 and the arrows, panels, activity log), <code>sections.py</code> (Home, Labs, Theory, Journals, Play, Ratings, You, System), <code>lab.py</code> (the lab screen), <code>quiz.py</code>, <code>widgets.py</code> (terminal player on pyte, heatmap, doctor panel), <code>data.py</code> (API calls)</td>
+</tr>
+<tr>
+<td><code>session/</code></td>
+<td>the engine: start, break, check with reboot, reset, hints, surrender; the solvability gate; live checks</td>
+</tr>
+<tr>
+<td><code>lima/</code></td>
+<td>install and pin Lima 2.2.0, render one <code>lima.yaml</code> per lab, lifecycle, disk snapshots with <code>qemu-img</code>, serial consoles, QMP reset</td>
+</tr>
+<tr>
+<td><code>containers.py</code></td>
+<td>the same machine interface for <code>runtime: container</code> labs, over Docker or Podman: build the base image from its Dockerfile, <code>exec</code> for every command, <code>commit</code> as the clean snapshot</td>
+</tr>
+<tr>
+<td><code>images/</code></td>
+<td>the golden image cache: pull by digest, verify, import</td>
+</tr>
+<tr>
+<td><code>labs/</code></td>
+<td>manifests, the linter, the local and OCI lab stores</td>
+</tr>
+<tr>
+<td><code>quiz/</code></td>
+<td>question banks, the sandboxed verifier, a theory run</td>
+</tr>
+<tr>
+<td><code>play/</code></td>
+<td>the PTY recorder, the in-guest git watcher, streaming upload</td>
+</tr>
+<tr>
+<td><code>tutor/</code></td>
+<td>the tutor and the review of a finished attempt, on this machine's model (<code>models.py</code>: Claude Code, then a key, then Ollama); the guard every reply passes; the commands an attempt left (<code>commands.py</code>)</td>
+</tr>
+<tr>
+<td><code>auth.py</code></td>
+<td>signing in with GitHub's device flow through the API, and the token file when the machine is remembered</td>
+</tr>
+<tr>
+<td><code>attempts.py</code></td>
+<td>reporting a graded attempt on an unrated lab</td>
+</tr>
+<tr>
+<td><code>rated.py</code>, <code>quiz/remote.py</code></td>
+<td>the client half of a rated lab and a rated theory run: the cached catalogue, and every call of one attempt (<a href="#rated-labs-keeping-the-answer-off-the-learners-machine">Rated labs</a>)</td>
+</tr>
+<tr>
+<td><code>doctor.py</code></td>
+<td>can this host run labs, and what to do if not</td>
+</tr>
+<tr>
+<td><code>cli.py</code></td>
+<td><code>norboten</code> → the TUI; hidden <code>dev</code> and <code>image</code> commands for authors and CI</td>
+</tr>
+<tr>
+<td><code>models.py</code></td>
+<td>the Pydantic schemas shared with the API — the machine-readable form of the specs</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-runner">The runner</h2>
+<p><code>runner/norboten_runner</code> is copied into the guest for a run and deleted after it. It imports only
+the standard library, because nothing may be installed in a lab VM. It applies faults, runs checks
+with a per-check timeout, collects the read-only facts the tutor reasons from, and persists
+<code>ctx.state</code> so a check can know what a fault generated. For a rated lab it runs collectors instead
+of checks and signs what they saw (<code>collect_runner.py</code>, <code>signing.py</code>); the judges that read those
+facts (<code>judge.py</code>) are standard library too, but they run on the server and in the gate, never in a
+guest. All of it runs as <code>norboten-grader</code>, a
+separate account with its own key and sudo, created before the clean snapshot — so a lab can take
+away the learner's sudo without taking away the grader's.</p>
+<h2 id="a-lab-session">A lab session</h2>
+<ol>
+<li><strong>Pull</strong> the golden image (verified against the digest pinned in <code>images/registry.yaml</code>) and the lab.</li>
+<li><strong>Boot</strong> once; cloud-init creates the learner's account; the grading account is installed.</li>
+<li><strong>Snapshot</strong> the disks with <code>qemu-img</code>, the VM stopped. This is the clean state. Memory snapshots
+are not used: on Apple Silicon with QEMU's HVF they corrupt the next reset.</li>
+<li><strong>Break</strong>: the runner applies the faults; a <code>boot_after_break</code> lab then reboots into the broken
+state the learner meets.</li>
+<li><strong>Work</strong>: a shell (<code>o</code>), the serial console (<code>k</code>), the bootloader (<code>b</code>), hints (<code>h</code>), the tutor
+(<code>t</code>), live checks (<code>w</code>).</li>
+<li><strong>Check</strong> (<code>c</code>): checks run, the machine reboots, they run again. A check passes only if it passed
+both times; a quick check without the reboot (<code>x</code>) can never pass a lab.</li>
+<li><strong>Reset</strong> (<code>r</code>): roll the disks back, cold-boot, re-apply the faults — about ten seconds.</li>
+</ol>
+<h3 id="container-labs-and-the-claude-and-mcp-tracks">Container labs, and the claude and MCP tracks</h3>
+<p>A lab whose subject has no boot in it can be <code>runtime: container</code> (<code>containers.py</code>): the base image is
+built locally from a Dockerfile, the clean snapshot is a <code>docker commit</code>, every command arrives through
+<code>exec</code>, and a reset recreates the container in under a second. Fourteen labs use it — two Linux labs on
+<code>ubuntu-26.04-container</code>, and the six labs each of the <strong>claude</strong> and <strong>MCP</strong> tracks on
+<code>ubuntu-26.04-claude</code>. The MCP track's servers — stdio and Streamable HTTP, one behind nginx, one
+checking tokens from a small local identity provider — are standard-library Python in each lab's
+<code>files/</code>, so every check reads a real server through a real Claude Code.</p>
+<p>The claude track grades a real Claude Code (2.1.270, the release binary pinned by its sha256) without an
+account, a token or the network. <code>claude</code> on that image is a small launcher that points Claude Code at
+<code>fake_anthropic.py</code> on 127.0.0.1 — the same scripted Messages API the CI rehearsal uses, kept identical by
+a test — which answers each model turn from a script. Claude Code then does what it really does with those
+answers: loads settings, <code>CLAUDE.md</code>, hooks, subagents and MCP servers, applies permission rules, runs
+tools. A check scripts the model to attempt something (delete a directory, read a token, call an MCP tool,
+push, never stop) and grades the result: files left behind, the tool results Claude Code sent back, the
+tools and model each request asked for. <code>claude_lab.py</code> gives checks that as one call. Behaviours found
+this way — an untrusted checkout ignoring project allow rules, a <code>Read</code> deny that <code>grep -r</code> walks past, a
+subagent with misspelled tools that &quot;launches&quot; and never runs — are recorded in
+<code>docs/research/claude-code.md</code>.</p>
+<h2 id="the-server">The server</h2>
+<p><code>deploy/compose.yaml</code>. Only Caddy publishes ports; everything else talks on the compose network.</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Job</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>caddy</strong></td>
+<td>TLS from Let's Encrypt, renewed by itself; serves the static site; proxies <code>api.</code> and <code>status.</code>; passes server-sent events unbuffered; hides <code>/metrics</code></td>
+</tr>
+<tr>
+<td><strong>api</strong></td>
+<td>FastAPI under uvicorn, two workers. Stateless: everything it keeps is in PostgreSQL or Redis, so a restart or a second worker loses nothing</td>
+</tr>
+<tr>
+<td><strong>postgres</strong></td>
+<td>the one database (<code>norboten</code>). Schema in <a href="../data-model/">Data model</a></td>
+</tr>
+<tr>
+<td><strong>redis</strong></td>
+<td>pub/sub for live frames, rate limits, a 30 s leaderboard cache. No persistence</td>
+</tr>
+<tr>
+<td><strong>ollama</strong></td>
+<td>a small local model (<code>qwen2.5:0.5b</code> by default, pulled by the one-shot <code>ollama-pull</code>) that answers the consultant; see <a href="#local-models-ollama">Local models</a></td>
+</tr>
+<tr>
+<td><strong>prometheus</strong>, exporters, <strong>grafana</strong></td>
+<td>request rates and latencies by route, host and database metrics, and dashboards behind a login</td>
+</tr>
+<tr>
+<td><strong>analytics</strong> (job)</td>
+<td>nightly: redraws the Analytics page from the database</td>
+</tr>
+</tbody>
+</table>
+<p><code>deploy.sh</code> rolls the API to a tag and back if <code>/readyz</code> does not answer; <code>backup.sh</code> dumps the
+database nightly and proves the dump restores. See <a href="../deploy/">Deploying the server</a>.</p>
+<h2 id="the-api">The API</h2>
+<p><code>api/src/norboten_api</code>. Every endpoint is in the generated <a href="../api-reference/">API reference</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main.py</code></td>
+<td>the app, its lifespan (stores, bus, the hourly purge), CORS, <code>/healthz</code>, <code>/readyz</code></td>
+</tr>
+<tr>
+<td><code>db.py</code></td>
+<td>the schema and the shared connection pool</td>
+</tr>
+<tr>
+<td><code>store.py</code>, <code>account_store.py</code>, <code>credentials.py</code>, <code>play_store.py</code>, <code>rated_store.py</code></td>
+<td>one protocol each, a memory and a PostgreSQL implementation, tested against both</td>
+</tr>
+<tr>
+<td><code>routers/rated.py</code>, <code>routers/rated_quiz.py</code></td>
+<td>rated attempts and rated theory runs: issued, judged and rated here</td>
+</tr>
+<tr>
+<td><code>live.py</code></td>
+<td>the Redis bus (and an in-process one), rate limits</td>
+</tr>
+<tr>
+<td><code>auth.py</code>, <code>routers/auth.py</code>, <code>github.py</code>, <code>pending.py</code></td>
+<td>signing in with GitHub (device and web flows), hashed tokens, the flows in progress</td>
+</tr>
+<tr>
+<td><code>discord.py</code>, <code>routers/discord.py</code>, <code>digest.py</code></td>
+<td>linking Discord, and the weekly digest as a direct message from the bot</td>
+</tr>
+<tr>
+<td><code>rating.py</code>, <code>accounts.py</code></td>
+<td>Glicko-2 per topic; what an attempt is worth</td>
+</tr>
+<tr>
+<td><code>mcp_server.py</code>, <code>routers/oauth.py</code></td>
+<td>the MCP server at <code>/mcp</code> and <code>/mcp/account</code>, the gate in front of it, and the OAuth 2.1 authorization server for its personal tools</td>
+</tr>
+<tr>
+<td><code>retrieval.py</code>, <code>agents/</code></td>
+<td>the consultant's BM25 index and the consultant, on Ollama only (the providers live in <code>norboten.questions.providers</code>, the guard in <code>norboten.tutor.guards</code>)</td>
+</tr>
+<tr>
+<td><code>analytics/</code></td>
+<td>the Analytics page: pandas, scikit-learn, networkx, matplotlib</td>
+</tr>
+<tr>
+<td><code>metrics.py</code></td>
+<td>Prometheus metrics by route template</td>
+</tr>
+<tr>
+<td><code>reference.py</code></td>
+<td>writes <code>docs/api-reference.md</code> from the app's own OpenAPI document</td>
+</tr>
+</tbody>
+</table>
+<h2 id="identity">Identity</h2>
+<p>An account is a GitHub account, and nothing else: there is no password, no email address and no
+registration. GitHub is asked one question — who is this — and the answer that is kept is its
+numeric user id, which never changes, with the login beside it, refreshed at every sign-in because a
+login can be renamed. The first sign-in creates the account. No scope is requested, so the GitHub
+token could read nothing private while it existed, and it exists for one <code>GET /user</code>: the API revokes
+it straight away (<code>DELETE /applications/{client_id}/token</code>) and stores no GitHub token anywhere.</p>
+<p><strong>A terminal</strong> uses GitHub's device flow, proxied by the API. <code>POST /auth/github/device</code> has GitHub
+issue a device code, which stays in PostgreSQL (<code>pending_sign_ins</code>); the terminal gets only the user
+code to type and <code>github.com/login/device</code>, which works from any device, so a headless machine signs
+in the same way. The terminal then polls <code>POST /auth/github/poll</code>, and each poll is one call to
+GitHub: 428 while it waits, 429 with a longer interval when GitHub says slow down, 403 denied, 410
+expired. Proxying is the point. If the terminal talked to GitHub itself, a GitHub token would reach
+the learner's machine, and the API would have to accept a token and trust that it had been issued to
+this app — a token from any other GitHub app would sign its owner in.</p>
+<p><strong>The site</strong> uses the web flow. The page makes a random <code>state</code>, keeps it in <code>sessionStorage</code>, and
+goes to <code>GET /auth/github/go</code>; the API keeps that state with the flow and sends the browser to
+GitHub with a state of its own. GitHub returns the browser to <code>GET /auth/github/callback</code>, where the
+code is exchanged with the client secret, and the API sends the browser back to the page with
+<code>#once=…&amp;state=…</code> in the fragment — never a token in a URL, and a fragment reaches no server. The page
+checks the state against the one it made (login CSRF) and exchanges the one-time code, which lives
+sixty seconds and works once, for a token. An MCP client's approval page (<code>/authorize/</code>) signs in with
+the same button and returns to its pending request.</p>
+<p>&quot;Remember this browser&quot; (or machine) is the token's life and nothing more: ninety days, or twelve
+hours. The site keeps a remembered token in <code>localStorage</code> and the other in <code>sessionStorage</code>; the
+TUI writes <code>~/.norboten/credentials.json</code> at 0600 only when remembered, and otherwise holds the
+token in the process. A terminal's token is <code>cli</code> and labelled with the machine's name. Tokens are
+random, the server stores only their SHA-256, and revoking one deletes a row. A client never sends a
+user id: the id comes from the token.</p>
+<p><strong>What each service sees.</strong> GitHub sees that someone signed in to Norboten, when, and nothing Norboten
+holds. Norboten keeps the GitHub id and login; the public profile links to the login. <strong>Discord</strong> is
+optional and only for the weekly digest: the account page links a Discord user through Discord's
+OAuth2 (<code>identify</code>, and <code>guilds.join</code> only when &quot;join the Norboten server&quot; is ticked, off by default),
+keeps the Discord user id and drops Discord's token. The digest is then a direct message from the
+bot, over REST with no gateway connection; a DM needs the bot and the person to share a server, and
+Discord's <code>50007</code> (it will not take the message) is recorded and explained on the account page.</p>
+<p>The cost is a hard dependency on GitHub: a server without <code>NORBOTEN_GITHUB_CLIENT_ID</code> and its secret
+answers 503 on every sign-in endpoint, and nobody without a GitHub account can sign in. Labs, theory
+and journals never need an account. The OAuth App has one callback URL, so a laptop stack needs its
+own app; without one, the laptop's API accepts the debug identity instead.</p>
+<p><strong>The nick and the country.</strong> A profile is made once, with a nick that is then fixed — a second
+<code>POST /me</code> with another nick is 409 — and a country that can change. Both forms open on a guess: the
+nick from the GitHub login, the country from <code>GET /geo/country</code>, which looks the caller's address up
+in an offline table on the server (<code>geo.py</code>: <strong>DB-IP Lite IP-to-Country</strong>, by
+<a href="https://db-ip.com">DB-IP</a>, CC BY 4.0, compiled into the image monthly). No third party sees the
+address, and the guess is never stored: only a country the learner submits is.</p>
+<h2 id="ratings">Ratings</h2>
+<p>Glicko-2, one rating per topic of the nineteen in <code>cli/src/norboten/topics.py</code>, each with its own
+deviation so a new profile admits what it does not know. A rated attempt is one game per topic the
+lab declares, against a virtual opponent whose rating is the lab's difficulty (1100 to 1900); a
+rated theory run is one game at the mean difficulty of what was served. The server reads
+difficulty, topics and time limit from the manifest, never from the request — a client that could
+name its opponent would name an easy one. Only rated labs and rated banks, graded on the server,
+play games at all; the next chapter is why.</p>
+<h2 id="rated-labs-keeping-the-answer-off-the-learners-machine">Rated labs: keeping the answer off the learner's machine</h2>
+<p><strong>The problem.</strong> A board is worth reading only if the people on it fixed the machine. Everything
+else in Norboten runs on the learner's machine and is public — the faults, the checks, the reference
+solution — which is right for learning and useless for a rating: a pass reported by a client that
+can read the answer proves nothing, and a check that runs locally can be read, edited or skipped.</p>
+<p><strong>What was rejected, and why.</strong></p>
+<ul>
+<li><em>Encrypt the answers in the repository, decrypt them locally.</em> Whatever decrypts on the learner's
+machine holds the key, so this is obfuscation with extra steps, and the project does not print
+claims it cannot stand behind.</li>
+<li><em>Close everything.</em> Grading every lab on a server would break what the product is built on: labs
+run offline, and the TUI keeps working when the server is down. For most readers the solution <em>is</em>
+the lesson. So the catalogue splits instead: <strong>unrated</strong> labs and banks stay public and offline,
+<strong>rated</strong> ones are the only thing that moves a rating.</li>
+<li><em>A second project.</em> The rated half is a private repository attached as the submodule <code>rated/</code>:
+one gitlink and one <code>.gitmodules</code> entry in the public tree. The seam is visible on purpose — the
+public half is complete on its own, and anyone can see exactly where the closed material begins.</li>
+<li><em>Answers inside the API image.</em> A container image is a tar of files and its layers are immutable;
+one image built with <code>rated/</code> in it and pushed once would publish the answers for good. So the
+image never contains them: the private repository is checked out on the server beside the stack
+(<code>/opt/norboten/rated</code>, with a read-only deploy key — the Ansible step waits on that key) and
+Compose mounts it into the API read-only (<code>NORBOTEN_RATED_DIR</code>). Tests assert the
+Dockerfile, the Docker context and the wheel carry nothing from <code>rated/</code>
+(<code>tests/test_rated_never_ships.py</code>), and rotating the answers is a <code>git pull</code>, not a rebuild.</li>
+</ul>
+<p><strong>What the server grades: machine state, not a verdict.</strong> A rated check is split in two files with
+the same name (docs/lab-spec.md §13). <code>collect/NN_name.py</code> runs in the guest and returns what it
+saw — command output, exit codes, file contents — never a pass or a fail. <code>check/NN_name.py</code> is the
+judge, a pure function of those facts, and it never leaves the server. Reading every collector tells
+you what is looked at; it does not tell you what is accepted. To pass, the machine has to be in a
+state the judge accepts, which is to say fixed.</p>
+<pre><code>TUI (learner)                        API (holds judges, solutions)                guest VM
+ s ── POST /rated/attempts ────────▶ attempt id · nonce · key · clock
+   ◀───────────────────────────────── break bundle (break/ files/ lab.yaml)
+   ── inject from memory, run, delete ─────────────────────────────────────────▶ faults applied
+      … the learner works; no checks, hints, tutor or solution on this machine …
+ c ── GET …/collect ───────────────▶ collect bundle (collect/ files/ lab.yaml)
+   ── inject, run collectors; key on stdin ─────────────────────────────────────▶ record + HMAC
+   ── POST …/facts (pre_reboot) ────▶ verify signature, nonce, phase; store
+   ── reboot; collect again ────────────────────────────────────────────────────▶ record + HMAC
+   ── POST …/facts (post_reboot) ───▶ new boot_id? later? → judge both passes
+   ◀───────────────────────────────── pass/fail per check · score · rating change
+</code></pre>
+<p><strong>What each piece defends against.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>Defends against</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>judges and solutions only on the server</td>
+<td>reading the criterion or the answer, from the repository, the wheel, the image or <code>~/.norboten</code></td>
+</tr>
+<tr>
+<td>collectors that return observations</td>
+<td>a collector that gives the answer away — the linter refuses one that decides</td>
+</tr>
+<tr>
+<td>a per-attempt key, HMAC over canonical JSON</td>
+<td>a record replayed from another attempt, or posted by someone who is not running this one</td>
+</tr>
+<tr>
+<td>a nonce and one record per phase</td>
+<td>the same record sent twice, a second run of the same attempt</td>
+</tr>
+<tr>
+<td>a different <code>boot_id</code> and a later <code>collected_at</code> after the reboot</td>
+<td>a fix that does not survive a reboot, reported as if it did</td>
+</tr>
+<tr>
+<td>the clock from issue to the first record, kept by the server</td>
+<td>a client that claims it finished in time</td>
+</tr>
+<tr>
+<td>starting again, giving up and expiry all close the attempt as a loss</td>
+<td>looking at the faults for free and walking away</td>
+</tr>
+<tr>
+<td>no live checks, quick check, hints, tutor or reset in a rated attempt</td>
+<td>a grading oracle queried until it says yes</td>
+</tr>
+<tr>
+<td>rated theory served one question at a time, on the server's clock</td>
+<td>reading ahead, and answers looked up after the time ran out</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What it does not defend against, deliberately.</strong> The key and the collectors reach the learner's
+own VM, because the record is collected and signed there, and a determined learner can read both out
+of a machine they control. The signature proves a record belongs to this attempt; it cannot prove
+the person holding the key did not write it by hand. Forging a passing record, though, needs what the
+judge accepts, and that is exactly the part that is never delivered — so the cheapest way to a pass
+remains fixing the machine. Moving grading entirely off the learner's machine would close even this,
+at the price of the offline product, and a rating is not worth that.</p>
+<p><strong>How it is proven.</strong> The gate proves a rated lab the way it proves any other, with the collectors
+in the guest and the judges on the host (<code>norboten dev validate</code>); the API tests cover forged,
+foreign, replayed and out-of-order records against the real app; a Docker test runs one rated
+attempt end to end — the in-process API, a real container, the TUI's engine — and then searches the
+learner's <code>~/.norboten</code> for any trace of the criteria.</p>
+<h2 id="recording-and-streaming">Recording and streaming</h2>
+<p>The lab shell runs in a pseudo-terminal and bytes are copied both ways, so the recording is what
+crossed the terminal — asciicast v2, which <code>asciinema play</code> and the site's player both read. Commands
+are lifted from the typed input; diffs come from keeping the guest's watched directories under git
+for the session, inside the VM. <code>P</code> streams: the recorder POSTs a batch every couple of seconds, the
+API stores it and publishes it on Redis, and every viewer's server-sent-events stream forwards it —
+after first replaying what was stored, so a late viewer misses nothing.</p>
+<h2 id="the-consultant-and-the-tutor">The consultant and the tutor</h2>
+<p>Both are agents that may not hand over a lab's fix. The <strong>tutor</strong> runs in the TUI, on the
+learner's machine, and answers from the VM's evidence; its request model has no field for the
+reference solution, and a guard compares its reply against the solution and the hint level before
+it is shown. The model is the first this machine has — Claude Code on the learner's subscription
+(no tools, an empty working directory), then an exported API key, then a local Ollama — or the one
+pinned on System (<code>m</code>); with none, <code>t</code> shows the lab's own hint ladder. After a pass or a surrender,
+<code>m</code> on the lab asks the same model for a <strong>review</strong> of the attempt, the one agent that reads the
+solution: the commands come from the attempt's recordings (exact and timed) and the VM's shell
+history (untimed), each labelled with its source. The <strong>consultant</strong> answers
+questions about Norboten from Norboten: BM25 over the docs, the journals (without their
+walkthroughs), the briefings and the question explanations — no solution file and no level 3–4 hint
+is indexed — then a model (Ollama first), then the same guard. BM25, not embeddings, because the
+useful terms in this corpus are exact ones (<code>lvextend</code>, <code>fstab</code>), and lexical ranking finds them
+better, costs nothing, needs no vector database and can be explained. When the API is down, the
+site's widget ranks the same passages in the browser.</p>
+<h2 id="the-mcp-server">The MCP server</h2>
+<p>The API is also an MCP server, at <code>/mcp</code> (<a href="../mcp/">The MCP server</a>): the docs search,
+the catalogue, a lab's briefing and first two hints, journals without walkthroughs, a quiz that asks
+the user through the protocol's multi round-trip requests, the boards — and, with a token, the
+account's own progress. It runs stateless on the 2026-07-28 revision, in the same process, so it
+needs nothing new from the server. The API is its OAuth 2.1 authorization server: PKCE, client ID
+metadata documents instead of registration, <code>iss</code> on the redirect, and tokens of their own kind
+that only the MCP server accepts. A gate in front reads the protocol's routing headers to
+rate-limit, audit and ask for a token before the request is parsed; every text result passes the
+tutor's guard against every lab's reference solution.</p>
+<h2 id="local-models-ollama">Local models: Ollama</h2>
+<p>Ollama runs in three places, for different reasons.</p>
+<p><strong>On the learner's machine</strong> it is the last choice for the tutor and the review, after Claude Code
+and an API key: <code>norboten</code> looks for one at <code>OLLAMA_HOST</code> or on its default port and uses what it
+has pulled (<code>qwen2.5:1.5b</code> first). Nothing is installed for this; it is used if it is there.</p>
+<p><strong>On the server</strong> it serves the consultant. <code>NORBOTEN_CONSULTANT_MODELS</code> lists candidates in order and
+the consultant uses the first one the server can serve — Ollama models only, <code>ollama/qwen2.5:0.5b</code> by
+default — so a question about the docs costs nothing per
+answer and never leaves the machine. The model answers from the passages
+BM25 retrieved and the guard filters what it says; a half-billion-parameter model is poor at knowing
+things and adequate at restating retrieved text, which is exactly the job. It is reached only on the
+compose network (<code>expose</code>, never <code>ports</code>), because Ollama has no authentication. Measured on the laptop
+stack (2026-09-14): the idle container holds 35 MiB, and 628 MB once <code>qwen2.5:0.5b</code> is loaded; the model
+file is 398 MB. On the planned 4 GB server that leaves room for the API, PostgreSQL, Redis and monitoring.</p>
+<p><strong>In the automation track</strong> it is the subject. <code>ubuntu-26.04-automation</code> bakes in Ollama 0.34.0 with
+<code>qwen2.5:0.5b</code> and the <code>all-minilm</code> embedding model (424 MB of models; the image is 913 MiB), so the labs
+work offline. <code>ai-01</code> runs it as a service account behind nginx for streamed answers; <code>ollama-01</code> takes it
+off the network and allows one browser origin; <code>ollama-02</code> builds a custom model whose context window cuts
+its system prompt (a 1,388-token prompt evaluated as 130 tokens at <code>num_ctx</code> 256); <code>ollama-03</code> sizes
+context × parallelism to memory (734 MiB peak at 4,096 × 2 against a 3 GB cache at 32,768 × 8) and caps
+the service with <code>MemoryMax=</code>. The Ollama theory bank and topic journal cover the rest.</p>
+<h2 id="relations-and-analytics">Relations and analytics</h2>
+<p>How labs, topics, question banks and journals relate is computed, not curated: TF-IDF over their
+text, cosine similarity, and a graph of declared topics plus the strongest textual neighbours
+(scikit-learn, networkx). Deterministic and explainable, and a vector store would add nothing yet;
+pgvector in the same PostgreSQL remains the next step if semantic similarity is ever needed. The
+Analytics page is built from the attempts the same way — see <a href="../pipelines/">Pipelines</a>.</p>
+<h2 id="distribution">Distribution</h2>
+<p>Labs are OCI artifacts in GHCR (<code>images/Dockerfile.lab</code>, signed with cosign). Golden images are
+blobs in GHCR pinned by digest in <code>images/registry.yaml</code>. The API is a multi-arch image in GHCR
+tagged by commit. All three are content-addressed: a client or a server gets exactly what CI
+published, or nothing.</p>
+<h2 id="infrastructure">Infrastructure</h2>
+<p>One netcup VPS, ordered by hand; <code>ansible/</code> bootstraps it, hardens it (ufw, fail2ban, keys-only
+SSH) and installs the compose project. <code>.github/workflows/deploy.yml</code> tests,
+builds, and rolls out on every push to main. See <a href="../ci-cd/">CI/CD</a>. There is no
+Kubernetes and no hosted lab mode: running learners' VMs on the server would need <code>/dev/kvm</code>,
+which a cloud VPS does not offer.</p>
+<h2 id="automation">Automation</h2>
+<p>The chores a maintainer would otherwise do by hand are jobs in <code>automation/jobs/</code>, run by GitHub
+Actions — or, where they need the database, by a systemd timer on the server. A model is used only
+where reading prose is the job: four jobs run <strong>Claude Code</strong> headless (<code>claude -p</code>); the rest are
+plain code, because a failed gate job, a new <code>lab.yaml</code> or a learner's attempts are facts already.</p>
+<table>
+<thead>
+<tr>
+<th>Job</th>
+<th>Trigger</th>
+<th>Model</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>triage (<code>triage.yml</code>)</td>
+<td>an issue is opened</td>
+<td>Claude Code, Haiku, <strong>no tools</strong>, one turn, a JSON-schema answer</td>
+<td>one of <code>bug</code>, <code>lab-request</code>, <code>question</code>, <code>broken-lab</code>, applied by the script; an open issue with the same title gets a pointer</td>
+</tr>
+<tr>
+<td>stuck points (<code>stuck-points.yml</code>)</td>
+<td>Mondays 08:00</td>
+<td>Claude Code, Haiku, no tools</td>
+<td>the API's ranking of the most-failed checks summarised on Discord; the worst becomes a <code>hints</code> issue, from the data, once</td>
+</tr>
+<tr>
+<td>lab author (<code>lab-author.yml</code>)</td>
+<td>an issue labelled <code>lab-request</code></td>
+<td>Claude Code as the project subagent <code>.claude/agents/lab-author.md</code>, Sonnet, Read/Glob/Grep/Write, writes only under <code>labs/_drafts/</code>, <code>dontAsk</code>, 20 turns, $1</td>
+<td>one draft file; the script checks nothing else changed, then branches, pushes and opens a <strong>draft</strong> pull request</td>
+</tr>
+<tr>
+<td>release notes (<code>release.yml</code>)</td>
+<td>a <code>v*</code> tag</td>
+<td>Claude Code, Haiku, no tools</td>
+<td>a grouped summary of the commits since the last tag, with the full commit list appended by the script</td>
+</tr>
+<tr>
+<td>lab health (<code>lab-validate.yml</code>, <code>report</code>)</td>
+<td>Mondays 02:00</td>
+<td>none</td>
+<td>the gate on every lab × image; an issue per failed <code>gate (&lt;lab&gt;, &lt;image&gt;)</code> job unless one is open; one issue instead when more than half failed</td>
+</tr>
+<tr>
+<td>announcements (<code>release.yml</code>, <code>announce</code>)</td>
+<td>after the release</td>
+<td>none</td>
+<td>Discord gets the release; Telegram one message per <code>lab.yaml</code> new since the last tag</td>
+</tr>
+<tr>
+<td>live sessions (<code>api/…/announce.py</code>)</td>
+<td>a real session starts</td>
+<td>none</td>
+<td>Telegram: &quot;&lt;nick&gt; is working on &lt;lab&gt; right now&quot;, sent by the API after it answers</td>
+</tr>
+<tr>
+<td>learner digest (<code>api/…/digest.py</code>)</td>
+<td>Sundays 18:00, <code>norboten-digest.timer</code></td>
+<td>none</td>
+<td>to each learner who linked Discord, opted in and did something that week: their attempts, rating and least certain topic, from a template, as a Discord direct message</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Guard rails, enforced by flags rather than by the prompt.</strong> Every Claude job authenticates with
+<code>CLAUDE_CODE_OAUTH_TOKEN</code> (a subscription token from <code>claude setup-token</code>) — which is also why none
+passes <code>--bare</code>: bare mode never reads that token. The jobs that read what a stranger wrote (issue
+titles and bodies, commit messages) run in an empty directory with <code>--tools &quot;&quot;</code>, so no project
+hooks, MCP servers or CLAUDE.md load and the model has nothing to act with; triage's answer is
+further held to an enum. The lab author gets a checkout, but <code>--tools</code> removes the shell,
+<code>--allowedTools &quot;Edit(/labs/_drafts/**)&quot;</code> with <code>--permission-mode dontAsk</code> denies every write
+elsewhere, and the script refuses to open a pull request unless exactly one draft appeared. No model
+holds a GitHub token: labels, issues, branches and pull requests are made by the script. Each job has
+<code>timeout-minutes</code> and a concurrency group, and Claude Code is pinned
+(<code>.github/actions/claude-code</code>, the version the rehearsal ran).</p>
+<p><strong>Rehearsal.</strong> <code>make jobs-rehearsal</code> runs every job as its workflow does, with the real <code>claude</code>
+binary, against stand-ins: <code>automation/stand_ins/fake_anthropic.py</code> answers the Messages API from a
+script (a label, a summary, a <code>Write</code> tool call), and <code>sink.py</code> plays GitHub, Discord, Telegram and
+the API. The scripted model also tries what it must not — writing <code>README.md</code>, running Bash, writing
+a second file — and the rehearsal checks each was refused. No token is spent; five jobs in about
+seven seconds. <code>tests/test_automation.py</code> runs the same scenarios where Claude Code is installed and
+checks the workflows statically (caps, token, pin, no <code>--bare</code>). The digest is rehearsed with
+<code>--dry-run</code>, which prints each message instead of sending it, and against the Discord stub in
+<code>api/tests/oauth_stubs.py</code>.</p>
+<p>What each model call may see and do, what it costs and how that is kept down — for these jobs,
+the product's own agents and the content skills — is in
+<a href="../claude-code-in-norboten/">How Norboten uses Claude</a>.</p>
+<p>The API has no private endpoints for any of this: the digest reads the database from inside the
+server, the lab author works in a checkout, and a release's catalogue is the image that release
+deployed.</p>
+
+    </article>
+    <div class="toc">
+<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>      <a class="h2" href="#the-client">The client</a>
+      <a class="h2" href="#the-runner">The runner</a>
+      <a class="h2" href="#a-lab-session">A lab session</a>
+      <a class="h3" href="#container-labs-and-the-claude-and-mcp-tracks">Container labs, and the claude and MCP tracks</a>
+      <a class="h2" href="#the-server">The server</a>
+      <a class="h2" href="#the-api">The API</a>
+      <a class="h2" href="#identity">Identity</a>
+      <a class="h2" href="#ratings">Ratings</a>
+      <a class="h2" href="#rated-labs-keeping-the-answer-off-the-learners-machine">Rated labs: keeping the answer off the learner&#39;s machine</a>
+      <a class="h2" href="#recording-and-streaming">Recording and streaming</a>
+      <a class="h2" href="#the-consultant-and-the-tutor">The consultant and the tutor</a>
+      <a class="h2" href="#the-mcp-server">The MCP server</a>
+      <a class="h2" href="#local-models-ollama">Local models: Ollama</a>
+      <a class="h2" href="#relations-and-analytics">Relations and analytics</a>
+      <a class="h2" href="#distribution">Distribution</a>
+      <a class="h2" href="#infrastructure">Infrastructure</a>
+      <a class="h2" href="#automation">Automation</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("../../search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+</body>
+</html>

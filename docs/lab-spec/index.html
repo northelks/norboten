@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab specification · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/docs/lab-spec/"><meta property="og:title" content="Lab specification · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/docs/lab-spec/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lab specification · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" aria-current="page">Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      <div class="group">Getting started</div>
+      <a href="../../docs/getting-started/"
+>Install and first lab</a>
+      <a href="../../docs/tui-reference/"
+>TUI reference</a>
+      <a href="../../docs/faq/"
+>FAQ</a>
+      <div class="group">Contributing labs</div>
+      <a href="../../docs/writing-a-lab/"
+>Writing a lab</a>
+      <a href="../../docs/lab-spec/"
+aria-current="page">Lab specification</a>
+      <a href="../../docs/quiz-spec/"
+>Theory question spec</a>
+      <a href="../../docs/claude-code-plugin/"
+>The Claude Code plugin</a>
+      <div class="group">How it is built</div>
+      <a href="../../docs/architecture/"
+>Architecture</a>
+      <a href="../../docs/rated-labs/"
+>Rated and unrated labs</a>
+      <a href="../../docs/claude-code-in-norboten/"
+>How Norboten uses Claude</a>
+      <a href="../../docs/mcp/"
+>The MCP server</a>
+      <a href="../../docs/data-model/"
+>Data model</a>
+      <a href="../../docs/api-reference/"
+>API reference</a>
+      <a href="../../docs/pipelines/"
+>Pipelines</a>
+      <a href="../../docs/open-questions/"
+>Open questions</a>
+      <div class="group">Running it yourself</div>
+      <a href="../../docs/self-hosting/"
+>Self-hosting and configuration</a>
+      <a href="../../docs/deploy/"
+>Deploying the server</a>
+      <a href="../../docs/ci-cd/"
+>CI/CD</a>
+      <a href="../../docs/releasing/"
+>Releasing</a>
+    </nav>
+    <article class="prose">
+      <h1 id="lab-specification">Lab specification</h1>
+<p><strong>Status: normative.</strong> The CLI, the guest runner, the CI solvability gate and the Lab Author agent
+all implement this document. If code and this document disagree, the code is wrong. A breaking
+change to this document requires a <code>schema_version</code> bump.</p>
+<p>The machine-readable form of this spec is <code>cli/src/norboten/models.py</code> (Pydantic). <code>make schema</code>
+exports it to <code>docs/schema/lab.schema.json</code> and <code>docs/schema/registry.schema.json</code> for editors and
+for the Lab Author agent.</p>
+<hr />
+<h2 id="1-a-lab-is-a-directory">1. A lab is a directory</h2>
+<pre><code>&lt;lab-id&gt;/
+├── lab.yaml              # manifest (section 2)
+├── briefing.md           # what the learner sees on start (section 6)
+├── break/                # faults, applied once to a clean snapshot (section 4)
+│   └── NN_name.py
+├── check/                # what &quot;fixed&quot; means (section 5)
+│   └── NN_name.py
+├── hints.yaml            # the hint ladder (section 7)
+└── solution/
+    ├── solution.sh       # reference fix — CI and post-mortem only (section 8)
+    └── &lt;base_image&gt;.sh   # optional per-image override
+</code></pre>
+<ul>
+<li>The directory name <strong>must</strong> equal <code>id</code> in <code>lab.yaml</code>.</li>
+<li>Labs live in <code>labs/&lt;track&gt;/&lt;id&gt;/</code>. Two exceptions: <code>labs/hello/</code> (the intro track) and
+<code>labs/_template/</code>.</li>
+<li>Files in <code>break/</code> and <code>check/</code> are named <code>NN_snake_case.py</code>, where <code>NN</code> is two digits. They run
+in lexical order. A check's id is its file stem (<code>01_boots_clean</code>).</li>
+<li>Extra files (for example fixtures under <code>files/</code>) are allowed and ship with the lab. Scripts see
+the lab directory as <code>ctx.lab_dir</code>.</li>
+</ul>
+<hr />
+<h2 id="2-labyaml">2. <code>lab.yaml</code></h2>
+<pre class="hl"><code class="language-yaml"><span class="hl-nt">schema_version</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">1</span>
+<span class="hl-nt">id</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">rhcsa-03-storage-and-lvm</span>
+<span class="hl-nt">version</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">1.0.0</span><span class="hl-w">                </span><span class="hl-c1"># semver; bump on any content change — it is the OCI tag</span>
+<span class="hl-nt">title</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">The Disk That Ate /var</span>
+<span class="hl-nt">track</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">rhcsa</span><span class="hl-w">                  </span><span class="hl-c1"># rhcsa | linux | automation | bash | python | ansible | docker | terraform | claude | mcp | intro</span>
+<span class="hl-nt">topics</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-nv">storage-lvm</span><span class="hl-p hl-p-Indicator">,</span><span class="hl-w"> </span><span class="hl-nv">boot-systemd</span><span class="hl-p hl-p-Indicator">]</span><span class="hl-w">   </span><span class="hl-c1"># 1-5 slugs from the taxonomy (section 10)</span>
+<span class="hl-nt">difficulty</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">3</span><span class="hl-w">                 </span><span class="hl-c1"># 1-5</span>
+<span class="hl-nt">estimated_minutes</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">45</span>
+<span class="hl-nt">base_images</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-nv">rocky-10</span><span class="hl-p hl-p-Indicator">]</span><span class="hl-w">       </span><span class="hl-c1"># ids from images/registry.yaml; the first is the default</span>
+<span class="hl-nt">runtime</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">vm</span><span class="hl-w">                   </span><span class="hl-c1"># vm | container (container: no kernel, boot, LVM or reboot)</span>
+<span class="hl-nt">resources</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">cpus</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">2</span>
+<span class="hl-w">  </span><span class="hl-nt">memory</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">2GiB</span><span class="hl-w">                </span><span class="hl-c1"># &gt;= the base image's min_memory</span>
+<span class="hl-w">  </span><span class="hl-nt">disks</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[{</span><span class="hl-nt">size</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">4GiB</span><span class="hl-p hl-p-Indicator">}]</span><span class="hl-w">       </span><span class="hl-c1"># extra disks beyond the root disk: /dev/vdb, /dev/vdc, …</span>
+<span class="hl-nt">objectives</span><span class="hl-p">:</span><span class="hl-w">                   </span><span class="hl-c1"># RHCSA: EX200 domains. Linux / intro: plain skill statements.</span>
+<span class="hl-w">  </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-s">"Manage</span><span class="hl-nv"> </span><span class="hl-s">local</span><span class="hl-nv"> </span><span class="hl-s">storage:</span><span class="hl-nv"> </span><span class="hl-s">create</span><span class="hl-nv"> </span><span class="hl-s">and</span><span class="hl-nv"> </span><span class="hl-s">extend</span><span class="hl-nv"> </span><span class="hl-s">LVM</span><span class="hl-nv"> </span><span class="hl-s">volumes"</span>
+<span class="hl-w">  </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-s">"Mount</span><span class="hl-nv"> </span><span class="hl-s">filesystems</span><span class="hl-nv"> </span><span class="hl-s">persistently</span><span class="hl-nv"> </span><span class="hl-s">by</span><span class="hl-nv"> </span><span class="hl-s">UUID"</span>
+<span class="hl-nt">checks</span><span class="hl-p">:</span><span class="hl-w">                       </span><span class="hl-c1"># every file in check/, in file order, mapped to an objective</span>
+<span class="hl-w">  </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">{</span><span class="hl-nt">id</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">01_boots_clean</span><span class="hl-p hl-p-Indicator">,</span><span class="hl-nt"> objective</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">2</span><span class="hl-p hl-p-Indicator">}</span>
+<span class="hl-w">  </span><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">{</span><span class="hl-nt">id</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">02_var_has_headroom</span><span class="hl-p hl-p-Indicator">,</span><span class="hl-nt"> objective</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">1</span><span class="hl-p hl-p-Indicator">,</span><span class="hl-nt"> weight</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-nv">2</span><span class="hl-p hl-p-Indicator">}</span>
+<span class="hl-nt">reboot_required</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">true</span><span class="hl-w">         </span><span class="hl-c1"># check → reboot → check again; both passes must pass</span>
+<span class="hl-nt">boot_after_break</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">true</span><span class="hl-w">        </span><span class="hl-c1"># reboot once after the faults, so the learner meets the broken boot</span>
+<span class="hl-nt">time_limit_minutes</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">null</span><span class="hl-w">      </span><span class="hl-c1"># 90 for the exam simulation</span>
+<span class="hl-nt">pass_percent</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">100</span><span class="hl-w">             </span><span class="hl-c1"># weighted score needed to pass; 70 for the exam simulation</span>
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>schema_version</code></td>
+<td>int</td>
+<td><code>1</code> for this document.</td>
+</tr>
+<tr>
+<td><code>id</code></td>
+<td>str</td>
+<td><code>^[a-z0-9]+(-[a-z0-9]+)*$</code>, ≤ 63 chars, equals the directory name.</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>str</td>
+<td>Semver <code>MAJOR.MINOR.PATCH</code>.</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>str</td>
+<td>3–60 chars. A situation, not a topic (&quot;The Disk That Ate /var&quot;, not &quot;LVM&quot;).</td>
+</tr>
+<tr>
+<td><code>track</code></td>
+<td>enum</td>
+<td><code>rhcsa</code>, <code>linux</code>, <code>automation</code>, <code>bash</code>, <code>python</code>, <code>ansible</code>, <code>docker</code>, <code>terraform</code>, <code>claude</code>, <code>mcp</code> or <code>intro</code>.</td>
+</tr>
+<tr>
+<td><code>topics</code></td>
+<td>list[str]</td>
+<td>1–5 unique slugs from the taxonomy (section 10). What the attempt rates.</td>
+</tr>
+<tr>
+<td><code>difficulty</code></td>
+<td>int</td>
+<td>1–5. Also sets the rated clock and the opponent a rated attempt plays.</td>
+</tr>
+<tr>
+<td><code>estimated_minutes</code></td>
+<td>int</td>
+<td>5–240.</td>
+</tr>
+<tr>
+<td><code>base_images</code></td>
+<td>list[str]</td>
+<td>Non-empty, unique. Each id exists in the registry and serves <code>track</code> (section 3).</td>
+</tr>
+<tr>
+<td><code>runtime</code></td>
+<td>enum</td>
+<td><code>vm</code> or <code>container</code>. A <code>container</code> lab runs on a <code>kind: container</code> image (§3), cannot be <code>reboot_required</code> or <code>boot_after_break</code>, and has no extra disks.</td>
+</tr>
+<tr>
+<td><code>resources.cpus</code></td>
+<td>int</td>
+<td>1–4, default 1.</td>
+</tr>
+<tr>
+<td><code>resources.memory</code></td>
+<td>size</td>
+<td><code>NNNMiB</code> or <code>N.NGiB</code>. Default and floor: the base image's <code>min_memory</code>.</td>
+</tr>
+<tr>
+<td><code>resources.disks</code></td>
+<td>list</td>
+<td>0–4 extra disks, each <code>{size}</code> between 1GiB and 32GiB.</td>
+</tr>
+<tr>
+<td><code>objectives</code></td>
+<td>list[str]</td>
+<td>Non-empty. Referenced from <code>checks[].objective</code> by 1-based index.</td>
+</tr>
+<tr>
+<td><code>checks</code></td>
+<td>list</td>
+<td>Non-empty, ids unique, in file order, matching <code>check/*.py</code> exactly.</td>
+</tr>
+<tr>
+<td><code>checks[].objective</code></td>
+<td>int</td>
+<td>1-based index into <code>objectives</code>. Every objective has at least one check.</td>
+</tr>
+<tr>
+<td><code>checks[].weight</code></td>
+<td>int</td>
+<td>1–10, default 1.</td>
+</tr>
+<tr>
+<td><code>checks[].baseline_pass</code></td>
+<td>bool</td>
+<td>Default <code>false</code>. See section 9.</td>
+</tr>
+<tr>
+<td><code>checks[].maintenance_pass</code></td>
+<td>bool</td>
+<td>Default <code>false</code>. Only with <code>boot_after_break</code>. See section 9.</td>
+</tr>
+<tr>
+<td><code>reboot_required</code></td>
+<td>bool</td>
+<td>Must be <code>true</code> for every <code>vm</code> lab outside the <code>intro</code> track.</td>
+</tr>
+<tr>
+<td><code>boot_after_break</code></td>
+<td>bool</td>
+<td>Default <code>false</code>.</td>
+</tr>
+<tr>
+<td><code>time_limit_minutes</code></td>
+<td>int | null</td>
+<td>Default <code>null</code>.</td>
+</tr>
+<tr>
+<td><code>pass_percent</code></td>
+<td>int</td>
+<td>1–100, default 100.</td>
+</tr>
+<tr>
+<td><code>rated</code></td>
+<td>bool</td>
+<td>Default <code>false</code>. <code>true</code> only for a lab under <code>rated/</code>, which then has <code>collect/</code> (section 13).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-tracks-and-base-images">3. Tracks and base images</h2>
+<p>Base images are defined once, in <code>images/registry.yaml</code>. Each entry lists the tracks it serves. A
+lab may use a base image only if that image serves the lab's track.</p>
+<table>
+<thead>
+<tr>
+<th>Image</th>
+<th>Distro</th>
+<th>init</th>
+<th>pkg</th>
+<th>MAC</th>
+<th>Tracks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rocky-10</code></td>
+<td>Rocky Linux 10</td>
+<td>systemd</td>
+<td>dnf</td>
+<td>SELinux</td>
+<td><code>rhcsa</code>, <code>intro</code></td>
+</tr>
+<tr>
+<td><code>ubuntu-26.04</code></td>
+<td>Ubuntu 26.04 LTS</td>
+<td>systemd</td>
+<td>apt</td>
+<td>AppArmor</td>
+<td><code>linux</code>, <code>intro</code></td>
+</tr>
+<tr>
+<td><code>alpine</code></td>
+<td>Alpine Linux 3.23</td>
+<td>OpenRC</td>
+<td>apk</td>
+<td>none</td>
+<td><code>linux</code>, <code>intro</code></td>
+</tr>
+<tr>
+<td><code>ubuntu-26.04-automation</code></td>
+<td>Ubuntu 26.04 + Ollama (qwen2.5:0.5b, all-minilm), PostgreSQL, nginx</td>
+<td>systemd</td>
+<td>apt</td>
+<td>AppArmor</td>
+<td><code>automation</code></td>
+</tr>
+<tr>
+<td><code>ubuntu-26.04-devops</code></td>
+<td>Ubuntu 26.04 + Docker, Terraform, Ansible, Python tooling</td>
+<td>systemd</td>
+<td>apt</td>
+<td>AppArmor</td>
+<td><code>bash</code>, <code>python</code>, <code>ansible</code>, <code>docker</code>, <code>terraform</code></td>
+</tr>
+<tr>
+<td><code>ubuntu-26.04-container</code></td>
+<td>Ubuntu 26.04, as a container</td>
+<td>none</td>
+<td>apt</td>
+<td>none</td>
+<td><code>linux</code></td>
+</tr>
+<tr>
+<td><code>ubuntu-26.04-claude</code></td>
+<td>Ubuntu 26.04 + Claude Code 2.1.270 and a scripted model, as a container</td>
+<td>none</td>
+<td>apt</td>
+<td>none</td>
+<td><code>claude</code>, <code>mcp</code></td>
+</tr>
+</tbody>
+</table>
+<p>The <code>intro</code> track exists for <code>hello</code>: one lab that runs on every image. It exercises the full
+download → boot → break → check path on each base before any real lab depends on it.</p>
+<p>A registry entry carries two image sources:</p>
+<ul>
+<li><code>upstream</code> — the distro's own cloud image, per arch (<code>url</code>, <code>digest</code>). Only the golden image
+builder reads it.</li>
+<li><code>golden</code> — the image the CLI actually downloads: an OCI reference plus a per-arch <code>digest</code> and
+<code>size_bytes</code>. A golden image is the upstream image with the lab baseline applied by Ansible
+(<code>ansible/roles/lab_baseline</code>). Labs never install packages at runtime, so once an image and a
+lab are cached, the CLI works offline.</li>
+</ul>
+<p><strong>Container images</strong> (<code>kind: container</code>) have neither: a <code>container</code> block names a Dockerfile under
+<code>images/</code> and the local tag to build it as. The CLI builds it with Docker or Podman the first time a
+container lab starts (<code>docker build</code> with the Dockerfile's directory as the context), and the wheel
+carries that directory. <code>init</code> is <code>none</code> — PID 1 is <code>sleep infinity</code> and every shell, break, check and solution
+arrives through <code>exec</code> — and a lab's <code>runtime</code> must match its images' kind. The container contract is
+the golden image contract below, except: no boot, no console, no reboot, no root-password recovery;
+the learner is <code>learner</code>; and grading runs as root through <code>exec</code>, which a lab cannot take away, so no
+grader account is created. The clean snapshot is a <code>commit</code> of the container before the faults, and a
+reset recreates it from that image (under a second).</p>
+<p>The golden image contract — runner and labs may rely on it:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Guarantee</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/etc/norboten/base.json</code></td>
+<td><code>{&quot;id&quot;, &quot;distro&quot;, &quot;init&quot;, &quot;pkg&quot;, &quot;mac&quot;, &quot;version&quot;}</code>, the source of <code>ctx.facts</code>.</td>
+</tr>
+<tr>
+<td><code>python3</code></td>
+<td>In <code>$PATH</code>. The runner uses the standard library only.</td>
+</tr>
+<tr>
+<td>packages</td>
+<td>Everything any lab of the image's tracks needs is preinstalled.</td>
+</tr>
+<tr>
+<td>root password</td>
+<td><code>norboten</code>, until a lab changes it. <code>briefing.md</code> states it when it matters.</td>
+</tr>
+<tr>
+<td>learner account</td>
+<td>The Lima default user (named after the host user), with passwordless <code>sudo</code>.</td>
+</tr>
+<tr>
+<td>shell history</td>
+<td>Bash appends after every command (<code>PROMPT_COMMAND='history -a'</code>).</td>
+</tr>
+<tr>
+<td>console</td>
+<td>Bootloader and kernel on the serial console; <code>k</code> on the lab's screen attaches to it.</td>
+</tr>
+</tbody>
+</table>
+<p>What <code>ubuntu-26.04-devops</code> adds for its tracks, all usable with no network:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Guarantee</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Docker</td>
+<td><code>docker.io</code> and the Compose plugin (<code>docker-compose-v2</code>), <strong>disabled</strong>: a lab that needs it enables <code>docker.service</code>. Pre-pulled: <code>redis:7.4-alpine</code>, <code>nginx:1.29-alpine</code>.</td>
+</tr>
+<tr>
+<td>Terraform</td>
+<td><code>/usr/local/bin/terraform</code> (pinned in <code>ansible/roles/devops_stack</code>), with <code>hashicorp/local ~&gt; 2.5</code>, <code>hashicorp/random ~&gt; 3.7</code> and <code>hashicorp/null ~&gt; 3.2</code> mirrored in <code>/usr/share/terraform/plugins</code>, so <code>terraform init</code> needs no registry. <code>CHECKPOINT_DISABLE=1</code>.</td>
+</tr>
+<tr>
+<td>Ansible</td>
+<td><code>ansible-core</code> from Ubuntu. It refuses a non-UTF-8 locale: a break or check that runs it passes <code>env={&quot;LC_ALL&quot;: &quot;C.UTF-8&quot;}</code> (the runner defaults to <code>C</code>).</td>
+</tr>
+<tr>
+<td>Python</td>
+<td><code>python3-venv</code>, <code>pip</code>, and a wheelhouse in <code>/opt/wheels</code> (<code>setuptools</code>, <code>wheel</code>, <code>pyyaml</code>) for <code>pip install --no-index --find-links /opt/wheels</code>.</td>
+</tr>
+<tr>
+<td>Shell</td>
+<td><code>shellcheck</code>, <code>jq</code>.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-break-scripts">4. Break scripts</h2>
+<pre class="hl"><code class="language-python"><span class="hl-sd">"""The /var LV has no free extents left."""</span>  <span class="hl-c1"># one-line docstring, for maintainers only</span>
+
+
+<span class="hl-k">def</span><span class="hl-w"> </span><span class="hl-nf">apply</span><span class="hl-p">(</span><span class="hl-n">ctx</span><span class="hl-p">):</span>
+    <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">run</span><span class="hl-p">(</span><span class="hl-s2">"lvcreate -n filler -l 100</span><span class="hl-si">%F</span><span class="hl-s2">REE vg0"</span><span class="hl-p">,</span> <span class="hl-n">check</span><span class="hl-o">=</span><span class="hl-kc">True</span><span class="hl-p">)</span>
+    <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">state</span><span class="hl-p">[</span><span class="hl-s2">"filler_lv"</span><span class="hl-p">]</span> <span class="hl-o">=</span> <span class="hl-s2">"filler"</span>
+</code></pre>
+
+<ul>
+<li>Run as root, inside the guest, once, on the clean snapshot, in lexical order.</li>
+<li><strong>Idempotent</strong>: running <code>apply</code> twice leaves the same state as running it once.</li>
+<li>Each finishes in under 120 seconds.</li>
+<li>Leave no trace of the fault: no explanatory comments written into the guest, no files outside
+<code>/var/lib/norboten/</code> (root-only, <code>0700</code>), no output to the learner.</li>
+<li>Copied into the guest for the run and deleted afterwards.</li>
+<li>May store values the checks need (a generated UUID, a random port) in <code>ctx.state</code>. The runner
+persists it to <code>/var/lib/norboten/state.json</code> and loads it for checks.</li>
+</ul>
+<hr />
+<h2 id="5-check-scripts">5. Check scripts</h2>
+<pre class="hl"><code class="language-python"><span class="hl-k">def</span><span class="hl-w"> </span><span class="hl-nf">check</span><span class="hl-p">(</span><span class="hl-n">ctx</span><span class="hl-p">):</span>
+    <span class="hl-n">r</span> <span class="hl-o">=</span> <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">run</span><span class="hl-p">([</span><span class="hl-s2">"findmnt"</span><span class="hl-p">,</span> <span class="hl-s2">"--verify"</span><span class="hl-p">,</span> <span class="hl-s2">"--tab-file"</span><span class="hl-p">,</span> <span class="hl-s2">"/etc/fstab"</span><span class="hl-p">])</span>
+    <span class="hl-k">if</span> <span class="hl-n">r</span><span class="hl-o">.</span><span class="hl-n">code</span> <span class="hl-o">!=</span> <span class="hl-mi">0</span><span class="hl-p">:</span>
+        <span class="hl-k">return</span> <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">failed</span><span class="hl-p">(</span><span class="hl-s2">"fstab references a device the system cannot find."</span><span class="hl-p">,</span> <span class="hl-n">evidence</span><span class="hl-o">=</span><span class="hl-n">r</span><span class="hl-o">.</span><span class="hl-n">out</span><span class="hl-p">)</span>
+    <span class="hl-k">return</span> <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">passed</span><span class="hl-p">(</span><span class="hl-s2">"fstab verifies cleanly."</span><span class="hl-p">)</span>
+</code></pre>
+
+<p>A check returns, via <code>ctx.passed</code> or <code>ctx.failed</code>, exactly:</p>
+<pre class="hl"><code class="language-json"><span class="hl-p">{</span><span class="hl-nt">"id"</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s2">"01_boots_clean"</span><span class="hl-p">,</span><span class="hl-w"> </span><span class="hl-nt">"passed"</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-kc">true</span><span class="hl-p">,</span><span class="hl-w"> </span><span class="hl-nt">"message"</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-p">,</span><span class="hl-w"> </span><span class="hl-nt">"evidence"</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s2">"…"</span><span class="hl-p">}</span>
+</code></pre>
+
+<ul>
+<li><code>message</code> is written for a learner who just failed: <strong>say what was observed, not what to do.</strong>
+&quot;Nothing is listening on port 8080&quot;, not &quot;Run semanage port -a …&quot;. A message never names the fix.</li>
+<li><code>evidence</code> is raw output (command output, file excerpts), truncated to 4 KiB. The learner can
+see it on request; it feeds the tutor's fact bundle.</li>
+<li><strong>Read-only.</strong> A check never changes the system. One exception: a functional probe may create
+a file named <code>.norboten-probe-*</code> (for example, to prove a user can write where they should) and
+must remove it before returning.</li>
+<li>Each finishes in under 30 seconds. A check that raises or times out counts as failed, with the
+exception as evidence.</li>
+<li><code>ctx.phase</code> is <code>live</code> (the TUI's live panel), <code>pre_reboot</code> or <code>post_reboot</code>.</li>
+<li>Copied into the guest for the run and deleted afterwards, except while the TUI live panel is
+open.</li>
+</ul>
+<h3 id="grading-sequence">Grading sequence</h3>
+<pre><code>reboot_required: false   check
+reboot_required: true    check (pre_reboot) → reboot → wait for boot → check (post_reboot)
+</code></pre>
+<p>A check passes only if it passes in every pass. If the guest is not back within 180 seconds of the
+reboot, every check fails the <code>post_reboot</code> pass, with the serial console tail as evidence (the
+usual cause is a boot that stopped in emergency mode). Score = weight of passing checks ÷ total
+weight. The lab is passed when the score reaches <code>pass_percent</code>.</p>
+<hr />
+<h2 id="6-briefingmd">6. <code>briefing.md</code></h2>
+<p>What the learner reads when a lab opens. <strong>Symptoms only, never causes.</strong> It describes what
+people report and what the system is supposed to do. It may state what a real admin would be told
+(the root password, the expected hostname, the port a service should use). It never names the
+file, unit, boolean or command involved.</p>
+<hr />
+<h2 id="7-hintsyaml">7. <code>hints.yaml</code></h2>
+<pre class="hl"><code class="language-yaml"><span class="hl-nt">checks</span><span class="hl-p">:</span>
+<span class="hl-w">  </span><span class="hl-nt">01_boots_clean</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">level_1</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"The</span><span class="hl-nv"> </span><span class="hl-s">system</span><span class="hl-nv"> </span><span class="hl-s">did</span><span class="hl-nv"> </span><span class="hl-s">not</span><span class="hl-nv"> </span><span class="hl-s">reach</span><span class="hl-nv"> </span><span class="hl-s">a</span><span class="hl-nv"> </span><span class="hl-s">normal</span><span class="hl-nv"> </span><span class="hl-s">login.</span><span class="hl-nv"> </span><span class="hl-s">Something</span><span class="hl-nv"> </span><span class="hl-s">during</span><span class="hl-nv"> </span><span class="hl-s">boot</span><span class="hl-nv"> </span><span class="hl-s">gave</span><span class="hl-nv"> </span><span class="hl-s">up</span><span class="hl-nv"> </span><span class="hl-s">and</span><span class="hl-nv"> </span><span class="hl-s">waited."</span>
+<span class="hl-w">    </span><span class="hl-nt">level_2</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"When</span><span class="hl-nv"> </span><span class="hl-s">a</span><span class="hl-nv"> </span><span class="hl-s">filesystem</span><span class="hl-nv"> </span><span class="hl-s">in</span><span class="hl-nv"> </span><span class="hl-s">the</span><span class="hl-nv"> </span><span class="hl-s">boot</span><span class="hl-nv"> </span><span class="hl-s">sequence</span><span class="hl-nv"> </span><span class="hl-s">cannot</span><span class="hl-nv"> </span><span class="hl-s">be</span><span class="hl-nv"> </span><span class="hl-s">mounted,</span><span class="hl-nv"> </span><span class="hl-s">systemd</span><span class="hl-nv"> </span><span class="hl-s">stops</span><span class="hl-nv"> </span><span class="hl-s">and</span><span class="hl-nv"> </span><span class="hl-s">tells</span><span class="hl-nv"> </span><span class="hl-s">you</span>
+<span class="hl-w">              </span><span class="hl-s">which</span><span class="hl-nv"> </span><span class="hl-s">unit</span><span class="hl-nv"> </span><span class="hl-s">failed.</span><span class="hl-nv"> </span><span class="hl-s">Have</span><span class="hl-nv"> </span><span class="hl-s">you</span><span class="hl-nv"> </span><span class="hl-s">read</span><span class="hl-nv"> </span><span class="hl-s">what</span><span class="hl-nv"> </span><span class="hl-s">it</span><span class="hl-nv"> </span><span class="hl-s">said?"</span>
+<span class="hl-w">    </span><span class="hl-nt">level_3</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"Look</span><span class="hl-nv"> </span><span class="hl-s">at</span><span class="hl-nv"> </span><span class="hl-s">the</span><span class="hl-nv"> </span><span class="hl-s">mount</span><span class="hl-nv"> </span><span class="hl-s">unit</span><span class="hl-nv"> </span><span class="hl-s">that</span><span class="hl-nv"> </span><span class="hl-s">failed</span><span class="hl-nv"> </span><span class="hl-s">and</span><span class="hl-nv"> </span><span class="hl-s">compare</span><span class="hl-nv"> </span><span class="hl-s">its</span><span class="hl-nv"> </span><span class="hl-s">device</span><span class="hl-nv"> </span><span class="hl-s">reference</span><span class="hl-nv"> </span><span class="hl-s">against</span><span class="hl-nv"> </span><span class="hl-s">what</span><span class="hl-nv"> </span><span class="hl-s">the</span>
+<span class="hl-w">              </span><span class="hl-s">system</span><span class="hl-nv"> </span><span class="hl-s">can</span><span class="hl-nv"> </span><span class="hl-s">actually</span><span class="hl-nv"> </span><span class="hl-s">see."</span>
+<span class="hl-w">    </span><span class="hl-nt">level_4</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"The</span><span class="hl-nv"> </span><span class="hl-s">UUID</span><span class="hl-nv"> </span><span class="hl-s">in</span><span class="hl-nv"> </span><span class="hl-s">/etc/fstab</span><span class="hl-nv"> </span><span class="hl-s">does</span><span class="hl-nv"> </span><span class="hl-s">not</span><span class="hl-nv"> </span><span class="hl-s">match</span><span class="hl-nv"> </span><span class="hl-s">any</span><span class="hl-nv"> </span><span class="hl-s">device.</span><span class="hl-nv"> </span><span class="hl-s">Find</span><span class="hl-nv"> </span><span class="hl-s">the</span><span class="hl-nv"> </span><span class="hl-s">real</span><span class="hl-nv"> </span><span class="hl-s">one."</span>
+<span class="hl-w">    </span><span class="hl-nt">refs</span><span class="hl-p">:</span><span class="hl-w">                                   </span><span class="hl-c1"># optional: reading, by level</span>
+<span class="hl-w">      </span><span class="hl-nt">2</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-s">"man</span><span class="hl-nv"> </span><span class="hl-s">5</span><span class="hl-nv"> </span><span class="hl-s">fstab"</span><span class="hl-p hl-p-Indicator">,</span><span class="hl-w"> </span><span class="hl-s">"journal:rhcsa-03-storage-and-lvm#fstab-and-what-systemd-does-with-it"</span><span class="hl-p hl-p-Indicator">]</span>
+<span class="hl-w">      </span><span class="hl-nt">3</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">[</span><span class="hl-s">"https://www.freedesktop.org/software/systemd/man/latest/systemd.mount.html"</span><span class="hl-p hl-p-Indicator">]</span>
+</code></pre>
+
+<ul>
+<li>Every check has exactly four levels, all non-empty.</li>
+<li>Level 1 restates the symptom. Level 2 names the <strong>category</strong> of tool or evidence. Level 3 narrows
+to the component. Level 4 names the problem. <strong>No level names the command that fixes it</strong>: the
+learner always types the fix.</li>
+<li>Levels 1 and 2 never name a path that the reference solution touches.</li>
+<li>The learner chooses the level (<code>h</code> on the lab's screen), never the tutor.</li>
+<li><code>refs</code> (optional) maps a level to reading: <code>journal:&lt;topic slug or lab id&gt;#&lt;anchor&gt;</code>, where the
+anchor is a level 1–3 heading's id as the site renders it; <code>man &lt;section&gt; &lt;page&gt;</code>; or an
+<code>https://</code> URL. A level's reading is shown with that level and every later one, and all of it once
+the check passes. A reference never points into a journal's walkthrough section, and names the
+lab's own journal only from level 3.</li>
+</ul>
+<hr />
+<h2 id="8-reference-solution">8. Reference solution</h2>
+<ul>
+<li><code>solution/solution.sh</code> is a POSIX <code>sh</code> script, run as root in the guest by the solvability gate.
+It takes a broken lab to a fully passing state, including after the reboot.</li>
+<li>A lab with several base images may add <code>solution/&lt;base_image&gt;.sh</code>; the gate uses it instead of
+<code>solution.sh</code> on that image.</li>
+<li>The solution never reboots. If the fix needs a boot-time action (an SELinux relabel), the script
+arranges it and the grading reboot performs it.</li>
+<li>The TUI shows the solution <strong>only</strong> after the lab is passed or surrendered
+(<code>S</code>). The tutor never receives it. The review (<code>m</code>, the post-mortem) receives it only
+after the attempt is over.</li>
+</ul>
+<hr />
+<h2 id="9-solvability-gate">9. Solvability gate</h2>
+<p>For every lab and every image in its <code>base_images</code>, starting from a clean snapshot:</p>
+<ol>
+<li>apply the faults;</li>
+<li>run every check — <strong>each must fail</strong> (a check that passes on a broken system tests nothing);</li>
+<li>run the reference solution;</li>
+<li>run the full grading sequence — <strong>each check must pass, in every pass.</strong></li>
+</ol>
+<p>For a <code>boot_after_break</code> lab, a second phase follows on a fresh VM, because the learner meets the
+machine only after one more boot and a fault that does not survive that boot is gone before anyone
+sees it (docs/open-questions.md Q18):</p>
+<ol start="5">
+<li>apply the faults and boot once more, exactly as the learner's machine does;</li>
+<li>run every check again — <strong>each must still fail.</strong> When the broken machine has a network the
+checks run over SSH; when the boot stopped at a maintenance prompt they run over the serial
+console, in a root shell opened with the golden image's root password, with the runner shipped
+across in acknowledged chunks.</li>
+</ol>
+<p>For a <code>container</code> lab the gate is steps 1–4 in a fresh container; there is no reboot pass.</p>
+<p><code>norboten dev validate &lt;lab&gt; [--image &lt;id&gt;]</code> runs the gate locally; <code>lab-validate.yml</code> runs it in CI.
+A lab that fails the gate cannot merge.</p>
+<p>A check that cannot fail before the fix is declared with <code>baseline_pass: true</code> and justified in a
+YAML comment next to it. Steps 2 and 6 skip it.</p>
+<p>A check that cannot fail while the machine sits at a maintenance prompt — because what it observes,
+a running service or a mounted volume, does not exist before the boot completes — is declared with
+<code>maintenance_pass: true</code> and justified in a YAML comment. Step 6 skips it only when the boot really
+stopped at a maintenance prompt; if the broken machine comes up on the network, the check must fail
+like any other. The fault behind such a check must reappear on the first boot that completes, and the
+comment says how.</p>
+<p>The solution never runs after the break boot: that boot may leave no network for it to arrive over
+(Q14). The grading reboot in step 4 proves the fix survives a boot.</p>
+<hr />
+<h2 id="10-packaging">10. Packaging</h2>
+<p>A lab ships as an OCI image, <code>ghcr.io/&lt;owner&gt;/norboten-labs/&lt;id&gt;:&lt;version&gt;</code> (plus <code>:latest</code>), built
+by <code>images/Dockerfile.lab</code>: <code>FROM scratch</code>, one layer holding the lab directory at <code>/lab</code>, OCI
+labels for title, version and source. Nothing in it ever runs — Docker is the packaging and
+distribution format: content-addressed, versioned, cacheable, and signed with cosign by
+<code>lab-publish.yml</code>.</p>
+<p>Pulling a lab (<code>u</code> in the Labs section) resolves the tag (skipping attestation manifests in an index), downloads the
+last layer, verifies its digest, extracts only <code>lab/</code>, checks the manifest id, and stores it in
+<code>~/.norboten/labs/&lt;id&gt;/&lt;version&gt;/</code>. A lab in a source checkout (or <code>NORBOTEN_LABS_DIR</code>) takes
+precedence over the cache.</p>
+<hr />
+<h2 id="11-static-validation">11. Static validation</h2>
+<p><code>norboten dev lint [path…]</code> (also <code>make lint-labs</code> and the pre-commit hook) checks, without a VM:</p>
+<ul>
+<li><code>lab.yaml</code> parses and satisfies section 2;</li>
+<li>the directory name equals <code>id</code>;</li>
+<li>every base image exists and serves the track;</li>
+<li><code>check/</code> files and <code>checks:</code> match exactly, in order;</li>
+<li><code>hints.yaml</code> has four non-empty levels for every check, and levels 1–2 name no path the
+solution touches; every <code>journal:</code> reference names an existing heading outside a walkthrough,
+and the lab's own journal only from level 3;</li>
+<li><code>briefing.md</code> and <code>solution/solution.sh</code> exist; per-image solutions name listed images only;</li>
+<li>every <code>break/</code> module defines <code>apply(ctx)</code>, every <code>check/</code> module defines <code>check(ctx)</code>, and both
+import only the standard library, <code>norboten_runner</code>, and modules every one of the lab's images
+installs for its labs (<code>ubuntu-26.04-claude</code>: <code>claude_lab</code> and <code>fake_anthropic</code> from
+<code>/usr/local/lib/norboten</code>, and PyYAML).</li>
+<li>a rated lab (section 13) sits under <code>rated/</code>, sets <code>rated: true</code>, has a <code>collect/</code> module defining
+<code>collect(ctx)</code> for every check and a <code>check/</code> module defining <code>judge(facts, ctx)</code>; a collector
+never calls <code>ctx.passed</code>/<code>ctx.failed</code>, a judge imports nothing that reaches the system, and there
+is no <code>journal.md</code>. An unrated lab has no <code>collect/</code>.</li>
+</ul>
+<hr />
+<h2 id="12-topics-and-rated-attempts">12. Topics and rated attempts</h2>
+<p>A lab declares 1–5 <code>topics</code>. They are the axes a learner is rated on, the spokes of the profile
+radar, and how the catalogue is filtered. The taxonomy is fixed and lives in
+<code>cli/src/norboten/topics.py</code> — derived from EX200 and EX342, plus the automation subjects this
+project adds:</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Topics</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>system</td>
+<td><code>linux-basics</code>, <code>users-permissions</code>, <code>storage-lvm</code>, <code>boot-systemd</code></td>
+</tr>
+<tr>
+<td>network</td>
+<td><code>networking</code>, <code>firewall-selinux</code></td>
+</tr>
+<tr>
+<td>diagnostics</td>
+<td><code>kernel-performance</code>, <code>logging-journald</code>, <code>monitoring</code></td>
+</tr>
+<tr>
+<td>scripting</td>
+<td><code>bash</code>, <code>python</code></td>
+</tr>
+<tr>
+<td>automation</td>
+<td><code>ansible</code>, <code>terraform</code>, <code>containers</code></td>
+</tr>
+<tr>
+<td>ai</td>
+<td><code>ai-services</code>, <code>ai-agents</code>, <code>claude-code</code>, <code>ollama</code>, <code>mcp</code></td>
+</tr>
+</tbody>
+</table>
+<p>Slugs are permanent: they are stored in ratings and appear in URLs, so renaming one is a migration.</p>
+<p>An attempt is <strong>rated</strong> when it runs against the clock. The clock is <code>time_limit_minutes</code> when the
+lab sets one, otherwise the minutes its difficulty buys:</p>
+<table>
+<thead>
+<tr>
+<th>difficulty</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>minutes</td>
+<td>5</td>
+<td>10</td>
+<td>15</td>
+<td>20</td>
+<td>30</td>
+</tr>
+</tbody>
+</table>
+<p>A rated attempt is one Glicko-2 game per topic the lab declares, against a virtual opponent whose
+rating comes from the difficulty (1100, 1300, 1500, 1700, 1900 at deviation 75). Passing inside the
+limit wins; failing, or running over, loses. <strong>Only a rated lab (section 13) can be a rated
+attempt:</strong> an unrated lab is recorded on the profile and never moves a rating, however it was
+started, because its checks and its answer are public.</p>
+<hr />
+<h2 id="13-rated-labs">13. Rated labs</h2>
+<p>A rated lab has the shape of any other lab, lives in the private repository (<code>rated/&lt;track&gt;/&lt;id&gt;/</code>,
+docs/rated-labs.md) and sets <code>rated: true</code>. What changes is where each half of a check runs: <strong>the
+guest collects observations, the server judges them.</strong> A check is split into two files with the
+same stem:</p>
+<pre><code>&lt;lab-id&gt;/
+├── collect/NN_name.py    # runs in the guest: what to look at
+└── check/NN_name.py      # runs on the server: what counts as fixed
+</code></pre>
+<pre class="hl"><code class="language-python"><span class="hl-c1"># collect/02_notes_restarts_on_failure.py — observations only</span>
+<span class="hl-k">def</span><span class="hl-w"> </span><span class="hl-nf">collect</span><span class="hl-p">(</span><span class="hl-n">ctx</span><span class="hl-p">):</span>
+    <span class="hl-n">r</span> <span class="hl-o">=</span> <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">run</span><span class="hl-p">([</span><span class="hl-s2">"systemctl"</span><span class="hl-p">,</span> <span class="hl-s2">"show"</span><span class="hl-p">,</span> <span class="hl-s2">"-p"</span><span class="hl-p">,</span> <span class="hl-s2">"Restart"</span><span class="hl-p">,</span> <span class="hl-s2">"--value"</span><span class="hl-p">,</span> <span class="hl-s2">"notes"</span><span class="hl-p">])</span>
+    <span class="hl-k">return</span> <span class="hl-p">{</span><span class="hl-s2">"restart"</span><span class="hl-p">:</span> <span class="hl-n">r</span><span class="hl-o">.</span><span class="hl-n">out</span><span class="hl-o">.</span><span class="hl-n">strip</span><span class="hl-p">(),</span> <span class="hl-s2">"code"</span><span class="hl-p">:</span> <span class="hl-n">r</span><span class="hl-o">.</span><span class="hl-n">code</span><span class="hl-p">}</span>
+</code></pre>
+
+<pre class="hl"><code class="language-python"><span class="hl-c1"># check/02_notes_restarts_on_failure.py — the criterion, never delivered</span>
+<span class="hl-k">def</span><span class="hl-w"> </span><span class="hl-nf">judge</span><span class="hl-p">(</span><span class="hl-n">facts</span><span class="hl-p">,</span> <span class="hl-n">ctx</span><span class="hl-p">):</span>
+    <span class="hl-k">if</span> <span class="hl-n">facts</span><span class="hl-p">[</span><span class="hl-s2">"restart"</span><span class="hl-p">]</span> <span class="hl-ow">in</span> <span class="hl-p">(</span><span class="hl-s2">""</span><span class="hl-p">,</span> <span class="hl-s2">"no"</span><span class="hl-p">):</span>
+        <span class="hl-k">return</span> <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">failed</span><span class="hl-p">(</span><span class="hl-s2">"When notes crashes, nothing brings it back."</span><span class="hl-p">)</span>
+    <span class="hl-k">return</span> <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">passed</span><span class="hl-p">(</span><span class="hl-s2">"systemd restarts notes when it dies."</span><span class="hl-p">)</span>
+</code></pre>
+
+<p><strong><code>collect(ctx)</code></strong> gets the same <code>ctx</code> as a check (section 5) and follows the same rules: read-only,
+under 30 seconds, the same imports. It returns a JSON object of at most 64 KiB — command output,
+exit codes, file contents, an HTTP status and body. <strong>It returns what it saw, never a verdict:</strong> no
+<code>ctx.passed</code>/<code>ctx.failed</code>, no comparison against the answer, no expected value. A reader of every
+<code>collect/</code> file learns what is looked at and nothing about what is accepted; a collector that
+could only be written by knowing the answer (a hash of the right config, say) is a lab bug. A
+collector that raises is recorded as <code>{&quot;collect_error&quot;: &quot;…&quot;}</code> and its check fails.</p>
+<p><strong><code>judge(facts, ctx)</code></strong> runs on the server — and in the gate, on the host. <code>facts</code> is exactly what
+the collector returned. <code>ctx</code> carries <code>phase</code>, <code>base</code> (the image facts: <code>id</code>, <code>init</code>, <code>pkg</code>,
+<code>mac</code>), <code>state</code> (the break scripts' <code>ctx.state</code>, collected with the facts) and <code>passed(message, evidence=&quot;&quot;)</code> / <code>failed(…)</code>. A judge is a pure function: standard library only, and no
+<code>subprocess</code>, <code>socket</code>, <code>os</code>, file or network access — the linter refuses those imports. Its
+message and evidence stay on the server; the learner is told pass or fail per check, and the
+objective it belongs to.</p>
+<h3 id="the-attempt">The attempt</h3>
+<pre><code>TUI                         API (holds check/, solution/)            guest
+ R ─ POST /rated/attempts ─▶ attempt id, nonce, key, break bundle
+   ─────────────────────────────────────────────────────────────────▶ break/ applied, deleted
+   … the learner works; no checks, hints, tutor or solution are on this machine …
+ c ─ GET …/collect ────────▶ collect bundle
+   ─────────────────────────────────────────────────────────────────▶ collect/ runs, record signed
+   ◀────────────────────────────────────────────────────────────────── {record, signature}
+   ─ POST …/facts ─────────▶ verify, store the pre_reboot record
+   reboot; collect again; POST …/facts ─▶ verify boot, judge both passes, rate
+</code></pre>
+<ul>
+<li><strong>The bundles.</strong> The break bundle holds <code>lab.yaml</code>, <code>break/</code> and <code>files/</code>; the collect bundle
+holds <code>lab.yaml</code>, <code>collect/</code> and <code>files/</code>. The client adds its own <code>norboten_runner</code>, injects the
+bundle into <code>/run/norboten</code> exactly as for an unrated lab, and deletes it after the run. Neither is
+written to <code>~/.norboten</code>; <code>check/</code>, <code>solution/</code> and <code>hints.yaml</code> never leave the server.</li>
+<li><strong>The record.</strong> <code>norboten_runner.collect_runner</code> runs every collector and prints one record:
+<code>{attempt, nonce, phase, boot_id, collected_at, base, state, facts: {check_id: {…}}}</code>. It signs
+the record's canonical JSON (sorted keys, no whitespace) with HMAC-SHA256 under the attempt key,
+which it reads on stdin, and prints <code>{record, signature}</code>.</li>
+<li><strong>What the server accepts.</strong> A record whose signature verifies under that attempt's key, whose
+nonce and attempt match, for an attempt that is still open, once per phase. For a
+<code>reboot_required</code> lab the <code>post_reboot</code> record must carry a different <code>boot_id</code> from the
+<code>pre_reboot</code> one and a later <code>collected_at</code> — that is the reboot proof. A lab without a reboot is
+judged on its one record.</li>
+<li><strong>The verdict.</strong> Section 5's grading sequence, computed on the server from the judges: a check
+passes only if it passes in every pass; score and <code>pass_percent</code> as usual. The clock runs from
+the moment the attempt was issued to the moment the server received the first record, against
+the lab's rated minutes (section 12). The attempt is then closed and rated.</li>
+<li><strong>One attempt at a time.</strong> Starting a rated attempt closes any open one for the same account as
+a loss, and an attempt not finished within three times its clock (at least an hour) expires as a
+loss. So does giving up (<code>S</code>). Otherwise seeing the faults and walking away would cost nothing.</li>
+<li><strong>What a rated attempt does not have.</strong> No live checks and no quick check (each would be a
+grading oracle), no hints, no tutor and no reference solution, no reset (start again with <code>R</code>,
+which closes this attempt), and no public journal (a journal walks the same failure).</li>
+</ul>
+<p>What this defends against, and what it does not, is in docs/rated-labs.md: the key and the
+collectors are on the learner's own machine, so the signature proves a record belongs to this
+attempt and was not replayed from another — not that a determined learner did not forge it.</p>
+
+    </article>
+    <div class="toc">
+<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>      <a class="h2" href="#1-a-lab-is-a-directory">1. A lab is a directory</a>
+      <a class="h2" href="#2-labyaml">2. lab.yaml</a>
+      <a class="h2" href="#3-tracks-and-base-images">3. Tracks and base images</a>
+      <a class="h2" href="#4-break-scripts">4. Break scripts</a>
+      <a class="h2" href="#5-check-scripts">5. Check scripts</a>
+      <a class="h3" href="#grading-sequence">Grading sequence</a>
+      <a class="h2" href="#6-briefingmd">6. briefing.md</a>
+      <a class="h2" href="#7-hintsyaml">7. hints.yaml</a>
+      <a class="h2" href="#8-reference-solution">8. Reference solution</a>
+      <a class="h2" href="#9-solvability-gate">9. Solvability gate</a>
+      <a class="h2" href="#10-packaging">10. Packaging</a>
+      <a class="h2" href="#11-static-validation">11. Static validation</a>
+      <a class="h2" href="#12-topics-and-rated-attempts">12. Topics and rated attempts</a>
+      <a class="h2" href="#13-rated-labs">13. Rated labs</a>
+      <a class="h3" href="#the-attempt">The attempt</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("../../search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+</body>
+</html>

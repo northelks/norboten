@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Text is bytes plus an encoding, and nobody else knows which one · Norboten</title>
+<meta name="description" content="A file on disk is bytes. &amp;quot;Text&amp;quot; is what you get when bytes are decoded with an encoding, and the file does not carry that encoding anywhere: not in it">
+<link rel="canonical" href="https://norboten.org/journals/python-03-report-that-crashes-on-one-name/"><meta property="og:title" content="Text is bytes plus an encoding, and nobody else knows which one · Norboten">
+<meta property="og:description" content="A file on disk is bytes. &amp;quot;Text&amp;quot; is what you get when bytes are decoded with an encoding, and the file does not carry that encoding anywhere: not in it">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/python-03-report-that-crashes-on-one-name/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Text is bytes plus an encoding, and nobody else knows which one · Norboten">
+<meta name="twitter:description" content="A file on disk is bytes. &amp;quot;Text&amp;quot; is what you get when bytes are decoded with an encoding, and the file does not carry that encoding anywhere: not in it">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Text is bytes plus an encoding, and nobody else knows which one",
+  "description": "A file on disk is bytes. \u0026quot;Text\u0026quot; is what you get when bytes are decoded with an encoding, and the file does not carry that encoding anywhere: not in it",
+  "url": "https://norboten.org/journals/python-03-report-that-crashes-on-one-name/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1460,
+  "timeRequired": "PT35M",
+  "about": ["Python", "Linux basics"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Report That Crashes on One Name</div>
+    <h1>Text is bytes plus an encoding, and nobody else knows which one</h1>
+    <p class="muted">
+      35 minutes' reading · 1460 words ·<span class="tag">Python</span><span class="tag">Linux basics</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 95 words</title><rect x="0.0" y="0" width="43.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 549 words</title><rect x="46.1" y="0" width="248.8" height="30" rx="4" fill="#1d2a23"/><text x="54.1" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 433 words</title><rect x="297.9" y="0" width="196.3" height="30" rx="4" fill="#4ade80"/><text x="305.9" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 148 words</title><rect x="497.2" y="0" width="67.1" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 94 words</title><rect x="567.3" y="0" width="42.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 55 words</title><rect x="612.9" y="0" width="24.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 263 words</title><rect x="640.8" y="0" width="119.2" height="30" rx="4" fill="#1d2a23"/><text x="648.8" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/python-03-report-that-crashes-on-one-name/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>A file on disk is bytes. &quot;Text&quot; is what you get when bytes are decoded with an encoding, and the
+file does not carry that encoding anywhere: not in its bytes, not in its name, not in its metadata.
+Somebody has to know. In this lab the somebody is a README and a naming convention — the old Windows
+tool writes cp1252 and says so in the file name — and the program ignores both, so it decodes
+everything with whatever the machine's locale happens to be.</p>
+<p>That works for years, because most names are ASCII and ASCII is a subset of both. It stops working
+the day a member called Ruiz Peña joins. The interesting part is what happens next: the quick fix
+everyone reaches for, <code>errors=&quot;ignore&quot;</code>, makes the crash go away and turns the name into <em>Ruiz Pea</em>.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Say what <code>open()</code> uses as an encoding when you do not give it one, and why that is a machine
+property rather than a file property.</li>
+<li>Read a UnicodeDecodeError: which codec, which byte, which position.</li>
+<li>Choose an encoding per file from what is actually known about it, and say why <code>errors=&quot;ignore&quot;</code>
+and <code>errors=&quot;replace&quot;</code> are data loss rather than error handling.</li>
+<li>State the encoding when writing, so that output does not depend on the caller's locale.</li>
+<li>Write the output file atomically, so a failed run leaves the previous summary in place.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="open-has-an-encoding-whether-or-not-you-name-one"><code>open()</code> has an encoding, whether or not you name one</h3>
+<p><code>open(path)</code> in text mode decodes bytes with <code>locale.getpreferredencoding(False)</code> — the encoding of
+the machine's locale at the time the process started. The same program on the same file gives
+different results on a machine with <code>LANG=en_GB.UTF-8</code>, on one with <code>LC_ALL=C</code>, and on a Windows box
+with cp1252. Nothing about the file is involved.</p>
+<p>Modern Linux distributions make this look harmless: Ubuntu's default locale is UTF-8, and Python
+even coerces the bare <code>C</code> locale to <code>C.UTF-8</code> (PEP 538) so that a service started by systemd without
+<code>LANG</code> still gets UTF-8. Under <code>LC_ALL=C</code> with that coercion turned off, the encoding is ASCII and
+<em>any</em> non-ASCII byte fails. <code>PYTHONUTF8=1</code> (UTF-8 mode) is the other direction: it ignores the locale
+and uses UTF-8 everywhere.</p>
+<p>The lesson is not &quot;which default does my Python use&quot;, but that a default exists at all. A program
+that reads files written by other systems states the encoding for each one.</p>
+<h3 id="reading-the-error">Reading the error</h3>
+<pre><code>UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf1 in position 17: invalid continuation byte
+</code></pre>
+<p>Four facts: the codec that was used (<code>utf-8</code>), the byte it choked on (<code>0xf1</code>), where it is
+(position 17 of that read), and why (in UTF-8, <code>0xf1</code> starts a four-byte sequence and what followed
+was not a continuation byte). <code>0xf1</code> is <code>ñ</code> in cp1252 and in latin-1. <code>file</code> says the same thing
+more loosely: <code>ISO-8859 text</code> for the old export, <code>Unicode text, UTF-8 text</code> for the new one.</p>
+<h3 id="the-errors-argument-is-a-policy-not-a-fix">The <code>errors=</code> argument is a policy, not a fix</h3>
+<p><code>open(..., errors=…)</code> decides what happens to bytes that do not decode:</p>
+<ul>
+<li><code>strict</code> (the default) raises — the program stops and somebody finds out;</li>
+<li><code>ignore</code> drops them — <code>Ruiz Peña</code> becomes <code>Ruiz Pea</code>, silently, for ever;</li>
+<li><code>replace</code> substitutes U+FFFD — <code>Ruiz Pe�a</code>, equally silently;</li>
+<li><code>surrogateescape</code> keeps the raw bytes in a lossless but non-text form, for round-tripping data you
+do not have to interpret (file names, for example).</li>
+</ul>
+<p>None of them makes a wrongly decoded file right. They decide what to lose. The right question is
+which encoding the file is in, and here the file name answers it.</p>
+<h3 id="writing-has-the-same-problem-in-the-other-direction">Writing has the same problem, in the other direction</h3>
+<p><code>open(path, &quot;w&quot;)</code> encodes with the locale's encoding too, and raises <code>UnicodeEncodeError</code> on a
+character it cannot represent. So a summary written on a machine with a non-UTF-8 locale is either a
+crash or a file in an encoding nobody expected — and this lab's grader checks exactly that, by
+running the report with <code>LC_ALL=C</code>. <code>encoding=&quot;utf-8&quot;</code> on the way out makes the output a property of
+the program rather than of the machine.</p>
+<p><code>csv</code> needs one more thing: open the file with <code>newline=&quot;&quot;</code>, so the module controls line endings.
+(The summary here therefore ends up with the CSV standard's CRLF line terminators, which is what
+<code>file</code> reports.)</p>
+<h3 id="a-failed-run-should-not-destroy-the-last-good-summary">A failed run should not destroy the last good summary</h3>
+<p><code>open(OUT, &quot;w&quot;)</code> truncates before anything is written, so a run that fails half way leaves an empty
+summary. Writing to a temporary file in the same directory and <code>os.replace()</code>-ing it over the target
+is atomic, so readers see the old file or the new one and never a partial one — the same shape as
+<code>mv</code> in a shell script.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Run on the lab's own machine: <code>ubuntu-26.04-devops</code>, Python 3.14.4, before any change.</p>
+<p>The unit's run, and the last lines of its traceback:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>members-report.service<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>members-report.service<span class="hl-w"> </span>-b<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-5
+<span class="hl-go">  File "&lt;frozen codecs&gt;", line 325, in decode</span>
+<span class="hl-go">UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf1 in position 17: invalid continuation byte</span>
+<span class="hl-go">members-report.service: Main process exited, code=exited, status=1/FAILURE</span>
+<span class="hl-go">members-report.service: Failed with result 'exit-code'.</span>
+<span class="hl-go">Failed to start members-report.service - Members per city, for the membership office.</span>
+</code></pre>
+
+<p>What the directory says about itself, and what <code>file</code> sees:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>/srv/members<span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/srv/members/README
+<span class="hl-go">README</span>
+<span class="hl-go">legacy-2026-09.cp1252.csv</span>
+<span class="hl-go">new-2026-09.csv</span>
+<span class="hl-go">Exports in this directory</span>
+<span class="hl-go">-------------------------</span>
+<span class="hl-go">*.cp1252.csv  the old Windows tool (code page 1252)</span>
+<span class="hl-go">*.csv         everything else: UTF-8</span>
+<span class="hl-gp">$ </span>file<span class="hl-w"> </span>/srv/members/*.csv
+<span class="hl-go">/srv/members/legacy-2026-09.cp1252.csv: ISO-8859 text</span>
+<span class="hl-go">/srv/members/new-2026-09.csv:           Unicode text, UTF-8 text</span>
+</code></pre>
+
+<p>The same file, read four ways — the default, the right encoding, and the two lenient ones:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>python3<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s2">"print(open('/srv/members/legacy-2026-09.cp1252.csv', encoding='utf-8').read())"</span><span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-2
+<span class="hl-go">  File "&lt;frozen codecs&gt;", line 325, in decode</span>
+<span class="hl-go">UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf1 in position 17: invalid continuation byte</span>
+<span class="hl-gp">$ </span>python3<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s2">"print(open('/srv/members/legacy-2026-09.cp1252.csv', encoding='cp1252').read())"</span>
+<span class="hl-go">name,city</span>
+<span class="hl-go">Ruiz Peña,Málaga</span>
+<span class="hl-go">Anaïs Fabre,Nîmes</span>
+<span class="hl-gp">$ </span>python3<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s2">"print(open('/srv/members/legacy-2026-09.cp1252.csv', encoding='utf-8', errors='ignore').read())"</span>
+<span class="hl-go">name,city</span>
+<span class="hl-go">Ruiz Pea,Mlaga</span>
+<span class="hl-go">Anas Fabre,Nmes</span>
+<span class="hl-gp">$ </span>python3<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s2">"print(open('/srv/members/legacy-2026-09.cp1252.csv', encoding='utf-8', errors='replace').read())"</span>
+<span class="hl-go">name,city</span>
+<span class="hl-go">Ruiz Pe�a,M�laga</span>
+<span class="hl-go">Ana�s Fabre,N�mes</span>
+</code></pre>
+
+<p>That third output is the &quot;fix&quot; that shipped once: no error, and every accented letter gone. The
+locale that decides the default is visible from Python, and a service gets the same one here:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>python3<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s2">"import locale,sys; print(locale.getpreferredencoding(False), sys.getdefaultencoding())"</span>
+<span class="hl-go">UTF-8 utf-8</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemd-run<span class="hl-w"> </span>--wait<span class="hl-w"> </span>--pipe<span class="hl-w"> </span>-q<span class="hl-w"> </span>python3<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s2">"import locale; print('service locale encoding:', locale.getpreferredencoding(False))"</span>
+<span class="hl-go">service locale encoding: UTF-8</span>
+</code></pre>
+
+<p>Take the locale away and the same program on the same UTF-8 file fails, in both directions:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>C<span class="hl-w"> </span><span class="hl-nv">PYTHONCOERCECLOCALE</span><span class="hl-o">=</span><span class="hl-m">0</span><span class="hl-w"> </span><span class="hl-nv">PYTHONUTF8</span><span class="hl-o">=</span><span class="hl-m">0</span><span class="hl-w"> </span>python3<span class="hl-w"> </span>/tmp/show.py<span class="hl-w"> </span>/srv/members/new-2026-09.csv<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-3
+<span class="hl-go">    return codecs.ascii_decode(input, self.errors)[0]</span>
+<span class="hl-go">           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^</span>
+<span class="hl-go">UnicodeDecodeError: 'ascii' codec can't decode byte 0xc3 in position 28: ordinal not in range(128)</span>
+<span class="hl-gp">$ </span><span class="hl-nv">LC_ALL</span><span class="hl-o">=</span>C<span class="hl-w"> </span><span class="hl-nv">PYTHONCOERCECLOCALE</span><span class="hl-o">=</span><span class="hl-m">0</span><span class="hl-w"> </span><span class="hl-nv">PYTHONUTF8</span><span class="hl-o">=</span><span class="hl-m">0</span><span class="hl-w"> </span>python3<span class="hl-w"> </span>/tmp/write.py<span class="hl-w"> </span>/tmp/out.txt<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-2
+<span class="hl-go">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^</span>
+<span class="hl-go">UnicodeEncodeError: 'ascii' codec can't encode character '\xfc' in position 1: ordinal not in range(128)</span>
+</code></pre>
+
+<p>(<code>/tmp/show.py</code> prints a line of the file it is given; <code>/tmp/write.py</code> writes <code>München</code> to a file.)</p>
+<p>After the fix — an encoding chosen per file from its name, <code>encoding=&quot;utf-8&quot;</code> on the output, and the
+summary written through a temporary file — both exports are read and every name survives:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>systemctl<span class="hl-w"> </span>start<span class="hl-w"> </span>members-report.service<span class="hl-p">;</span><span class="hl-w"> </span>sudo<span class="hl-w"> </span>cat<span class="hl-w"> </span>/var/lib/members/summary.csv
+<span class="hl-go">city,members</span>
+<span class="hl-go">Kraków,1</span>
+<span class="hl-go">Málaga,1</span>
+<span class="hl-go">München,1</span>
+<span class="hl-go">Nîmes,1</span>
+<span class="hl-go">names,Ruiz Peña Anaïs Fabre Anna Kowalska Jonas Müller</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>file<span class="hl-w"> </span>/var/lib/members/summary.csv
+<span class="hl-go">/var/lib/members/summary.csv: Unicode text, UTF-8 text, with CRLF line terminators</span>
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong><code>errors=&quot;ignore&quot;</code> or <code>errors=&quot;replace&quot;</code>.</strong> The crash goes away and the data is wrong forever.
+The lab's second check exists to catch exactly this.</li>
+<li><strong>Decoding everything as latin-1 &quot;because it never fails&quot;.</strong> True and useless: latin-1 maps every
+byte to a character, so a UTF-8 file silently becomes mojibake (<code>MÃ¼nchen</code>).</li>
+<li><strong>Setting <code>LANG</code>/<code>LC_ALL</code> in the unit.</strong> It hides the problem on this machine and moves it to the
+next one; the program still has no idea what its inputs are.</li>
+<li><strong><code>PYTHONUTF8=1</code> as the fix.</strong> It makes the <em>default</em> UTF-8, which is right for the new exports and
+still wrong for the cp1252 one.</li>
+<li><strong>Guessing with <code>chardet</code> and friends.</strong> Reasonable when nothing is known; here the encoding is
+documented in the README and in the file name.</li>
+<li><strong>Forgetting the output.</strong> A run that reads correctly and writes in the locale's encoding just
+moves the problem downstream.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-python"><span class="hl-nb">open</span><span class="hl-p">(</span><span class="hl-n">path</span><span class="hl-p">,</span> <span class="hl-n">encoding</span><span class="hl-o">=</span><span class="hl-s2">"utf-8"</span><span class="hl-p">)</span>            <span class="hl-c1"># say it, every time, in and out</span>
+<span class="hl-nb">open</span><span class="hl-p">(</span><span class="hl-n">path</span><span class="hl-p">,</span> <span class="hl-n">encoding</span><span class="hl-o">=</span><span class="hl-s2">"cp1252"</span><span class="hl-p">)</span>           <span class="hl-c1"># what the old Windows tool writes</span>
+<span class="hl-nb">open</span><span class="hl-p">(</span><span class="hl-n">path</span><span class="hl-p">,</span> <span class="hl-s2">"w"</span><span class="hl-p">,</span> <span class="hl-n">encoding</span><span class="hl-o">=</span><span class="hl-s2">"utf-8"</span><span class="hl-p">,</span> <span class="hl-n">newline</span><span class="hl-o">=</span><span class="hl-s2">""</span><span class="hl-p">)</span>   <span class="hl-c1"># csv: let the module choose line endings</span>
+<span class="hl-c1"># errors=: strict (raise) · ignore (drop) · replace (U+FFFD) · surrogateescape (round-trip bytes)</span>
+
+<span class="hl-kn">import</span><span class="hl-w"> </span><span class="hl-nn">locale</span><span class="hl-p">;</span> <span class="hl-n">locale</span><span class="hl-o">.</span><span class="hl-n">getpreferredencoding</span><span class="hl-p">(</span><span class="hl-kc">False</span><span class="hl-p">)</span>   <span class="hl-c1"># the default open() would use</span>
+<span class="hl-n">python3</span> <span class="hl-o">-</span><span class="hl-n">X</span> <span class="hl-n">utf8</span> <span class="hl-err">…</span>        <span class="hl-c1"># or PYTHONUTF8=1: ignore the locale, use UTF-8</span>
+
+<span class="hl-c1"># replace the output in one step</span>
+<span class="hl-n">fd</span><span class="hl-p">,</span> <span class="hl-n">tmp</span> <span class="hl-o">=</span> <span class="hl-n">tempfile</span><span class="hl-o">.</span><span class="hl-n">mkstemp</span><span class="hl-p">(</span><span class="hl-nb">dir</span><span class="hl-o">=</span><span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">path</span><span class="hl-o">.</span><span class="hl-n">dirname</span><span class="hl-p">(</span><span class="hl-n">out</span><span class="hl-p">))</span>
+<span class="hl-err">…</span> <span class="hl-p">;</span> <span class="hl-n">os</span><span class="hl-o">.</span><span class="hl-n">replace</span><span class="hl-p">(</span><span class="hl-n">tmp</span><span class="hl-p">,</span> <span class="hl-n">out</span><span class="hl-p">)</span>
+</code></pre>
+
+<pre class="hl"><code class="language-console"><span class="hl-go">file export.csv                  # a first guess at the encoding</span>
+</code></pre>
+
+<h2 id="going-deeper">Going deeper</h2>
+<ul>
+<li>The Python documentation on <a href="https://docs.python.org/3/library/functions.html#open"><code>open()</code></a> and
+<a href="https://docs.python.org/3/library/codecs.html#error-handlers">error handlers</a>.</li>
+<li>PEP 538 (C locale coercion) and PEP 540 (UTF-8 mode), for what happens when a service starts with
+no locale.</li>
+<li><code>man 1 file</code>, <code>man 7 charsets</code>.</li>
+<li>Joel Spolsky, <em>The Absolute Minimum Every Software Developer Absolutely, Positively Must Know
+About Unicode and Character Sets</em>.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>Where does <code>open(path)</code> get its encoding from?</p>
+<blockquote>
+<p>From the process's locale (<code>locale.getpreferredencoding(False)</code>), not from the file. The same
+file gives different text on machines with different locales.</p>
+</blockquote>
+</li>
+<li>
+<p>What do the four parts of <code>UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf1 in position 17: invalid continuation byte</code> tell you?</p>
+<blockquote>
+<p>The codec that was used, the offending byte, where it was, and why it is invalid for that codec
+— here a cp1252 <code>ñ</code> in a file being read as UTF-8.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>errors=&quot;ignore&quot;</code> the wrong answer to that error?</p>
+<blockquote>
+<p>It drops every byte that does not decode, so the data is silently changed — <code>Ruiz Peña</code> becomes
+<code>Ruiz Pea</code> — and no one finds out.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does reading everything as latin-1 never raise, and why is that not a solution?</p>
+<blockquote>
+<p>latin-1 maps all 256 byte values to characters, so any byte decodes; a UTF-8 file then decodes
+into the wrong characters, which is worse than an error.</p>
+</blockquote>
+</li>
+<li>
+<p>What breaks when a program that writes UTF-8 text runs with <code>LC_ALL=C</code> and no encoding given?</p>
+<blockquote>
+<p>Writing uses the locale's encoding — ASCII — so any non-ASCII character raises
+<code>UnicodeEncodeError</code>, or, on a machine with another locale, the file is written in an encoding
+readers do not expect.</p>
+</blockquote>
+</li>
+<li>
+<p>Why write the summary to a temporary file and <code>os.replace()</code> it?</p>
+<blockquote>
+<p>The direct <code>open(out, &quot;w&quot;)</code> truncates the previous summary before the new one is written, so a
+failure destroys it; the replace is atomic and keeps the last good file.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

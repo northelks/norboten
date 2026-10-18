@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code in a job — what it loads, what it may do, and what it costs</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Claude Code in a job — what it loads, what it may do, and what it costs</h1>
+  <div class="meta">claude-code, ai-services, ai-agents · 45 minutes · 2476 words</div>
+</header>
+<p>Claude Code is usually met as an interactive assistant in a terminal. This journal is about the other
+way it runs: as a program started by a script, a cron job or a CI workflow, with nobody watching. In
+that role it is a small operating environment of its own. It reads configuration from five levels,
+loads instructions from <code>CLAUDE.md</code> files, starts MCP servers, runs hooks, can hand work to
+subagents, and executes tool calls a model chooses — each of which is either allowed, refused or
+never offered. A job is safe and cheap when every one of those is decided on purpose.</p>
+<p>Everything below was run with Claude Code 2.1.270 in Norboten’s claude lab image, where the model is a
+local script and every other decision is Claude Code’s own — before that image moved to Ubuntu 26.04
+(<code>ubuntu-26.04-claude</code>), where the six claude labs built on the same behaviour pass again. The six labs of the claude
+track each take one of these mechanisms apart; this journal puts them together into one job.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Start a headless run and read what it loaded: model, permission mode, tools, agents, MCP servers.</li>
+<li>Say which settings level a key comes from, and why permission rules behave differently from other keys.</li>
+<li>Shape a job’s permissions: a strict mode, the fewest tools, narrow allow rules, and deny rules that
+still apply in an untrusted checkout.</li>
+<li>Use a hook as a guard, a subagent to keep work cheap and contained, and an MCP server for outside data.</li>
+<li>Bound a run’s cost with a trigger, a turn cap, a model choice and structured output.</li>
+<li>Find the evidence afterwards: the JSON result, the init event, transcripts and subagent logs.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>One run, from the outside</h3>
+<p><code>claude -p &quot;&lt;prompt&gt;&quot;</code> runs one session and exits. Three outputs matter:</p>
+<ul>
+<li><code>--output-format json</code> prints one result object: <code>result</code>, <code>num_turns</code>, <code>is_error</code> and <code>subtype</code>
+(<code>success</code>, <code>error_max_turns</code>, …), <code>permission_denials</code>, <code>total_cost_usd</code> and <code>modelUsage</code> per model.</li>
+<li><code>--output-format stream-json --verbose</code> prints events as they happen; the first, <code>system/init</code>,
+records what the session loaded.</li>
+<li>The session transcript, <code>~/.claude/projects/&lt;cwd with / as -&gt;/&lt;session&gt;.jsonl</code>, with every tool
+result, and a <code>subagents/</code> directory beside it when work was delegated. <code>--no-session-persistence</code>
+writes none.</li>
+</ul>
+<p>A run authenticates with, in order, a cloud provider, <code>ANTHROPIC_AUTH_TOKEN</code>, <code>ANTHROPIC_API_KEY</code> (in
+<code>-p</code>, always used when present), an <code>apiKeyHelper</code>, <code>CLAUDE_CODE_OAUTH_TOKEN</code> (a one-year subscription
+token from <code>claude setup-token</code>), then a login. <code>--bare</code> skips every kind of auto-discovery and reads
+only API keys, so a subscription-token job cannot use it — and therefore always loads the repository’s
+<code>.claude/</code>, which is part of what the job runs.</p>
+<h3>What a session loads</h3>
+<table>
+<thead>
+<tr>
+<th>what</th>
+<th>from</th>
+<th>loaded by <code>-p</code> in an untrusted checkout?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>settings</td>
+<td>managed → command line → <code>.claude/settings.local.json</code> → <code>.claude/settings.json</code> → <code>~/.claude/settings.json</code></td>
+<td>yes, <strong>except allow rules from <code>.claude/settings.json</code></strong></td>
+</tr>
+<tr>
+<td>memory</td>
+<td>managed, <code>~/.claude/CLAUDE.md</code>, every <code>CLAUDE.md</code> from the cwd upward, <code>CLAUDE.local.md</code>, <code>@</code> imports</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>hooks</td>
+<td>the <code>hooks</code> key of every settings level (merged)</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>subagents</td>
+<td><code>.claude/agents/</code>, <code>~/.claude/agents/</code>, <code>--agents</code>, managed, plugins</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>MCP servers</td>
+<td><code>.mcp.json</code>, <code>claude mcp add</code> scopes, <code>--mcp-config</code></td>
+<td>yes, unless disabled</td>
+</tr>
+<tr>
+<td>skills</td>
+<td><code>.claude/skills/</code>, <code>~/.claude/skills/</code>, built-in and plugin skills</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p>Scalar settings (<code>model</code>, <code>permissions.defaultMode</code>) come from the highest level that sets them.
+Lists (<code>permissions.allow</code>, <code>permissions.deny</code>, hooks) merge across levels. A deny anywhere wins over an
+allow anywhere.</p>
+<p>The trust exception is the one that surprises CI authors. A repository could ship a settings file that
+allows everything, so a headless run in a workspace nobody has trusted <strong>ignores allow rules from the
+shared project file</strong> and warns on stderr, while honouring its deny rules. Put a job’s allow rules on
+its command line.</p>
+<h3>What the model may do</h3>
+<p>For each tool call the model asks for, Claude Code decides before running anything:</p>
+<ol>
+<li>Is the tool in the session at all? <code>--tools</code> limits the built-in set; a deny rule naming a tool
+without a specifier (<code>WebFetch</code>) removes it. A missing tool fails as “No such tool available”.</li>
+<li>Deny rules, then ask rules, then allow rules, from every level.</li>
+<li>A <code>PreToolUse</code> hook, which can refuse with exit status 2 (stderr is the reason) or JSON.</li>
+<li>The permission mode, for anything no rule decided: <code>default</code> prompts, <code>acceptEdits</code> lets edits
+through, <code>dontAsk</code> refuses, <code>bypassPermissions</code> lets everything through. In <code>-p</code> a prompt cannot be
+answered, so <code>dontAsk</code> is the honest mode for a job.</li>
+</ol>
+<p>Rules for Bash match command text and are not a security boundary: <code>Bash(rm *)</code> does not match
+<code>find -delete</code> or <code>/bin/rm</code>. Read-only commands run without asking; a <code>Read</code> deny stops <code>cat .env</code> but
+not <code>grep -r TOKEN .</code>. When a job needs no shell, the only reliable answer is not to offer one.</p>
+<h3>Guards, helpers and outside data</h3>
+<p><strong>Hooks</strong> are commands Claude Code runs on events, with the event as JSON on stdin. Matchers are exact,
+case-sensitive tool names (<code>Edit|Write</code>) or regular expressions. A <code>PreToolUse</code> hook blocks only with
+exit 2 or a JSON <code>deny</code>; exit 1 — and a script that cannot be executed — are non-blocking errors.</p>
+<p><strong>Subagents</strong> are Markdown files with <code>name</code>, <code>description</code>, and optionally <code>tools</code> and <code>model</code>. Their
+work happens in their own context, which keeps the main conversation short; a narrow subagent on Haiku
+is one of the documented cost levers. Without a <code>tools</code> line a subagent inherits every tool.</p>
+<p><strong>MCP servers</strong> bring outside tools, named <code>mcp__&lt;server&gt;__&lt;tool&gt;</code>. A server has to be enabled,
+startable, allowed by that name, and given its credentials — <code>${VAR}</code> in <code>.mcp.json</code> expands from the
+environment, and an unset variable is passed literally.</p>
+<h3>What a run costs</h3>
+<p>Four things multiply:</p>
+<ul>
+<li><strong>how often it runs</strong> — the trigger (<code>issues: types: [opened]</code>, not every issue activity);</li>
+<li><strong>how many turns</strong> — no limit by default; <code>--max-turns</code> and <code>--max-budget-usd</code> set one;</li>
+<li><strong>what each turn costs</strong> — the model, the system prompt and tool definitions sent every turn, the
+context that grows with each tool result, and thinking tokens;</li>
+<li><strong>how much output</strong> — structured output (<code>--json-schema</code>) instead of prose.</li>
+</ul>
+<p>Norboten’s own jobs, measured on real runs (docs/claude-code-in-norboten.md): a triage label on Haiku
+with no tools and thinking off costs $0.0028–0.0038; release notes for 40 commits dropped from 111 s and
+$0.070 to 9 s and $0.021 when thinking was turned off for runs without tools; the Sonnet lab-author job
+took 15 turns and $0.33, three quarters of its 163,802 input tokens read from cache. The cost figures are
+Claude Code’s list-price estimate; on a subscription token they count against the plan.</p>
+<h2>A failure, walked through</h2>
+<p>The job: write release notes for a repository into <code>NOTES.md</code>. It must not push; a person does. Start
+with an empty repository and ask the session what it loaded:</p>
+<pre><code class="language-console">$ claude -p hi --output-format stream-json --verbose 2&gt;/dev/null | head -1 \
+    | jq -c '{model, permissionMode, agents, tools: (.tools|length)}'
+{&quot;model&quot;:&quot;claude-opus-5[1m]&quot;,&quot;permissionMode&quot;:&quot;default&quot;,&quot;agents&quot;:[&quot;claude&quot;,&quot;Explore&quot;,&quot;general-purpose&quot;,&quot;Plan&quot;,&quot;statusline-setup&quot;],&quot;tools&quot;:21}
+</code></pre>
+<p>No model was named, so the account default — Opus — with 21 tools and the default mode. The project
+adds what a team would commit: a <code>CLAUDE.md</code> with the rule, a Haiku subagent that only reads, a
+<code>PreToolUse</code> hook that refuses pushes, and a deny rule for <code>.env</code>:</p>
+<pre><code class="language-markdown"># .claude/agents/summariser.md
+---
+name: summariser
+description: Summarises commit messages into user-facing release-note bullets. Use for release notes.
+tools: Read, Grep, Glob
+model: haiku
+---
+You turn commit messages into one short, user-facing bullet each. You never edit files.
+</code></pre>
+<pre><code class="language-sh">#!/bin/sh
+# .claude/hooks/no-push.sh — PreToolUse, matcher Bash
+if jq -r '.tool_input.command // &quot;&quot;' | grep -Eq 'git([[:space:]].*)?[[:space:]]push'; then
+    echo &quot;Blocked: a person pushes release notes.&quot; &gt;&amp;2
+    exit 2
+fi
+</code></pre>
+<pre><code class="language-console">$ claude -p hi --output-format stream-json --verbose 2&gt;/dev/null | head -1 | jq -c '{agents}'
+{&quot;agents&quot;:[&quot;claude&quot;,&quot;Explore&quot;,&quot;general-purpose&quot;,&quot;Plan&quot;,&quot;statusline-setup&quot;,&quot;summariser&quot;]}
+</code></pre>
+<p>The scripted model plays the job the way a model plausibly would: read the log, ask the summariser,
+write <code>NOTES.md</code>, then commit and push. First with no flags at all:</p>
+<pre><code class="language-console">$ claude -p &quot;Write the release notes.&quot; --output-format json 2&gt;/dev/null \
+    | jq -c '{num_turns, denials: [.permission_denials[] | .tool_name], models: (.modelUsage|keys)}'
+{&quot;num_turns&quot;:5,&quot;denials&quot;:[&quot;Write&quot;,&quot;Bash&quot;],&quot;models&quot;:[&quot;claude-haiku-4-5-20251001&quot;,&quot;claude-opus-5[1m]&quot;]}
+$ ls
+CLAUDE.md  README.md
+</code></pre>
+<p>Nothing was harmed — and nothing was done. In <code>default</code> mode the Write would have needed a prompt, and a
+headless run cannot answer one, so it was refused; the push was refused too. The subagent did
+run on Haiku; the main agent ran on Opus. A job that silently produces nothing is the first failure mode.</p>
+<p>Now the job’s own command line: a strict mode, an explicit model, allow rules for exactly the calls the
+task needs, a cap:</p>
+<pre><code class="language-console">$ claude -p &quot;Write the release notes for the last five commits into NOTES.md.&quot; \
+    --permission-mode dontAsk --model sonnet \
+    --allowedTools &quot;Bash(git *),Write(./NOTES.md),Edit(./NOTES.md),Agent&quot; \
+    --max-turns 12 --output-format json 2&gt;/dev/null \
+    | jq -c '{num_turns, denials: [.permission_denials[] | .tool_name], models: (.modelUsage|keys)}'
+{&quot;num_turns&quot;:5,&quot;denials&quot;:[&quot;Bash&quot;],&quot;models&quot;:[&quot;claude-haiku-4-5-20251001&quot;,&quot;claude-sonnet-5&quot;]}
+</code></pre>
+<p><code>Bash(git *)</code> is broader than the task needs — it allows <code>git push</code> — and it is what a hurried job
+author writes. The hook is what stopped it. The transcript shows each tool result in order:</p>
+<pre><code class="language-console">$ jq -r 'select(.type==&quot;user&quot;) | .message.content[]? | select(.type==&quot;tool_result&quot;)
+         | .content | if type==&quot;array&quot; then .[0].text else . end' &quot;$s&quot; | cut -c1-90
+a8008cb init
+Async agent launched successfully. (This tool result is internal metadata — never quote or paste
+File created successfully at: /home/learner/notes/NOTES.md (file state is current in your context
+PreToolUse:Bash hook error: [$CLAUDE_PROJECT_DIR/.claude/hooks/no-push.sh]: Blocked: a person pushes
+$ cat &quot;${s%.jsonl}&quot;/subagents/*.meta.json | jq -c '{agentType}'
+{&quot;agentType&quot;:&quot;summariser&quot;}
+$ git log --oneline -1 origin/main
+a8008cb init
+</code></pre>
+<p>The log was read, the summariser ran, the notes were written, and the whole compound command
+<code>git add … &amp;&amp; git commit … &amp;&amp; git push</code> was refused before any part of it ran — so nothing was committed
+either. Two layers did two jobs: the allow rules defined the task, the hook enforced the one rule that
+must hold even when the rules are written loosely. With <code>Bash(git log *)</code> instead of <code>Bash(git *)</code> the
+push is refused by the permission check itself, and the hook becomes the second line rather than the
+only one.</p>
+<p>What is left is cost and evidence. For CI the same command gains <code>--no-session-persistence</code> (or keeps
+transcripts as an artifact on purpose), a trigger that runs it once per release, and a workflow
+<code>timeout-minutes</code>. If the notes are consumed by a script rather than read by a person, <code>--json-schema</code>
+turns them into fields.</p>
+<h2>Common wrong turns</h2>
+<p><strong>Reading the result and not the denials.</strong> A run that was refused everything still ends with
+<code>is_error: false</code> and a cheerful <code>result</code>. <code>permission_denials</code> and the transcript’s tool results say
+what happened.</p>
+<p><strong><code>--dangerously-skip-permissions</code> because “it kept asking”.</strong> It was asking because the job had not said
+what it needs. Say it with allow rules and <code>dontAsk</code>.</p>
+<p><strong>Committing allow rules to <code>.claude/settings.json</code> for a CI job.</strong> An untrusted checkout ignores them.
+Deny rules and hooks there are fine; allows go on the command line.</p>
+<p><strong><code>Bash(rm *)</code> as a safety measure.</strong> It matches text. If the job needs no shell, <code>--tools</code> without Bash.</p>
+<p><strong>Hooks that exit 1.</strong> Every shell script’s “error” is a hook’s “carry on”. Exit 2, reason on stderr.</p>
+<p><strong>A subagent with no <code>tools</code> line.</strong> It inherits everything, including what the main session was given.</p>
+<p><strong>Forgetting what is sent every turn.</strong> <code>CLAUDE.md</code>, tool definitions and the default system prompt ride
+along on each request. Short <code>CLAUDE.md</code>, few tools, and <code>--system-prompt</code> for jobs that need none of
+Claude Code’s own instructions.</p>
+<p><strong>No turn cap.</strong> A model that keeps calling tools keeps billing. In the lab image an endless scripted
+model drove 1,186 turns in 25 seconds.</p>
+<p><strong><code>--bare</code> with a subscription token.</strong> Not logged in.</p>
+<h2>Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a headless job does things nobody allowed</td>
+<td><code>bypassPermissions</code>, or allow rules broader than the task</td>
+<td>the job’s flags; <code>permission_denials</code> in the JSON result</td>
+</tr>
+<tr>
+<td>allow rules in the project are ignored in CI</td>
+<td>the checkout is untrusted: project allow rules need trust</td>
+<td>the run’s stderr; <code>--allowedTools</code> on the command line</td>
+</tr>
+<tr>
+<td>a hook never runs</td>
+<td>the matcher does not name the tool exactly, or the script is not executable</td>
+<td><code>--debug</code>; <code>ls -l .claude/hooks</code>; the matcher’s case</td>
+</tr>
+<tr>
+<td>a PreToolUse hook sees the call and does not stop it</td>
+<td>it exits 1 instead of 2, or writes its reason to stdout</td>
+<td>the hook’s exit status and stderr</td>
+</tr>
+<tr>
+<td>a subagent is never used</td>
+<td>its file is misnamed, its tools misspelled, or it is not where Claude Code looks</td>
+<td>the session transcript; <code>.claude/agents/</code></td>
+</tr>
+<tr>
+<td>a job’s bill keeps growing</td>
+<td>no <code>--max-turns</code>, no <code>--max-budget-usd</code>, a large model for a small task</td>
+<td>the result’s <code>num_turns</code> and <code>total_cost_usd</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash"># what a session loaded
+claude -p hi --output-format stream-json --verbose 2&gt;/dev/null | head -1 \
+  | jq '{model, permissionMode, apiKeySource, agents, mcp_servers, tools, claude_code_version}'
+
+# a job-shaped run
+claude -p &quot;…&quot; --permission-mode dontAsk --model sonnet \
+  --tools &quot;Read,Edit,Glob,Grep&quot; --allowedTools &quot;Edit(./docs/**)&quot; \
+  --max-turns 10 --max-budget-usd 1.00 --no-session-persistence --output-format json
+
+# a classification: no tools, structured answer, no thinking
+MAX_THINKING_TOKENS=0 claude -p &quot;…&quot; --model haiku --tools &quot;&quot; --max-turns 3 \
+  --json-schema '{&quot;type&quot;:&quot;object&quot;,&quot;properties&quot;:{&quot;label&quot;:{&quot;type&quot;:&quot;string&quot;}},&quot;required&quot;:[&quot;label&quot;]}' \
+  --output-format json | jq -r '.structured_output.label'
+
+# afterwards
+jq -c '{subtype, num_turns, is_error, permission_denials, total_cost_usd, models: (.modelUsage|keys)}' run.json
+s=$(ls -t ~/.claude/projects/&lt;project&gt;/*.jsonl | head -1)
+jq -r 'select(.type==&quot;user&quot;) | .message.content[]? | select(.type==&quot;tool_result&quot;) | .content' &quot;$s&quot;
+ls &quot;${s%.jsonl}&quot;/subagents/
+
+# levels, highest first: managed, command line, .claude/settings.local.json, .claude/settings.json, ~/.claude/settings.json
+cat /etc/claude-code/managed-settings.json     # Linux; must be readable (0644)
+
+# hooks: JSON on stdin; exit 2 blocks PreToolUse
+jq -r '.tool_input.command // .tool_input.file_path // &quot;&quot;'
+echo &quot;reason&quot; &gt;&amp;2; exit 2
+
+# subagent: .claude/agents/&lt;name&gt;.md with name, description, tools, model
+# MCP: .mcp.json; tools are mcp__&lt;server&gt;__&lt;tool&gt;; &quot;${VAR}&quot; from the environment
+claude -p hi --output-format stream-json --verbose | head -1 | jq '.mcp_servers'
+</code></pre>
+<h2>Exercises</h2>
+<ol>
+<li>Run <code>claude -p</code> in a fresh directory with a deny rule and a scripted request for the denied tool;
+read <code>permission_denials</code>.</li>
+<li>Write a PreToolUse hook that blocks <code>git push</code>, and test it with exit status 1 and with 2.</li>
+<li>Put the same setting at three levels (user, shared project, local project) and find which one wins
+with a run that prints it.</li>
+<li>Define a subagent with a <code>tools:</code> list and a <code>model:</code>, invoke it, and confirm from the transcript
+which model and tools it ran with.</li>
+<li>Run the same job with <code>--max-turns 2</code> and without, against a scripted model that never stops.</li>
+</ol>
+<h2>Sources</h2>
+<ul>
+<li>Settings and their precedence: https://code.claude.com/docs/en/settings</li>
+<li>Permissions: https://code.claude.com/docs/en/permissions</li>
+<li>Hooks: https://code.claude.com/docs/en/hooks</li>
+<li>Subagents: https://code.claude.com/docs/en/sub-agents</li>
+<li>Headless runs and the CLI: https://code.claude.com/docs/en/headless, https://code.claude.com/docs/en/cli-reference</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>A <code>claude -p</code> run ends with <code>is_error: false</code> and did none of its work. Where do you look first, and
+what is the likeliest cause?</p>
+<blockquote>
+<p>At <code>permission_denials</code> in the JSON result (and the tool results in the transcript). The likeliest
+cause is a mode in which the calls would have prompted — <code>default</code> in <code>-p</code> — or allow rules that were
+never honoured, such as ones in an untrusted checkout’s <code>.claude/settings.json</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Which one field of the init event tells you which authentication a run used, and why does it matter
+for a CI job on a subscription?</p>
+<blockquote>
+<p><code>apiKeySource</code>. A stray <code>ANTHROPIC_API_KEY</code> is used in <code>-p</code> whenever present, so a job meant to run on
+a subscription token may be billing an API key instead.</p>
+</blockquote>
+</li>
+<li>
+<p>List the settings levels in precedence order and explain why a deny rule in the lowest level still
+blocks a call allowed on the command line.</p>
+<blockquote>
+<p>Managed, command line, local project, shared project, user. Permission rules are lists that merge
+across levels, and deny is evaluated before allow, so a deny at any level wins.</p>
+</blockquote>
+</li>
+<li>
+<p>Name the four steps a tool call passes before it runs.</p>
+<blockquote>
+<p>Whether the tool exists in the session (<code>--tools</code>, bare deny rules); deny, ask and allow rules;
+<code>PreToolUse</code> hooks; the permission mode for anything left undecided.</p>
+</blockquote>
+</li>
+<li>
+<p>In the walkthrough, <code>Bash(git *)</code> was allowed and the push was still refused. By what, and what would
+have refused it without that?</p>
+<blockquote>
+<p>The <code>PreToolUse</code> hook, exiting 2. With a narrower allow such as <code>Bash(git log *)</code>, <code>dontAsk</code> would have
+refused the compound command because no rule allowed it.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is a subagent a cost lever as well as an organisation tool?</p>
+<blockquote>
+<p>Its reading and tool results stay in its own context; only its result returns, so the main
+conversation — resent every turn — stays short. It can also be pinned to a cheaper model.</p>
+</blockquote>
+</li>
+<li>
+<p>Give four independent ways to bound a job’s cost.</p>
+<blockquote>
+<p>A narrow trigger, a turn cap (<code>--max-turns</code>) or budget (<code>--max-budget-usd</code>), a smaller model with
+fewer tools and less context (and thinking off where nothing needs thinking), structured output
+instead of prose. A workflow timeout is the backstop.</p>
+</blockquote>
+</li>
+<li>
+<p>Why can a CI job authenticated with <code>CLAUDE_CODE_OAUTH_TOKEN</code> not use <code>--bare</code>, and what follows for
+the repository it runs in?</p>
+<blockquote>
+<p>Bare mode never reads OAuth tokens, only API keys. So the job loads the repository’s <code>.claude/</code>
+(hooks, subagents, MCP servers, <code>CLAUDE.md</code>) — which runs as part of the job and must be reviewed like
+code.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

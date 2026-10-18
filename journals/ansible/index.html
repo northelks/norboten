@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A green run is not a correct machine · Norboten</title>
+<meta name="description" content="Ansible&#39;s whole promise is a sentence: describe the state you want, and running the playbook again changes nothing. Every useful property follows from it — you ">
+<link rel="canonical" href="https://norboten.org/journals/ansible/"><meta property="og:title" content="A green run is not a correct machine · Norboten">
+<meta property="og:description" content="Ansible&#39;s whole promise is a sentence: describe the state you want, and running the playbook again changes nothing. Every useful property follows from it — you ">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/ansible/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A green run is not a correct machine · Norboten">
+<meta name="twitter:description" content="Ansible&#39;s whole promise is a sentence: describe the state you want, and running the playbook again changes nothing. Every useful property follows from it — you ">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "A green run is not a correct machine",
+  "description": "Ansible\u0027s whole promise is a sentence: describe the state you want, and running the playbook again changes nothing. Every useful property follows from it \u2014 you ",
+  "url": "https://norboten.org/journals/ansible/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 3091,
+  "timeRequired": "PT40M",
+  "about": ["Ansible"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal</div>
+    <h1>A green run is not a correct machine</h1>
+    <p class="muted">
+      40 minutes' reading · 3091 words ·<span class="tag">Ansible</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 112 words</title><rect x="0.0" y="0" width="22.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 1418 words</title><rect x="25.4" y="0" width="284.0" height="30" rx="4" fill="#1d2a23"/><text x="33.4" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 695 words</title><rect x="312.4" y="0" width="139.2" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 312 words</title><rect x="454.6" y="0" width="62.5" height="30" rx="4" fill="#1d2a23"/></a><a href="#symptoms-and-causes"><title>Symptoms and causes — 199 words</title><rect x="520.1" y="0" width="39.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 239 words</title><rect x="562.9" y="0" width="47.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#exercises"><title>Exercises — 117 words</title><rect x="613.8" y="0" width="23.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#sources"><title>Sources — 34 words</title><rect x="640.2" y="0" width="6.8" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 549 words</title><rect x="650.1" y="0" width="109.9" height="30" rx="4" fill="#1d2a23"/><text x="658.1" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#symptoms-and-causes">Symptoms and causes</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#exercises">Exercises</a></li>
+          <li><a href="#sources">Sources</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>Ansible's whole promise is a sentence: <em>describe the state you want, and running the playbook again
+changes nothing</em>. Every useful property follows from it — you can re-run after a failure, run against
+a fleet where half the machines are already right, and read <code>changed=0</code> as proof that nothing drifted.
+Break that promise in one task and the others do not save you: the recap turns into noise, check mode
+lies, and a restart that should have happened quietly never does.</p>
+<p>This journal is built on a small role with four mistakes that appear in real playbooks every day,
+each run against a lab machine with ansible-core 2.21 and recorded. None of them produces a
+red line on a normal run. That is the point. A playbook that fails loudly is easy; the ones worth
+studying are the ones that pass.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Say what idempotence means for a task, and read a play recap to tell whether a playbook has it.</li>
+<li>Recognise the three module choices that break idempotence — <code>shell</code>/<code>command</code> without guards,
+<code>lineinfile</code> used as a file editor, restarts written as tasks — and replace each with the module that
+owns the state.</li>
+<li>Explain exactly when a handler runs, what happens to a notification when the play fails first, and
+why a restart can be lost for good.</li>
+<li>Use <code>--check</code> and <code>--diff</code> and know which tasks check mode silently skips.</li>
+<li>Predict which value a variable takes when it is set in role defaults, <code>group_vars</code>, play <code>vars</code>
+and <code>-e</code>.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="idempotence-is-a-property-of-each-task">Idempotence is a property of each task</h3>
+<p>A task is idempotent when running it against a machine already in the desired state reports <code>ok</code> and
+touches nothing. The play recap is the summary of that promise:</p>
+<pre><code>PLAY RECAP *********************************************************************
+web01                      : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+</code></pre>
+<p>Run a correct playbook twice: the first run may say <code>changed=3</code>, and the second must say <code>changed=0</code>.
+A second run that still reports changes means one of two things — something on the machine really is
+fighting the playbook, or the playbook is lying about state — and it is nearly always the second.
+<strong>Run twice</strong> is the cheapest test there is, and the one that finds everything in this journal.</p>
+<p>Modules achieve idempotence by comparing first and acting second. <code>ansible.builtin.file</code> checks mode and
+ownership before changing them; <code>template</code> renders the file, compares it with the one on the host, and
+writes only when they differ; <code>systemd_service</code> asks systemd whether the unit is already running.
+The modules that cannot compare are the ones that run arbitrary commands.</p>
+<h3 id="shell-and-command-report-changed-because-they-cannot-know"><code>shell</code> and <code>command</code> report <code>changed</code> because they cannot know</h3>
+<pre class="hl"><code class="language-yaml"><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Log level</span>
+<span class="hl-w">  </span><span class="hl-nt">ansible.builtin.shell</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">echo "LOG_LEVEL={{ app_log_level }}" &gt;&gt; /etc/app/app.env</span>
+</code></pre>
+
+<p>Ansible has no idea what a shell command does, so it assumes it did something: the task reports
+<code>changed</code> on every run, and here it is also <em>true</em> — every run appends another line. After a few runs
+the file on the lab machine read:</p>
+<pre><code>LOG_LEVEL=info
+PORT=8081
+LOG_LEVEL=info
+LOG_LEVEL=info
+LOG_LEVEL=info
+PORT=8082
+</code></pre>
+<p>When a command is genuinely needed, it has to be taught about state:</p>
+<ul>
+<li><code>creates:</code> / <code>removes:</code> — skip the task if a path exists (or does not);</li>
+<li><code>changed_when:</code> — decide from the output whether anything changed (<code>changed_when: false</code> for a
+read-only command, a condition on <code>result.stdout</code> otherwise);</li>
+<li><code>register:</code> plus <code>when:</code> — run it only if an earlier check said it is needed.</li>
+</ul>
+<p>But the better answer is usually a module that owns the state, and for a file that means the next
+section.</p>
+<h3 id="lineinfile-is-for-one-line-in-a-file-you-do-not-own"><code>lineinfile</code> is for one line in a file you do not own</h3>
+<p><code>lineinfile</code> makes sure a line is present. Without <code>regexp</code> it matches the <em>whole line</em>, so changing a
+value adds a new line instead of replacing the old one — which is how the file above grew a second
+<code>PORT=</code>. With <code>regexp</code> it replaces the matching line, and the natural fix looks like this:</p>
+<pre class="hl"><code class="language-yaml"><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Port</span>
+<span class="hl-w">  </span><span class="hl-nt">ansible.builtin.lineinfile</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">path</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/etc/app/app.env</span>
+<span class="hl-w">    </span><span class="hl-nt">regexp</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"^PORT="</span>
+<span class="hl-w">    </span><span class="hl-nt">line</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"PORT={{</span><span class="hl-nv"> </span><span class="hl-s">app_port</span><span class="hl-nv"> </span><span class="hl-s">}}"</span>
+</code></pre>
+
+<p>On the lab machine, against the file already full of duplicates, that fix reported <code>ok</code> for the
+log level and edited one <code>PORT=</code> line — <strong>only the last match is replaced</strong>, so the duplicates stayed,
+and the file ended with two <code>PORT=8081</code> lines. <code>lineinfile</code> is right for adding one setting to a file
+some other package owns (<code>/etc/ssh/sshd_config</code>, say). For a file your role owns completely, own it
+completely:</p>
+<pre class="hl"><code class="language-yaml"><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Environment file</span>
+<span class="hl-w">  </span><span class="hl-nt">ansible.builtin.template</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">src</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">app.env.j2</span>
+<span class="hl-w">    </span><span class="hl-nt">dest</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/etc/app/app.env</span>
+<span class="hl-w">    </span><span class="hl-nt">mode</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"0644"</span>
+<span class="hl-w">  </span><span class="hl-nt">notify</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Restart app</span>
+</code></pre>
+
+<pre class="hl"><code class="language-jinja"><span class="hl-x"># </span><span class="hl-cp">{{</span> <span class="hl-nv">ansible_managed</span> <span class="hl-cp">}}</span>
+<span class="hl-x">LOG_LEVEL=</span><span class="hl-cp">{{</span> <span class="hl-nv">app_log_level</span> <span class="hl-cp">}}</span>
+<span class="hl-x">PORT=</span><span class="hl-cp">{{</span> <span class="hl-nv">app_port</span> <span class="hl-cp">}}</span>
+</code></pre>
+
+<p>A template states the whole file, so duplicates, stale settings and hand edits all disappear on the
+next run — and <code>--diff</code> shows exactly what went:</p>
+<pre class="hl"><code class="language-diff"><span class="hl-gd">--- before: /etc/app/app.env</span>
+<span class="hl-gi">+++ after: …/app.env.j2</span>
+<span class="hl-gu">@@ -1,6 +1,3 @@</span>
+<span class="hl-gi">+# Ansible managed</span>
+<span class="hl-w"> </span>LOG_LEVEL=info
+<span class="hl-w"> </span>PORT=8081
+<span class="hl-gd">-LOG_LEVEL=info</span>
+<span class="hl-gd">-LOG_LEVEL=info</span>
+<span class="hl-gd">-LOG_LEVEL=info</span>
+<span class="hl-gd">-PORT=8081</span>
+</code></pre>
+
+<p><code>{{ ansible_managed }}</code> renders as <code>Ansible managed</code> by default: a note to the next person that hand
+edits will be overwritten.</p>
+<h3 id="handlers-a-notification-is-a-promise-kept-at-the-end">Handlers: a notification is a promise kept at the end</h3>
+<p>A task notifies a handler; the handler runs <strong>once, at the end of the play</strong>, however many tasks
+notified it, and only if at least one of them reported <code>changed</code>:</p>
+<pre><code>TASK [app : Environment file] ***
+changed: [web01]
+TASK [app : Unit file] ***
+ok: [web01]
+TASK [app : App is enabled and running] ***
+changed: [web01]
+RUNNING HANDLER [app : Restart app] ***
+changed: [web01]
+</code></pre>
+<p>That is why a restart belongs in a handler rather than in the task list. Written as a task —
+<code>ansible.builtin.command: systemctl restart app</code> — it runs on every play, reports <code>changed</code> every time,
+and restarts a healthy service for no reason. As a handler it runs exactly when configuration changed.</p>
+<p>Three details decide whether handlers work at all:</p>
+<p><strong>The name must match exactly.</strong> Handler lookup is case-sensitive. A role whose handler is named
+<code>Restart app</code> and whose task says <code>notify: restart app</code> fails — but only when the notification fires:</p>
+<pre><code>TASK [app : Unit file] ***
+[ERROR]: The requested handler 'restart app' was not found in either the main handlers list nor in the listening handlers list
+</code></pre>
+<p>On the lab machine the task had already written the unit file when the play died. The second run found
+the file unchanged, so nothing notified, so nothing failed: the playbook went green with the bug still
+in it. A broken handler name only shows itself on runs that change something. (<code>listen:</code> on a handler
+gives it a topic name several tasks can notify, which is sturdier than matching titles.)</p>
+<p><strong>A failure before the end means the handlers do not run.</strong> The notification is held in memory until
+the handlers section, and a failed task ends the play for that host before it gets there. On the lab
+machine, a template changed the log level to <code>debug</code>, a later task failed, and the service was not
+restarted — its <code>ActiveEnterTimestamp</code> did not move.</p>
+<p><strong>That restart is not retried.</strong> The notification existed only in that run. On the next run the
+template finds the file already says <code>debug</code>, reports <code>ok</code>, notifies nothing, and the play finishes
+with <code>changed=0</code> — while the service is still running with the old configuration:</p>
+<pre><code>TASK [Environment file] ***
+ok: [web01]
+PLAY RECAP ***
+web01                      : ok=3    changed=0    unreachable=0    failed=0    …
+after both runs, service last started: Sun 2026-09-13 08:10:03 UTC     ← before the change
+LOG_LEVEL=debug
+</code></pre>
+<p>A perfectly clean recap over a machine that is not in the state it describes. The defences:
+<code>--force-handlers</code> (run notified handlers even when the play fails — verified: the handler ran and the
+recap still said <code>failed=1</code>), <code>meta: flush_handlers</code> at the points where a restart must happen before
+the next step, and designing validation into the change itself (<code>validate:</code> on <code>template</code>, a health
+check after the restart) so that a failure stops the play <em>before</em> the file is replaced.</p>
+<h3 id="check-mode-and-what-it-cannot-see">Check mode, and what it cannot see</h3>
+<p><code>ansible-playbook site.yml --check --diff</code> runs the play without changing the host: modules report what
+they <em>would</em> do, and <code>--diff</code> shows the file differences. It is the right thing to run before any change
+to production — with one blind spot that matters here. Modules that cannot predict their effect do not
+run in check mode at all:</p>
+<pre><code>TASK [app : Log level] ***
+skipping: [web01]
+TASK [app : Restart the app] ***
+skipping: [web01]
+</code></pre>
+<p>The appending <code>shell</code> task and the restart-as-a-task — the two worst tasks in the role — are exactly
+the two check mode skipped. A clean <code>--check</code> says nothing about <code>shell</code> and <code>command</code>. If a command
+is safe to run in check mode (a read-only query), mark it <code>check_mode: false</code>, and give it
+<code>changed_when: false</code> so it does not pollute the recap.</p>
+<h3 id="variable-precedence-the-parts-that-bite">Variable precedence, the parts that bite</h3>
+<p>Ansible has more than twenty precedence levels; four cover nearly every surprise. Verified on the lab
+machine, lowest to highest:</p>
+<table>
+<thead>
+<tr>
+<th>where</th>
+<th>value set</th>
+<th>what the play saw</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>roles/app/defaults/main.yml</code></td>
+<td><code>app_port: 8080</code></td>
+<td>overridden</td>
+</tr>
+<tr>
+<td><code>group_vars/web.yml</code></td>
+<td><code>app_port: 8081</code></td>
+<td><code>PORT=8081</code> in the file</td>
+</tr>
+<tr>
+<td>play <code>vars:</code></td>
+<td><code>app_port: 9000</code></td>
+<td><code>&quot;app_port&quot;: 9000</code></td>
+</tr>
+<tr>
+<td><code>-e app_port=9999</code></td>
+<td></td>
+<td><code>&quot;app_port&quot;: &quot;9999&quot;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Role <strong>defaults</strong> are the lowest thing there is — that is their job: a value the user of the role is
+expected to override. Inventory <code>group_vars</code> beat them. Play <code>vars:</code> beat inventory. Extra vars (<code>-e</code>)
+beat everything, and note the quotes in that last row: a <code>key=value</code> on the command line is a
+<strong>string</strong>, so <code>-e app_port=9999</code> gives <code>&quot;9999&quot;</code>, and a template doing arithmetic or a comparison on it
+may behave differently than with the integer from a file. <code>-e '{&quot;app_port&quot;: 9999}'</code> passes JSON and
+keeps the type.</p>
+<p>Role <code>vars/main.yml</code> (as opposed to <code>defaults/</code>) sits near the top of the list, above inventory, which is
+why a value that &quot;will not change no matter what I put in group_vars&quot; is usually hiding there.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>The role configures a small service: a directory, an environment file, a unit, a restart. Someone
+reports that changing the port &quot;sometimes does not take&quot;, and that the playbook has &quot;always been
+green&quot;.</p>
+<p><strong>1. Run it, twice, and read only the recaps.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml
+<span class="hl-go">TASK [app : Unit file] ***</span>
+<span class="hl-go">[ERROR]: The requested handler 'restart app' was not found in either the main handlers list nor in the listening handlers list</span>
+<span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-2
+<span class="hl-go">web01                      : ok=6    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0</span>
+</code></pre>
+
+<p>The first run fails; the second, immediately after, is green with <code>changed=2</code>. Two facts: the handler
+name is wrong but only fails when something changes, and a second run on an unchanged machine still
+changes two things — the playbook is not idempotent.</p>
+<p><strong>2. Find which tasks change on a run that should change nothing.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-B1<span class="hl-w"> </span>changed:
+<span class="hl-go">TASK [app : Log level] ***</span>
+<span class="hl-go">changed: [web01]</span>
+<span class="hl-go">TASK [app : Restart the app] ***</span>
+<span class="hl-go">changed: [web01]</span>
+</code></pre>
+
+<p>A <code>shell</code> append and a <code>command</code> restart. Look at what the first one has been doing:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ansible<span class="hl-w"> </span>web<span class="hl-w"> </span>-b<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-nb">command</span><span class="hl-w"> </span>-a<span class="hl-w"> </span><span class="hl-s2">"cat /etc/app/app.env"</span>
+<span class="hl-go">web01 | CHANGED | rc=0 &gt;&gt;</span>
+<span class="hl-go">LOG_LEVEL=info</span>
+<span class="hl-go">PORT=8081</span>
+<span class="hl-go">LOG_LEVEL=info</span>
+<span class="hl-go">LOG_LEVEL=info</span>
+</code></pre>
+
+<p>(<code>CHANGED</code> there is the ad-hoc <code>command</code> module saying what it always says; it changed nothing.)</p>
+<p><strong>3. Ask check mode, and notice what it does not say.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span>--check<span class="hl-w"> </span>--diff<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>grep<span class="hl-w"> </span>-A1<span class="hl-w"> </span><span class="hl-s1">'Log level\|Restart the app'</span>
+<span class="hl-go">TASK [app : Log level] ***</span>
+<span class="hl-go">skipping: [web01]</span>
+<span class="hl-go">TASK [app : Restart the app] ***</span>
+<span class="hl-go">skipping: [web01]</span>
+</code></pre>
+
+<p>Check mode skips both culprits, so it cannot be the tool that finds them. The recap of two real runs
+already has.</p>
+<p><strong>4. Reproduce &quot;the port sometimes does not take&quot;.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-nv">app_port</span><span class="hl-o">=</span><span class="hl-m">8082</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">web01                      : ok=6    changed=3    …</span>
+<span class="hl-gp">$ </span>ansible<span class="hl-w"> </span>web<span class="hl-w"> </span>-b<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-nb">command</span><span class="hl-w"> </span>-a<span class="hl-w"> </span><span class="hl-s2">"cat /etc/app/app.env"</span>
+<span class="hl-go">LOG_LEVEL=info</span>
+<span class="hl-go">PORT=8081</span>
+<span class="hl-go">LOG_LEVEL=info</span>
+<span class="hl-go">LOG_LEVEL=info</span>
+<span class="hl-go">LOG_LEVEL=info</span>
+<span class="hl-go">PORT=8082</span>
+</code></pre>
+
+<p><code>lineinfile</code> without <code>regexp</code> appended a second <code>PORT=</code>. Which one the service uses depends on how it
+reads the file — for systemd's <code>EnvironmentFile=</code> the last assignment wins, for another program perhaps
+the first. &quot;Sometimes does not take&quot; is a precise description.</p>
+<p><strong>5. Try the obvious fix, and watch it be half right.</strong> Adding <code>regexp: &quot;^PORT=&quot;</code> and
+<code>regexp: &quot;^LOG_LEVEL=&quot;</code> and running with the original port:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span>--diff
+<span class="hl-go">TASK [app : Log level] ***</span>
+<span class="hl-go">ok: [web01]</span>
+<span class="hl-go">TASK [app : Port] ***</span>
+<span class="hl-go">@@ -3,4 +3,4 @@</span>
+<span class="hl-go"> LOG_LEVEL=info</span>
+<span class="hl-go"> LOG_LEVEL=info</span>
+<span class="hl-go"> LOG_LEVEL=info</span>
+<span class="hl-go">-PORT=8082</span>
+<span class="hl-go">+PORT=8081</span>
+<span class="hl-go">changed: [web01]</span>
+<span class="hl-gp">$ </span>ansible<span class="hl-w"> </span>web<span class="hl-w"> </span>-b<span class="hl-w"> </span>-m<span class="hl-w"> </span><span class="hl-nb">command</span><span class="hl-w"> </span>-a<span class="hl-w"> </span><span class="hl-s2">"cat /etc/app/app.env"</span>
+<span class="hl-go">LOG_LEVEL=info</span>
+<span class="hl-go">PORT=8081</span>
+<span class="hl-go">LOG_LEVEL=info</span>
+<span class="hl-go">LOG_LEVEL=info</span>
+<span class="hl-go">LOG_LEVEL=info</span>
+<span class="hl-go">PORT=8081</span>
+</code></pre>
+
+<p>Only the last match changed. The task is idempotent now, and the file is still wrong — idempotence
+means the playbook stops making it worse, not that it repairs what is already there.</p>
+<p><strong>6. Own the file, fix the handler, delete the restart task.</strong></p>
+<pre class="hl"><code class="language-yaml"><span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Environment file</span>
+<span class="hl-w">  </span><span class="hl-nt">ansible.builtin.template</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">src</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">app.env.j2</span>
+<span class="hl-w">    </span><span class="hl-nt">dest</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/etc/app/app.env</span>
+<span class="hl-w">    </span><span class="hl-nt">mode</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"0644"</span>
+<span class="hl-w">  </span><span class="hl-nt">notify</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Restart app</span><span class="hl-w">            </span><span class="hl-c1"># exactly the handler's name</span>
+
+<span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Unit file</span>
+<span class="hl-w">  </span><span class="hl-nt">ansible.builtin.copy</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">dest</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">/etc/systemd/system/app.service</span>
+<span class="hl-w">    </span><span class="hl-nt">content</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-p hl-p-Indicator">|</span>
+<span class="hl-w">      </span><span class="hl-no">…</span>
+<span class="hl-w">    </span><span class="hl-nt">mode</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-s">"0644"</span>
+<span class="hl-w">  </span><span class="hl-nt">notify</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">Restart app</span>
+
+<span class="hl-p hl-p-Indicator">-</span><span class="hl-w"> </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">App is enabled and running</span>
+<span class="hl-w">  </span><span class="hl-nt">ansible.builtin.systemd_service</span><span class="hl-p">:</span>
+<span class="hl-w">    </span><span class="hl-nt">name</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">app</span>
+<span class="hl-w">    </span><span class="hl-nt">enabled</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">true</span>
+<span class="hl-w">    </span><span class="hl-nt">state</span><span class="hl-p">:</span><span class="hl-w"> </span><span class="hl-l hl-l-Scalar hl-l-Scalar-Plain">started</span>
+</code></pre>
+
+<p>The first run with it replaces the file (the <code>--diff</code> above shows six lines becoming three), enables
+the service, and runs the handler once at the end.</p>
+<p><strong>7. The proof: run it again, and in check mode.</strong></p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">web01                      : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0</span>
+<span class="hl-gp">$ </span>ansible-playbook<span class="hl-w"> </span>site.yml<span class="hl-w"> </span>--check<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-1
+<span class="hl-go">web01                      : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0</span>
+</code></pre>
+
+<p><code>changed=0</code> twice, and check mode now agrees with reality because there is no task left that it has to
+skip.</p>
+<p><strong>8. Close the last hole: a failure between the change and the restart.</strong> With a template that sets
+<code>debug</code> followed by a task that fails, the file changed and the service was not restarted; running the
+same play again reported <code>changed=0</code> and restarted nothing. The service stayed on the old
+configuration with a green recap. For plays that change running services, run with
+<code>--force-handlers</code>, or put <code>meta: flush_handlers</code> directly after the tasks whose restart must not be
+lost.</p>
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<p><strong>Trusting a green run.</strong> Green means no task failed. It does not mean the machine is in the described
+state, and it does not mean the playbook is idempotent. <code>changed=0</code> on a second run is the evidence.</p>
+<p><strong><code>shell: echo … &gt;&gt; file</code>.</strong> It reports <code>changed</code> every run because it is changing something every
+run. Use <code>template</code> for a file you own, <code>lineinfile</code> with <code>regexp</code> for one line in a file you do not.</p>
+<p><strong><code>lineinfile</code> without <code>regexp</code> for a value that changes.</strong> It matches the whole line, so a new value is
+a new line. And with <code>regexp</code>, remember that only the last match is replaced — it will not clean up a
+file that already has duplicates.</p>
+<p><strong>Restarting in the task list.</strong> <code>command: systemctl restart app</code> restarts on every run and reports
+<code>changed</code> every time. Notify a handler.</p>
+<p><strong>Fixing a handler error by re-running.</strong> The second run is green because nothing changed, not because
+the name matches. Handler names are case-sensitive; check them against the handler file, or use
+<code>listen:</code>.</p>
+<p><strong>Assuming the next run will do the restart a failed run missed.</strong> The notification was lost with the
+run. The next run sees the file already correct, notifies nothing and reports <code>changed=0</code>.
+<code>--force-handlers</code>, <code>meta: flush_handlers</code>, or restart by hand and verify.</p>
+<p><strong>Reading a clean <code>--check</code> as a clean playbook.</strong> <code>shell</code> and <code>command</code> tasks are skipped in check mode,
+so the most dangerous tasks are the ones it never evaluates.</p>
+<p><strong><code>changed_when: false</code> on a command that does change things</strong>, to make the recap quiet. The recap is
+then accurate about nothing. Use it for read-only commands only.</p>
+<p><strong>Putting overridable values in <code>vars/main.yml</code>.</strong> Role vars outrank inventory, so the user of the role
+cannot override them from <code>group_vars</code>. Values meant to be overridden go in <code>defaults/main.yml</code>.</p>
+<p><strong>Passing numbers with <code>-e key=value</code>.</strong> They arrive as strings. Pass JSON (<code>-e '{&quot;app_port&quot;: 9999}'</code>)
+when the type matters.</p>
+<h2 id="symptoms-and-causes">Symptoms and causes</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Usual cause</th>
+<th>The evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>every run reports <code>changed</code> for the same tasks</td>
+<td><code>command</code>/<code>shell</code> tasks with no <code>creates</code>, <code>removes</code> or <code>changed_when</code></td>
+<td><code>ansible-playbook -v</code>; the tasks marked changed on a second run</td>
+</tr>
+<tr>
+<td>a line appears in a file twice, or keeps being rewritten</td>
+<td><code>lineinfile</code> with a <code>regexp</code> that does not match the line it writes</td>
+<td><code>--check --diff</code> on a converged host</td>
+</tr>
+<tr>
+<td>a service is not restarted after its configuration changed</td>
+<td>the handler was never notified, or the play failed before handlers ran</td>
+<td><code>-v</code> output for <code>RUNNING HANDLER</code>; <code>--force-handlers</code></td>
+</tr>
+<tr>
+<td>a variable has a different value than the inventory says</td>
+<td>a higher-precedence source wins: play <code>vars</code>, <code>set_fact</code>, <code>-e</code></td>
+<td><code>ansible -m debug -a var=NAME HOST</code>; the precedence list</td>
+</tr>
+<tr>
+<td><code>--check</code> passes, the real run fails</td>
+<td>a task depends on a result that check mode could not produce</td>
+<td>tasks with <code>check_mode: false</code>, or registered results in check mode</td>
+</tr>
+<tr>
+<td>a deploy waits for a password and never finishes</td>
+<td>vault, <code>become</code> or SSH asking on a terminal the job does not have</td>
+<td><code>ansible.cfg</code>: <code>ask_vault_pass</code>, <code>become_ask_pass</code>; the job's arguments</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-gp"># </span>the<span class="hl-w"> </span>two<span class="hl-w"> </span>tests<span class="hl-w"> </span>that<span class="hl-w"> </span>matter
+<span class="hl-go">ansible-playbook site.yml &amp;&amp; ansible-playbook site.yml | tail -1     # second run: changed=0</span>
+<span class="hl-go">ansible-playbook site.yml --check --diff                              # what would change, as a diff</span>
+<span class="hl-gp">#   </span><span class="hl-o">(</span>shell/command<span class="hl-w"> </span>tasks<span class="hl-w"> </span>are<span class="hl-w"> </span>SKIPPED<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>check<span class="hl-w"> </span>mode<span class="hl-p">;</span><span class="hl-w"> </span>check_mode:<span class="hl-w"> </span><span class="hl-nb">false</span><span class="hl-w"> </span>to<span class="hl-w"> </span>run<span class="hl-w"> </span>read-only<span class="hl-w"> </span>ones<span class="hl-o">)</span>
+
+<span class="hl-gp"># </span>narrowing<span class="hl-w"> </span>down
+<span class="hl-go">ansible-playbook site.yml | grep -B1 changed:     # which tasks change on a no-op run</span>
+<span class="hl-go">ansible-playbook site.yml --list-tasks</span>
+<span class="hl-go">ansible-playbook site.yml --start-at-task "Environment file"</span>
+<span class="hl-go">ansible-playbook site.yml -l web01 -v             # one host, more output</span>
+<span class="hl-go">ansible web -m ping ; ansible web -b -m command -a "cat /etc/app/app.env"   # ad hoc</span>
+
+<span class="hl-gp"># </span>handlers
+<span class="hl-gp"># </span>notify:<span class="hl-w"> </span>Restart<span class="hl-w"> </span>app<span class="hl-w">          </span>←<span class="hl-w"> </span>must<span class="hl-w"> </span>equal<span class="hl-w"> </span>the<span class="hl-w"> </span>handler<span class="hl-err">'</span>s<span class="hl-w"> </span>name<span class="hl-w"> </span>exactly<span class="hl-w"> </span><span class="hl-o">(</span>or<span class="hl-w"> </span>use<span class="hl-w"> </span>listen:<span class="hl-o">)</span>
+<span class="hl-go">ansible-playbook site.yml --force-handlers        # run notified handlers even if the play fails</span>
+<span class="hl-gp"># </span>-<span class="hl-w"> </span>ansible.builtin.meta:<span class="hl-w"> </span>flush_handlers<span class="hl-w">          </span>←<span class="hl-w"> </span>run<span class="hl-w"> </span>pending<span class="hl-w"> </span>handlers<span class="hl-w"> </span>now,<span class="hl-w"> </span>mid-play
+
+<span class="hl-gp"># </span>modules<span class="hl-w"> </span>that<span class="hl-w"> </span>own<span class="hl-w"> </span>state<span class="hl-w"> </span>instead<span class="hl-w"> </span>of<span class="hl-w"> </span>commands<span class="hl-w"> </span>that<span class="hl-w"> </span>guess
+<span class="hl-gp"># </span>template<span class="hl-w">            </span>a<span class="hl-w"> </span>whole<span class="hl-w"> </span>file<span class="hl-w"> </span>you<span class="hl-w"> </span>own<span class="hl-w"> </span><span class="hl-o">(</span>with<span class="hl-w"> </span><span class="hl-o">{{</span><span class="hl-w"> </span>ansible_managed<span class="hl-w"> </span><span class="hl-o">}}</span><span class="hl-w"> </span>at<span class="hl-w"> </span>the<span class="hl-w"> </span>top<span class="hl-o">)</span>
+<span class="hl-gp"># </span>lineinfile<span class="hl-w"> </span>+<span class="hl-w"> </span>regexp<span class="hl-w"> </span>one<span class="hl-w"> </span>line<span class="hl-w"> </span><span class="hl-k">in</span><span class="hl-w"> </span>a<span class="hl-w"> </span>file<span class="hl-w"> </span>someone<span class="hl-w"> </span><span class="hl-k">else</span><span class="hl-w"> </span>owns<span class="hl-w"> </span><span class="hl-o">(</span>replaces<span class="hl-w"> </span>the<span class="hl-w"> </span>LAST<span class="hl-w"> </span>match<span class="hl-w"> </span>only<span class="hl-o">)</span>
+<span class="hl-gp"># </span>systemd_service<span class="hl-w">     </span>enabled<span class="hl-w"> </span>/<span class="hl-w"> </span>state:<span class="hl-w"> </span>started<span class="hl-p">|</span>restarted,<span class="hl-w"> </span>daemon_reload
+<span class="hl-gp"># </span>command/shell<span class="hl-w">       </span>creates:,<span class="hl-w"> </span>removes:,<span class="hl-w"> </span>changed_when:,<span class="hl-w"> </span>register:<span class="hl-w"> </span>+<span class="hl-w"> </span>when:
+
+<span class="hl-gp"># </span>variables,<span class="hl-w"> </span>low<span class="hl-w"> </span>to<span class="hl-w"> </span>high<span class="hl-w"> </span><span class="hl-o">(</span>the<span class="hl-w"> </span>four<span class="hl-w"> </span>that<span class="hl-w"> </span>bite<span class="hl-o">)</span>
+<span class="hl-gp"># </span>roles/x/defaults/main.yml<span class="hl-w"> </span>&lt;<span class="hl-w"> </span>inventory<span class="hl-w"> </span>group_vars<span class="hl-w"> </span>&lt;<span class="hl-w"> </span>play<span class="hl-w"> </span>vars:<span class="hl-w"> </span>&lt;<span class="hl-w"> </span>-e<span class="hl-w"> </span><span class="hl-o">(</span>extra<span class="hl-w"> </span>vars,<span class="hl-w"> </span>strings!<span class="hl-o">)</span>
+<span class="hl-gp"># </span>roles/x/vars/main.yml<span class="hl-w"> </span>outranks<span class="hl-w"> </span>inventory<span class="hl-w"> </span>—<span class="hl-w"> </span><span class="hl-k">do</span><span class="hl-w"> </span>not<span class="hl-w"> </span>put<span class="hl-w"> </span>overridable<span class="hl-w"> </span>values<span class="hl-w"> </span>there
+<span class="hl-go">ansible-playbook site.yml -e '{"app_port": 9999}'   # JSON keeps the type</span>
+<span class="hl-go">ansible web -m ansible.builtin.debug -a "var=app_port"</span>
+</code></pre>
+
+<h2 id="exercises">Exercises</h2>
+<ol>
+<li>Run a playbook twice and count <code>changed</code> on the second run; make every task report <code>ok</code> without
+removing any.</li>
+<li>Write a <code>lineinfile</code> task whose <code>regexp</code> does not match its own <code>line</code>, run it three times, and read
+the file.</li>
+<li>Define the same variable in group_vars, host_vars, the play's <code>vars</code> and <code>-e</code>, and print it with the
+<code>debug</code> module after removing each in turn.</li>
+<li>Make a configuration change that notifies a handler, then make a later task fail. Did the handler
+run? Try again with <code>--force-handlers</code>.</li>
+<li>Run a play that registers a command's output and uses it, with <code>--check</code>. Which task breaks, and how
+does <code>check_mode: false</code> on the first one change that?</li>
+</ol>
+<h2 id="sources">Sources</h2>
+<ul>
+<li>Variables and their precedence: https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html</li>
+<li>Handlers: https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html</li>
+<li>Check mode and diff: https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html</li>
+<li>Vault passwords without a terminal: https://docs.ansible.com/ansible/latest/vault_guide/vault_managing_passwords.html</li>
+<li><code>ansible-doc lineinfile</code>, <code>ansible-doc command</code> — every option, on the machine itself.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>A playbook reports <code>changed=2</code> on a second run immediately after the first. What does that tell you,
+and what is the most likely cause?</p>
+<blockquote>
+<p>The playbook is not idempotent: on a machine already in the desired state it still claims — or
+makes — changes. The usual cause is <code>shell</code> or <code>command</code> tasks, which Ansible cannot compare
+against state and therefore always report as changed (and which may really be changing things,
+like appending a line on every run).</p>
+</blockquote>
+</li>
+<li>
+<p>You replace <code>lineinfile: line: &quot;PORT={{ app_port }}&quot;</code> with the same task plus <code>regexp: &quot;^PORT=&quot;</code>. The
+file already contains <code>PORT=8081</code> twice. What happens, and what is the better fix?</p>
+<blockquote>
+<p>Only the last matching line is replaced; the earlier duplicate stays, so the task becomes
+idempotent while the file remains wrong. For a file the role owns, use <code>template</code> to state the whole
+file, which removes duplicates and hand edits on the next run.</p>
+</blockquote>
+</li>
+<li>
+<p>A play fails with <em>The requested handler 'restart app' was not found</em>. You run it again and it
+succeeds. Is the bug fixed?</p>
+<blockquote>
+<p>No. The first run changed the file and fired the notification, which failed on the name (handler
+names are case-sensitive: <code>restart app</code> ≠ <code>Restart app</code>). The second run changed nothing, so nothing
+notified and nothing failed. The error returns on the next run that changes that file.</p>
+</blockquote>
+</li>
+<li>
+<p>A template changes a service's configuration, a later task fails, and the next run of the playbook
+reports <code>changed=0</code>. Is the service running with the new configuration?</p>
+<blockquote>
+<p>No. Handlers run at the end of the play, so the failure prevented the restart, and the notification
+was not saved. On the next run the template finds the file already correct, reports <code>ok</code>, notifies
+nothing — the restart is lost. Use <code>--force-handlers</code> or <code>meta: flush_handlers</code>, or restart and
+verify by hand.</p>
+</blockquote>
+</li>
+<li>
+<p>Why can <code>ansible-playbook --check</code> report a clean run for a playbook that appends to a file on every
+real run?</p>
+<blockquote>
+<p>Modules that cannot predict their effect — <code>shell</code> and <code>command</code> — are skipped in check mode. The
+appending task never runs, so check mode has nothing to report about it.</p>
+</blockquote>
+</li>
+<li>
+<p><code>app_port</code> is 8080 in role defaults, 8081 in <code>group_vars/web.yml</code>, and 9000 in the play's <code>vars:</code>.
+Which value does the play use, and what changes with <code>-e app_port=9999</code>?</p>
+<blockquote>
+<p>9000: play <code>vars:</code> beat inventory <code>group_vars</code>, which beat role defaults. <code>-e</code> beats all of them,
+but a <code>key=value</code> extra var is a string, <code>&quot;9999&quot;</code>; pass JSON (<code>-e '{&quot;app_port&quot;: 9999}'</code>) to keep
+it an integer.</p>
+</blockquote>
+</li>
+<li>
+<p>What is the difference between <code>roles/app/defaults/main.yml</code> and <code>roles/app/vars/main.yml</code>, and
+which one should hold a value users of the role are expected to change?</p>
+<blockquote>
+<p>Defaults have the lowest precedence of anything, so inventory and play variables override them;
+role vars sit above inventory and are hard to override. Overridable values belong in <code>defaults/</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Why should a service restart be a handler rather than a <code>command: systemctl restart</code> task?</p>
+<blockquote>
+<p>As a task it runs on every play, always reports <code>changed</code>, and restarts a healthy service for
+nothing. As a handler it runs once, at the end, and only when a task that affects the service
+actually changed something.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

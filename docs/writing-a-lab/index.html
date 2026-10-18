@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Writing a lab · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/docs/writing-a-lab/"><meta property="og:title" content="Writing a lab · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/docs/writing-a-lab/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Writing a lab · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" aria-current="page">Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      <div class="group">Getting started</div>
+      <a href="../../docs/getting-started/"
+>Install and first lab</a>
+      <a href="../../docs/tui-reference/"
+>TUI reference</a>
+      <a href="../../docs/faq/"
+>FAQ</a>
+      <div class="group">Contributing labs</div>
+      <a href="../../docs/writing-a-lab/"
+aria-current="page">Writing a lab</a>
+      <a href="../../docs/lab-spec/"
+>Lab specification</a>
+      <a href="../../docs/quiz-spec/"
+>Theory question spec</a>
+      <a href="../../docs/claude-code-plugin/"
+>The Claude Code plugin</a>
+      <div class="group">How it is built</div>
+      <a href="../../docs/architecture/"
+>Architecture</a>
+      <a href="../../docs/rated-labs/"
+>Rated and unrated labs</a>
+      <a href="../../docs/claude-code-in-norboten/"
+>How Norboten uses Claude</a>
+      <a href="../../docs/mcp/"
+>The MCP server</a>
+      <a href="../../docs/data-model/"
+>Data model</a>
+      <a href="../../docs/api-reference/"
+>API reference</a>
+      <a href="../../docs/pipelines/"
+>Pipelines</a>
+      <a href="../../docs/open-questions/"
+>Open questions</a>
+      <div class="group">Running it yourself</div>
+      <a href="../../docs/self-hosting/"
+>Self-hosting and configuration</a>
+      <a href="../../docs/deploy/"
+>Deploying the server</a>
+      <a href="../../docs/ci-cd/"
+>CI/CD</a>
+      <a href="../../docs/releasing/"
+>Releasing</a>
+    </nav>
+    <article class="prose">
+      <h1 id="writing-a-lab">Writing a lab</h1>
+<p>A lab is a directory. If you can break a machine on purpose and describe how to tell that it is
+fixed, you can write one — and CI will tell you the truth about it before a reviewer has to.</p>
+<p>Start from <code>labs/_template/</code> and read <a href="../lab-spec/">the specification</a> when a detail
+matters. This page is the workflow.</p>
+<h2 id="1-pick-a-failure-you-have-actually-seen">1. Pick a failure you have actually seen</h2>
+<p>The best labs come from an afternoon you lost. A good one has:</p>
+<ul>
+<li><strong>one story</strong>, not five unrelated faults;</li>
+<li><strong>symptoms a user would report</strong>, not a topic (&quot;nobody can reach the site&quot;, not &quot;SELinux&quot;);</li>
+<li><strong>an honest fix</strong> that a competent admin would make, and that survives a reboot.</li>
+</ul>
+<p>Faults that make a lab worse: anything that depends on the wall clock, anything that needs the
+internet at runtime, and anything whose only evidence is a file you have to be told about.</p>
+<p><strong>VM or container?</strong> A lab whose fault or fix involves the boot, the kernel, disks, services or the
+reboot check is a <code>vm</code> lab. A lab entirely about files, users, modes and one program's configuration
+can be <code>runtime: container</code> on <code>ubuntu-26.04-container</code>: it starts in a second and its gate takes
+seconds, but it has no reboot pass, no console, and no init system — so no <code>systemctl</code> in its break,
+check or solution (<code>linux-05</code>, <code>linux-06</code>).</p>
+<p><strong>A Claude Code lab</strong> is a container lab on <code>ubuntu-26.04-claude</code>. Its checks do not call a model: they
+import <code>claude_lab</code> (installed in the image at <code>/usr/local/lib/norboten</code>), give it the model's side of
+the conversation as a list of steps — a tool call, or text — and run the learner's job or <code>claude -p</code>
+against it. The real Claude Code carries out the steps under the machine's settings, hooks, subagents
+and MCP servers; the check reads what happened on disk and what Claude Code sent back
+(<code>run.tool_results()</code>, <code>run.requests</code>, <code>run.denials</code>). Every step a check scripts should be one a
+wrong configuration lets through and a right one refuses — and include one the task genuinely needs,
+so locking everything down does not pass (<code>claude-01</code> … <code>claude-06</code>).</p>
+<h2 id="2-copy-the-template">2. Copy the template</h2>
+<pre class="hl"><code class="language-sh">cp<span class="hl-w"> </span>-r<span class="hl-w"> </span>labs/_template<span class="hl-w"> </span>labs/linux/linux-07-my-lab
+<span class="hl-nb">cd</span><span class="hl-w"> </span>labs/linux/linux-07-my-lab
+</code></pre>
+
+<pre><code>lab.yaml        the manifest: id, track, difficulty, base images, checks, objectives
+briefing.md     what the learner reads — symptoms only, never causes
+break/          NN_name.py, each with apply(ctx); idempotent, quiet, root
+check/          NN_name.py, each with check(ctx) -&gt; ctx.passed(...) / ctx.failed(...)
+hints.yaml      four levels per check; the last one names the problem, never the command
+solution/       solution.sh: the reference fix, run as root by CI
+files/          anything the scripts copy into the guest (optional)
+</code></pre>
+<p>The directory name must equal the <code>id</code> in <code>lab.yaml</code>, and the <code>checks:</code> list must match the files
+in <code>check/</code> exactly, in order.</p>
+<h2 id="3-write-the-checks-first">3. Write the checks first</h2>
+<p>A check answers one question about the machine and says what it observed:</p>
+<pre class="hl"><code class="language-python"><span class="hl-k">def</span><span class="hl-w"> </span><span class="hl-nf">check</span><span class="hl-p">(</span><span class="hl-n">ctx</span><span class="hl-p">):</span>
+    <span class="hl-n">r</span> <span class="hl-o">=</span> <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">run</span><span class="hl-p">([</span><span class="hl-s2">"systemctl"</span><span class="hl-p">,</span> <span class="hl-s2">"is-enabled"</span><span class="hl-p">,</span> <span class="hl-s2">"--quiet"</span><span class="hl-p">,</span> <span class="hl-s2">"notes"</span><span class="hl-p">])</span>
+    <span class="hl-k">if</span> <span class="hl-ow">not</span> <span class="hl-n">r</span><span class="hl-o">.</span><span class="hl-n">ok</span><span class="hl-p">:</span>
+        <span class="hl-k">return</span> <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">failed</span><span class="hl-p">(</span>
+            <span class="hl-s2">"notes is not set to start at boot."</span><span class="hl-p">,</span> <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">run</span><span class="hl-p">([</span><span class="hl-s2">"systemctl"</span><span class="hl-p">,</span> <span class="hl-s2">"status"</span><span class="hl-p">,</span> <span class="hl-s2">"notes"</span><span class="hl-p">])</span><span class="hl-o">.</span><span class="hl-n">text</span>
+        <span class="hl-p">)</span>
+    <span class="hl-k">return</span> <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">passed</span><span class="hl-p">(</span><span class="hl-s2">"notes starts at boot."</span><span class="hl-p">)</span>
+</code></pre>
+
+<p>Rules that keep labs honest:</p>
+<ul>
+<li><strong>Say what was observed, never what to do.</strong> &quot;Nothing is listening on port 8080&quot; — not &quot;run
+<code>semanage port -a</code>&quot;.</li>
+<li><strong>Read-only.</strong> The one exception is a probe file named <code>.norboten-probe-*</code> that the check removes
+itself, for things you can only prove by doing (can this user actually write there?).</li>
+<li><strong>Evidence matters.</strong> Attach the command output; the learner can ask for it, and the tutor
+reasons from it.</li>
+<li><strong><code>ctx.facts</code></strong> tells you the distribution family (<code>init</code>, <code>pkg</code>, <code>mac</code>), so one check can serve
+Ubuntu and Alpine.</li>
+</ul>
+<h2 id="4-write-the-faults">4. Write the faults</h2>
+<pre class="hl"><code class="language-python"><span class="hl-k">def</span><span class="hl-w"> </span><span class="hl-nf">apply</span><span class="hl-p">(</span><span class="hl-n">ctx</span><span class="hl-p">):</span>
+    <span class="hl-n">ctx</span><span class="hl-o">.</span><span class="hl-n">write</span><span class="hl-p">(</span><span class="hl-s2">"/etc/notes/notes.ini"</span><span class="hl-p">,</span> <span class="hl-s2">"[notes]</span><span class="hl-se">\n</span><span class="hl-s2">port = 8080</span><span class="hl-se">\n</span><span class="hl-s2">"</span><span class="hl-p">,</span> <span class="hl-n">mode</span><span class="hl-o">=</span><span class="hl-mo">0o600</span><span class="hl-p">)</span>
+</code></pre>
+
+<p>Break scripts run once, as root, on the clean snapshot, in file order. They must be idempotent,
+must leave nothing explaining the fault behind, and may stash values the checks need in
+<code>ctx.state</code> (a generated UUID, a random port, a secret).</p>
+<h2 id="5-write-the-hint-ladder">5. Write the hint ladder</h2>
+<p>Four levels per check, and the discipline is the whole point:</p>
+<ol>
+<li>restate the symptom;</li>
+<li>name the <strong>kind</strong> of evidence or tool that has not been used;</li>
+<li>narrow to the component and how to look at it;</li>
+<li>name the problem — never the command that fixes it.</li>
+</ol>
+<p>Levels 1 and 2 may not mention a path the solution touches; the linter enforces that.</p>
+<p>Give each level something to read under <code>refs</code>: a section of a topic journal or of another lab's
+journal (<code>journal:networking#listening-on-loopback-or-on-everything</code>), a manual page
+(<code>man 5 systemd.exec</code>) or official documentation (<code>https://…</code>). The learner sees a level's reading
+with the hint and opens a journal section with <code>l</code>. Your lab's own journal is allowed from level 3,
+and no reference may point into a walkthrough — for a lab journal, that section is the fix. The
+anchor is the heading as the site names it: lower case, spaces as hyphens, punctuation dropped.</p>
+<h2 id="6-write-the-reference-solution">6. Write the reference solution</h2>
+<p><code>solution/solution.sh</code> is a POSIX <code>sh</code> script run as root by CI. It must take the broken machine
+to a fully passing state, and it must not reboot: the grading reboot does that. <code>$NORBOTEN_LEARNER</code>
+holds the learner's account name. A lab that supports several base images may add
+<code>solution/&lt;image&gt;.sh</code>.</p>
+<h2 id="7-prove-it">7. Prove it</h2>
+<pre class="hl"><code class="language-sh">make<span class="hl-w"> </span>lint-labs<span class="hl-w">                         </span><span class="hl-c1"># the spec, without a VM</span>
+make<span class="hl-w"> </span>validate<span class="hl-w"> </span><span class="hl-nv">LAB</span><span class="hl-o">=</span>linux-05-my-lab<span class="hl-w">      </span><span class="hl-c1"># the gate: on every image the lab claims</span>
+</code></pre>
+
+<p>The gate boots a clean VM, applies the faults, asserts that <strong>every check fails</strong>, runs your
+solution, then checks, reboots and checks again. A check that passes on the broken machine fails
+the gate: it is testing nothing.</p>
+<p>While iterating, <code>norboten dev validate &lt;lab&gt; --keep</code> leaves the VM up so you can look at it, and
+<code>norboten</code> (Labs, <code>Enter</code>, <code>s</code>) plays it as a learner would.</p>
+<h2 id="8-send-it">8. Send it</h2>
+<p>One lab per pull request, with the gate green. CI re-runs it on every base image the lab lists.
+If your lab needs a package that is not in the golden image, say so in the pull request: adding it
+to <code>images/base/&lt;image&gt;/vars.yml</code> means rebuilding that image and re-running the gate for every
+lab that uses it.</p>
+<h2 id="a-rated-lab">A rated lab</h2>
+<p>Everything above holds, with four differences (docs/lab-spec.md §13, docs/rated-labs.md). It lives
+in the private repository, <code>rated/&lt;track&gt;/&lt;id&gt;/</code>, and sets <code>rated: true</code>. Each check is two files:
+<code>collect/NN_name.py</code> returns what it saw and never decides, and <code>check/NN_name.py</code> is
+<code>judge(facts, ctx)</code>, a pure function the server runs. It has no <code>journal.md</code> and no public theory.
+And it is committed inside <code>rated/</code> first, then as a submodule pointer here. <code>make validate LAB=&lt;id&gt;</code> proves it the same way — the collectors in the VM, the judges on your machine — and
+<code>norboten dev lint rated/&lt;track&gt;/&lt;id&gt;</code> holds it to the spec.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>[ ] The briefing states symptoms and never causes.</li>
+<li>[ ] Every check fails on the broken machine and passes after the solution — twice, across a reboot.</li>
+<li>[ ] Every check message says what was observed.</li>
+<li>[ ] Hints 1–2 name no path the solution touches; hint 4 names the problem, not the command.</li>
+<li>[ ] Every check's hints carry <code>refs</code>, and <code>make lint-labs</code> finds every journal anchor.</li>
+<li>[ ] <code>make lint-labs</code> and <code>make validate LAB=…</code> are green.</li>
+<li>[ ] The lab teaches one thing, and you would not be annoyed to meet it at work.</li>
+</ul>
+
+    </article>
+    <div class="toc">
+<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>      <a class="h2" href="#1-pick-a-failure-you-have-actually-seen">1. Pick a failure you have actually seen</a>
+      <a class="h2" href="#2-copy-the-template">2. Copy the template</a>
+      <a class="h2" href="#3-write-the-checks-first">3. Write the checks first</a>
+      <a class="h2" href="#4-write-the-faults">4. Write the faults</a>
+      <a class="h2" href="#5-write-the-hint-ladder">5. Write the hint ladder</a>
+      <a class="h2" href="#6-write-the-reference-solution">6. Write the reference solution</a>
+      <a class="h2" href="#7-prove-it">7. Prove it</a>
+      <a class="h2" href="#8-send-it">8. Send it</a>
+      <a class="h2" href="#a-rated-lab">A rated lab</a>
+      <a class="h2" href="#checklist">Checklist</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("../../search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where Python looks for a module, and who gets there first</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Where Python looks for a module, and who gets there first</h1>
+  <div class="meta">python, linux-basics · 30 minutes · 1224 words</div>
+</header>
+<p><code>AttributeError: module 'calendar' has no attribute 'monthrange'</code> is a strange thing to read. The
+standard library’s <code>calendar</code> module has had <code>monthrange</code> since the 1990s, so the sentence can only
+mean one thing: the <code>calendar</code> that was imported is not the standard library’s. Somebody added a
+helper called <code>calendar.py</code> next to the program, and from then on every <code>import calendar</code> in that
+program found the helper.</p>
+<p>The rule behind it is short — a script’s own directory is the first place Python looks — and the
+consequence is one every Python programmer meets once: a file you named after a standard library
+module takes its place, for your program and for everything your program imports.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>List the entries of <code>sys.path</code> and say where each comes from.</li>
+<li>Say what <code>sys.path[0]</code> is for a script, for <code>python -c</code>, for <code>python -m</code> and for the REPL.</li>
+<li>Recognise shadowing from the error it causes, and confirm it with <code>module.__file__</code>.</li>
+<li>Avoid it: names that are not in <code>sys.stdlib_module_names</code>, a package, or an installed distribution.</li>
+<li>Know why a stale <code>__pycache__</code> can keep a shadow alive after the file is gone.</li>
+<li>Say why <code>WorkingDirectory=</code> in a unit does not change any of this.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3><code>sys.path</code>, and what is at the front</h3>
+<p>When Python imports a module that is not built in, it walks <code>sys.path</code> in order and takes the first
+match. The list is built at start-up:</p>
+<ol>
+<li><strong>position 0</strong> — a directory that depends on how Python was started (below);</li>
+<li>the directories in <code>PYTHONPATH</code>;</li>
+<li>the standard library, and the <code>site-packages</code> directories added by the <code>site</code> module.</li>
+</ol>
+<p>Position 0 is the one that surprises people:</p>
+<table>
+<thead>
+<tr>
+<th>Started as</th>
+<th><code>sys.path[0]</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python3 /opt/digest/digest.py</code></td>
+<td><code>/opt/digest</code> — the <strong>script’s</strong> directory, not the caller’s</td>
+</tr>
+<tr>
+<td><code>python3 -c '…'</code></td>
+<td><code>''</code>, the current directory</td>
+</tr>
+<tr>
+<td><code>python3 -m pkg.mod</code></td>
+<td><code>''</code>, the current directory</td>
+</tr>
+<tr>
+<td><code>python3</code> (REPL)</td>
+<td><code>''</code>, the current directory</td>
+</tr>
+</tbody>
+</table>
+<p>So a script always searches beside itself first, whatever directory it was started from — which is
+why changing the working directory, in a shell or with <code>WorkingDirectory=</code> in a unit, changes nothing
+here. (<code>python3 -P</code> and <code>PYTHONSAFEPATH=1</code> remove that entry; <code>-I</code> isolates further.)</p>
+<h3>The standard library does not win</h3>
+<p>There is no precedence for the standard library: it is simply later in <code>sys.path</code>. Pure-Python
+modules such as <code>calendar</code>, <code>json</code>, <code>logging</code>, <code>queue</code>, <code>random</code>, <code>select</code>, <code>socket</code>, <code>types</code> and
+<code>email</code> are all shadowable. Built-in modules compiled into the interpreter (<code>sys</code>, <code>builtins</code>, and
+whatever <code>sys.builtin_module_names</code> lists) are not, because they never reach the path search.</p>
+<p>The damage is not limited to your own code. Everything that runs in the process — the standard
+library itself, a library you installed — gets your file when it imports that name. A <code>logging.py</code>
+in an application directory can break code that has nothing to do with it.</p>
+<p>Modern Python helps: since 3.11 the error message says so outright.</p>
+<pre><code>AttributeError: module 'calendar' has no attribute 'monthrange' (consider renaming
+'/opt/digest/calendar.py' since it has the same name as the standard library module named
+'calendar' and prevents importing that standard library module)
+</code></pre>
+<p>When the message is less kind — an <code>ImportError</code> from deep inside a library — <code>module.__file__</code> is
+the answer: it says exactly which file was imported.</p>
+<h3>Names to avoid, and how to stop guessing</h3>
+<p><code>sys.stdlib_module_names</code> is the whole list, in the interpreter you are using (297 names in Python
+3.14 on this machine). A one-line check is enough to keep a directory clean:</p>
+<pre><code class="language-console">$ python3 -c 'import sys, pathlib; print([p.name for p in pathlib.Path(&quot;.&quot;).glob(&quot;*.py&quot;) if p.stem in sys.stdlib_module_names])'
+</code></pre>
+<p>Three ways to avoid the collision for good:</p>
+<ul>
+<li><strong>a specific name</strong> — <code>office_calendar.py</code> rather than <code>calendar.py</code>. The smallest change, and the
+one this lab makes;</li>
+<li><strong>a package</strong> — put the helpers in <code>digest/</code> with an <code>__init__.py</code> and import
+<code>digest.calendar</code>; the name is then qualified and cannot collide;</li>
+<li><strong>an installed distribution</strong> — a project installed into the environment (a virtual environment,
+<code>pip install -e .</code>), imported by its distribution name.</li>
+</ul>
+<h3><code>__pycache__</code> outlives the file</h3>
+<p>Python caches compiled modules in <code>__pycache__/&lt;name&gt;.cpython-&lt;version&gt;.pyc</code>. The cache is validated
+against the source file it came from, so a <code>.pyc</code> alone does not shadow anything in a normal
+layout — but a stale <code>__pycache__</code> is confusing to read during debugging, and removing the source
+without removing the directory leaves evidence that looks like the bug. Clearing it after a rename
+costs nothing.</p>
+<h2>A failure, walked through</h2>
+<p>Run on the lab’s own machine: <code>ubuntu-26.04-devops</code>, Python 3.14.4, before any change.</p>
+<pre><code class="language-console">$ systemctl status digest.service --no-pager -n 6 | head -10
+× digest.service - One line about today's events, for the morning mail
+     Loaded: loaded (/etc/systemd/system/digest.service; enabled; preset: enabled)
+     Active: failed (Result: exit-code) since Wed 2026-09-16 17:08:13 UTC; 167ms ago
+    Process: 1175 ExecStart=/usr/bin/python3 /opt/digest/digest.py (code=exited, status=1/FAILURE)
+$ sudo journalctl -u digest.service -b --no-pager -o cat | tail -6
+    days = calendar.monthrange(today.year, today.month)[1]
+           ^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'calendar' has no attribute 'monthrange' (consider renaming '/opt/digest/calendar.py' since it has the same name as the standard library module named 'calendar' and prevents importing that standard library module)
+</code></pre>
+<p>The directory says the rest:</p>
+<pre><code class="language-console">$ ls /opt/digest
+__pycache__
+calendar.py
+digest.py
+</code></pre>
+<p>The working directory makes no difference, because the script’s own directory is what counts:</p>
+<pre><code class="language-console">$ cd / &amp;&amp; python3 /opt/digest/digest.py 2&gt;&amp;1 | tail -3; echo &quot;exit status: ${PIPESTATUS[0]}&quot;
+    days = calendar.monthrange(today.year, today.month)[1]
+           ^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'calendar' has no attribute 'monthrange' (consider renaming '/opt/digest/calendar.py' since it has the same name as the standard library module named 'calendar' and prevents importing that standard library module)
+</code></pre>
+<p><code>__file__</code> confirms which file was imported, and the cache shows the helper has been compiled:</p>
+<pre><code class="language-console">$ cd /opt/digest &amp;&amp; python3 -c 'import sys; print(sys.path[0]); import calendar; print(calendar.__file__)'
+
+/opt/digest/calendar.py
+$ ls /opt/digest/__pycache__ 2&gt;&amp;1
+calendar.cpython-314.pyc
+</code></pre>
+<p>(The empty first line is <code>sys.path[0]</code> for <code>python3 -c</code>: the current directory, written as <code>''</code>.)
+The list of names not to use is in the interpreter:</p>
+<pre><code class="language-console">$ python3 -c 'import sys; print(len(sys.stdlib_module_names)); print(sorted(n for n in sys.stdlib_module_names if len(n)&lt;7)[:12])'
+297
+['_abc', '_ast', '_bz2', '_csv', '_dbm', '_gdbm', '_heapq', '_hmac', '_imp', '_io', '_json', '_lzma']
+</code></pre>
+<p>After the fix — the helper renamed to <code>office_calendar.py</code>, imported under that name, and the cache
+cleared — the standard library is itself again and the service runs:</p>
+<pre><code class="language-console">$ cd /opt/digest &amp;&amp; python3 -c 'import calendar, json; print(calendar.__file__); print(calendar.monthrange(2026, 9))'
+/usr/lib/python3.14/calendar.py
+(calendar.TUESDAY, 30)
+$ systemctl show digest.service -p Result -p ExecMainStatus; cat /var/lib/digest/today.txt
+Result=success
+ExecMainStatus=0
+2026-09-16: 3 events, 30 days in the month, 22 open
+</code></pre>
+<h2>Common wrong turns</h2>
+<ul>
+<li><strong>Deleting the helper.</strong> The office’s open days still have to be counted; the file is wanted, its
+name is not.</li>
+<li><strong><code>WorkingDirectory=</code> in the unit</strong>, or <code>cd</code> before running. <code>sys.path[0]</code> for a script is the
+script’s directory, so neither changes anything.</li>
+<li><strong><code>sys.path.remove(...)</code> or reordering <code>sys.path</code> in the program.</strong> By the time your code runs, the
+path has already been used for the imports at the top of the file, and you have made the program
+depend on a detail that changes between versions.</li>
+<li><strong><code>import importlib.util</code> gymnastics</strong> to load the standard library by file path. A rename is five
+characters.</li>
+<li><strong>Renaming it to another standard library name</strong> — <code>types.py</code>, <code>select.py</code>, <code>email.py</code> are all
+taken. Check <code>sys.stdlib_module_names</code>.</li>
+<li><strong>Blaming <code>__pycache__</code>.</strong> The cache follows its source; remove it for clarity, not as the fix.</li>
+</ul>
+<h2>Cheat sheet</h2>
+<pre><code class="language-console">python3 -c 'import sys; print(sys.path)'                     # the search path, in order
+python3 -c 'import calendar; print(calendar.__file__)'       # which file an import used
+python3 -c 'import sys, pathlib; print([p.name for p in pathlib.Path(&quot;.&quot;).glob(&quot;*.py&quot;)
+    if p.stem in sys.stdlib_module_names])'                  # names that will shadow
+python3 -P script.py            # do not put the script's directory on the path
+find . -name __pycache__ -prune -exec rm -rf {} +            # after a rename
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Started as</th>
+<th><code>sys.path[0]</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python3 /path/script.py</code></td>
+<td><code>/path</code> — the script’s directory</td>
+</tr>
+<tr>
+<td><code>python3 -c</code> · <code>python3 -m</code> · the REPL</td>
+<td>the current directory</td>
+</tr>
+</tbody>
+</table>
+<h2>Going deeper</h2>
+<ul>
+<li>The Python tutorial, <em>The Module Search Path</em>, and <code>sys.path</code> in the <code>sys</code> documentation.</li>
+<li><code>sys.stdlib_module_names</code> and <code>sys.builtin_module_names</code>.</li>
+<li><code>python3 -P</code>, <code>PYTHONSAFEPATH=1</code> and <code>python3 -I</code>, for keeping the script’s directory off the path.</li>
+<li><code>man 5 systemd.exec</code>, <code>WorkingDirectory=</code>, for what a unit really controls.</li>
+</ul>
+<h2>Review</h2>
+<ol>
+<li>
+<p>What is <code>sys.path[0]</code> when you run <code>python3 /opt/digest/digest.py</code> from <code>/</code>?</p>
+<blockquote>
+<p><code>/opt/digest</code> — the script’s own directory. For <code>python3 -c</code> and <code>python3 -m</code> it is the current
+directory instead.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does a file named <code>calendar.py</code> beside a script break <code>calendar.monthrange</code>?</p>
+<blockquote>
+<p>That directory is searched before the standard library, so <code>import calendar</code> finds the local
+file, and it has no <code>monthrange</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Which modules cannot be shadowed this way?</p>
+<blockquote>
+<p>The ones built into the interpreter (<code>sys.builtin_module_names</code>), because they are never looked
+up on <code>sys.path</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you find out which file an import actually used?</p>
+<blockquote>
+<p>Print the module’s <code>__file__</code> — or read the hint modern Python adds to the error message.</p>
+</blockquote>
+</li>
+<li>
+<p>Name two ways of keeping a helper without renaming every call site.</p>
+<blockquote>
+<p>Put it in a package and import it as <code>package.calendar</code>, or install the project as a
+distribution and import it under its own namespace.</p>
+</blockquote>
+</li>
+<li>
+<p>Does <code>WorkingDirectory=/opt/digest</code> in the unit make the shadowing better or worse?</p>
+<blockquote>
+<p>Neither: for a script the path entry is the script’s directory, so the working directory is
+irrelevant here. It only adds a false explanation to the unit.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>

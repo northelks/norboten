@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Stream That Stops — a proxy in front of a remote MCP server · Norboten</title>
+<meta name="description" content="A remote MCP server speaks Streamable HTTP: every message is a POST, and the answer is either one JSON body or, for anything that takes a while, a stream of ser">
+<link rel="canonical" href="https://norboten.org/journals/mcp-05-the-stream-that-stops/"><meta property="og:title" content="The Stream That Stops — a proxy in front of a remote MCP server · Norboten">
+<meta property="og:description" content="A remote MCP server speaks Streamable HTTP: every message is a POST, and the answer is either one JSON body or, for anything that takes a while, a stream of ser">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/mcp-05-the-stream-that-stops/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Stream That Stops — a proxy in front of a remote MCP server · Norboten">
+<meta name="twitter:description" content="A remote MCP server speaks Streamable HTTP: every message is a POST, and the answer is either one JSON body or, for anything that takes a while, a stream of ser">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "The Stream That Stops \u2014 a proxy in front of a remote MCP server",
+  "description": "A remote MCP server speaks Streamable HTTP: every message is a POST, and the answer is either one JSON body or, for anything that takes a while, a stream of ser",
+  "url": "https://norboten.org/journals/mcp-05-the-stream-that-stops/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1092,
+  "timeRequired": "PT30M",
+  "about": ["Model Context Protocol", "Networking"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Stream That Stops</div>
+    <h1>The Stream That Stops — a proxy in front of a remote MCP server</h1>
+    <p class="muted">
+      30 minutes' reading · 1092 words ·<span class="tag">Model Context Protocol</span><span class="tag">Networking</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 78 words</title><rect x="0.0" y="0" width="46.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 389 words</title><rect x="49.6" y="0" width="232.4" height="30" rx="4" fill="#1d2a23"/><text x="57.6" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 341 words</title><rect x="285.0" y="0" width="203.7" height="30" rx="4" fill="#4ade80"/><text x="293.0" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#0a0e0c">A failure, walked through</text></a><a href="#common-wrong-turns"><title>Common wrong turns — 78 words</title><rect x="491.7" y="0" width="46.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 72 words</title><rect x="541.3" y="0" width="43.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 87 words</title><rect x="587.3" y="0" width="52.0" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 197 words</title><rect x="642.3" y="0" width="117.7" height="30" rx="4" fill="#1d2a23"/><text x="650.3" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/mcp-05-the-stream-that-stops/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p>A remote MCP server speaks Streamable HTTP: every message is a POST, and the answer is either one JSON
+body or, for anything that takes a while, a stream of server-sent events — progress notifications as
+the work goes, then the result. Put a reverse proxy in front of it and the proxy decides how that
+stream travels. nginx's defaults are made for pages, not streams: it collects the upstream's answer in
+buffers before passing it on, and it gives up on an upstream that stays silent for longer than its read
+timeout. Either one alone ruins a long tool call. This lab had both, and a server that could be reached
+around the proxy as well.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>Describe how a Streamable HTTP server answers a long tool call, and what a client does meanwhile.</li>
+<li>Say what <code>proxy_buffering</code> and <code>proxy_read_timeout</code> do to an event stream, and measure it.</li>
+<li>Tell a proxy that cut a response apart from a server that failed.</li>
+<li>Keep a proxied server reachable through its proxy only, and check it from outside.</li>
+<li>Explain what a client-side tool timeout protects, and why it is no fix for a proxy.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="a-long-answer-is-a-stream">A long answer is a stream</h3>
+<p>The reports server answers <code>build_report</code> with <code>Content-Type: text/event-stream</code>: one <code>data:</code> line per
+event, a progress notification every three seconds, the result after nine. The first bytes leave at
+once — the status line and the first event — so a client knows the call is alive long before it is done.
+That is the point of streaming, and the thing a proxy can take away.</p>
+<h3 id="buffering">Buffering</h3>
+<p>With <code>proxy_buffering on</code> (nginx's default), nginx reads the upstream response into memory and sends it
+to the client in large pieces — for a response that is never large, only when it ends. The client sees
+nothing for nine seconds and then everything at once: no progress, and no sign of life to tell a slow
+call from a hung one. <code>proxy_buffering off</code> passes each piece on as it arrives. (An upstream can ask for
+the same per response with an <code>X-Accel-Buffering: no</code> header; this server does not send one.)</p>
+<h3 id="the-read-timeout">The read timeout</h3>
+<p><code>proxy_read_timeout</code> is the longest nginx waits <em>between two reads</em> from the upstream, not for the whole
+response. Here it was two seconds and the server writes every three, so nginx closes the connection
+after the first gap — the error log says <code>upstream timed out … while reading upstream</code> — and the client
+gets a response with a status line and no result. The value has to exceed the longest silence a tool
+can have: the gap between progress events, or the whole call when a server sends none.</p>
+<h3 id="what-the-client-does-about-it">What the client does about it</h3>
+<p>A Streamable HTTP client that loses a stream before its result can wait, or try to resume it. Claude
+Code 2.1.270 waited, and the job hung until something killed it; the job now sets <code>MCP_TOOL_TIMEOUT</code>
+(milliseconds) so a call that has gone quiet fails after twenty seconds. That bounds the damage; it is
+not the fix. The fix is a proxy that passes the stream through.</p>
+<h3 id="one-way-in">One way in</h3>
+<p>A proxy in front of a server is where access is logged, rate-limited and, eventually, encrypted. A
+server that also listens on every address makes all of that optional: anyone who can reach the machine
+can go around it. The server binds <code>127.0.0.1</code>, and only nginx — on the same machine — can reach it.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Replayed on the lab's container (Ubuntu 26.04, nginx from Ubuntu's archive, Claude Code 2.1.270; the
+site trimmed to its location block, the settings on one line). The proxy's site and the server's
+settings:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>cat<span class="hl-w"> </span>/etc/nginx/conf.d/reports.conf<span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/etc/reports-mcp/config.json
+<span class="hl-go">    location /mcp {</span>
+<span class="hl-go">        proxy_pass http://127.0.0.1:8931;</span>
+<span class="hl-go">        proxy_set_header Host $host;</span>
+<span class="hl-go">        proxy_read_timeout 2s;</span>
+<span class="hl-go">        proxy_buffering on;</span>
+<span class="hl-go">    }</span>
+<span class="hl-go">{"bind": "0.0.0.0", "port": 8931, "step_seconds": 3}</span>
+</code></pre>
+
+<p>A small client that posts <code>tools/call build_report</code> and prints each line as it arrives, with the time.
+Straight to the server:</p>
+<pre><code class="language-text">  0.0s  HTTP/1.0 200 OK
+  0.0s  data: {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;method&quot;: &quot;notifications/progress&quot;, ...
+  3.0s  data: {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;method&quot;: &quot;notifications/progress&quot;, ...
+  6.0s  data: {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;method&quot;: &quot;notifications/progress&quot;, ...
+  9.0s  data: {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 7, &quot;result&quot;: {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: &quot;Weekly report W42-6c00: 3 i
+  9.0s  (connection closed)
+</code></pre>
+<p>Through nginx on <code>:8080</code>, one setting at a time, nginx restarted from scratch for each:</p>
+<pre><code class="language-text">== proxy_buffering on; proxy_read_timeout 2s
+  2.0s  HTTP/1.1 200 OK
+  2.0s  (connection closed)
+== proxy_buffering on; proxy_read_timeout 300s
+  9.0s  HTTP/1.1 200 OK
+  9.0s  data: … progress   (×3, all at once)
+  9.0s  data: … result
+  9.0s  (connection closed)
+== proxy_buffering off; proxy_read_timeout 2s
+  0.0s  HTTP/1.1 200 OK
+  0.0s  data: … progress
+  2.0s  (connection closed)
+== proxy_buffering off; proxy_read_timeout 300s
+  0.0s  HTTP/1.1 200 OK
+  0.0s  data: … progress
+  3.0s  data: … progress
+  6.0s  data: … progress
+  9.0s  data: … result
+  9.0s  (connection closed)
+</code></pre>
+<p>and nginx's error log for the first: <code>upstream timed out (110: Connection timed out) while reading upstream</code>. The job, with the broken proxy and then the fixed one:</p>
+<pre><code class="language-text">21s  build_report: MCP server &quot;reports&quot; tool &quot;build_report&quot; timed out after 20s
+10s  build_report: Weekly report W42-6c00: 3 incidents, 2 changes, 0 open.
+</code></pre>
+<p>The way around the proxy, before and after <code>&quot;bind&quot;: &quot;127.0.0.1&quot;</code> and <code>sudo reports-mcp restart</code>:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ss<span class="hl-w"> </span>-Hltn<span class="hl-w"> </span><span class="hl-s2">"sport = :8931"</span><span class="hl-p">;</span><span class="hl-w"> </span>hostname<span class="hl-w"> </span>-I
+<span class="hl-go">LISTEN 0      5      0.0.0.0:8931 0.0.0.0:*</span>
+<span class="hl-go">172.17.0.6</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s2">"%{http_code}\n"</span><span class="hl-w"> </span>-X<span class="hl-w"> </span>POST<span class="hl-w"> </span>…<span class="hl-w"> </span>http://172.17.0.6:8931/mcp
+<span class="hl-go">200</span>
+<span class="hl-gp">$ </span>ss<span class="hl-w"> </span>-Hltn<span class="hl-w"> </span><span class="hl-s2">"sport = :8931"</span>
+<span class="hl-go">LISTEN 0      5      127.0.0.1:8931 0.0.0.0:*</span>
+<span class="hl-gp">$ </span>curl<span class="hl-w"> </span>-s<span class="hl-w"> </span>-o<span class="hl-w"> </span>/dev/null<span class="hl-w"> </span>-w<span class="hl-w"> </span><span class="hl-s2">"%{http_code}\n"</span><span class="hl-w"> </span>-X<span class="hl-w"> </span>POST<span class="hl-w"> </span>-d<span class="hl-w"> </span><span class="hl-s2">"{}"</span><span class="hl-w"> </span>http://172.17.0.6:8931/mcp
+<span class="hl-go">000</span>
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong>Pointing <code>.mcp.json</code> at <code>:8931</code>.</strong> The report arrives; the proxy, its log and everything it will do
+are bypassed. The grader measures through <code>:8080</code>.</li>
+<li><strong>Raising the timeout and keeping the buffer.</strong> The report arrives after nine seconds, in one lump, with
+no progress — the second measurement above.</li>
+<li><strong>Turning the buffer off and keeping two seconds.</strong> One event, then the cut.</li>
+<li><strong>Raising <code>MCP_TOOL_TIMEOUT</code>.</strong> The client waits longer for a stream the proxy has already closed.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre><code class="language-text">nginx -t &amp;&amp; nginx -s reload                         # here: sudo proxy-restart
+proxy_buffering off;                                # pass the stream on as it arrives
+proxy_read_timeout 300s;                            # longest silence between two reads
+proxy_http_version 1.1; proxy_set_header Connection &quot;&quot;;
+sudo tail /var/log/nginx/error.log                  # &quot;upstream timed out … while reading upstream&quot;
+ss -Hltn &quot;sport = :8931&quot;                            # who listens, on which address
+curl -N -X POST -H 'Accept: application/json, text/event-stream' …    # -N: do not buffer either
+</code></pre>
+<h2 id="going-deeper">Going deeper</h2>
+<p>Where this lab's hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint's reading and <code>l</code> opens a journal section; the lab's page on the site lists the same.</p>
+<ul>
+<li><em>The Model Context Protocol</em> (topic journal <code>mcp</code>) — Transports</li>
+</ul>
+<p>Manual pages: <code>man 8 ss</code>.</p>
+<p>Documentation:</p>
+<ul>
+<li>https://nginx.org/en/docs/http/ngx_http_proxy_module.html</li>
+<li>https://html.spec.whatwg.org/multipage/server-sent-events.html</li>
+</ul>
+<p>The whole subject, end to end: the topic journals <em>The Model Context Protocol</em> (<code>mcp</code>), <em>Resolves here, listens there, routes until Tuesday</em> (<code>networking</code>) —
+the mechanism, the symptoms and their causes, exercises, and sources.</p>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>How does a Streamable HTTP server answer a tool call that takes a while?</p>
+<blockquote>
+<p>With a server-sent event stream: progress notifications as it goes, then the JSON-RPC result, all on
+the response to that POST.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>proxy_buffering on</code> do to that stream in nginx?</p>
+<blockquote>
+<p>nginx collects the response and sends it on in large pieces — for a short stream, only at the end — so
+the client gets no progress until the call is over.</p>
+</blockquote>
+</li>
+<li>
+<p><code>proxy_read_timeout</code> is 60 seconds and a tool call takes five minutes. When is that a problem?</p>
+<blockquote>
+<p>Only if the upstream is ever silent for more than 60 seconds; the timeout is between reads, so
+progress events every few seconds keep the connection alive.</p>
+</blockquote>
+</li>
+<li>
+<p>Why is setting a client tool timeout not a fix here?</p>
+<blockquote>
+<p>It makes a lost stream fail sooner instead of hanging, but the proxy still cuts or holds back every
+long call.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must the server listen on loopback when it sits behind a proxy on the same machine?</p>
+<blockquote>
+<p>Otherwise clients can reach it directly and bypass the proxy's logging, limits and TLS.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Claude Code plugin · Norboten</title>
+<meta name="description" content="Learn Linux by fixing it. Norboten boots a real broken VM on your machine and grades the machine itself — after a reboot.">
+<link rel="canonical" href="https://norboten.org/docs/claude-code-plugin/"><meta property="og:title" content="The Claude Code plugin · Norboten">
+<meta property="og:description" content="Learn Linux by fixing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/docs/claude-code-plugin/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Claude Code plugin · Norboten">
+<meta name="twitter:description" content="Learn Linux by fixing it.">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Norboten",
+  "url": "https://norboten.org/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "macOS, Linux",
+  "description": "Learn Linux by fixing it: a terminal interface boots a real broken virtual machine on your own machine and grades the machine's state, before and after a reboot.",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "image": "https://norboten.org/icon.png",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "author": {"@type": "Person", "name": "Ihar Petushkou"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" >Journals</a>
+      <a href="../../docs/" aria-current="page">Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs-wrap">
+  <div class="docs">
+    <nav class="tree">
+      <input id="docsearch" type="search" placeholder="Search the docs…" autocomplete="off">
+      <div id="searchresults"></div>
+      <div class="group">Getting started</div>
+      <a href="../../docs/getting-started/"
+>Install and first lab</a>
+      <a href="../../docs/tui-reference/"
+>TUI reference</a>
+      <a href="../../docs/faq/"
+>FAQ</a>
+      <div class="group">Contributing labs</div>
+      <a href="../../docs/writing-a-lab/"
+>Writing a lab</a>
+      <a href="../../docs/lab-spec/"
+>Lab specification</a>
+      <a href="../../docs/quiz-spec/"
+>Theory question spec</a>
+      <a href="../../docs/claude-code-plugin/"
+aria-current="page">The Claude Code plugin</a>
+      <div class="group">How it is built</div>
+      <a href="../../docs/architecture/"
+>Architecture</a>
+      <a href="../../docs/rated-labs/"
+>Rated and unrated labs</a>
+      <a href="../../docs/claude-code-in-norboten/"
+>How Norboten uses Claude</a>
+      <a href="../../docs/mcp/"
+>The MCP server</a>
+      <a href="../../docs/data-model/"
+>Data model</a>
+      <a href="../../docs/api-reference/"
+>API reference</a>
+      <a href="../../docs/pipelines/"
+>Pipelines</a>
+      <a href="../../docs/open-questions/"
+>Open questions</a>
+      <div class="group">Running it yourself</div>
+      <a href="../../docs/self-hosting/"
+>Self-hosting and configuration</a>
+      <a href="../../docs/deploy/"
+>Deploying the server</a>
+      <a href="../../docs/ci-cd/"
+>CI/CD</a>
+      <a href="../../docs/releasing/"
+>Releasing</a>
+    </nav>
+    <article class="prose">
+      <h1 id="the-claude-code-plugin">The Claude Code plugin</h1>
+<p><code>norboten-author</code> is a Claude Code plugin for writing Norboten content. You bring an idea — &quot;a lab
+where the cron job runs as the wrong user&quot;, &quot;questions on systemd timers&quot;, &quot;a journal on DNS&quot; — and
+it works out whether that is a lab, theory questions or a journal, asks what the specifications
+need that the idea does not say, shows a plan, and after your yes does the work: in your session,
+or in a subagent. It ends where the repository's own checks end — the linter, the question
+pipeline, the solvability gate — and says plainly what it proved and what it did not.</p>
+<p>It is for people writing content for Norboten or a fork of it. Learners never need it.</p>
+<h2 id="what-is-in-it">What is in it</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Name</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>skill</td>
+<td><code>/norboten-author:idea &lt;idea&gt; [--subagent]</code></td>
+<td>the entry point: lab, questions or journal? asks, plans, waits for a yes, then hands over to one of the skills or agents below</td>
+</tr>
+<tr>
+<td>skill</td>
+<td><code>/norboten-author:new-lab &lt;request&gt;</code></td>
+<td>a request or a <code>labs/_drafts/</code> file → checks, faults, hints with reading, solution, journal, theory, proven by <code>norboten dev validate</code></td>
+</tr>
+<tr>
+<td>skill</td>
+<td><code>/norboten-author:new-questions &lt;topic&gt;</code></td>
+<td>the thin subjects of a bank → the verification pipeline (write, blind solve by two other models, critic, Docker run, dedup) → your review → the bank</td>
+</tr>
+<tr>
+<td>skill</td>
+<td><code>/norboten-author:new-journal &lt;topic or lab&gt;</code></td>
+<td>a topic or lab journal to the contract in <code>cli/src/norboten/journal.py</code>, walkthrough run on a real machine</td>
+</tr>
+<tr>
+<td>skill</td>
+<td><code>/norboten-author:captures [name]</code></td>
+<td>re-renders the TUI screenshots the site shows, and checks what they show</td>
+</tr>
+<tr>
+<td>agent</td>
+<td><code>norboten-author:lab-author</code></td>
+<td>drafts a lab into <code>labs/_drafts/&lt;id&gt;.md</code> — the same agent CI runs on <code>lab-request</code> issues</td>
+</tr>
+<tr>
+<td>agent</td>
+<td><code>norboten-author:question-author</code></td>
+<td>runs the question pipeline from an agreed plan and reports survivors and rejections</td>
+</tr>
+<tr>
+<td>agent</td>
+<td><code>norboten-author:journal-author</code></td>
+<td>drafts a journal into <code>journals/_drafts/</code>, every walkthrough step it could not run marked <code>TODO</code></td>
+</tr>
+<tr>
+<td>hook</td>
+<td>after <code>Edit</code> and <code>Write</code></td>
+<td>formats Python with ruff and runs <code>norboten dev lint</code> on the lab a file belongs to; a failing lint goes back to Claude</td>
+</tr>
+<tr>
+<td>MCP server</td>
+<td><code>norboten</code></td>
+<td>Norboten's public MCP server, <code>https://api.norboten.org/mcp</code> — docs search, labs, journals, a quiz (<a href="../mcp/">The MCP server</a>)</td>
+</tr>
+</tbody>
+</table>
+<p>Every skill is started by a person (<code>disable-model-invocation</code>): each one boots machines, spends
+subscription usage or rewrites committed files. Measured with <code>claude plugin details</code> (Claude Code
+2.1.272): about 540 tokens are added to every session for the listings; a skill's body, 450–1,100
+tokens, is paid when it runs.</p>
+<h2 id="asking-first">Asking first</h2>
+<p>The specifications decide what a good question is. For a lab the plugin needs a story told in
+symptoms, VM or container, the track and topics, the images, and the symptom fix that a check must
+refuse; for questions, the bank, the subjects and the difficulty; for a journal, the reader and the
+machine its walkthrough will be run on. It asks only what the idea leaves open, as one short
+numbered list with a default for each, so &quot;defaults&quot; is a complete answer. Then it writes the plan
+— files, what each holds, what will be run to prove it, what needs you (a VM for minutes, your
+subscription for drafting) — and waits.</p>
+<h2 id="rated-or-unrated">Rated or unrated</h2>
+<p>The first thing it asks about a lab or a bank is whether it is <strong>rated</strong> or <strong>unrated</strong>
+(docs/rated-labs.md); unrated is the default, and <code>--rated</code> or <code>--unrated</code> answers it without a
+question. Unrated work lands where it always has: <code>labs/&lt;track&gt;/&lt;id&gt;/</code>, <code>quizzes/&lt;topic&gt;.yaml</code>.
+Rated work goes into the private repository checked out at <code>rated/</code> — <code>rated/&lt;track&gt;/&lt;id&gt;/</code> with a
+collector and a judge per check (docs/lab-spec.md §13), <code>rated/quizzes/&lt;topic&gt;.yaml</code>, drafts in
+<code>rated/_drafts/</code> and <code>rated/quizzes/_drafts/</code> — and nowhere else:</p>
+<ul>
+<li>when <code>rated/README.md</code> is missing, the submodule is not checked out and the skill stops instead of
+writing rated material into the public tree (<code>norboten dev draft-questions --rated</code> refuses too);</li>
+<li>a rated lab has no journal and no public theory bank, and <code>new-journal</code> declines one;</li>
+<li>rated work is two commits: inside <code>rated/</code>, then the submodule pointer in the public repository,
+with a message that names no fault or question;</li>
+<li>the drafting agent writes only public drafts, so a rated lab is drafted in your session; and the
+CI job that answers <code>lab-request</code> issues declines one labelled <code>rated</code> with a comment, before any
+model runs, because an issue is public.</li>
+</ul>
+<p>The project hook lints a lab under <code>rated/</code> exactly as one under <code>labs/</code>.</p>
+<h2 id="in-your-session-or-in-a-subagent">In your session or in a subagent</h2>
+<p>After the plan, <code>idea</code> asks once where the work runs, unless you passed <code>--subagent</code>:</p>
+<ul>
+<li><strong>here</strong> — the matching skill runs step by step in your session. You see and steer every step.
+Best when you want to shape the result.</li>
+<li><strong>a subagent</strong> — the agreed plan goes to the matching agent through the Agent tool. It works in
+its own context and returns a draft and a report, and your session stays small. Best for a first
+draft of something already well described.</li>
+</ul>
+<p>The questions always come first, in your session: a subagent cannot ask you anything, and a skill
+run with <code>context: fork</code> runs in the background with a narrower set of tools. So the plugin does
+not fork its skills; it asks, then delegates the part that needs no answers. Whichever runs, the
+session that started it reads the result and runs the linters itself before it reports.</p>
+<h2 id="install">Install</h2>
+<p>From the repository, once it is published on GitHub:</p>
+<pre><code class="language-text">/plugin marketplace add northelks/norboten
+/plugin install norboten-author@norboten
+</code></pre>
+<p>or from a shell, <code>claude plugin marketplace add northelks/norboten</code> and
+<code>claude plugin install norboten-author@norboten</code>. From a clone, the path works the same way:
+<code>claude plugin marketplace add ./norboten</code>. The skills expect a Norboten checkout (or a fork) as
+the working directory, with its venv (<code>uv sync --all-packages --all-extras</code>).</p>
+<p><strong>Inside a Norboten checkout you install nothing.</strong> Its <code>.claude/settings.json</code> declares the
+repository itself as the <code>norboten</code> marketplace (a <code>directory</code> source, <code>&quot;.&quot;</code>) and enables the
+plugin, so once you trust the folder, <code>/norboten-author:idea</code> is there, read from the working tree
+— an edit to a skill applies to the next session. Checked on 2026-09-15 with Claude Code 2.1.272:
+an interactive session in the checkout completes <code>/norboten-author:</code> and sends the <code>idea</code> skill
+with its argument to the model. A headless <code>claude -p</code> in an untrusted checkout, which is how CI
+runs, does not load it; the CI job keeps using the project's own <code>lab-author</code> and hook, byte-identical
+copies of the plugin's (a test compares them), and where both hooks are registered the plugin's
+copy steps aside.</p>
+<h2 id="update">Update</h2>
+<p>A plugin with a <code>version</code> is updated when that version changes. <code>/plugin marketplace update norboten</code>, then <code>/plugin update norboten-author@norboten</code> (or the same under <code>claude plugin</code>), or
+turn on auto-update for the marketplace in <code>/plugin</code>.</p>
+<h2 id="publishing-a-new-version">Publishing a new version</h2>
+<ol>
+<li>Change the plugin under <code>plugins/norboten-author/</code>.</li>
+<li>Raise <code>version</code> in both <code>plugins/norboten-author/.claude-plugin/plugin.json</code> and the plugin's
+entry in <code>.claude-plugin/marketplace.json</code> — a test fails when they differ.</li>
+<li><code>claude plugin validate --strict .</code> and <code>claude plugin validate --strict plugins/norboten-author</code>
+(the tests run both), then <code>uv run python -m pytest tests/test_claude_plugin.py</code>: it installs the
+plugin into a throwaway configuration and expands every skill in a real <code>claude</code> against a
+scripted model, spending nothing.</li>
+<li>Commit, tag <code>plugin-v&lt;version&gt;</code>, push. Users get it with <code>/plugin marketplace update</code>.</li>
+</ol>
+<h2 id="how-it-is-tested">How it is tested</h2>
+<p><code>tests/test_claude_plugin.py</code> checks the manifests, every skill's frontmatter and the files it
+cites, that plugin agents use only fields a plugin agent may carry, that the CI copies match, and
+that the plugin's hook steps aside; then, with Claude Code installed, validates both manifests with
+<code>--strict</code>, installs the plugin from the checkout into a throwaway <code>CLAUDE_CONFIG_DIR</code>, and runs
+each skill as <code>/norboten-author:&lt;skill&gt; ARG-MARKER</code> against the scripted Messages API from
+<code>automation/</code>: the skill's text and the argument must reach the model, and the three agents must be
+offered to it.</p>
+
+    </article>
+    <div class="toc">
+<div class="group" style="font-family:var(--mono);font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dim);margin-bottom:0.4rem">On this page</div>      <a class="h2" href="#what-is-in-it">What is in it</a>
+      <a class="h2" href="#asking-first">Asking first</a>
+      <a class="h2" href="#rated-or-unrated">Rated or unrated</a>
+      <a class="h2" href="#in-your-session-or-in-a-subagent">In your session or in a subagent</a>
+      <a class="h2" href="#install">Install</a>
+      <a class="h2" href="#update">Update</a>
+      <a class="h2" href="#publishing-a-new-version">Publishing a new version</a>
+      <a class="h2" href="#how-it-is-tested">How it is tested</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("docsearch");
+  var out = document.getElementById("searchresults");
+  if (!box) return;
+  var index = null;
+  fetch("../../search-index.json").then(function (r) { return r.json(); }).then(function (d) { index = d; });
+  box.addEventListener("input", function () {
+    var q = box.value.trim().toLowerCase();
+    out.innerHTML = "";
+    if (!index || q.length < 2) return;
+    var hits = [];
+    index.forEach(function (page) {
+      var at = page.text.toLowerCase().indexOf(q);
+      if (at >= 0) hits.push({page: page, at: at});
+    });
+    hits.slice(0, 8).forEach(function (h) {
+      var a = document.createElement("a");
+      a.href = h.page.url;
+      a.innerHTML = "<strong>" + h.page.title + "</strong><br><span class='ctx'>…" +
+        h.page.text.substr(Math.max(0, h.at - 40), 110).replace(/</g, "&lt;") + "…</span>";
+      out.appendChild(a);
+    });
+  });
+})();
+</script>
+</body>
+</html>

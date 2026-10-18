@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where Python looks for a module, and who gets there first · Norboten</title>
+<meta name="description" content="AttributeError: module &#39;calendar&#39; has no attribute &#39;monthrange&#39; is a strange thing to read. The standard library&#39;s calendar module has had monthrange since the ">
+<link rel="canonical" href="https://norboten.org/journals/python-05-module-that-shadows-the-stdlib/"><meta property="og:title" content="Where Python looks for a module, and who gets there first · Norboten">
+<meta property="og:description" content="AttributeError: module &#39;calendar&#39; has no attribute &#39;monthrange&#39; is a strange thing to read. The standard library&#39;s calendar module has had monthrange since the ">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Norboten">
+<meta property="og:url" content="https://norboten.org/journals/python-05-module-that-shadows-the-stdlib/"><meta property="og:image" content="https://norboten.org/icon.png">
+<meta property="og:image:alt" content="The Norboten jackal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Where Python looks for a module, and who gets there first · Norboten">
+<meta name="twitter:description" content="AttributeError: module &#39;calendar&#39; has no attribute &#39;monthrange&#39; is a strange thing to read. The standard library&#39;s calendar module has had monthrange since the ">
+<meta name="twitter:image" content="https://norboten.org/icon.png">
+<link rel="icon" href="../../icon.png?v=2" sizes="512x512" type="image/png">
+<link rel="icon" href="../../favicon.png?v=2" sizes="64x64" type="image/png">
+<link rel="icon" href="../../favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1DY72GTY"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PN1DY72GTY');
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Where Python looks for a module, and who gets there first",
+  "description": "AttributeError: module \u0027calendar\u0027 has no attribute \u0027monthrange\u0027 is a strange thing to read. The standard library\u0027s calendar module has had monthrange since the ",
+  "url": "https://norboten.org/journals/python-05-module-that-shadows-the-stdlib/",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "learningResourceType": "reading",
+  "wordCount": 1224,
+  "timeRequired": "PT30M",
+  "about": ["Python", "Linux basics"],
+  "publisher": {"@type": "Organization", "name": "Norboten", "url": "https://norboten.org/"}
+}
+</script>
+</head>
+<body data-api="" data-root="../../" data-lab="">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="../../">[ norboten ]</a>
+    <nav class="site">
+      <a href="../../features/" >Features</a>
+      <a href="../../labs/" >Labs</a>
+      <a href="../../how-it-works/" >How it works</a>
+      <a href="../../journals/" aria-current="page">Journals</a>
+      <a href="../../docs/" >Docs</a>
+      <a class="group" href="../../players/" >Ratings</a>
+      <a class="live" href="../../live/" ><span class="pulse" aria-hidden="true"></span>Live</a>
+      <a class="group" href="../../install/" >Install</a>
+      <a class="gh" href="https://github.com/northelks/norboten" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a class="gh" href="../../community/" aria-label="Community on Discord" title="Community on Discord" >
+        <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.55 3.02A13.2 13.2 0 0 0 10.3 2a9 9 0 0 0-.42.86 12.3 12.3 0 0 0-3.66 0A9 9 0 0 0 5.8 2a13.2 13.2 0 0 0-3.26 1.02C.48 6.1-.08 9.1.2 12.07A13.3 13.3 0 0 0 4.2 14.1c.32-.44.61-.9.86-1.39a8.6 8.6 0 0 1-1.36-.65l.33-.26a9.5 9.5 0 0 0 8.14 0l.33.26c-.43.26-.89.47-1.36.65.25.49.54.95.86 1.39a13.2 13.2 0 0 0 4-2.03c.34-3.45-.57-6.42-2.45-9.05ZM5.35 10.25c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.64 1.61-1.44 1.61Zm5.3 0c-.79 0-1.44-.72-1.44-1.61s.63-1.62 1.44-1.62 1.45.73 1.44 1.62c0 .89-.63 1.61-1.44 1.61Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap">
+    <div class="kicker">Journal · The Module That Shadows the Standard Library</div>
+    <h1>Where Python looks for a module, and who gets there first</h1>
+    <p class="muted">
+      30 minutes' reading · 1224 words ·<span class="tag">Python</span><span class="tag">Linux basics</span>    </p>
+    <div class="map-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 52" class="journal-map" role="img" aria-label="the journal by section"><a href="#what-you-should-be-able-to-do-after-this"><title>What you should be able to do after this — 87 words</title><rect x="0.0" y="0" width="44.7" height="30" rx="4" fill="#1d2a23"/></a><a href="#the-mechanism"><title>The mechanism — 538 words</title><rect x="47.7" y="0" width="276.5" height="30" rx="4" fill="#1d2a23"/><text x="55.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">The mechanism</text></a><a href="#a-failure-walked-through"><title>A failure, walked through — 340 words</title><rect x="327.2" y="0" width="174.7" height="30" rx="4" fill="#4ade80"/></a><a href="#common-wrong-turns"><title>Common wrong turns — 135 words</title><rect x="504.9" y="0" width="69.4" height="30" rx="4" fill="#1d2a23"/></a><a href="#cheat-sheet"><title>Cheat sheet — 101 words</title><rect x="577.2" y="0" width="51.9" height="30" rx="4" fill="#1d2a23"/></a><a href="#going-deeper"><title>Going deeper — 44 words</title><rect x="632.1" y="0" width="22.6" height="30" rx="4" fill="#1d2a23"/></a><a href="#review"><title>Review — 199 words</title><rect x="657.7" y="0" width="102.3" height="30" rx="4" fill="#1d2a23"/><text x="665.7" y="19.0" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">Review</text></a><text x="0" y="47" font-size="11" font-family="JetBrains Mono, monospace" fill="#8b9a92">sections by length · the walkthrough in green</text></svg></div>
+    <div class="cta">
+      <a class="btn solid" href="../../labs/python-05-module-that-shadows-the-stdlib/">Do the lab</a>
+      <a class="btn" href="print.html#print" target="_blank" rel="noopener" title="Opens the print view; choose Save as PDF in the dialog">Save as PDF</a>
+<a class="btn" href="cheat-sheet.html" target="_blank" rel="noopener" title="The commands, on one or two pages">Cheat sheet</a>      <a class="btn" href="../../journals/">All journals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap wide">
+    <div class="docs journal-layout">
+      <nav class="tree">
+        <strong>On this page</strong>
+        <ul>
+          <li><a href="#what-you-should-be-able-to-do-after-this">What you should be able to do after this</a></li>
+          <li><a href="#the-mechanism">The mechanism</a></li>
+          <li><a href="#a-failure-walked-through">A failure, walked through</a></li>
+          <li><a href="#common-wrong-turns">Common wrong turns</a></li>
+          <li><a href="#cheat-sheet">Cheat sheet</a></li>
+          <li><a href="#going-deeper">Going deeper</a></li>
+          <li><a href="#review">Review</a></li>
+        </ul>
+      </nav>
+      <article class="prose journal"><p><code>AttributeError: module 'calendar' has no attribute 'monthrange'</code> is a strange thing to read. The
+standard library's <code>calendar</code> module has had <code>monthrange</code> since the 1990s, so the sentence can only
+mean one thing: the <code>calendar</code> that was imported is not the standard library's. Somebody added a
+helper called <code>calendar.py</code> next to the program, and from then on every <code>import calendar</code> in that
+program found the helper.</p>
+<p>The rule behind it is short — a script's own directory is the first place Python looks — and the
+consequence is one every Python programmer meets once: a file you named after a standard library
+module takes its place, for your program and for everything your program imports.</p>
+<h2 id="what-you-should-be-able-to-do-after-this">What you should be able to do after this</h2>
+<ul>
+<li>List the entries of <code>sys.path</code> and say where each comes from.</li>
+<li>Say what <code>sys.path[0]</code> is for a script, for <code>python -c</code>, for <code>python -m</code> and for the REPL.</li>
+<li>Recognise shadowing from the error it causes, and confirm it with <code>module.__file__</code>.</li>
+<li>Avoid it: names that are not in <code>sys.stdlib_module_names</code>, a package, or an installed distribution.</li>
+<li>Know why a stale <code>__pycache__</code> can keep a shadow alive after the file is gone.</li>
+<li>Say why <code>WorkingDirectory=</code> in a unit does not change any of this.</li>
+</ul>
+<h2 id="the-mechanism">The mechanism</h2>
+<h3 id="syspath-and-what-is-at-the-front"><code>sys.path</code>, and what is at the front</h3>
+<p>When Python imports a module that is not built in, it walks <code>sys.path</code> in order and takes the first
+match. The list is built at start-up:</p>
+<ol>
+<li><strong>position 0</strong> — a directory that depends on how Python was started (below);</li>
+<li>the directories in <code>PYTHONPATH</code>;</li>
+<li>the standard library, and the <code>site-packages</code> directories added by the <code>site</code> module.</li>
+</ol>
+<p>Position 0 is the one that surprises people:</p>
+<table>
+<thead>
+<tr>
+<th>Started as</th>
+<th><code>sys.path[0]</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python3 /opt/digest/digest.py</code></td>
+<td><code>/opt/digest</code> — the <strong>script's</strong> directory, not the caller's</td>
+</tr>
+<tr>
+<td><code>python3 -c '…'</code></td>
+<td><code>''</code>, the current directory</td>
+</tr>
+<tr>
+<td><code>python3 -m pkg.mod</code></td>
+<td><code>''</code>, the current directory</td>
+</tr>
+<tr>
+<td><code>python3</code> (REPL)</td>
+<td><code>''</code>, the current directory</td>
+</tr>
+</tbody>
+</table>
+<p>So a script always searches beside itself first, whatever directory it was started from — which is
+why changing the working directory, in a shell or with <code>WorkingDirectory=</code> in a unit, changes nothing
+here. (<code>python3 -P</code> and <code>PYTHONSAFEPATH=1</code> remove that entry; <code>-I</code> isolates further.)</p>
+<h3 id="the-standard-library-does-not-win">The standard library does not win</h3>
+<p>There is no precedence for the standard library: it is simply later in <code>sys.path</code>. Pure-Python
+modules such as <code>calendar</code>, <code>json</code>, <code>logging</code>, <code>queue</code>, <code>random</code>, <code>select</code>, <code>socket</code>, <code>types</code> and
+<code>email</code> are all shadowable. Built-in modules compiled into the interpreter (<code>sys</code>, <code>builtins</code>, and
+whatever <code>sys.builtin_module_names</code> lists) are not, because they never reach the path search.</p>
+<p>The damage is not limited to your own code. Everything that runs in the process — the standard
+library itself, a library you installed — gets your file when it imports that name. A <code>logging.py</code>
+in an application directory can break code that has nothing to do with it.</p>
+<p>Modern Python helps: since 3.11 the error message says so outright.</p>
+<pre><code>AttributeError: module 'calendar' has no attribute 'monthrange' (consider renaming
+'/opt/digest/calendar.py' since it has the same name as the standard library module named
+'calendar' and prevents importing that standard library module)
+</code></pre>
+<p>When the message is less kind — an <code>ImportError</code> from deep inside a library — <code>module.__file__</code> is
+the answer: it says exactly which file was imported.</p>
+<h3 id="names-to-avoid-and-how-to-stop-guessing">Names to avoid, and how to stop guessing</h3>
+<p><code>sys.stdlib_module_names</code> is the whole list, in the interpreter you are using (297 names in Python
+3.14 on this machine). A one-line check is enough to keep a directory clean:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>python3<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'import sys, pathlib; print([p.name for p in pathlib.Path(".").glob("*.py") if p.stem in sys.stdlib_module_names])'</span>
+</code></pre>
+
+<p>Three ways to avoid the collision for good:</p>
+<ul>
+<li><strong>a specific name</strong> — <code>office_calendar.py</code> rather than <code>calendar.py</code>. The smallest change, and the
+one this lab makes;</li>
+<li><strong>a package</strong> — put the helpers in <code>digest/</code> with an <code>__init__.py</code> and import
+<code>digest.calendar</code>; the name is then qualified and cannot collide;</li>
+<li><strong>an installed distribution</strong> — a project installed into the environment (a virtual environment,
+<code>pip install -e .</code>), imported by its distribution name.</li>
+</ul>
+<h3 id="__pycache__-outlives-the-file"><code>__pycache__</code> outlives the file</h3>
+<p>Python caches compiled modules in <code>__pycache__/&lt;name&gt;.cpython-&lt;version&gt;.pyc</code>. The cache is validated
+against the source file it came from, so a <code>.pyc</code> alone does not shadow anything in a normal
+layout — but a stale <code>__pycache__</code> is confusing to read during debugging, and removing the source
+without removing the directory leaves evidence that looks like the bug. Clearing it after a rename
+costs nothing.</p>
+<h2 id="a-failure-walked-through">A failure, walked through</h2>
+<p>Run on the lab's own machine: <code>ubuntu-26.04-devops</code>, Python 3.14.4, before any change.</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>status<span class="hl-w"> </span>digest.service<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span>-n<span class="hl-w"> </span><span class="hl-m">6</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>head<span class="hl-w"> </span>-10
+<span class="hl-go">× digest.service - One line about today's events, for the morning mail</span>
+<span class="hl-go">     Loaded: loaded (/etc/systemd/system/digest.service; enabled; preset: enabled)</span>
+<span class="hl-go">     Active: failed (Result: exit-code) since Wed 2026-09-16 17:08:13 UTC; 167ms ago</span>
+<span class="hl-go">    Process: 1175 ExecStart=/usr/bin/python3 /opt/digest/digest.py (code=exited, status=1/FAILURE)</span>
+<span class="hl-gp">$ </span>sudo<span class="hl-w"> </span>journalctl<span class="hl-w"> </span>-u<span class="hl-w"> </span>digest.service<span class="hl-w"> </span>-b<span class="hl-w"> </span>--no-pager<span class="hl-w"> </span>-o<span class="hl-w"> </span>cat<span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-6
+<span class="hl-go">    days = calendar.monthrange(today.year, today.month)[1]</span>
+<span class="hl-go">           ^^^^^^^^^^^^^^^^^^^</span>
+<span class="hl-go">AttributeError: module 'calendar' has no attribute 'monthrange' (consider renaming '/opt/digest/calendar.py' since it has the same name as the standard library module named 'calendar' and prevents importing that standard library module)</span>
+</code></pre>
+
+<p>The directory says the rest:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>ls<span class="hl-w"> </span>/opt/digest
+<span class="hl-go">__pycache__</span>
+<span class="hl-go">calendar.py</span>
+<span class="hl-go">digest.py</span>
+</code></pre>
+
+<p>The working directory makes no difference, because the script's own directory is what counts:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>python3<span class="hl-w"> </span>/opt/digest/digest.py<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span><span class="hl-w"> </span><span class="hl-p">|</span><span class="hl-w"> </span>tail<span class="hl-w"> </span>-3<span class="hl-p">;</span><span class="hl-w"> </span><span class="hl-nb">echo</span><span class="hl-w"> </span><span class="hl-s2">"exit status: </span><span class="hl-si">${</span><span class="hl-nv">PIPESTATUS</span><span class="hl-p">[0]</span><span class="hl-si">}</span><span class="hl-s2">"</span>
+<span class="hl-go">    days = calendar.monthrange(today.year, today.month)[1]</span>
+<span class="hl-go">           ^^^^^^^^^^^^^^^^^^^</span>
+<span class="hl-go">AttributeError: module 'calendar' has no attribute 'monthrange' (consider renaming '/opt/digest/calendar.py' since it has the same name as the standard library module named 'calendar' and prevents importing that standard library module)</span>
+</code></pre>
+
+<p><code>__file__</code> confirms which file was imported, and the cache shows the helper has been compiled:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/opt/digest<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>python3<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'import sys; print(sys.path[0]); import calendar; print(calendar.__file__)'</span>
+
+<span class="hl-go">/opt/digest/calendar.py</span>
+<span class="hl-gp">$ </span>ls<span class="hl-w"> </span>/opt/digest/__pycache__<span class="hl-w"> </span><span class="hl-m">2</span>&gt;<span class="hl-p">&amp;</span><span class="hl-m">1</span>
+<span class="hl-go">calendar.cpython-314.pyc</span>
+</code></pre>
+
+<p>(The empty first line is <code>sys.path[0]</code> for <code>python3 -c</code>: the current directory, written as <code>''</code>.)
+The list of names not to use is in the interpreter:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span>python3<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'import sys; print(len(sys.stdlib_module_names)); print(sorted(n for n in sys.stdlib_module_names if len(n)&lt;7)[:12])'</span>
+<span class="hl-go">297</span>
+<span class="hl-go">['_abc', '_ast', '_bz2', '_csv', '_dbm', '_gdbm', '_heapq', '_hmac', '_imp', '_io', '_json', '_lzma']</span>
+</code></pre>
+
+<p>After the fix — the helper renamed to <code>office_calendar.py</code>, imported under that name, and the cache
+cleared — the standard library is itself again and the service runs:</p>
+<pre class="hl"><code class="language-console"><span class="hl-gp">$ </span><span class="hl-nb">cd</span><span class="hl-w"> </span>/opt/digest<span class="hl-w"> </span><span class="hl-o">&amp;&amp;</span><span class="hl-w"> </span>python3<span class="hl-w"> </span>-c<span class="hl-w"> </span><span class="hl-s1">'import calendar, json; print(calendar.__file__); print(calendar.monthrange(2026, 9))'</span>
+<span class="hl-go">/usr/lib/python3.14/calendar.py</span>
+<span class="hl-gp hl-gp-VirtualEnv">(calendar.TUESDAY, 30)</span>
+<span class="hl-gp">$ </span>systemctl<span class="hl-w"> </span>show<span class="hl-w"> </span>digest.service<span class="hl-w"> </span>-p<span class="hl-w"> </span>Result<span class="hl-w"> </span>-p<span class="hl-w"> </span>ExecMainStatus<span class="hl-p">;</span><span class="hl-w"> </span>cat<span class="hl-w"> </span>/var/lib/digest/today.txt
+<span class="hl-go">Result=success</span>
+<span class="hl-go">ExecMainStatus=0</span>
+<span class="hl-go">2026-09-16: 3 events, 30 days in the month, 22 open</span>
+</code></pre>
+
+<h2 id="common-wrong-turns">Common wrong turns</h2>
+<ul>
+<li><strong>Deleting the helper.</strong> The office's open days still have to be counted; the file is wanted, its
+name is not.</li>
+<li><strong><code>WorkingDirectory=</code> in the unit</strong>, or <code>cd</code> before running. <code>sys.path[0]</code> for a script is the
+script's directory, so neither changes anything.</li>
+<li><strong><code>sys.path.remove(...)</code> or reordering <code>sys.path</code> in the program.</strong> By the time your code runs, the
+path has already been used for the imports at the top of the file, and you have made the program
+depend on a detail that changes between versions.</li>
+<li><strong><code>import importlib.util</code> gymnastics</strong> to load the standard library by file path. A rename is five
+characters.</li>
+<li><strong>Renaming it to another standard library name</strong> — <code>types.py</code>, <code>select.py</code>, <code>email.py</code> are all
+taken. Check <code>sys.stdlib_module_names</code>.</li>
+<li><strong>Blaming <code>__pycache__</code>.</strong> The cache follows its source; remove it for clarity, not as the fix.</li>
+</ul>
+<h2 id="cheat-sheet">Cheat sheet</h2>
+<pre class="hl"><code class="language-console"><span class="hl-go">python3 -c 'import sys; print(sys.path)'                     # the search path, in order</span>
+<span class="hl-go">python3 -c 'import calendar; print(calendar.__file__)'       # which file an import used</span>
+<span class="hl-go">python3 -c 'import sys, pathlib; print([p.name for p in pathlib.Path(".").glob("*.py")</span>
+<span class="hl-go">    if p.stem in sys.stdlib_module_names])'                  # names that will shadow</span>
+<span class="hl-go">python3 -P script.py            # do not put the script's directory on the path</span>
+<span class="hl-go">find . -name __pycache__ -prune -exec rm -rf {} +            # after a rename</span>
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>Started as</th>
+<th><code>sys.path[0]</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python3 /path/script.py</code></td>
+<td><code>/path</code> — the script's directory</td>
+</tr>
+<tr>
+<td><code>python3 -c</code> · <code>python3 -m</code> · the REPL</td>
+<td>the current directory</td>
+</tr>
+</tbody>
+</table>
+<h2 id="going-deeper">Going deeper</h2>
+<ul>
+<li>The Python tutorial, <em>The Module Search Path</em>, and <code>sys.path</code> in the <code>sys</code> documentation.</li>
+<li><code>sys.stdlib_module_names</code> and <code>sys.builtin_module_names</code>.</li>
+<li><code>python3 -P</code>, <code>PYTHONSAFEPATH=1</code> and <code>python3 -I</code>, for keeping the script's directory off the path.</li>
+<li><code>man 5 systemd.exec</code>, <code>WorkingDirectory=</code>, for what a unit really controls.</li>
+</ul>
+<h2 id="review">Review</h2>
+<ol>
+<li>
+<p>What is <code>sys.path[0]</code> when you run <code>python3 /opt/digest/digest.py</code> from <code>/</code>?</p>
+<blockquote>
+<p><code>/opt/digest</code> — the script's own directory. For <code>python3 -c</code> and <code>python3 -m</code> it is the current
+directory instead.</p>
+</blockquote>
+</li>
+<li>
+<p>Why does a file named <code>calendar.py</code> beside a script break <code>calendar.monthrange</code>?</p>
+<blockquote>
+<p>That directory is searched before the standard library, so <code>import calendar</code> finds the local
+file, and it has no <code>monthrange</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>Which modules cannot be shadowed this way?</p>
+<blockquote>
+<p>The ones built into the interpreter (<code>sys.builtin_module_names</code>), because they are never looked
+up on <code>sys.path</code>.</p>
+</blockquote>
+</li>
+<li>
+<p>How do you find out which file an import actually used?</p>
+<blockquote>
+<p>Print the module's <code>__file__</code> — or read the hint modern Python adds to the error message.</p>
+</blockquote>
+</li>
+<li>
+<p>Name two ways of keeping a helper without renaming every call site.</p>
+<blockquote>
+<p>Put it in a package and import it as <code>package.calendar</code>, or install the project as a
+distribution and import it under its own namespace.</p>
+</blockquote>
+</li>
+<li>
+<p>Does <code>WorkingDirectory=/opt/digest</code> in the unit make the shadowing better or worse?</p>
+<blockquote>
+<p>Neither: for a script the path entry is the script's directory, so the working directory is
+irrelevant here. It only adds a false explanation to the unit.</p>
+</blockquote>
+</li>
+</ol>
+</article>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <hr>
+    <div class="cols">
+      <div>
+        <div class="brand">[ norboten ]</div>
+        <p class="muted">Learn Linux by fixing it.<br>Apache-2.0.<span class="copyright">© 2026 Ihar Petushkou.</span></p>
+      </div>
+      <div>
+        <strong>Project</strong><br>
+        <a href="../../features/">Features</a><br>
+        <a href="../../labs/">Labs</a><br>
+        <a href="../../journals/">Journals</a><br>
+        <a href="../../how-it-works/">How it works</a>
+      </div>
+      <div>
+        <strong>Watch and compete</strong><br>
+        <a href="../../live/">Live</a><br>
+        <a href="../../players/">Ratings</a><br>
+        <a href="../../analytics/">Analytics</a>
+      </div>
+      <div>
+        <strong>Get started</strong><br>
+        <a href="../../install/">Install</a><br>
+        <a href="../../docs/">Docs</a><br>
+        <a href="../../docs/writing-a-lab/">Write a lab</a>
+      </div>
+      <div>
+        <strong>Norboten</strong><br>
+        <a href="../../about/">About</a><br>
+        <a href="../../community/">Community</a><br>
+        <a href="../../privacy/">Privacy policy</a>
+      </div>
+      <div>
+        <strong>Elsewhere</strong><br>
+        <a href="https://github.com/northelks/norboten" target="_blank" rel="noopener">GitHub</a>        <span class="muted counts">51 labs · 610 theory questions</span>
+        <span class="muted counts small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP geolocation by DB-IP</a>, CC BY 4.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<button class="to-top" id="to-top" type="button" aria-label="Back to the top" title="Back to the top" hidden>
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V4M3.5 8.5L8 4l4.5 4.5"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<script>
+/* Signed in, the nav and the footer say "Account" instead of "Sign in". The site has no cookies:
+   the only sign that anyone is signed in is the token account.js keeps, and the key below must
+   stay the same as KEY there. Inline, so the word is right before the page paints. */
+(function () {
+  try {
+    if (!localStorage.getItem("norboten.token") && !sessionStorage.getItem("norboten.token")) return;
+  } catch (e) { return; }  /* a private window can refuse storage; the word then stays "Sign in" */
+  var links = document.querySelectorAll(".nav-account");
+  for (var i = 0; i < links.length; i++) links[i].textContent = "Account";
+})();
+</script>
+<script src="../../totop.js"></script>
+<script src="../../ask-engine.js"></script>
+<script src="../../chat.js"></script>
+<script src="../../copy.js"></script>
+</body>
+</html>

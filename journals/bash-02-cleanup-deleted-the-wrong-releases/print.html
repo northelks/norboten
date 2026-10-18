@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deleting files is the one thing a script must get exactly right</title>
+<style>/* Journals, on paper.
+ *
+ * The site is dark because a terminal is dark. Paper is not: printing the site's palette wastes
+ * ink and reads worse, so a journal inverts to a light ground and keeps only the green as an
+ * accent — headings, rules and the answers in the review section.
+ *
+ * Used by the TUI's journal PDF export (WeasyPrint) and by the site's print views of a journal and
+ * its cheat sheet (journals/<id>/print.html, cheat-sheet.html), which the browser prints.
+ */
+
+@page {
+    size: A4;
+    margin: 20mm 18mm 18mm;
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+    @top-right {
+        content: string(journal-title);
+        font-family: "IBM Plex Sans", -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #6b7671;
+    }
+}
+
+:root {
+    --ink: #14181a;
+    --soft: #4a545a;
+    --rule: #d8ded9;
+    --green: #1f7a45;      /* darker than the screen green: #4ade80 on paper is unreadable */
+    --code-bg: #f4f6f4;
+}
+
+html {
+    font-family: "IBM Plex Sans", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #fff;
+}
+
+body { margin: 0; }
+
+/* The site's print views are also read on screen before anyone prints them: give them a column. */
+@media screen {
+    body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+}
+
+/* -- the cover line ------------------------------------------------------- */
+
+header.journal {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 6mm;
+    margin-bottom: 8mm;
+}
+header.journal .brand {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+header.journal h1 {
+    string-set: journal-title content();
+    font-size: 22pt;
+    line-height: 1.15;
+    margin: 2mm 0 3mm;
+    font-weight: 600;
+}
+header.journal .meta { color: var(--soft); font-size: 9pt; }
+
+/* -- flow ----------------------------------------------------------------- */
+
+h2 {
+    font-size: 14pt;
+    margin: 9mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid var(--rule);
+    break-after: avoid;
+    break-inside: avoid;
+}
+h3 {
+    font-size: 11.5pt;
+    margin: 6mm 0 2mm;
+    color: var(--green);
+    break-after: avoid;
+}
+p { margin: 0 0 3mm; orphans: 2; widows: 2; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+strong { font-weight: 600; }
+a { color: var(--green); text-decoration: none; }
+
+/* -- code ----------------------------------------------------------------- */
+
+pre, code, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+code {
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.5mm 1mm;
+    border-radius: 1mm;
+}
+pre {
+    background: var(--code-bg);
+    border-left: 2px solid var(--green);
+    border-radius: 0 1mm 1mm 0;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    white-space: pre-wrap;     /* a long command wraps rather than falling off the page */
+    break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* -- tables --------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm; font-size: 9.5pt; }
+th, td { text-align: left; padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); }
+th { color: var(--green); font-weight: 600; }
+
+/* -- review answers ------------------------------------------------------- */
+
+blockquote {
+    margin: 2mm 0 4mm;
+    padding: 2mm 0 2mm 4mm;
+    border-left: 2px solid var(--green);
+    color: var(--soft);
+    break-inside: avoid;
+}
+blockquote p { margin: 0; }
+
+/* -- the closing line ----------------------------------------------------- */
+
+footer.journal {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--rule);
+    color: var(--soft);
+    font-size: 8.5pt;
+}
+</style><script>if (location.hash === "#print") addEventListener("load", function () { print(); });</script>
+</head><body>
+<header class="journal">
+  <div class="brand">norboten · journal</div>
+  <h1>Deleting files is the one thing a script must get exactly right</h1>
+  <div class="meta">bash, boot-systemd · 35 minutes · 2264 words</div>
+</header>
+<p>Most scripts that go wrong produce the wrong output. A cleanup script that goes wrong produces the
+wrong <em>absence</em>, and absence is hard to notice and impossible to undo. <code>prune-releases</code> is one line of
+real work — <code>ls -t | tail -n +6 | xargs rm -rf</code> — and that one line contains three separate ways to
+delete the wrong thing: it chooses by modification time instead of by the date in the name, it hands
+names to <code>rm</code> through a channel that splits them at spaces, and it runs after a <code>cd</code> that nobody
+checked, so when the directory is missing it deletes wherever it happens to be.</p>
+<p>None of the three is exotic. They are the standard failures of shell pipelines that deal with file
+names, and every one of them has a standard fix. The lab adds a fourth, unrelated problem — a timer
+that points at a program that does not exist — because a cleanup that never runs is the other way a
+disk fills up.</p>
+<h2>What you should be able to do after this</h2>
+<ul>
+<li>Choose files by the data you trust (a timestamp in the name) rather than by metadata that other
+tools change (mtime).</li>
+<li>Explain why <code>ls | xargs</code> is unsafe for file names, and iterate over names without word splitting.</li>
+<li>Stop a script before it acts when a precondition such as <code>cd</code> fails.</li>
+<li>Select only the entries a cleanup is allowed to touch: directories, not symlinks, not stray files.</li>
+<li>Test a destructive script against copies, including the case where its target is missing.</li>
+<li>Read a systemd timer and its service, find why nothing runs, and fix it with a drop-in.</li>
+</ul>
+<h2>The mechanism</h2>
+<h3>What <code>ls -t</code> actually sorts by</h3>
+<p><code>ls -t</code> sorts by modification time, newest first. A directory’s mtime changes whenever an entry is
+created, renamed or removed inside it — and also whenever a tool sets it deliberately. Restoring from
+a backup, <code>cp -a</code>, <code>rsync -a</code>, <code>tar -x</code> and <code>touch</code> all set timestamps, and a restore that ran
+yesterday makes old releases look new.</p>
+<p>The release names already contain the only timestamp that matters: <code>20260913-101500</code>, year first,
+zero-padded. Names in that form sort chronologically as plain text, so “the five newest releases” is
+“the last five names, sorted”. That is data the release itself carries and nothing else rewrites.</p>
+<p>A rule worth keeping: <strong>select by content you control, not by metadata someone else can touch.</strong>
+mtimes are fine for “has this changed since I last looked”; they are a poor identity.</p>
+<h3>Why <code>ls | xargs rm</code> splits names</h3>
+<p><code>ls</code> writes names separated by newlines. <code>xargs</code> reads its input as <em>words</em>: by default it splits at
+spaces, tabs and newlines, and it also interprets quotes and backslashes. So the line</p>
+<pre><code>20260911-180000 hotfix
+</code></pre>
+<p>becomes two arguments to <code>rm</code>: <code>20260911-180000</code> and <code>hotfix</code>. Neither exists; <code>rm -f</code> says nothing
+about files it cannot find; the release survives. Change the name to <code>a b</code> and create a directory
+called <code>b</code> next to it, and the pipeline deletes <code>b</code> instead.</p>
+<p>There are only two reliable ways to pass file names from one program to another:</p>
+<pre><code class="language-bash">find . -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 rm -rf --   # NUL-separated
+for entry in ./*; do …; done                                          # a glob: no text in between
+</code></pre>
+<p>NUL is the one byte a file name cannot contain, so <code>-print0</code>/<code>-0</code> is unambiguous. A glob never turns
+names into text at all: the shell expands it into separate words, one per file, and quoting
+<code>&quot;$entry&quot;</code> keeps each one whole. A bonus: glob results come back <strong>sorted by name</strong> (in the current
+locale), which is exactly the order a timestamped name needs.</p>
+<h3>The unchecked <code>cd</code></h3>
+<pre><code class="language-sh">cd $RELEASES_DIR
+ls -t | tail -n +$((KEEP + 1)) | xargs rm -rf
+</code></pre>
+<p>When <code>cd</code> fails, it prints a message and returns non-zero — and the next line runs anyway, in the
+directory the script started in. Under systemd that is <code>/</code>. From a person’s shell it is their current
+directory. Nothing is special about deletion here; it is ordinary shell behaviour meeting the most
+dangerous possible next command.</p>
+<p>Three habits, any one of which would have saved it:</p>
+<pre><code class="language-bash">set -euo pipefail          # -e: stop when cd fails
+cd -- &quot;$RELEASES_DIR&quot;      # quoted, and -- in case the path starts with -
+cd &quot;$dir&quot; || exit 1        # the explicit form, for scripts that cannot use -e
+</code></pre>
+<p>And one habit for every destructive command: act on paths <strong>relative to a directory you have just
+verified</strong>, like <code>./$old</code>, or on absolute paths you built from it. Never on “whatever is here”.</p>
+<h3>Choosing only what may be deleted</h3>
+<p>A releases directory holds more than releases: the <code>current</code> symlink, a README, a lock file. The
+original pipeline counted all of them. A cleanup should define what it owns and ignore the rest:</p>
+<pre><code class="language-bash">for entry in [0-9]*; do                     # names that start with a digit: the timestamps
+    if [ -d &quot;$entry&quot; ] &amp;&amp; [ ! -L &quot;$entry&quot; ]; then
+        releases+=(&quot;$entry&quot;)
+    fi
+done
+</code></pre>
+<p>The glob <code>[0-9]*</code> already skips <code>current</code>, but <code>-d</code> is true for any symlink that points to a
+directory, so a link named like a release — <code>20260913-101500-live</code> in another layout — would match
+and be counted. The <code>! -L</code> test excludes links whatever their names. When the glob matches nothing, bash leaves the pattern
+as literal text, <code>[0-9]*</code>, and the <code>-d</code> test quietly rejects it; <code>shopt -s nullglob</code> is the other way
+to handle that.</p>
+<h3>Slicing the list</h3>
+<p>With the releases in an array sorted oldest first, the ones to delete are all but the last <code>KEEP</code>:</p>
+<pre><code class="language-bash">count=${#releases[@]}
+if (( count &gt; KEEP )); then
+    for old in &quot;${releases[@]:0:count-KEEP}&quot;; do
+        rm -rf -- &quot;./$old&quot;
+    done
+fi
+</code></pre>
+<p><code>${array[@]:offset:length}</code> is an array slice, and quoting it preserves each element. The guard
+matters: a negative length in a slice is an error in bash, and without the <code>if</code> a directory with
+three releases would abort the script.</p>
+<h3>Scheduling: a timer is two units</h3>
+<p>A systemd timer does nothing by itself. <code>prune-releases.timer</code> says <em>when</em>; it activates
+<code>prune-releases.service</code> (the unit with the same name unless <code>Unit=</code> says otherwise), which says
+<em>what</em>. Three things must be true for the job to run every night:</p>
+<ol>
+<li>the timer is <strong>started</strong> — a timer that was never started has no next elapse;</li>
+<li>the timer is <strong>enabled</strong>, which links it into <code>timers.target</code> so it starts at every boot;</li>
+<li>the service can actually start — here, its <code>ExecStart=</code> must name an executable that exists.</li>
+</ol>
+<p><code>OnCalendar=*-*-* 03:30:00</code> is systemd’s calendar syntax, and <code>systemd-analyze calendar</code> shows when an
+expression next fires. <code>Persistent=true</code> runs a missed job at boot if the machine was off at 03:30.</p>
+<p>To change one line of a unit that a package or a colleague installed, a <strong>drop-in</strong> is cleaner than
+editing the unit: a file in <code>/etc/systemd/system/&lt;unit&gt;.d/*.conf</code> overrides only what it names.
+<code>ExecStart=</code> is a list, so a drop-in must first clear it with an empty <code>ExecStart=</code> and then set the new
+value — otherwise a oneshot service ends up with two commands.</p>
+<h3>Testing a destructive script</h3>
+<p>Two principles. First, test against a <strong>copy</strong>: <code>cp -a</code> keeps the names, the modes, the symlink and —
+crucially for this bug — the mtimes, so the copy reproduces the problem. Second, test the <strong>missing
+target</strong> from a directory full of things you would hate to lose, because that is the failure you
+cannot observe safely any other way. The variables the script already reads (<code>RELEASES_DIR</code>, <code>KEEP</code>)
+exist precisely so it can be pointed at a sandbox.</p>
+<h2>A failure, walked through</h2>
+<p>Replayed on the track’s lab VM before its image moved to Ubuntu 26.04; the output below is what
+the machine printed.</p>
+<p><strong>1. Compare the names with the times.</strong></p>
+<pre><code class="language-console">$ ls -l --time-style=+%F_%T /srv/app/releases
+total 32
+drwxr-xr-x 2 root root 4096 2026-09-14_03:31:06 20260801-120000
+drwxr-xr-x 2 root root 4096 2026-09-14_02:31:06 20260830-090000 rollback
+drwxr-xr-x 2 root root 4096 2026-09-14_01:31:06 20260905-140000
+drwxr-xr-x 2 root root 4096 2026-09-14_00:31:06 20260908-101500
+drwxr-xr-x 2 root root 4096 2026-09-13_23:31:06 20260910-163000
+drwxr-xr-x 2 root root 4096 2026-09-13_22:31:06 20260911-180000 hotfix
+drwxr-xr-x 2 root root 4096 2026-09-13_21:31:06 20260912-083000
+drwxr-xr-x 2 root root 4096 2026-09-13_20:31:06 20260913-101500
+lrwxrwxrwx 1 root root   33 2026-09-14_03:31:06 current -&gt; /srv/app/releases/20260913-101500
+$ ls -t /srv/app/releases
+20260801-120000
+current
+20260830-090000 rollback
+20260905-140000
+20260908-101500
+20260910-163000
+20260911-180000 hotfix
+20260912-083000
+20260913-101500
+</code></pre>
+<p>The August release carries the newest modification time and the September 13 release the oldest —
+the restore reversed them. <code>ls -t</code> also lists <code>current</code> among the “releases”.</p>
+<p><strong>2. Read the script, then look at what the pipeline would hand to <code>rm</code></strong> — without running <code>rm</code>:</p>
+<pre><code class="language-console">$ cat /usr/local/bin/prune-releases
+#!/bin/sh
+# prune-releases — keep the five newest releases, delete the rest
+
+RELEASES_DIR=${RELEASES_DIR:-/srv/app/releases}
+KEEP=${KEEP:-5}
+
+cd $RELEASES_DIR
+ls -t | tail -n +$((KEEP + 1)) | xargs rm -rf
+$ cd /srv/app/releases &amp;&amp; ls -t | tail -n +6
+20260910-163000
+20260911-180000 hotfix
+20260912-083000
+20260913-101500
+$ cd /srv/app/releases &amp;&amp; ls -t | tail -n +6 | xargs printf '[%s]\n'
+[20260910-163000]
+[20260911-180000]
+[hotfix]
+[20260912-083000]
+[20260913-101500]
+</code></pre>
+<p>Replacing the destructive command with <code>printf '[%s]\n'</code> shows exactly the arguments <code>rm</code> would get,
+one per bracket. The four newest releases are on the list, and the hotfix is two words.</p>
+<p><strong>3. Run it on a copy.</strong> <code>cp -a</code> preserves the mtimes, so the copy misbehaves the same way:</p>
+<pre><code class="language-console">$ mkdir -p /tmp/p &amp;&amp; sudo cp -a /srv/app/releases /tmp/p/ &amp;&amp; sudo chown -R &quot;$(id -un)&quot; /tmp/p
+$ cd /tmp/p &amp;&amp; RELEASES_DIR=/tmp/p/releases prune-releases; echo &quot;exit=$?&quot;; ls /tmp/p/releases
+exit=0
+20260801-120000
+20260830-090000 rollback
+20260905-140000
+20260908-101500
+20260911-180000 hotfix
+current
+</code></pre>
+<p>The three newest releases are gone, the one from August 1 is kept, the hotfix survived only because
+its name was split into two words that do not exist, and the script reports success.</p>
+<p><strong>4. The missing directory</strong>, started from a directory of things to keep:</p>
+<pre><code class="language-console">$ for n in 1 2 3 4 5 6 7 8; do mkdir -p /tmp/q/important-$n &amp;&amp; echo keep &gt; /tmp/q/important-$n/data; done; ls /tmp/q
+important-1
+important-2
+important-3
+important-4
+important-5
+important-6
+important-7
+important-8
+$ cd /tmp/q &amp;&amp; RELEASES_DIR=/tmp/q/moved-away prune-releases; echo &quot;exit=$?&quot;; ls /tmp/q
+/usr/local/bin/prune-releases: 7: cd: can't cd to /tmp/q/moved-away
+exit=0
+important-1
+important-2
+important-3
+important-4
+important-8
+</code></pre>
+<p><code>cd</code> failed, said so, and the pipeline ran in <code>/tmp/q</code>: three of the eight directories are gone, and
+the exit status is still 0. Under the timer, the starting directory would have been <code>/</code>. (The message
+format — <code>7: cd: can't cd to</code> — is dash’s: the script’s <code>#!/bin/sh</code> is dash on Ubuntu.)</p>
+<p><strong>5. Find out why it never runs.</strong></p>
+<pre><code class="language-console">$ systemctl status prune-releases.timer --no-pager
+○ prune-releases.timer - Delete old application releases every night
+     Loaded: loaded (/etc/systemd/system/prune-releases.timer; disabled; preset: enabled)
+     Active: inactive (dead)
+    Trigger: n/a
+   Triggers: ● prune-releases.service
+$ systemctl cat prune-releases.service
+# /etc/systemd/system/prune-releases.service
+[Unit]
+Description=Delete old application releases
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/prune-releases
+$ ls -l /usr/local/sbin/prune-releases /usr/local/bin/prune-releases
+ls: cannot access '/usr/local/sbin/prune-releases': No such file or directory
+-rwxr-xr-x 1 root root 207 Sep 14 03:31 /usr/local/bin/prune-releases
+$ systemd-analyze calendar '*-*-* 03:30:00'
+Normalized form: *-*-* 03:30:00
+    Next elapse: Tue 2026-09-15 03:30:00 UTC
+       From now: 23h left
+</code></pre>
+<p>The timer is disabled and inactive (<code>Trigger: n/a</code> — no next run), and even if it fired, the service
+would try to execute a path that does not exist. The calendar expression itself is fine.</p>
+<p><strong>6. Rewrite the script.</strong></p>
+<pre><code class="language-bash">#!/bin/bash
+# prune-releases — keep the newest $KEEP releases (by the timestamp in their names), delete the rest
+set -euo pipefail
+
+RELEASES_DIR=${RELEASES_DIR:-/srv/app/releases}
+KEEP=${KEEP:-5}
+
+cd -- &quot;$RELEASES_DIR&quot;
+
+releases=()
+for entry in [0-9]*; do
+    # release directories only: not current, not files, not a glob that matched nothing
+    if [ -d &quot;$entry&quot; ] &amp;&amp; [ ! -L &quot;$entry&quot; ]; then
+        releases+=(&quot;$entry&quot;)
+    fi
+done
+
+# glob results are sorted by name, and the names start with a timestamp: newest last
+count=${#releases[@]}
+if (( count &gt; KEEP )); then
+    for old in &quot;${releases[@]:0:count-KEEP}&quot;; do
+        rm -rf -- &quot;./$old&quot;
+    done
+fi
+</code></pre>
+<p>Bash, not <code>sh</code>: arrays and <code>(( ))</code> are bash features. It was written with
+<code>sudo tee /usr/local/bin/prune-releases &gt; /dev/null &lt;&lt;'SCRIPT'</code>, then:</p>
+<pre><code class="language-console">$ shellcheck /usr/local/bin/prune-releases &amp;&amp; echo &quot;shellcheck: clean&quot;
+shellcheck: clean
+</code></pre>
+<p><strong>7. Test it on a fresh copy, and on the missing directory again.</strong></p>
+<pre><code class="language-console">$ rm -rf /tmp/p &amp;&amp; mkdir -p /tmp/p &amp;&amp; sudo cp -a /srv/app/releases /tmp/p/ &amp;&amp; sudo chown -R &quot;$(id -un)&quot; /tmp/p
+$ RELEASES_DIR=/tmp/p/releases prune-releases; echo &quot;exit=$?&quot;; ls -l /tmp/p/releases
+exit=0
+total 0
+drwxr-xr-x 2 northelks root 60 Sep 14 00:31 20260908-101500
+drwxr-xr-x 2 northelks root 60 Sep 13 23:31 20260910-163000
+drwxr-xr-x 2 northelks root 60 Sep 13 22:31 20260911-180000 hotfix
+drwxr-xr-x 2 northelks root 60 Sep 13 21:31 20260912-083000
+drwxr-xr-x 2 northelks root 60 Sep 13 20:31 20260913-101500
+lrwxrwxrwx 1 northelks root 33 Sep 14 03:31 current -&gt; /srv/app/releases/20260913-101500
+$ cd /tmp/q &amp;&amp; RELEASES_DIR=/tmp/q/moved-away prune-releases; echo &quot;exit=$?&quot;; ls /tmp/q
+/usr/local/bin/prune-releases: line 8: cd: /tmp/q/moved-away: No such file or directory
+exit=1
+important-1
+important-2
+important-3
+important-4
+important-8
+</code></pre>
+<p>The five newest names remain whatever their mtimes, the hotfix is kept as one release, <code>current</code> is
+untouched, and a missing directory now stops the script with exit 1 before anything is deleted (the
+remaining canaries are the ones the old script left).</p>
+<p><strong>8. Fix the service with a drop-in, then enable and start the timer.</strong></p>
+<pre><code class="language-console">$ sudo mkdir -p /etc/systemd/system/prune-releases.service.d &amp;&amp; printf '[Service]\nExecStart=\nExecStart=/usr/local/bin/prune-releases\n' | sudo tee /etc/systemd/system/prune-releases.service.d/path.conf
+[Service]
+ExecStart=
+ExecStart=/usr/local/bin/prune-releases
+$ sudo systemctl daemon-reload &amp;&amp; sudo systemctl enable --now prune-releases.timer
+Created symlink '/etc/systemd/system/timers.target.wants/prune-releases.timer' → '/etc/systemd/system/prune-releases.timer'.
+$ systemctl list-timers prune-releases.timer --no-pager
+NEXT                        LEFT LAST PASSED UNIT                 ACTIVATES
+Tue 2026-09-15 03:30:00 UTC  23h -         - prune-releases.timer prune-releases.service
+
+1 timers listed.
+Pass --all to see loaded but inactive timers, too.
+$ sudo systemctl start prune-releases.service; systemctl show prune-releases.service -p Result -p ExecMainStatus; ls /srv/app/releases
+Result=success
+ExecMainStatus=0
+20260908-101500
+20260910-163000
+20260911-180000 hotfix
+20260912-083000
+20260913-101500
+current
+</code></pre>
+<p>The timer has a next elapse, and one manual run of the service through systemd — the same way the
+timer will run it — succeeded on the real directory.</p>
+<p><strong>9. Grade.</strong> The checks ran, the machine rebooted, and they ran again: all four passed both times.</p>
+<h2>Common wrong turns</h2>
+<p><strong><code>ls -v</code> or <code>sort -V</code> on the <code>ls -t</code> output.</strong> Sorting the text differently does not help while the
+text is still produced by <code>ls</code> and split by <code>xargs</code>. Fix the channel first, then the order.</p>
+<p><strong><code>xargs -d '\n'</code>.</strong> It stops splitting at spaces, and it is a real improvement, but names can contain
+newlines, and it keeps the design of “turn names into text, then parse the text”. A glob or <code>-print0</code>
+avoids the problem entirely.</p>
+<p><strong>Quoting <code>$RELEASES_DIR</code> and calling it fixed.</strong> <code>cd &quot;$RELEASES_DIR&quot;</code> still fails on a missing
+directory, and without <code>set -e</code> or <code>|| exit</code> the deletion still runs in the wrong place.</p>
+<p><strong><code>rm -rf &quot;$RELEASES_DIR&quot;/*</code> to “stay in the right place”.</strong> With an empty or unset variable that is
+<code>rm -rf /*</code>. <code>set -u</code> catches unset, not empty; <code>${RELEASES_DIR:?}</code> catches both, and <code>cd</code> plus
+relative paths avoids building such a path at all.</p>
+<p><strong>Counting <code>current</code> or other files as releases.</strong> Any entry the script did not create for itself
+must be excluded explicitly, or one day it is the one deleted.</p>
+<p><strong>Starting the timer but not enabling it</strong> (or the other way round). <code>enable</code> alone creates the
+boot-time link but leaves the timer inactive until the next boot; <code>start</code> alone works until the next
+reboot. <code>enable --now</code> does both.</p>
+<p><strong>Editing <code>ExecStart=</code> in a drop-in without clearing it first.</strong> For a <code>Type=oneshot</code> service systemd
+accepts several <code>ExecStart=</code> lines and runs them in order, so the old, missing path still runs first
+and fails the unit.</p>
+<p><strong>Testing on <code>/srv/app/releases</code>.</strong> A deletion cannot be rolled back. Every experiment above ran on a
+copy, and the real directory was touched once, at the end, by the finished script.</p>
+<h2>Cheat sheet</h2>
+<pre><code class="language-bash">set -euo pipefail
+cd -- &quot;$dir&quot;                              # stops the script if it fails (with -e)
+cd &quot;$dir&quot; || exit 1                       # the same, without -e
+: &quot;${DIR:?DIR must be set}&quot;               # abort if unset or empty
+for f in ./*; do [ -d &quot;$f&quot; ] &amp;&amp; [ ! -L &quot;$f&quot; ] &amp;&amp; …; done   # directories, not links
+shopt -s nullglob                         # an unmatched glob expands to nothing
+arr=(); arr+=(&quot;$x&quot;); echo &quot;${#arr[@]}&quot;    # array append, length
+&quot;${arr[@]:0:n}&quot;                           # slice: the first n elements
+find . -mindepth 1 -maxdepth 1 -type d -print0 | sort -z | xargs -0 …   # NUL-safe pipeline
+cmd | xargs printf '[%s]\n'               # see the arguments xargs would pass
+ls -l --time-style=+%F_%T                 # full modification times
+cp -a src dst                             # copy keeping modes, links and mtimes
+</code></pre>
+<pre><code class="language-bash">systemctl status NAME.timer               # enabled? active? next trigger?
+systemctl list-timers --all               # every timer, with next and last run
+systemctl cat NAME.service                # the unit plus its drop-ins
+systemd-analyze calendar '*-*-* 03:30:00' # when a calendar expression fires
+sudo systemctl edit NAME.service          # create a drop-in (clears nothing by itself)
+sudo systemctl daemon-reload              # after editing unit files by hand
+sudo systemctl enable --now NAME.timer    # boot link + start now
+sudo systemctl start NAME.service         # run the job once, exactly as the timer would
+journalctl -u NAME.service -b             # what the last runs printed
+</code></pre>
+<h2>Going deeper</h2>
+<p>Where this lab’s hints send you for reading, beyond this journal. In the TUI, <code>h</code> shows a
+hint’s reading and <code>l</code> opens a journal section; the lab’s page on the site lists the same.</p>
+<ul>
+<li><em>A script that cannot fail is not a backup</em> (lab journal <code>linux-03-backup-script-lies</code>) — Handing a list of files to a program</li>
+<li><em>A script that cannot fail is not a backup</em> (lab journal <code>linux-03-backup-script-lies</code>) — set -euo pipefail, and what it does not do</li>
+</ul>
+<p>Manual pages: <code>man 1 ls</code>, <code>man 1 sort</code>, <code>man 1 xargs</code>, <code>man 5 systemd.timer</code>.</p>
+<h2>Review</h2>
+<ol>
+<li>
+<p>Why is <code>ls -t</code> the wrong way to find the newest releases after a restore from backup?</p>
+<blockquote>
+<p>It sorts by modification time, and restores, <code>cp -a</code>, <code>rsync -a</code> and <code>tar -x</code> set mtimes; the timestamp in the release name is the data that stays correct.</p>
+</blockquote>
+</li>
+<li>
+<p>What does <code>echo &quot;20260911-180000 hotfix&quot; | xargs rm -rf</code> pass to <code>rm</code>?</p>
+<blockquote>
+<p>Two arguments, <code>20260911-180000</code> and <code>hotfix</code>, because xargs splits its input at blanks (and interprets quotes).</p>
+</blockquote>
+</li>
+<li>
+<p>When <code>cd $RELEASES_DIR</code> fails in a script without <code>set -e</code>, where does the next command run?</p>
+<blockquote>
+<p>In the script’s current working directory — wherever it was started from; <code>/</code> under systemd. The failure is printed but does not stop the script.</p>
+</blockquote>
+</li>
+<li>
+<p>Name two ways to hand file names to a command that survive spaces and newlines.</p>
+<blockquote>
+<p>A glob expanded by the shell with quoted expansions (<code>for f in ./*; do … &quot;$f&quot;</code>), or a NUL-separated pipeline (<code>find … -print0 | xargs -0 …</code>).</p>
+</blockquote>
+</li>
+<li>
+<p>Why does the rewritten script test both <code>-d</code> and <code>! -L</code>?</p>
+<blockquote>
+<p><code>-d</code> is true for a symlink that points to a directory, so without <code>! -L</code> the <code>current</code> link (or any link to a release) would be counted and could be deleted.</p>
+</blockquote>
+</li>
+<li>
+<p>A timer is enabled but <code>systemctl list-timers</code> does not show it. What is missing?</p>
+<blockquote>
+<p>It has not been started since it was enabled; enabling only links it into timers.target for the next boot. <code>systemctl start</code> (or <code>enable --now</code>) activates it.</p>
+</blockquote>
+</li>
+<li>
+<p>Why must a drop-in that replaces <code>ExecStart=</code> contain an empty <code>ExecStart=</code> line first?</p>
+<blockquote>
+<p>ExecStart is a list; a new line is appended to the original. The empty assignment clears the list so only the new command remains (and a oneshot does not run the old one first).</p>
+</blockquote>
+</li>
+<li>
+<p>How do you check a destructive pipeline’s selection without deleting anything?</p>
+<blockquote>
+<p>Replace the destructive command with one that prints its arguments, e.g. <code>… | xargs printf '[%s]\n'</code>, or run the script against a <code>cp -a</code> copy of the directory.</p>
+</blockquote>
+</li>
+</ol>
+
+<footer class="journal">
+  norboten.org · this journal accompanies the lab of the same name, where the machine is real and
+  the grading is done on its state.
+</footer>
+</body></html>
