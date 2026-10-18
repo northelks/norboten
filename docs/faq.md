@@ -408,7 +408,7 @@ is no private streaming mode.
 
 ### Can I be told when something happens?
 
-Two things, both off until you ask. On [your account](../../account/), link Discord and
+Two things, both off until you ask. On your account page, link Discord and
 turn on the **weekly digest**: a direct message from the Norboten bot on Sunday evening about your
 own week — what you attempted, what your ratings did, and the topic the numbers know least about —
 and nothing in a week you did nothing. The bot can only message you if you share a server with it,

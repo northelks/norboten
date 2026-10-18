@@ -34,7 +34,10 @@ import graphics  # the site's own module, next to this file
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
 GITHUB = "https://github.com/northelks/norboten"
-API = os.environ.get("NORBOTEN_SITE_API", "https://api.norboten.org")  # a local stack overrides it
+# NORBOTEN_SITE_STATIC=1: the build for GitHub Pages, with no server behind it — no API, so no
+# account or donate pages; the chat, the live wall and the boards fall back to what the site holds
+STATIC = os.environ.get("NORBOTEN_SITE_STATIC") == "1"
+API = "" if STATIC else os.environ.get("NORBOTEN_SITE_API", "https://api.norboten.org")
 # The donate page's tiles, in euros. The API validates the same amounts (routers/donate.py).
 DONATION_TIERS = (5, 10, 15, 20, 25, 50)
 DONATION_DEFAULT = 10
@@ -1647,6 +1650,7 @@ def main() -> int:
     common = {
         "any_rated": any(lab["rated"] for lab in labs),
         "api": API,
+        "static": STATIC,
         "github": GITHUB,
         "site_url": SITE_URL,
         "ga_id": GA_ID,
@@ -1764,38 +1768,39 @@ def main() -> int:
         domain=DOMAIN,
         **common,
     )
-    build.render(
-        "donate.html",
-        "donate/index.html",
-        nav="donate",
-        page_title="Donate",
-        page_description="Norboten is free to run locally; €10 helps keep the hosted side up.",
-        tiers=DONATION_TIERS,
-        default_tier=DONATION_DEFAULT,
-        **common,
-    )
-    build.render(
-        "donate-thanks.html",
-        "donate/thanks/index.html",
-        nav="donate",
-        page_title="Thank you",
-        page_description="The donation went through. This is where Stripe sends you back.",
-        **common,
-    )
-
-    for page, path, title in (
-        ("account", "account/index.html", "Account"),
-        ("authorize", "authorize/index.html", "Connect an AI client"),
-    ):
+    if not STATIC:
         build.render(
-            "account.html",
-            path,
-            nav="account",
-            page=page,
-            page_title=title,
-            page_description="Sign in to Norboten with GitHub, choose a nick, and link Discord.",
+            "donate.html",
+            "donate/index.html",
+            nav="donate",
+            page_title="Donate",
+            page_description="Norboten is free to run locally; €10 helps keep the hosted side up.",
+            tiers=DONATION_TIERS,
+            default_tier=DONATION_DEFAULT,
             **common,
         )
+        build.render(
+            "donate-thanks.html",
+            "donate/thanks/index.html",
+            nav="donate",
+            page_title="Thank you",
+            page_description="The donation went through. This is where Stripe sends you back.",
+            **common,
+        )
+
+        for page, path, title in (
+            ("account", "account/index.html", "Account"),
+            ("authorize", "authorize/index.html", "Connect an AI client"),
+        ):
+            build.render(
+                "account.html",
+                path,
+                nav="account",
+                page=page,
+                page_title=title,
+                page_description="Sign in to Norboten with GitHub, choose a nick, and link Discord.",
+                **common,
+            )
 
     journals = collect_journals(build, labs)
     with_journals = {j["id"] for j in journals}

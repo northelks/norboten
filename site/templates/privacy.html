@@ -129,7 +129,7 @@
       Your profile page shows everything the server holds about your work; the account page lists
       where you are signed in, and signing out there ends that sign-in.
       <strong>Deleting the account is yours to do, on the
-      <a href="{{ root }}account/">account page</a></strong>: type your nick to confirm and
+      {% if static %}account page{% else %}<a href="{{ root }}account/">account page</a>{% endif %}</strong>: type your nick to confirm and
       the profile and nick, every attempt and rating, open rated attempts, the recordings your Play
       sessions left, the GitHub and Discord links and every token are deleted at once — nothing is
       kept and nothing can be restored. The nightly backups still hold a copy, which ages out on

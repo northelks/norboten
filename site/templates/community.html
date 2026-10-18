@@ -128,7 +128,7 @@
         main, and every release with its notes. Straight from the push, so the same thing is never
         announced twice and a quiet week stays quiet.</li>
       <li><strong>It sends your week.</strong> Link Discord on the
-        <a href="{{ root }}account/">account page</a> and switch the digest on — it is off
+        {% if static %}account page{% else %}<a href="{{ root }}account/">account page</a>{% endif %} and switch the digest on — it is off
         until you do — and on Sunday evening the bot sends you a direct message: what you attempted,
         what your ratings did, and the topic worth working on next. No model writes it, so no number
         in it is invented. A week with nothing in it gets no message.</li>
@@ -162,8 +162,8 @@
       <a class="btn" href="{{ root }}labs/">Browse the labs</a>
     </p>
     {% endif %}
-    <p class="muted prose" style="margin-top:1.6rem">Would rather help another way? There is
-      <a href="{{ root }}donate/">Donate</a>, and the
+    <p class="muted prose" style="margin-top:1.6rem">Would rather help another way? {% if static %}The{% else %}There is
+      <a href="{{ root }}donate/">Donate</a>, and the{% endif %}
       <a href="{{ github }}/issues" target="_blank" rel="noopener">issues</a> are always open.</p>
   </div>
 </section>
